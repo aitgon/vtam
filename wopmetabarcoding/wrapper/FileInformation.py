@@ -55,7 +55,11 @@ class FileInformation(ToolWrapper):
     def insert_file(self, session, model, line):
         file_name = line.split(',')[7]
         run_name = line.split(',')[8].strip()
-        obj_file = {'file_name': file_name, 'run_name': run_name}
+        if line.split(',')[0] == "" and line.split(',')[2] == "" and line.split(',')[3] =="" and line.split(',')[4] == "":
+            dereplicate = True
+        else:
+            dereplicate = False
+        obj_file = {'file_name': file_name, 'run_name': run_name, 'dereplicate_status': dereplicate}
         self.insert_table(session, model, obj_file)
 
     def insert_sample(self, session, model, line):
