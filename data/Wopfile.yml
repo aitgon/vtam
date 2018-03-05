@@ -2,7 +2,7 @@ rule ReadCSV:
     tool: wopmetabarcoding.wrapper.FileInformation
     input:
         file:
-            csv: ../1_sample_info.csv
+            csv: 1_sample_info.csv
     output:
         table:
             Marker: wopmetabarcoding.model.Marker
@@ -12,5 +12,18 @@ rule ReadCSV:
             Sample: wopmetabarcoding.model.Sample
             FileInformation: wopmetabarcoding.model.FileInformation
 
+rule VsearchSort:
+    tool: wopmetabarcoding.wrapper.VsearchSortReads
+    input:
+        table:
+            FileInformation: wopmetabarcoding.model.FileInformation
+            File: wopmetabarcoding.model.File
+    output:
+        file:
+            fastadb: output/fasta_db1.fasta
+            csvsearch: vsearch_result.csv
+    params:
+        min_id: 0.8
+        minseqlength: 32
 
 
