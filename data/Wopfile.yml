@@ -22,6 +22,8 @@ rule VsearchSort:
         file:
             fastadb: output/fasta_db1.fasta
             csvsearch: vsearch_result.csv
+        table:
+            ReadCount: wopmetabarcoding.model.ReadCount
     params:
         min_id: 0.8
         minseqlength: 32

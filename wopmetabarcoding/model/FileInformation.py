@@ -13,7 +13,7 @@ from Bio import Alphabet
 class FileInformation(Base):
 	__tablename__ = 'FileInformation'
 	__table_args__ = (
-		UniqueConstraint('tag_forward', 'tag_reverse', 'marker_name', 'file_name'),
+		#UniqueConstraint('tag_forward', 'tag_reverse', 'marker_name', 'file_name'),
 		# UniqueConstraint('marker_name', 'sample_name', 'replicate_name')
 	)
 
@@ -43,7 +43,8 @@ class FileInformation(Base):
 
 	@validates('tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse')
 	def validate_sequences(self, key, sequence):
-		assert Seq(sequence, IUPAC.ambiguous_dna)
+		if sequence != "":
+			assert Seq(sequence, IUPAC.ambiguous_dna)
 		return sequence
 
 

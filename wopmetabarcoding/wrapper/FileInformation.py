@@ -1,5 +1,6 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
+from wopmetabarcoding.wrapper.functions import insert_table
 
 # import models
 import wopmetabarcoding.model.Marker
@@ -28,44 +29,37 @@ class FileInformation(ToolWrapper):
             FileInformation.__output_table_fileinformation, FileInformation.__output_table_sample,
         ]
 
-    @staticmethod
-    def insert_table(session, model, obj):
-        try:  # checks if exists Phenotype in db
-            session.query(model).filter_by(**obj).one()
-        except:  # if not, add
-            session.add(model(**obj))
-
     def insert_marker(self, session, model, line):
         marker_name = line.split(',')[4]
         obj_marker = {'marker_name': marker_name}
-        self.insert_table(session, model, obj_marker)
+        insert_table(session, model, obj_marker)
 
     def insert_primer(self, session, model, line):
         primer_forward = line.split(',')[1]
         primer_reverse = line.split(',')[3]
         obj_primer = {'primer_forward': primer_forward, 'primer_reverse': primer_reverse}
-        self.insert_table(session, model, obj_primer)
+        insert_table(session, model, obj_primer)
 
     def insert_tag(self, session, model, line):
         tag_forward = line.split(',')[0]
         tag_reverse = line.split(',')[2]
         obj_tag = {'tag_forward': tag_forward, 'tag_reverse': tag_reverse}
-        self.insert_table(session, model, obj_tag)
+        insert_table(session, model, obj_tag)
 
     def insert_file(self, session, model, line):
         file_name = line.split(',')[7]
         run_name = line.split(',')[8].strip()
-        if line.split(',')[0] == "" and line.split(',')[2] == "" and line.split(',')[3] =="" and line.split(',')[4] == "":
+        if line.split(',')[0] == "" or line.split(',')[2] == "" or line.split(',')[3] == "" or line.split(',')[4] == "":
             dereplicate = True
         else:
             dereplicate = False
         obj_file = {'file_name': file_name, 'run_name': run_name, 'dereplicate_status': dereplicate}
-        self.insert_table(session, model, obj_file)
+        insert_table(session, model, obj_file)
 
     def insert_sample(self, session, model, line):
         sample_name = line.split(',')[5]
         obj_sample = {'sample_name': sample_name}
-        self.insert_table(session, model, obj_sample)
+        insert_table(session, model, obj_sample)
 
     def insert_fileinformation(self, session, model, line):
         marker_name = line.split(',')[4]
@@ -81,7 +75,7 @@ class FileInformation(ToolWrapper):
             'primer_forward': primer_forward, 'primer_reverse': primer_reverse, 'file_name': file_name,
             'run_name': run_name, 'sample_name': sample_name,
         }
-        self.insert_table(session, model, obj_fileinformation)
+        insert_table(session, model, obj_fileinformation)
 
     def run(self):
         session = self.session()
