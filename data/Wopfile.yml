@@ -20,10 +20,14 @@ rule VsearchSort:
             File: wopmetabarcoding.model.File
     output:
         file:
-            fastadb: output/fasta_db1.fasta
-            csvsearch: vsearch_result.csv
+            fastadb: output/fasta_db.fasta
+            reversefastadb: output/reverse_fasta_db.fasta
+            csvsearch: output/vsearch_result.csv
+            fowardtrimmed: output/forward_trimmed.fasta
+
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
+            OutputCsv: wopmetabarcoding.model.OutputCsv
     params:
         min_id: 0.8
         minseqlength: 32

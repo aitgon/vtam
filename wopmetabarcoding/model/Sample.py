@@ -11,12 +11,3 @@ class Sample(Base):
 	sample_name = Column(String(50), nullable=False)
 	positive_control = Column(Boolean, default=False)
 	negative_control = Column(Boolean, default=False)
-
-	@validates('sample_name')
-	def validate_runname(self, key, sample_name):
-		if '_' in sample_name:
-			sample_namebis = sample_name.replace('_', '')
-			assert sample_namebis.isalnum()
-		else:
-			assert sample_name.isalnum()
-		return sample_name
