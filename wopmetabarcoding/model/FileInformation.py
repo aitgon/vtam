@@ -26,6 +26,7 @@ class FileInformation(Base):
 	file_name = Column(String(150), nullable=False)
 	run_name = Column(String(20), nullable=False)
 	sample_name = Column(String(50), nullable=False)
+	replicate_name = Column(String, nullable=False)
 
 	@validates('file_name')
 	def validates_filename(self, key, path):

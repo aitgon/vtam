@@ -24,10 +24,12 @@ rule VsearchSort:
             reversefastadb: output/reverse_fasta_db.fasta
             csvsearch: output/vsearch_result.csv
             fowardtrimmed: output/forward_trimmed.fasta
+            outputforward: output/output forward_reverse_trimmed.fasta
 
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
             OutputCsv: wopmetabarcoding.model.OutputCsv
+            ReverseTrimmed: wopmetabarcoding.model.ReverseTrimmed
     params:
         min_id: 0.8
         minseqlength: 32
