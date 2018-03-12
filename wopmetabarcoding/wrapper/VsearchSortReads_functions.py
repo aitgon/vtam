@@ -140,7 +140,7 @@ def insert_read(session, model, file):
 	for dico in liste_reads:
 		for element in session.query(model).all():
 			if element.sequence_id in dico.get("sequence_id"):
-				session.query(model).filter(model.sequence_id == element.sequence_id).update({model.read: dico.get("sequence")})
+				session.query(model).filter(model.sequence_id == element.sequence_id).update({model.read: dico.get("sequence"), model.filename: file})
 
 
 def trim_reads(session, model):
@@ -169,6 +169,7 @@ def reverse_complement(session, model):
 		reverse_read = my_read.reverse_complement()
 		session.query(model).filter(model.sequence_id == element.sequence_id).update({model.reverse: str(reverse_read)})
 
+
 def create_fasta(session, model, file):
 	with open(file, 'w') as fasta_file:
 		for line in session.query(model).all():
@@ -180,16 +181,21 @@ def create_fasta(session, model, file):
 
 
 def attribute_combination(session, fileinformation, fasta_file):
-	filename = fasta_file.replace('.fasta', '_tmp.fasta')
+	filename = fasta_file.replace('.fasta', '_tmp.tsv')
 	file_tmp = open(filename, 'w')
+	file_tmp.write("Id" + "\t" + "Marker" + "\t" + "Run" + "\t" + "Sample" + "\t" + "Replicate" + "\t" + "Read" + "\n")
 	with open(fasta_file, 'r') as file:
 		for line in file:
 			if ">" in line:
 				line_info = line.strip().split('|')
 				data_line = session.query(fileinformation).filter(fileinformation.tag_forward == line_info[1]).filter(fileinformation.primer_forward == line_info[2]).filter(fileinformation.tag_reverse == line_info[3]).filter(fileinformation.primer_reverse == line_info[4]).first()
+				print(data_line.replicate_name)
 				file_tmp.write(
-					line_info[0] + ":|" + data_line.run_name + "|" + data_line.marker_name + "|" +
-					data_line.sample_name + "|" + data_line.replicate_name + '\n'
+					line_info[0] + "\t" + data_line.run_name + "\t" + data_line.marker_name + "\t" +
+					data_line.sample_name + "\t" + data_line.replicate_name + '\t'
 				)
 			else:
 				file_tmp.write(line)
+
+def create_filename_list(session, model, file_fasta, liste):
+	for li

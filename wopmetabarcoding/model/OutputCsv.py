@@ -17,6 +17,7 @@ class OutputCsv(Base):
 	qrow = Column(String, nullable=False)
 	read = Column(String, nullable=True)
 	reverse = Column(String, nullable=True)
+	filename = Column(String, nullable=True)
 
 	@validates('tilo')
 	def validate_first_pos(self, key, n):

@@ -78,10 +78,12 @@ class VsearchSortReads(ToolWrapper):
 		:return:
 		"""
 		self.vsearch_sr(fasta_file, database, csv_file)
+		print('ok')
 		dereplicate(session, output_csv, csv_file)
+		print('ok1')
 		insert_read(session, output_csv, fasta_file)
+		print('ok2')
 		trim_reads(session, output_csv)
-		reverse_complement(session, output_csv)
 
 	def run(self):
 		session = self.session()
@@ -109,11 +111,12 @@ class VsearchSortReads(ToolWrapper):
 			else:
 				create_fastadb(session, file_information_model, fasta_db, reverse_fasta_db)
 				self.algo_trim(session, outputcsv_model, csv_output, fasta_db, element.file_name)
-				print("ok")
-				create_fasta(session, outputcsv_model, foward_trimmed)
-				self.algo_trim(session, reversetrimmed_model, csv_output, reverse_fasta_db, foward_trimmed)
-				create_fasta(session, reversetrimmed_model, outputforward)
-				attribute_combination(session, file_information_model, outputforward)
+		reverse_complement(session, outputcsv_model)
+		create_fasta(session, outputcsv_model, foward_trimmed)
+		self.algo_trim(session, reversetrimmed_model, csv_output, reverse_fasta_db, foward_trimmed)
+		reverse_complement(session, reversetrimmed_model)
+		create_fasta(session, reversetrimmed_model, outputforward)
+		attribute_combination(session, file_information_model, outputforward)
 		session.commit()
 
 
