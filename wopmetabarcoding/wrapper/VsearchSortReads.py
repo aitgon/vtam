@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.VsearchSortReads_functions import \
 	create_fastadb, dereplicate, read_counter, fasta_writer, insert_read, trim_reads, reverse_complement, \
-	create_fasta, attribute_combination
+	create_fasta, attribute_combination, singleton_removing, variant_table
 
 import subprocess
 
@@ -20,6 +20,8 @@ class VsearchSortReads(ToolWrapper):
 	__output_file_reversefastadb = "reversefastadb"
 	__output_file_fowardtrimmed = "fowardtrimmed"
 	__output_file_outputforward = 'outputforward'
+	__output_table_obifasta = 'ObiFasta'
+	__output_table_variant = 'Variant'
 
 	def specify_input_table(self):
 		return [
@@ -40,7 +42,9 @@ class VsearchSortReads(ToolWrapper):
 		return [
 			VsearchSortReads.__output_table_readcount,
 			VsearchSortReads.__output_table_outputcsv,
-			VsearchSortReads.__output_table_reversetrimmed
+			VsearchSortReads.__output_table_reversetrimmed,
+			VsearchSortReads.__output_table_obifasta,
+			VsearchSortReads.__output_table_variant
 		]
 
 	def specify_params(self):
@@ -83,7 +87,7 @@ class VsearchSortReads(ToolWrapper):
 		print('ok1')
 		insert_read(session, output_csv, fasta_file)
 		print('ok2')
-		trim_reads(session, output_csv)
+		trim_reads(session, output_csv, fasta_file)
 
 	def run(self):
 		session = self.session()
@@ -103,6 +107,8 @@ class VsearchSortReads(ToolWrapper):
 		readcount_model = self.output_table(VsearchSortReads.__output_table_readcount)
 		outputcsv_model = self.output_table(VsearchSortReads.__output_table_outputcsv)
 		reversetrimmed_model = self.output_table(VsearchSortReads.__output_table_reversetrimmed)
+		obifasta_model = self.output_table(VsearchSortReads.__output_table_obifasta)
+		variant_model = self.output_table(VsearchSortReads.__output_table_variant)
 
 		for element in session.query(file_model).all():
 			if element.dereplicate_status is "1":
@@ -116,7 +122,9 @@ class VsearchSortReads(ToolWrapper):
 		self.algo_trim(session, reversetrimmed_model, csv_output, reverse_fasta_db, foward_trimmed)
 		reverse_complement(session, reversetrimmed_model)
 		create_fasta(session, reversetrimmed_model, outputforward)
-		attribute_combination(session, file_information_model, outputforward)
+		attribute_combination(session, file_information_model, outputcsv_model,  obifasta_model, outputforward)
+		singleton_removing(session, obifasta_model)
+		variant_table(session, obifasta_model, variant_model)
 		session.commit()
 
 

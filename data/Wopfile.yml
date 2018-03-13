@@ -30,6 +30,8 @@ rule VsearchSort:
             ReadCount: wopmetabarcoding.model.ReadCount
             OutputCsv: wopmetabarcoding.model.OutputCsv
             ReverseTrimmed: wopmetabarcoding.model.ReverseTrimmed
+            ObiFasta: wopmetabarcoding.model.ObiFasta
+            Variant: wopmetabarcoding.model.Variant
     params:
         min_id: 0.8
         minseqlength: 32
