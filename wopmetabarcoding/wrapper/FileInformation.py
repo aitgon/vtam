@@ -13,21 +13,25 @@ class FileInformation(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.FileInformation"
     }
     __input_file_csv = "csv"
+    #
+    __output_table_file = "File"
+    __output_table_fileinformation = "FileInformation"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
-    __output_table_tag = "Tag"
-    __output_table_file = "File"
     __output_table_sample = "Sample"
-    __output_table_fileinformation = "FileInformation"
+    __output_table_tag = "Tag"
 
     def specify_input_file(self):
         return [FileInformation.__input_file_csv]
 
     def specify_output_table(self):
         return [
-            FileInformation.__output_table_marker, FileInformation.__output_table_primerpair,
-            FileInformation.__output_table_tag, FileInformation.__output_table_file,
-            FileInformation.__output_table_fileinformation, FileInformation.__output_table_sample,
+            FileInformation.__output_table_file,
+            FileInformation.__output_table_fileinformation,
+            FileInformation.__output_table_marker,
+            FileInformation.__output_table_primerpair,
+            FileInformation.__output_table_sample,
+            FileInformation.__output_table_tag,
         ]
 
     def run(self):
@@ -60,7 +64,6 @@ class FileInformation(ToolWrapper):
                     # File_information
                     insert_fileinformation(session, fileinformation_model, line)
                     session.commit()
-
         except FileNotFoundError:
             context = \
                 'While searching for the csv file or the fastq directory, any file or directory are found at the pointed directory'

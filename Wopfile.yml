@@ -2,22 +2,26 @@ rule ReadCSV:
     tool: wopmetabarcoding.wrapper.FileInformation
     input:
         file:
-            csv: 1_sample_info.csv
+            csv: data/1_sample_info.csv
     output:
         table:
+            File: wopmetabarcoding.model.File
+            FileInformation: wopmetabarcoding.model.FileInformation
             Marker: wopmetabarcoding.model.Marker
             PrimerPair: wopmetabarcoding.model.PrimerPair
-            Tag: wopmetabarcoding.model.Tag
-            File: wopmetabarcoding.model.File
             Sample: wopmetabarcoding.model.Sample
-            FileInformation: wopmetabarcoding.model.FileInformation
+            Tag: wopmetabarcoding.model.Tag
 
 rule VsearchSort:
-    tool: wopmetabarcoding.wrapper.VsearchSortReads
+    tool: wopmetabarcoding.wrapper.VsearchSortReads2
     input:
         table:
-            FileInformation: wopmetabarcoding.model.FileInformation
             File: wopmetabarcoding.model.File
+            FileInformation: wopmetabarcoding.model.FileInformation
+            Marker: wopmetabarcoding.model.Marker
+            PrimerPair: wopmetabarcoding.model.PrimerPair
+            Sample: wopmetabarcoding.model.Sample
+            Tag: wopmetabarcoding.model.Tag
     output:
         file:
             fastadb: output/fasta_db.fasta
@@ -25,7 +29,6 @@ rule VsearchSort:
             csvsearch: output/vsearch_result.csv
             fowardtrimmed: output/forward_trimmed.fasta
             outputforward: output/output forward_reverse_trimmed.fasta
-
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
             OutputCsv: wopmetabarcoding.model.OutputCsv
@@ -35,5 +38,7 @@ rule VsearchSort:
     params:
         min_id: 0.8
         minseqlength: 32
+
+
 
 

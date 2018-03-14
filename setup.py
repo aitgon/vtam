@@ -2,17 +2,22 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
+install_requires = [
+		'biopython>=1.14.2',
+		'wopmars>=1.1.28',
+]
+
 setup(
     name='wopmetabarcoding',
     version='0.1',
     license='MIT',
-    author='Aitor Gonzalez, Thomas Dechatre',
+    author='Thomas Dechatre, Aitor Gonzalez',
     author_email='aitor.gonzalez@univ-amu.fr',
     url='http://www.aitorgonzalezlab.org',
     long_description="readme.md",
     packages=find_packages(),
     include_package_data=True,
     description="Metabarcoding wrappers and models for WopMars",
-    install_requires=['biopython'],
+    install_requires=install_requires,
     )
 
