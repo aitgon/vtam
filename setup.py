@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 install_requires = [
 		'biopython>=1.14.2',
-		'wopmars>=1.1.28',
+		'wopmars==1.1.24',
 ]
 
 setup(
