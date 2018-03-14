@@ -60,7 +60,7 @@ def read_counter(session, file, model):
 			sequence = ""
 
 
-def dereplicate(session, model, outputcsv):
+def dereplicate(outputcsv, tsv_file):
 	"""
 	Function use to insert all the data of the vsearch alignment in the database table
 	:param session: Current session of the database
@@ -68,6 +68,7 @@ def dereplicate(session, model, outputcsv):
 	:param outputcsv: csv containing the results of the alignment
 	:return: void
 	"""
+	tsv_reads = open(tsv_file)
 	with open(outputcsv, 'r') as file_csv:
 		next(file_csv)
 		for line in file_csv:
@@ -80,11 +81,17 @@ def dereplicate(session, model, outputcsv):
 				tilo = line.split('\t')[5]
 				tihi = line.split('\t')[6]
 				qrow = line.split('\t')[7].strip()
-				obj_outputcsv = {
-					'sequence_id': sequence_id, 'tl': tl, 'target': target, 'qilo': qilo, 'qihi': qihi, 'tilo': tilo, 'tihi': tihi, 'qrow': qrow
-				}
-				insert_table(session, model, obj_outputcsv)
-
+				if tilo != "1":
+					raise Exception("The first position of the alignment is 1")
+				if tihi != tl:
+					raise Exception("The last position of the alignment didn't represent the length of the target")
+				tag_sequence = ""
+				for character in target:
+					if character.islower():
+						tag_sequence += character
+				if tag_sequence not in qrow:
+					raise Exception("No match between the tag and the alignment")
+				tsv_file.write("")
 
 def fasta_writer(session, model, file_name):
 	"""
