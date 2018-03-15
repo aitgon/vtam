@@ -1,7 +1,6 @@
 from wopmars.framework.database.Base import Base
 
-from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import validates
+from sqlalchemy import Column, String, Integer
 
 
 class File(Base):

@@ -20,15 +20,14 @@ rule VsearchSort:
             FileInformation: wopmetabarcoding.model.FileInformation
     output:
         file:
-            fastadb: output/fasta_db.fasta
-            reversefastadb: output/reverse_fasta_db.fasta
-            csvsearch: output/vsearch_result.csv
-            fowardtrimmed: output/forward_trimmed.fasta
-            outputforward: output/output forward_reverse_trimmed.fasta
+            fastadb: data/output/fasta_db.fasta
+            reversefastadb: data/output/reverse_fasta_db.fasta
+            csvsearch: data/output/vsearch_result.csv
+            fowardtrimmed: data/output/forward_trimmed.fasta
+            outputforward: data/output/output forward_reverse_trimmed.fasta
+            tsv: data/output/tsv_tmp.tsv
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
-            OutputCsv: wopmetabarcoding.model.OutputCsv
-            ReverseTrimmed: wopmetabarcoding.model.ReverseTrimmed
             ObiFasta: wopmetabarcoding.model.ObiFasta
             Variant: wopmetabarcoding.model.Variant
     params:
