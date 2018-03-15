@@ -11,3 +11,4 @@ class File(Base):
 	file_name = Column(String(150), nullable=False)
 	run_name = Column(String(20), nullable=False)
 	dereplicate_status = Column(String, nullable=False)
+	forward_trimmed_file = Column(String, nullable=True)

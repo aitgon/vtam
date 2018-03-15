@@ -1,36 +1,28 @@
-from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
-
-
-def insert_read(session, model, file):
-	with open(file, 'r') as file_fasta:
-		i = 1
-		sequence = ""
-		for line in file_fasta:
+def read_catcher(fasta_file):
+	sequence_dico = {}
+	sequence = ""
+	i = 1
+	with open(fasta_file, 'r') as fasta_file:
+		for line in fasta_file:
 			if ">" in line:
-				sequence_id = line.strip()
 				if i == 1:
-					continue
+					line = line.replace('>', '')
+					id = line.strip().split(" ")[0]
 				else:
-					session.query(model).filter(model.sequence_id == sequence_id).update({model.read: sequence})
-					sequence = ""
+					sequence_dico[id] = sequence
 			else:
+				line = line.strip()
 				sequence += line
 			i += 1
+	return sequence_dico
 
 
-def trim_reads(session, model):
-	for element in session.query(model).all():
-		read_sequence = element.read
-		trimmed_read = element.read.replace(element.target, '')
-		session.query(model).filter(model.sequence_id == element.sequence_id).update({model.read: trimmed_read})
-
-
-def reverse_complement(session, model):
-	for element in session.query(model).all():
-		my_read = Seq(element.read, IUPAC.ambiguous_dna)
-		reverse_read = my_read.reverse_complement()
-		session.query(model).filter(model.sequence_id == element.sequence_id).update({model.reverse: reverse_read})
-
-
-
+def insert_read(csv_file, fasta_file):
+	filename = fasta_file.replace('.fasta', '_csv.csv')
+	test_file = open(filename, 'w')
+	reads = read_catcher(fasta_file)
+	with open(csv_file, 'r') as csv_file:
+		for line in csv_file:
+			line_info = line.strip().split('\t')
+			read = reads.get(line_info[0])
+			test_file.write(line + '\t' + read + '\n')
