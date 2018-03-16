@@ -9,6 +9,6 @@ pip install -e . # development mode
 # Run
 
 ~~~
-wopmars -w Wopfile.yml -D sqlite:///output/db.sqlite -p -v  -F 
+wopmars -w Wopfile.yml -D sqlite:///db.sqlite -p -v  -F
 ~~~
 

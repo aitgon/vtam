@@ -22,6 +22,7 @@ rule VsearchSort:
         file:
             fastadb: data/output/fasta_db.fasta
             csvsearch: data/output/vsearch_result.csv
+            csvsearch: data/output/vsearch_result.csv
             tsv: data/output/tsv_tmp.tsv
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
