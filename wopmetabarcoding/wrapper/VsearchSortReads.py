@@ -1,9 +1,10 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.VsearchSortReads_functions import \
 	create_fastadb, dereplicate, read_counter, fasta_writer, insert_read, \
-	create_fasta
+	create_fasta, attribute_combination
 
 import subprocess
+
 
 
 class VsearchSortReads(ToolWrapper):
@@ -19,9 +20,6 @@ class VsearchSortReads(ToolWrapper):
 	# Output file
 	__output_file_csvsearch = "csvsearch"
 	__output_file_fastadb = "fastadb"
-	__output_file_reversefastadb = "reversefastadb"
-	__output_file_fowardtrimmed = "fowardtrimmed"
-	__output_file_outputforward = "outputforward"
 	__output_file_tsv_tmp = "tsv"
 	# Output table
 	__output_table_readcount = "ReadCount"
@@ -38,9 +36,6 @@ class VsearchSortReads(ToolWrapper):
 		return [
 			VsearchSortReads.__output_file_csvsearch,
 			VsearchSortReads.__output_file_fastadb,
-			VsearchSortReads.__output_file_reversefastadb,
-			VsearchSortReads.__output_file_fowardtrimmed,
-			VsearchSortReads.__output_file_outputforward,
 			VsearchSortReads.__output_file_tsv_tmp
 		]
 
@@ -75,7 +70,7 @@ class VsearchSortReads(ToolWrapper):
 			" --userout " + output_csv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
 		)
 
-	def algo_trim(self, csv_file, database, fasta_file, tsv_file, session, file_model):
+	def algo_trim(self, csv_file, database, fasta_file, tsv_file, session, file_model, strain):
 		"""
 
 		:param session:
@@ -87,7 +82,7 @@ class VsearchSortReads(ToolWrapper):
 		"""
 		self.vsearch_sr(fasta_file, database, csv_file)
 		dereplicate(csv_file, tsv_file)
-		insert_read(tsv_file, fasta_file, session, file_model)
+		insert_read(tsv_file, fasta_file, session, file_model, strain)
 		session.commit()
 
 	def run(self):
@@ -102,9 +97,6 @@ class VsearchSortReads(ToolWrapper):
 		# Output file
 		csv_output = self.output_file(VsearchSortReads.__output_file_csvsearch)
 		fasta_db = self.output_file(VsearchSortReads.__output_file_fastadb)
-		reverse_fasta_db = self.output_file(VsearchSortReads.__output_file_reversefastadb)
-		foward_trimmed = self.output_file(VsearchSortReads.__output_file_fowardtrimmed)
-		outputforward = self.output_file(VsearchSortReads.__output_file_outputforward)
 		tsv_tmp = self.output_file(VsearchSortReads.__output_file_tsv_tmp)
 
 		# Output tables models
@@ -117,20 +109,16 @@ class VsearchSortReads(ToolWrapper):
 				read_counter(session, element.file_name, readcount_model)
 				fasta_writer(session, readcount_model, element.file_name)
 			else:
-				create_fastadb(session, file_information_model, fasta_db, reverse_fasta_db, element.file_name)
-				self.algo_trim(csv_output, fasta_db, element.file_name, tsv_tmp, session, file_model)
-				create_fasta(element.forward_trimmed_file, element.file_name)
-				session.query(file_model).filter(file_model.file_name == element.file_name).update({file_model.file_name: file_model.forward_trimmed_file})
+				create_fastadb(session, file_information_model, fasta_db, element.file_name)
+				self.algo_trim(csv_output, fasta_db, element.file_name, tsv_tmp, session, file_model, 'forward')
+				create_fasta(element.forward_trimmed_file)
 		session.commit()
+		for element in session.query(file_model).all():
+			forward_trimmed_fasta = element.forward_trimmed_file.replace('.csv', '.fasta')
+			create_fastadb(session, file_information_model, fasta_db, forward_trimmed_fasta)
+			self.algo_trim(csv_output, fasta_db, forward_trimmed_fasta, tsv_tmp, session, file_model, 'reverse')
+			create_fasta(element.output_reverse_file)
+		session.commit()
+		for element in session.query(file_model).all():
+			attribute_combination(session, file_information_model, file_model, element.output_reverse_file, element.file_name)
 		# for element in session.query(file_model).all():
-		# 	if element.dereplicate_status is "1":
-		# 		read_counter(session, element.file_name, readcount_model)
-		# 		fasta_writer(session, readcount_model, element.file_name)
-		# 	else:
-		# 		create_fastadb(session, file_information_model, fasta_db, reverse_fasta_db, element.file_name)
-		# 		self.algo_trim(csv_output, reverse_fasta_db, element.file_name, tsv_tmp, session, file_model)
-		# 		create_fasta(element.forward_trimmed_file, element.file_name)
-		# session.commit()
-
-
-
