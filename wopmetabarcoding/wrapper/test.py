@@ -21,6 +21,7 @@ def read_count_variants(session, model1, tsv_file):
 				read = line_info[5]
 				liste_tmp.append(read)
 				obj_obifasta = {'variant_id': variant_id, 'sample_count': sample_count, 'read_count': read_count, 'read': read}
+				from wopmetabarcoding.wrapper.functions import insert_table
 				insert_table(session, model1, obj_obifasta)
 				marker = line_info[2]
 				i += 1

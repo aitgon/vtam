@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.VsearchSortReads_functions import \
 	create_fastadb, dereplicate, read_counter, fasta_writer, insert_read, \
-	create_fasta, attribute_combination
+	create_fasta, attribute_combination, gather_files, count_reads, insert_variant
 
 import subprocess
 
@@ -14,8 +14,8 @@ class VsearchSortReads(ToolWrapper):
 	# Input
 	# Input table
 	__input_table_fileinformation = "FileInformation"
-	# Input file
 	__input_table_file = "File"
+	__input_table_marker = "Marker"
 	# Output
 	# Output file
 	__output_file_csvsearch = "csvsearch"
@@ -29,7 +29,8 @@ class VsearchSortReads(ToolWrapper):
 	def specify_input_table(self):
 		return [
 			VsearchSortReads.__input_table_fileinformation,
-			VsearchSortReads.__input_table_file
+			VsearchSortReads.__input_table_file,
+			VsearchSortReads.__input_table_marker
 		]
 
 	def specify_output_file(self):
@@ -81,8 +82,11 @@ class VsearchSortReads(ToolWrapper):
 		:return:
 		"""
 		self.vsearch_sr(fasta_file, database, csv_file)
+		print("Step1 Done")
 		dereplicate(csv_file, tsv_file)
+		print("Step2 Done")
 		insert_read(tsv_file, fasta_file, session, file_model, strain)
+		print("Step3 Done")
 		session.commit()
 
 	def run(self):
@@ -93,6 +97,7 @@ class VsearchSortReads(ToolWrapper):
 		# Input tables models
 		file_information_model = self.input_table(VsearchSortReads.__input_table_fileinformation)
 		file_model = self.input_table(VsearchSortReads.__input_table_file)
+		marker_model = self.input_table(VsearchSortReads.__input_table_marker)
 
 		# Output file
 		csv_output = self.output_file(VsearchSortReads.__output_file_csvsearch)
@@ -111,6 +116,7 @@ class VsearchSortReads(ToolWrapper):
 			else:
 				create_fastadb(session, file_information_model, fasta_db, element.file_name)
 				self.algo_trim(csv_output, fasta_db, element.file_name, tsv_tmp, session, file_model, 'forward')
+				print("Writing fasta")
 				create_fasta(element.forward_trimmed_file)
 		session.commit()
 		for element in session.query(file_model).all():
@@ -121,4 +127,9 @@ class VsearchSortReads(ToolWrapper):
 		session.commit()
 		for element in session.query(file_model).all():
 			attribute_combination(session, file_information_model, file_model, element.output_reverse_file, element.file_name)
-		# for element in session.query(file_model).all():
+		gather_files(session, marker_model, file_model)
+		session.commit()
+		count_reads(session, marker_model)
+		session.commit()
+		insert_variant(session, marker_model, variant_model)
+		session.commit()

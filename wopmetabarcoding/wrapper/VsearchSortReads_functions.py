@@ -1,4 +1,5 @@
 from wopmetabarcoding.wrapper.functions import insert_table
+import sqlalchemy
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio import SeqIO
@@ -115,7 +116,7 @@ def fasta_writer(session, model, file_name):
 def read_catcher(conn, fasta_file):
 	try:
 		conn.execute("DROP TABLE IF EXISTS reads_fasta")
-		conn.execute("CREATE TABLE  reads_fasta (id VARCHAR, seq VARCHAR)")
+		conn.execute("CREATE TABLE  reads_fasta (id VARCHAR PRIMARY KEY , seq VARCHAR)")
 		for record in SeqIO.parse(fasta_file, 'fasta'):
 			conn.execute("INSERT INTO reads_fasta (id, seq) VALUES (?, ?)", (str(record.description.split()[0]), str(record.seq)))
 		conn.commit()
@@ -124,41 +125,51 @@ def read_catcher(conn, fasta_file):
 
 
 def insert_read(csv_file, fasta_file, session, file_model, strain):
+	"""
+
+	:param csv_file:
+	:param fasta_file:
+	:param session:
+	:param file_model:
+	:param strain:
+	:return:
+	"""
 	if strain == 'forward':
-		print(fasta_file)
+		# Names the files and the database for forward trim purpose
 		filename = fasta_file.replace('.fasta', '_forward_trimmed.csv')
+		database_name = filename.replace('.csv', '.sqlite')
 		session.query(file_model).filter(file_model.file_name == fasta_file).update({file_model.forward_trimmed_file: filename})
 	else:
+		# Names the files and the database for reverse trim purpose
 		fasta_csv = fasta_file.replace('.fasta', '.csv')
 		filename = fasta_file.replace('.fasta', '_output_reverse_trimmed.csv')
+		database_name = filename.replace('.csv', '.sqlite')
 		session.query(file_model).filter(file_model.forward_trimmed_file == fasta_csv).update({file_model.output_reverse_file: filename})
 	test_file = open(filename, 'w')
-	conn = sqlite3.connect('db.sqlite')
+	# Creating a temp database file to enhance speed and stock Id <-> read combination
+	conn = sqlite3.connect(database_name)
+	# conn.execute("PRAGMA SYNCHRONOUS = OFF ")
+	# Function used to insert Id <-> read combination
 	read_catcher(conn, fasta_file)
 	with open(csv_file, 'r') as csv_file:
 		for line in csv_file:
 			line_info = line.strip().split('\t')
 			read_cursor = conn.execute('SELECT seq FROM reads_fasta WHERE id=?', (line_info[0],))
-			for row in read_cursor:
-				read = row[0]
+			read_list = list(read_cursor.fetchone())
 			read_cursor.close()
+			read = read_list[0]
 			qihi = line_info[4]
 			trimmed_part = read[0:int(qihi)]
 			trimmed_read = read.replace(trimmed_part, "")
 			my_read = Seq(trimmed_read, IUPAC.ambiguous_dna)
 			reverse_read = my_read.reverse_complement()
-			if read is not None:
-				line = line.strip()
-				test_file.write(line + '\t' + str(reverse_read) + '\n')
-			else:
-				print(line_info[0])
+			line = line.strip() + '\t' + str(reverse_read) + '\n'
+			test_file.write(line)
 	test_file.close()
-	conn.close()
 
 
 def create_fasta(forward_trimmed_fasta):
 	new_fasta = forward_trimmed_fasta.replace('.csv', '.fasta')
-	print(new_fasta)
 	csv_file = open(forward_trimmed_fasta, 'r')
 	with open(new_fasta, 'w') as fasta_file:
 		for line in csv_file:
@@ -174,7 +185,7 @@ def create_fasta(forward_trimmed_fasta):
 
 def attribute_combination(session, model, model2, csv_file, filename):
 	output_filename = csv_file.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
-	session.query(model2).filter(model2.file_name == filename).update({model.final_csv: output_filename})
+	session.query(model2).filter(model2.file_name == filename).update({model2.final_csv: output_filename})
 	output = open(output_filename, 'w')
 	with open(csv_file, 'r') as csv_input:
 		for line in csv_input:
@@ -189,3 +200,73 @@ def attribute_combination(session, model, model2, csv_file, filename):
 				id[0] + "\t" + data.marker_name+ "\t" +data.tag_forward + "\t" + data.tag_reverse + "\t" + data.sample_name
 				+ "\t" + data.replicate_name + "\t" + line[8] + "\n"
 			)
+
+
+def count_reads(session, model):
+	"""
+	Function allowing to count a reads for variants
+	:param session: current session of the database
+	:param model:
+	:return:
+	"""
+	for element in session.query(model).all():
+		conn_name = element.marker_name + ".sqlite"
+		print(conn_name)
+		session.query(model).filter(model.marker_name == element.marker_name).update({model.db_marker: conn_name})
+		conn = sqlite3.connect(conn_name)
+		conn.execute("DROP TABLE IF EXISTS count_read")
+		conn.execute("CREATE TABLE  count_read (id VARCHAR PRIMARY KEY , marker VARCHAR, count INT, seq VARCHAR)")
+		with open(element.marker_file) as marker_file:
+			i = 1
+			for line in marker_file:
+				line = line.strip()
+				line = line.split('\t')
+				check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[6],))
+				for row in check_read.fetchone():
+					if row != 0:
+						conn.execute('UPDATE count_read SET count = count + 1 WHERE seq=?', (line[6],))
+					else:
+						variant_id = line[1] + "_variant_" + str(i)
+						marker_name = line[1]
+						read_count = 1
+						sequence = line[6]
+						conn.execute("INSERT INTO count_read (id, marker, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
+						i += 1
+		check_read.close()
+		conn.execute('DELETE FROM count_read WHERE count=1')
+		conn.commit()
+		conn.close()
+		session.commit()
+
+
+def gather_files(session, marker_model, file_model):
+	for element in session.query(marker_model).all():
+		filename = element.marker_name + "_file"
+		file_place = "data/" + filename + ".csv"
+		session.query(marker_model).filter(marker_model.marker_name == element.marker_name).update({marker_model.marker_file: file_place})
+		with open(file_place, 'w') as csv_file:
+			for things in session.query(file_model).all():
+				if element.marker_name in things.final_csv:
+					with open(things.final_csv, 'r') as input_file:
+						csv_file.write(input_file.read())
+		session.commit()
+
+
+def insert_variant(session, marker_model, variant_model):
+	for element in session.query(marker_model).all():
+		conn = sqlite3.connect(element.db_marker)
+		variant_data = conn.execute("SELECT id, marker, seq FROM count_read")
+		for row in variant_data.fetchall():
+			obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
+			insert_table(session, variant_model, obj_variant)
+
+
+
+
+
+
+
+
+
+
+
