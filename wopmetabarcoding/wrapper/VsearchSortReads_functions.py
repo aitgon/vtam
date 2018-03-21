@@ -279,10 +279,12 @@ def gather_files(session, marker_model, file_model):
 	:param file_model: File table
 	:return: void
 	"""
-	# Parse the database for
+	# Search the csv files for each marker in the Marker table
 	for element in session.query(marker_model).all():
+		# Creating a filename for a database file for each marker
 		filename = element.marker_name + "_file"
 		file_place = "data/" + filename + ".csv"
+		# Storing this name in the row of the corresponding marker
 		session.query(marker_model).filter(marker_model.marker_name == element.marker_name).update({marker_model.marker_file: file_place})
 		with open(file_place, 'w') as csv_file:
 			for things in session.query(file_model).all():
@@ -293,11 +295,22 @@ def gather_files(session, marker_model, file_model):
 
 
 def insert_variant(session, marker_model, variant_model):
+	"""
+	Function used to insert variants in the variant table
+	:param session: Current session of the database
+	:param marker_model: Marker table
+	:param variant_model: Variant table
+	:return: void
+	"""
+	# Search database names in the Marker table of the database
 	for element in session.query(marker_model).all():
+		# Opening the database
 		conn = sqlite3.connect(element.db_marker)
+		# Selecting some attributes in the database files
 		variant_data = conn.execute("SELECT id, marker, seq FROM count_read")
 		for row in variant_data.fetchall():
 			obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
+			# Inserting theses information in the variant table
 			insert_table(session, variant_model, obj_variant)
 
 
