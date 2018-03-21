@@ -184,38 +184,67 @@ def create_fasta(forward_trimmed_fasta):
 
 
 def attribute_combination(session, model, model2, csv_file, filename):
+	"""
+	Function used to merge all file information between the vsearch results reads and the file information csv
+	:param session: Current session of the database
+	:param model: FileInformation table, contains all the necessary information like marker names
+	:param model2: File table, contains all the information about files used
+	:param csv_file: csv file to parse
+	:param filename: Name of the original merged fasta file
+	:return: void
+	"""
+	# Creating a filename for the output csv file
 	output_filename = csv_file.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
+	# Inserting the filename in the database for used it later in an iteration
 	session.query(model2).filter(model2.file_name == filename).update({model2.final_csv: output_filename})
+	# Open output file
 	output = open(output_filename, 'w')
+	# Parsing input csv file
 	with open(csv_file, 'r') as csv_input:
 		for line in csv_input:
 			line = line.strip()
 			line = line.split('\t')
+			# Cutting the id on "|" to get the tg forward and primer forward
 			id = line[0]
 			id = id.strip()
 			id = id.split('|')
+			# Get the lower case part of the "target" corresponding to the tag reverse
 			tag_reverse = "".join([character for character in line[1] if character.islower()])
+			print(id[1], tag_reverse)
+			# Get the information in the FileInformation table with tags and helped by the filename
 			data = session.query(model).filter(model.tag_forward == id[1]).filter(model.tag_reverse == tag_reverse).filter(model.file_name == filename).first()
-			output.write(
-				id[0] + "\t" + data.marker_name+ "\t" +data.tag_forward + "\t" + data.tag_reverse + "\t" + data.sample_name
-				+ "\t" + data.replicate_name + "\t" + line[8] + "\n"
-			)
+			try:
+				# Write a new csv with these information
+				output.write(
+					id[0] + "\t" + data.marker_name + "\t" +data.tag_forward + "\t" + data.tag_reverse + "\t" + data.sample_name
+					+ "\t" + data.replicate_name + "\t" + line[8] + "\n"
+				)
+			except AttributeError:
+				print(data.tag_forward, data.tag_reverse, data.marker_name)
+		output.close()
 
 
 def count_reads(session, model):
 	"""
 	Function allowing to count a reads for variants
 	:param session: current session of the database
-	:param model:
-	:return:
+	:param model: Marker table
+	:return: void
 	"""
+	# Parse the database for Marker files
 	for element in session.query(model).all():
+		# Creating a database name to store the results
 		conn_name = element.marker_name + ".sqlite"
 		print(conn_name)
+		# Store the database file filename in the model for later use
 		session.query(model).filter(model.marker_name == element.marker_name).update({model.db_marker: conn_name})
+		# Open connection with the database file
 		conn = sqlite3.connect(conn_name)
+		# Drop the table if the program has been launch before
 		conn.execute("DROP TABLE IF EXISTS count_read")
+		# Create a table in the databse file
 		conn.execute("CREATE TABLE  count_read (id VARCHAR PRIMARY KEY , marker VARCHAR, count INT, seq VARCHAR)")
+		# Parse the csv
 		with open(element.marker_file) as marker_file:
 			i = 1
 			for line in marker_file:
@@ -223,8 +252,10 @@ def count_reads(session, model):
 				line = line.split('\t')
 				check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[6],))
 				for row in check_read.fetchone():
+					#  In case of the line already exist, the count number is updated
 					if row != 0:
 						conn.execute('UPDATE count_read SET count = count + 1 WHERE seq=?', (line[6],))
+					# Else a row is created
 					else:
 						variant_id = line[1] + "_variant_" + str(i)
 						marker_name = line[1]
@@ -233,6 +264,7 @@ def count_reads(session, model):
 						conn.execute("INSERT INTO count_read (id, marker, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
 						i += 1
 		check_read.close()
+		# Line which delete singletons
 		conn.execute('DELETE FROM count_read WHERE count=1')
 		conn.commit()
 		conn.close()
@@ -240,6 +272,14 @@ def count_reads(session, model):
 
 
 def gather_files(session, marker_model, file_model):
+	"""
+	Function used to gather all files of the same marker in one to count the reads occurrences
+	:param session: Current session of the database
+	:param marker_model: Marker table
+	:param file_model: File table
+	:return: void
+	"""
+	# Parse the database for
 	for element in session.query(marker_model).all():
 		filename = element.marker_name + "_file"
 		file_place = "data/" + filename + ".csv"
