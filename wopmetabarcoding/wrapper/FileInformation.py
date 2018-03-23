@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 from wopmetabarcoding.wrapper.FileInformation_functions import \
-    insert_marker, insert_fileinformation, insert_file, insert_tag, insert_primer, insert_sample
+    insert_marker, insert_fileinformation, insert_file, insert_tagpair, insert_primer, insert_sample
 
 # import models
 import wopmetabarcoding.model.Marker
@@ -19,7 +19,7 @@ class FileInformation(ToolWrapper):
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
     __output_table_biosample = "Biosample"
-    __output_table_tag = "Tag"
+    __output_table_tagpair = "TagPair"
 
     def specify_input_file(self):
         return [FileInformation.__input_file_csv]
@@ -31,19 +31,18 @@ class FileInformation(ToolWrapper):
             FileInformation.__output_table_marker,
             FileInformation.__output_table_primerpair,
             FileInformation.__output_table_biosample,
-            FileInformation.__output_table_tag,
+            FileInformation.__output_table_tagpair,
         ]
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        conn = engine.connect()
         # file paths
         csv_path = self.input_file(FileInformation.__input_file_csv)
         # Models
         marker_model = self.output_table(FileInformation.__output_table_marker)
         primerpair_model = self.output_table(FileInformation.__output_table_primerpair)
-        tag_model = self.output_table(FileInformation.__output_table_tag)
+        tagpair_model = self.output_table(FileInformation.__output_table_tagpair)
         file_model = self.output_table(FileInformation.__output_table_file)
         biosample_model = self.output_table(FileInformation.__output_table_biosample)
         sampleinformation_model = self.output_table(FileInformation.__output_table_sampleinformation)
@@ -55,8 +54,8 @@ class FileInformation(ToolWrapper):
                     insert_marker(session, marker_model, line)
                     # Primer table
                     insert_primer(session, primerpair_model,  line)
-                    # Tag table
-                    insert_tag(session, tag_model, line)
+                    # TagPair table
+                    insert_tagpair(session, tagpair_model, line)
                     # File table
                     insert_file(session, file_model, line)
                     # Biosample table

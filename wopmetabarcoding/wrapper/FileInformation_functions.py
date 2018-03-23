@@ -28,11 +28,11 @@ def insert_primer(session, model, line):
     insert_table(session, model, obj_primer)
 
 
-def insert_tag(session, model, line):
+def insert_tagpair(session, model, line):
     """
-    Function parsing the line to obtain element to insert in Tag table
+    Function parsing the line to obtain element to insert in TagPair table
     :param session: Current session of the database
-    :param model: Model of the Tag table
+    :param model: Model of the TagPair table
     :param line: Line of the csv file
     :return: void
     """

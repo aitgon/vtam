@@ -11,6 +11,3 @@ class File(Base):
     # Todo: (Opt) Create model "Run"?
     run_name = Column(String(20), nullable=False)
     trimmed_status = Column(String, nullable=False)
-    # forward_trimmed_file = Column(String, nullable=True)
-    # output_reverse_file = Column(String, nullable=True)
-    # final_csv = Column(String, nullable=True)

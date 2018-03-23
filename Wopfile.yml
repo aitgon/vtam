@@ -10,7 +10,7 @@ rule ReadCSV:
             Marker: wopmetabarcoding.model.Marker
             PrimerPair: wopmetabarcoding.model.PrimerPair
             Biosample: wopmetabarcoding.model.Biosample
-            Tag: wopmetabarcoding.model.Tag
+            TagPair: wopmetabarcoding.model.TagPair
 
 rule VsearchSort:
     tool: wopmetabarcoding.wrapper.VsearchSortReads

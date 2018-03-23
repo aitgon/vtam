@@ -97,12 +97,11 @@ def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_
                             tag_sequence += nucleotide.upper()
                     tag_position = tag_primer2read_alignment.find(tag_sequence)
                     if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl \
-                            and tag_sequence in tag_primer2read_alignment and tag_position == overhang_value:
+                            and tag_sequence in tag_primer2read_alignment:
                         fout.write(line)
                     else:
                         i += 1
-            Logger.instance().info(str(i) + "reads were discarded.")
-
+            Logger.instance().info(str(i) + " reads were discarded.")
 
 
 def fasta_writer(session, model, file_name):
@@ -198,7 +197,8 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
     with open(annotated_reads_tsv, 'w') as fout:
         # Parsing input csv file
         with open(trimmed_tsv, 'r') as fin:
-            i = 1
+            i = 0
+            incoherent_list = []
             for line in fin:
                 line = line.strip().split('\t')
                 #
@@ -228,42 +228,50 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
                         )
                     except AttributeError:
                         print(file_information_instance.tag_forward, file_information_instance.tag_reverse, file_information_instance.marker_name)
-                i += 1
+                else:
+                    i += 1
+                    incoherent_list.append(read_id)
+            Logger.instance().info(str(i) + " incoherent reads discarded.")
+            incoherent_reads = ""
+            for ids in incoherent_list:
+                temp = ids + ' '
+                incoherent_reads += temp
+            Logger.instance().info("They are: " + incoherent_reads)
 
 
 def count_reads(gathered_marker_file, count_reads_marker):
     """
-    Function allowing to count a reads for variants
-    :param session: current session of the database
-    :param marker_model: Marker table
-    :return: void
+
+    :param gathered_marker_file:
+    :param count_reads_marker:
+    :return:
     """
     # Parse the database for Marker files
-        # Creating a database name to store the results
-        # Store the database file filename in the marker_model for later use
-        # Open connection with the database file
+    # Creating a database name to store the results
+    # Store the database file filename in the marker_model for later use
+    # Open connection with the database file
     conn = sqlite3.connect(count_reads_marker)
-        # Drop the table if the program has been launch before
+    # Drop the table if the program has been launch before
     conn.execute("DROP TABLE IF EXISTS count_read")
-        # Create a table in the databse file
+    # Create a table in the databse file
     conn.execute("CREATE TABLE  count_read (id VARCHAR PRIMARY KEY , marker VARCHAR, count INT, seq VARCHAR)")
-        # Parse the csv
+    # Parse the csv
     with open(gathered_marker_file, 'r') as marker_file:
         i = 1
         for line in marker_file:
             line = line.strip()
             line = line.split('\t')
-            check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[6],))
+            check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
             for row in check_read.fetchone():
                 #  In case of the line already exist, the count number is updated
                 if row != 0:
-                   conn.execute('UPDATE count_read SET count = count + 1 WHERE seq=?', (line[6],))
-                   # Else a row is created
+                    conn.execute('UPDATE count_read SET count = count + 1 WHERE seq=?', (line[7],))
+                    # Else a row is created
                 else:
                     variant_id = line[1] + "_variant_" + str(i)
                     marker_name = line[1]
                     read_count = 1
-                    sequence = line[6]
+                    sequence = line[7]
                     conn.execute("INSERT INTO count_read (id, marker, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
                     i += 1
             check_read.close()
@@ -306,8 +314,9 @@ def insert_variant(session, count_reads_marker, variant_model):
     # Opening the database
     conn = sqlite3.connect(count_reads_marker)
     # Selecting some attributes in the database files
-    variant_data = conn.execute("SELECT id, marker, seq FROM count_read")
+    variant_data = conn.execute("SELECT id, marker, seq, count FROM count_read")
     for row in variant_data.fetchall():
+        print(row)
         obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
         # Inserting theses information in the variant table
         insert_table(session, variant_model, obj_variant)
