@@ -1,3 +1,4 @@
+from wopmars.utils.Logger import Logger
 from wopmetabarcoding.wrapper.functions import insert_table
 import sqlalchemy
 from sqlalchemy import literal
@@ -62,7 +63,7 @@ def read_counter(session, file, model):
             sequence = ""
 
 
-def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv):
+def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
     """
     Function to select lines of vsearch_output_tsv according to these SRS criteria:
     1. first position of target in the alignment (tilo) is 1
@@ -82,6 +83,7 @@ def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_
     with open(checked_vsearch_output_tsv, 'w') as fout:
         with open(vsearch_output_tsv, 'r') as fin:
             next(fin)
+            i = 0
             for line in fin:
                 if line.split("\t")[5] == "1":
                     tag_primer_sequence_query = line.split('\t')[1]
@@ -93,8 +95,14 @@ def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_
                     for nucleotide in tag_primer_sequence_query:
                         if nucleotide.islower():
                             tag_sequence += nucleotide.upper()
-                    if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl and tag_sequence in tag_primer2read_alignment:
+                    tag_position = tag_primer2read_alignment.find(tag_sequence)
+                    if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl \
+                            and tag_sequence in tag_primer2read_alignment and tag_position == overhang_value:
                         fout.write(line)
+                    else:
+                        i += 1
+            Logger.instance().info(str(i) + "reads were discarded.")
+
 
 
 def fasta_writer(session, model, file_name):
@@ -115,18 +123,6 @@ def fasta_writer(session, model, file_name):
             fout.write(element.sequence + '\n')
             j += 1
 
-# def read_catcher(conn, fasta_file):
-#     try:
-#         conn.execute("DROP TABLE IF EXISTS reads_fasta")
-#         conn.execute("CREATE TABLE  reads_fasta (id VARCHAR PRIMARY KEY , seq VARCHAR)")
-#         for record in SeqIO.parse(fasta_file, 'fasta'):
-#             conn.execute("INSERT INTO reads_fasta (id, seq) VALUES (?, ?)", (str(record.description.split()[0]), str(record.seq)))
-#         conn.commit()
-#     except UnicodeDecodeError:
-#         pass
-
-# def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, session, file_model, forward_strand):
-
 
 def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv, is_forward_strand):
     """
@@ -141,7 +137,6 @@ def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv
     #
     # Import read_fasta_file_name into sqlite for indexing and faster access
     read_fasta_db_sqlite = read_fasta_file_name.replace('.fasta', '.sqlite')
-    print(read_fasta_db_sqlite)
     conn = sqlite3.connect(read_fasta_db_sqlite)
     try:
         conn.execute("DROP TABLE IF EXISTS read_fasta")
@@ -212,13 +207,11 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
                 tag_forward = id_tag_primer.split('|')[1]
                 tag_reverse = "".join([character for character in line[1] if character.islower()])
                 read_sequence = line[8]
-                # print(tag_forward, tag_reverse)
                 # Get the information in the SampleInformation table with tags and helped by the merged_fasta_file_name
                 file_information_instance = session.query(file_information_model)\
                     .filter(file_information_model.tag_forward == tag_forward)\
                     .filter(file_information_model.tag_reverse == tag_reverse)\
                     .filter(file_information_model.file_name == merged_fasta_file_name).first()
-                print(i)
                 if file_information_instance is not None:
 
                     try:
@@ -236,6 +229,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
                     except AttributeError:
                         print(file_information_instance.tag_forward, file_information_instance.tag_reverse, file_information_instance.marker_name)
                 i += 1
+
 
 def count_reads(gathered_marker_file, count_reads_marker):
     """
@@ -274,7 +268,7 @@ def count_reads(gathered_marker_file, count_reads_marker):
                     i += 1
             check_read.close()
         # Line which delete singletons
-        conn.execute('DELETE FROM count_read WHERE count=1')
+        conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
         conn.close()
 
@@ -296,9 +290,7 @@ def gather_files(marker_name, gathered_marker_file, annotated_tsv_list):
     # session.query(marker_model).filter(marker_model.marker_name == element.marker_name).update({marker_model.marker_file: file_place})
     with open(gathered_marker_file, 'w') as fout:
         for annotated_file in annotated_tsv_list:
-            print(marker_name, annotated_file)
             if marker_name in annotated_file:
-                print("Ok")
                 with open(annotated_file, 'r') as input_file:
                     fout.write(input_file.read())
 

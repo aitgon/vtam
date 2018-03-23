@@ -54,7 +54,9 @@ class VsearchSortReads(ToolWrapper):
         """
         return {
             "min_id": "float",
-            "minseqlength": "int"
+            "minseqlength": "int",
+            "overhang": "int"
+
         }
 
     def vsearch_subprocess(self, file, fasta_db, vsearch_output_tsv):
@@ -114,7 +116,7 @@ class VsearchSortReads(ToolWrapper):
             Logger.instance().info("Processing Vsearch for forward trimming.")
             self.vsearch_subprocess(file_obj.name, primer_tag_fasta, vsearch_output_tsv)
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
-            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv)
+            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for forward trimming.")
             trimmed_tsv = (file_obj.name).replace('.fasta', '_forward_trimmed.tsv')
             trim_reads(checked_vsearch_output_tsv, file_obj.name, trimmed_tsv, is_forward_strand)
@@ -129,7 +131,7 @@ class VsearchSortReads(ToolWrapper):
             Logger.instance().info("Processing Vsearch for reverse trimming.")
             self.vsearch_subprocess(trimmed_fasta, primer_tag_fasta, vsearch_output_tsv)
             Logger.instance().info("Eliminating non SRS conforms reads for reverse trimming.")
-            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv)
+            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for reverse trimming.")
             trimmed_tsv = trimmed_fasta.replace('_forward_trimmed.fasta', '_reverse_trimmed.tsv')
             trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, is_forward_strand)
@@ -146,13 +148,11 @@ class VsearchSortReads(ToolWrapper):
         for marker_obj in session.query(marker_model).all():
             marker_name = marker_obj.marker_name
             gathered_marker_file = marker_name + "_file.tsv"
-            print(type(gathered_marker_file))
-            print(gathered_marker_file)
             count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
             Logger.instance().info("Gathering all files from annotated files the same marker into one.")
             gather_files(marker_name, gathered_marker_file, annoted_tsv_list)
             # session.commit()
-            read_count_per_marker_sqlite = conn_name = marker_obj.marker_name + ".sqlite"
+            # read_count_per_marker_sqlite = conn_name = marker_obj.marker_name + ".sqlite"
             Logger.instance().info("Counting reads for each marker.")
             count_reads(gathered_marker_file, count_reads_marker)
             # session.commit()
