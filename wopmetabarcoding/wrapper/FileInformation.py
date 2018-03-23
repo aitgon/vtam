@@ -10,15 +10,15 @@ import wopmetabarcoding.model.PrimerPair
 
 class FileInformation(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FileInformation"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.SampleInformation"
     }
     __input_file_csv = "csv"
     #
     __output_table_file = "File"
-    __output_table_fileinformation = "FileInformation"
+    __output_table_sampleinformation = "SampleInformation"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
-    __output_table_sample = "Sample"
+    __output_table_biosample = "Biosample"
     __output_table_tag = "Tag"
 
     def specify_input_file(self):
@@ -27,10 +27,10 @@ class FileInformation(ToolWrapper):
     def specify_output_table(self):
         return [
             FileInformation.__output_table_file,
-            FileInformation.__output_table_fileinformation,
+            FileInformation.__output_table_sampleinformation,
             FileInformation.__output_table_marker,
             FileInformation.__output_table_primerpair,
-            FileInformation.__output_table_sample,
+            FileInformation.__output_table_biosample,
             FileInformation.__output_table_tag,
         ]
 
@@ -45,8 +45,8 @@ class FileInformation(ToolWrapper):
         primerpair_model = self.output_table(FileInformation.__output_table_primerpair)
         tag_model = self.output_table(FileInformation.__output_table_tag)
         file_model = self.output_table(FileInformation.__output_table_file)
-        sample_model = self.output_table(FileInformation.__output_table_sample)
-        fileinformation_model = self.output_table(FileInformation.__output_table_fileinformation)
+        biosample_model = self.output_table(FileInformation.__output_table_biosample)
+        sampleinformation_model = self.output_table(FileInformation.__output_table_sampleinformation)
         try:
             with open(csv_path, 'r') as fin:
                 next(fin)  # skip header
@@ -59,10 +59,10 @@ class FileInformation(ToolWrapper):
                     insert_tag(session, tag_model, line)
                     # File table
                     insert_file(session, file_model, line)
-                    # Sample table
-                    insert_sample(session, sample_model, line)
+                    # Biosample table
+                    insert_sample(session, biosample_model, line)
                     # File_information
-                    insert_fileinformation(session, fileinformation_model, line)
+                    insert_fileinformation(session, sampleinformation_model, line)
                     session.commit()
         except FileNotFoundError:
             context = \

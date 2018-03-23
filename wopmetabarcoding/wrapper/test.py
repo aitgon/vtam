@@ -30,7 +30,7 @@ def read_count_variants(session, model1, tsv_file):
 def attribute_combination(session, fileinformation, model, model2, fasta_file):
 	filename = fasta_file.replace('.fasta', '_tmp.tsv')
 	file_tmp = open(filename, 'w')
-	file_tmp.write("Id" + "\t" + "Marker" + "\t" + "Run" + "\t" + "Sample" + "\t" + "Replicate" + "\t" + "Read" + "\n")
+	file_tmp.write("Id" + "\t" + "Marker" + "\t" + "Run" + "\t" + "Biosample" + "\t" + "Replicate" + "\t" + "Read" + "\n")
 	with open(fasta_file, 'r') as file:
 		for line in file:
 			if ">" in line:

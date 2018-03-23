@@ -6,10 +6,10 @@ rule ReadCSV:
     output:
         table:
             File: wopmetabarcoding.model.File
-            FileInformation: wopmetabarcoding.model.FileInformation
+            SampleInformation: wopmetabarcoding.model.SampleInformation
             Marker: wopmetabarcoding.model.Marker
             PrimerPair: wopmetabarcoding.model.PrimerPair
-            Sample: wopmetabarcoding.model.Sample
+            Biosample: wopmetabarcoding.model.Biosample
             Tag: wopmetabarcoding.model.Tag
 
 rule VsearchSort:
@@ -17,16 +17,11 @@ rule VsearchSort:
     input:
         table:
             File: wopmetabarcoding.model.File
-            FileInformation: wopmetabarcoding.model.FileInformation
+            SampleInformation: wopmetabarcoding.model.SampleInformation
             Marker: wopmetabarcoding.model.Marker
     output:
-        file:
-            fastadb: data/output/fasta_db.fasta
-            csvsearch: data/output/vsearch_result.csv
-            tsv: data/output/tsv_tmp.tsv
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
-            ObiFasta: wopmetabarcoding.model.ObiFasta
             Variant: wopmetabarcoding.model.Variant
     params:
         min_id: 0.8

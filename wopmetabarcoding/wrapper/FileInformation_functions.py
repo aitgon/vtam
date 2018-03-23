@@ -56,28 +56,28 @@ def insert_file(session, model, line):
 		dereplicate = True
 	else:
 		dereplicate = False
-	obj_file = {'file_name': file_name, 'run_name': run_name, 'dereplicate_status': dereplicate}
+	obj_file = {'name': file_name, 'run_name': run_name, 'trimmed_status': dereplicate}
 	insert_table(session, model, obj_file)
 
 
 def insert_sample(session, model, line):
 	"""
-	Function parsing the line to obtain element to insert in Sample table
+	Function parsing the line to obtain element to insert in Biosample table
 	:param session: Current session of the database
-	:param model: Model of the Sample table
+	:param model: Model of the Biosample table
 	:param line: Line of the csv file
 	:return: void
 	"""
 	sample_name = line.split(',')[5]
-	obj_sample = {'sample_name': sample_name}
+	obj_sample = {'name': sample_name}
 	insert_table(session, model, obj_sample)
 
 
 def insert_fileinformation(session, model, line):
 	"""
-	Function parsing the line to obtain element to insert in FileInformation table
+	Function parsing the line to obtain element to insert in SampleInformation table
 	:param session: Current session of the database
-	:param model: Model of the FileInformation table
+	:param model: Model of the SampleInformation table
 	:param line: Line of the csv file
 	:return: void
 	"""
