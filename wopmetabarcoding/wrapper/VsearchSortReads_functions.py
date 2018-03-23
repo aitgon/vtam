@@ -254,7 +254,7 @@ def count_reads(gathered_marker_file, count_reads_marker):
     # Drop the table if the program has been launch before
     conn.execute("DROP TABLE IF EXISTS count_read")
     # Create a table in the databse file
-    conn.execute("CREATE TABLE  count_read (id VARCHAR PRIMARY KEY , marker VARCHAR, count INT, seq VARCHAR)")
+    conn.execute("CREATE TABLE  count_read (id VARCHAR , marker VARCHAR, count INT, seq VARCHAR PRIMARY KEY)")
     # Parse the csv
     with open(gathered_marker_file, 'r') as marker_file:
         i = 1
