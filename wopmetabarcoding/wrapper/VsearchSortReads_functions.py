@@ -239,7 +239,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
             Logger.instance().info("They are: " + incoherent_reads)
 
 
-def count_reads(gathered_marker_file, count_reads_marker):
+def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
     """
 
     :param gathered_marker_file:
@@ -255,12 +255,28 @@ def count_reads(gathered_marker_file, count_reads_marker):
     conn.execute("DROP TABLE IF EXISTS count_read")
     # Create a table in the databse file
     conn.execute("CREATE TABLE  count_read (id VARCHAR , marker VARCHAR, count INT, seq VARCHAR PRIMARY KEY)")
+    biosamples_count_variant = {}
+    biosample_count = {}
     # Parse the csv
     with open(gathered_marker_file, 'r') as marker_file:
         i = 1
         for line in marker_file:
             line = line.strip()
             line = line.split('\t')
+            if line[7] in biosamples_count_variant:
+                temp = biosamples_count_variant.get(line[7])
+                sample_replicate = line[5] + "_" + line[6]
+                if sample_replicate in temp:
+                    temp[sample_replicate] += 1
+                else:
+                    temp[sample_replicate] = 1
+                biosamples_count_variant[line[7]] = temp
+            else:
+                sequence = line[7]
+                sample_replicate = line[5] + "_" + line[6]
+                temp_biosample_count = biosample_count.copy()
+                temp_biosample_count[sample_replicate] = 1
+                biosamples_count_variant[sequence] = temp_biosample_count
             check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
             for row in check_read.fetchone():
                 #  In case of the line already exist, the count number is updated
@@ -276,6 +292,16 @@ def count_reads(gathered_marker_file, count_reads_marker):
                     i += 1
             check_read.close()
         # Line which delete singletons
+        with open(sample_count_tsv, 'w') as test_output:
+            for element in biosamples_count_variant:
+                dictio = biosamples_count_variant.get(str(element))
+                for things in dictio:
+                    count = dictio.get(str(things))
+                    if len(dictio) == 1 and count == 1:
+                        continue
+                    else:
+                        test_output.write(element + '\t' +things + '\t' + str(count))
+                        test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
         conn.close()
@@ -316,7 +342,6 @@ def insert_variant(session, count_reads_marker, variant_model):
     # Selecting some attributes in the database files
     variant_data = conn.execute("SELECT id, marker, seq, count FROM count_read")
     for row in variant_data.fetchall():
-        print(row)
         obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
         # Inserting theses information in the variant table
         insert_table(session, variant_model, obj_variant)
