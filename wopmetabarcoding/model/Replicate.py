@@ -8,10 +8,9 @@ class Replicate(Base):
     __tablename__ = 'Replicate'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    sample_id = Column(Integer, ForeignKey('Biosample.sample_id'))
-    marker_id = Column(Integer, ForeignKey('Marker.marker_id'))
-    tag_id = Column(Integer, ForeignKey('TagPair.tag_id'))
-    file_id = Column(Integer, ForeignKey('File.id'))
+    biosample_name = Column(String)
+    marker_name = Column(String)
+    file_name = Column(String)
     name = Column(String(50), nullable=False)
 
     @validates('name')

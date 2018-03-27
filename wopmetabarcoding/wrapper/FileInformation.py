@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 from wopmetabarcoding.wrapper.FileInformation_functions import \
-    insert_marker, insert_fileinformation, insert_file, insert_tagpair, insert_primer, insert_sample
+    insert_marker, insert_fileinformation, insert_file, insert_tagpair, insert_primer, insert_sample, insert_replicate
 
 # import models
 import wopmetabarcoding.model.Marker
@@ -20,6 +20,7 @@ class FileInformation(ToolWrapper):
     __output_table_primerpair = "PrimerPair"
     __output_table_biosample = "Biosample"
     __output_table_tagpair = "TagPair"
+    __output_table_replicate = "Replicate"
 
     def specify_input_file(self):
         return [FileInformation.__input_file_csv]
@@ -32,6 +33,7 @@ class FileInformation(ToolWrapper):
             FileInformation.__output_table_primerpair,
             FileInformation.__output_table_biosample,
             FileInformation.__output_table_tagpair,
+            FileInformation.__output_table_replicate
         ]
 
     def run(self):
@@ -46,6 +48,7 @@ class FileInformation(ToolWrapper):
         file_model = self.output_table(FileInformation.__output_table_file)
         biosample_model = self.output_table(FileInformation.__output_table_biosample)
         sampleinformation_model = self.output_table(FileInformation.__output_table_sampleinformation)
+        replicate_model = self.output_table(FileInformation.__output_table_replicate)
         try:
             with open(csv_path, 'r') as fin:
                 next(fin)  # skip header
@@ -62,6 +65,8 @@ class FileInformation(ToolWrapper):
                     insert_sample(session, biosample_model, line)
                     # File_information
                     insert_fileinformation(session, sampleinformation_model, line)
+                    # Replicate table
+                    insert_replicate(session, replicate_model, line)
                     session.commit()
         except FileNotFoundError:
             context = \

@@ -300,14 +300,15 @@ def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
                     if len(dictio) == 1 and count == 1:
                         continue
                     else:
-                        test_output.write(element + '\t' +things + '\t' + str(count))
+                        replicate = things.split('_')[-1]
+                        test_output.write(element + '\t' + replicate+ '\t' + things + '\t' + str(count))
                         test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
         conn.close()
 
 
-def gather_files(marker_name, gathered_marker_file, annotated_tsv_list):
+def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list):
     """
     Function used to gather all files of the same marker in one to count the reads occurrences
     :param marker_name: Marker name
@@ -322,11 +323,19 @@ def gather_files(marker_name, gathered_marker_file, annotated_tsv_list):
     # file_place = "data/" + filename + ".csv"
     # Storing this name in the row of the corresponding marker
     # session.query(marker_model).filter(marker_model.marker_name == element.marker_name).update({marker_model.marker_file: file_place})
-    with open(gathered_marker_file, 'w') as fout:
-        for annotated_file in annotated_tsv_list:
-            if marker_name in annotated_file:
+    i = 0
+    for annotated_file in annotated_tsv_list:
+        if i == 0:
+            previous_run = run_list.get(annotated_file)
+            gathered_marker_file = gathered_marker_file.replace(".tsv", "_" + previous_run + ".tsv")
+            file = open(gathered_marker_file, 'w')
+            file.close()
+        if marker_name in annotated_file and previous_run in annotated_file:
+            with open(gathered_marker_file, 'a') as fout:
                 with open(annotated_file, 'r') as input_file:
                     fout.write(input_file.read())
+        previous_run = run_list.get(annotated_file)
+        i += 1
 
 
 def insert_variant(session, count_reads_marker, variant_model):

@@ -11,6 +11,7 @@ rule ReadCSV:
             PrimerPair: wopmetabarcoding.model.PrimerPair
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
+            Replicate: wopmetabarcoding.model.Replicate
 
 rule VsearchSort:
     tool: wopmetabarcoding.wrapper.VsearchSortReads
@@ -27,6 +28,14 @@ rule VsearchSort:
         min_id: 0.8
         minseqlength: 32
         overhang: 0
+
+rule Filter:
+    tool: wopmetabarcoding.wrapper.Filter
+    input:
+        table:
+          Marker: wopmetabarcoding.model.Marker
+          Variant: wopmetabarcoding.model.Variant
+          Replicate: wopmetabarcoding.model.Replicate
 
 
 

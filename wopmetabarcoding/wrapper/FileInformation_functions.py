@@ -72,6 +72,13 @@ def insert_sample(session, model, line):
     obj_sample = {'name': sample_name}
     insert_table(session, model, obj_sample)
 
+def insert_replicate(session, model, line):
+    biosample_name = line.split(',')[5]
+    marker_name = line.split(',')[4]
+    file_name = line.split(',')[7]
+    replicate_name = line.split(',')[6]
+    obj_replicate = {'biosample_name': biosample_name, 'marker_name': marker_name, 'file_name': file_name, 'name': replicate_name}
+    insert_table(session, model, obj_replicate)
 
 def insert_fileinformation(session, model, line):
     """
