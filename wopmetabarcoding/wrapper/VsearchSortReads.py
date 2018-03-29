@@ -160,4 +160,4 @@ class VsearchSortReads(ToolWrapper):
             # session.commit()
             Logger.instance().info("Inserting variant in the Variant table of the database.")
             insert_variant(session, count_reads_marker, variant_model)
-            # session.commit()
+            session.commit()

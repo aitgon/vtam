@@ -80,6 +80,13 @@ def insert_replicate(session, model, line):
     obj_replicate = {'biosample_name': biosample_name, 'marker_name': marker_name, 'file_name': file_name, 'name': replicate_name}
     insert_table(session, model, obj_replicate)
 
+
+def insert_replicate_marker(session, model, line):
+    replicate_name = line.split(',')[6]
+    marker_name = line.split(',')[4]
+    obj_replicatemarker = {'name': replicate_name, 'marker_name': marker_name}
+    insert_table(session, model, obj_replicatemarker)
+
 def insert_fileinformation(session, model, line):
     """
     Function parsing the line to obtain element to insert in SampleInformation table

@@ -1,71 +1,146 @@
-def read_count_variants(session, model1, tsv_file):
-    with open(tsv_file, 'r') as file:
-        i = 1
-        marker = ""
-        liste_tmp =[]
-        next(file)
-        for line in file:
-            line_info = line.split('\t')
-            if line_info[5] in liste_tmp:
-                session.query(model1).filter(model1.read == line_info[5]).update({model1.read_count: model1.read_count + 1})
-                sample = '|' + line_info[4]
-                data = session.query(model1).filter(model1.read == line_info[5]).first()
-                print(data.sample_count)
-
-            else:
-                if line_info[2] != marker:
-                    i = 1
-                variant_id = line_info[2] + "_" + line_info[1] + "_" + str(i)
-                sample_count = line_info[3] + "-" + line_info[4]
-                read_count = 1
-                read = line_info[5]
-                liste_tmp.append(read)
-                obj_obifasta = {'variant_id': variant_id, 'sample_count': sample_count, 'read_count': read_count, 'read': read}
-                from wopmetabarcoding.wrapper.functions import insert_table
-                insert_table(session, model1, obj_obifasta)
-                marker = line_info[2]
-                i += 1
+from sqlalchemy import select
+import sqlite3
 
 
-def attribute_combination(session, fileinformation, model, model2, fasta_file):
-    filename = fasta_file.replace('.fasta', '_tmp.tsv')
-    file_tmp = open(filename, 'w')
-    file_tmp.write("Id" + "\t" + "Marker" + "\t" + "Run" + "\t" + "Biosample" + "\t" + "Replicate" + "\t" + "Read" + "\n")
-    with open(fasta_file, 'r') as file:
-        for line in file:
-            if ">" in line:
-                line_info = line.strip().split('|')
-                id = line_info[0].replace('>', '')
-                filename_data = session.query(model).filter(model.sequence_id == id).first()
-                data_line = session.query(fileinformation).filter(fileinformation.tag_forward == line_info[1]).filter(fileinformation.primer_forward == line_info[2]).filter(fileinformation.tag_reverse == line_info[3]).filter(fileinformation.primer_reverse == line_info[4]).filter(fileinformation.file_name == filename_data.filename).first()
-                file_tmp.write(
-                    id + "\t" + data_line.run_name + "\t" + data_line.marker_name + "\t" +
-                    data_line.sample_name + "\t" + data_line.replicate_name + '\t'
-                )
-            else:
-                file_tmp.write(line)
-        read_count_variants(session, model2, filename)
+def lfn_per_replicate_filter1(engine, replicate_model, variant_model, marker_name, sample_count_tsv):
+    replicate_select = select([replicate_model.biosample_name,replicate_model.name]).where(replicate_model.marker_name == marker_name)
+    replicate_obj = engine.execute(replicate_select)
+    failed_variants = {}
+    for replicate in replicate_obj:
+        failed_variants_list = []
+        variant_select = select([variant_model.variant_id, variant_model.sequence])\
+            .where(variant_model.marker == marker_name)
+        variant_obj = engine.execute(variant_select)
+        sample_replicate = replicate.biosample_name + "_" + replicate.name
+        for variant in variant_obj:
+            count_variant = 0
+            replicate_count = 0
+            with open(sample_count_tsv, 'r') as fin:
+                for line in fin:
+                    variant_sequence = line.strip().split('\t')[0]
+                    sample_replicate_name = line.strip().split('\t')[2]
+                    if variant.sequence == variant_sequence and sample_replicate == sample_replicate_name:
+                        count_variant += int(line.strip().split('\t')[3])
+                    if sample_replicate == sample_replicate_name:
+                        replicate_count += int(line.strip().split('\t')[3])
+                try:
+                    lfn_value = count_variant/replicate_count
+                    print(sample_replicate)
+                    print(lfn_value)
+                    if lfn_value < 0.001:
+                        failed_variants_list.append(variant.variant_id)
+                except ZeroDivisionError:
+                    pass
+        if len(failed_variants_list) != 0:
+            failed_variants[sample_replicate] = failed_variants_list
+    return failed_variants
 
 
-def singleton_removing(session, model):
-    session.query(model).filter(model.read_count == 1).delete()
+def lfn_per_variant_filter2(engine, replicate_model, variant_model, marker_name, sample_count_tsv):
+    variant_select = select([variant_model.variant_id, variant_model.sequence]) \
+        .where(variant_model.marker == marker_name)
+    variant_obj = engine.execute(variant_select)
+    failed_variants = {}
+    for variant in variant_obj:
+        failed_variants_list = []
+        replicate_select = select([replicate_model.biosample_name,replicate_model.name]).where(replicate_model.marker_name == marker_name)
+        replicate_obj = engine.execute(replicate_select)
+        for replicate in replicate_obj:
+            count_variant = 0
+            variant_count = 0
+            sample_replicate = replicate.biosample_name + "_" + replicate.name
+            with open(sample_count_tsv, 'r') as fin:
+                for line in fin:
+                    variant_sequence = line.strip().split('\t')[0]
+                    sample_replicate_name = line.strip().split('\t')[2]
+                    if variant.sequence == variant_sequence and sample_replicate == sample_replicate_name:
+                        count_variant += int(line.strip().split('\t')[3])
+                    if variant.sequence == variant_sequence:
+                        variant_count += int(line.strip().split('\t')[3])
+                try:
+                    lfn_value = count_variant/variant_count
+                    if lfn_value < 0.001:
+                        failed_variants_list.append(variant.variant_id)
+                except ZeroDivisionError:
+                    pass
+        failed_variants[sample_replicate] = failed_variants_list
+    return failed_variants
 
 
-def variant_table(session, obifasta, variant):
-    for element in session.query(obifasta).all():
-        variant_id = element.variant_id
-        marker = variant_id.split("_")[0]
-        obj_variant = {'variant_id': variant_id, 'marker': marker, 'sequence': element.read}
-        # insert_table(session, variant, obj_variant)
+def empirical_filter3(engine, replicatemarker_model, variant_model, marker_name, sample_count_tsv, filter):
+    replicate_select = select([replicatemarker_model.name]).where(replicatemarker_model.marker_name == marker_name)
+    replicate_obj = engine.execute(replicate_select)
+    failed_variants = {}
+    for replicate in replicate_obj:
+        failed_variants_list = []
+        variant_select = select([variant_model.variant_id, variant_model.sequence]) \
+            .where(variant_model.marker == marker_name)
+        variant_obj = engine.execute(variant_select)
+        for variant in variant_obj:
+            count_variant = 0
+            with open(sample_count_tsv, 'r') as fin:
+                for line in fin:
+                    variant_sequence = line.strip().split('\t')[0]
+                    replicate_name = line.strip().split('\t')[1]
+                    if variant.sequence == variant_sequence and replicate.name == replicate_name:
+                        count_variant += int(line.strip().split('\t')[3])
+                if count_variant < filter and variant.variant_id not in failed_variants_list:
+                    failed_variants_list.append(variant.variant_id)
+        failed_variants[replicate.name] = failed_variants_list
+    return failed_variants
 
 
-def read_catcher(conn, fasta_file):
-    try:
-        conn.execute("DROP TABLE IF EXISTS reads_fasta")
-        conn.execute("CREATE TABLE  reads_fasta (id VARCHAR PRIMARY KEY , seq VARCHAR)")
-        for record in SeqIO.parse(fasta_file, 'fasta'):
-            conn.execute("INSERT INTO reads_fasta (id, seq) VALUES (?, ?)", (str(record.description.split()[0]), str(record.seq)))
-        conn.commit()
-    except UnicodeDecodeError:
-        pass
+def create_cutoff_table(conn, cutoff_file_tsv):
+    with open(cutoff_file_tsv, 'r') as fin:
+        for line in fin:
+            conn.execute("INSERT INTO read_fasta (variant_id, cutoff) VALUES (?, ?)",
+                         (line.strip().split('\t')[0], line.strip().split('\t')[1],))
+    conn.commit()
 
+
+# sc = Specific cutoff
+def lfn_per_variant_sc_filter4(engine, replicatemarker_model, variant_model, marker_name, sample_count_tsv, cutoff_tsv):
+    table_filename = cutoff_tsv.replace('.tsv', '.sqlite')
+    conn = sqlite3.connect(table_filename)
+    conn.execute("DROP TABLE IF EXISTS cutoff_table")
+    conn.execute("CREATE TABLE  cutoff_table (variant_id VARCHAR PRIMARY KEY , cutoff INT)")
+    create_cutoff_table(conn, cutoff_tsv)
+    #
+    variant_select = select([variant_model.variant_id, variant_model.sequence]) \
+        .where(variant_model.marker == marker_name)
+    variant_obj = engine.execute(variant_select)
+    failed_variants = {}
+    for variant in variant_obj:
+        #
+        failed_variants_list = []
+        replicate_select = select([replicatemarker_model.name]).where(replicatemarker_model.marker_name == marker_name)
+        replicate_obj = engine.execute(replicate_select)
+        #
+        cutoff_cursor = conn.execute('SELECT cutoff FROM cutoff WHERE variant_id=?', (variant.variant_id,))
+        cutoff_list = list(cutoff_cursor.fetchone())
+        cutoff_cursor.close()
+        cutoff = cutoff_list[0]
+        #
+        for replicate in replicate_obj:
+            count_variant = 0
+            variant_count = 0
+            #
+            with open(sample_count_tsv, 'r') as fin:
+                #
+                for line in fin:
+                    variant_sequence = line.strip().split('\t')[0]
+                    replicate_name = line.strip().split('\t')[1]
+                    #
+                    if variant.sequence == variant_sequence and replicate.name == replicate_name:
+                        count_variant += int(line.strip().split('\t')[3])
+                    #
+                    if variant.sequence in line:
+                        variant_count += int(line.strip().split('\t')[3])
+                lfn_value = count_variant / variant_count
+                #
+                if lfn_value < int(cutoff):
+                    failed_variants_list.append(variant.variant_id)
+        #
+        failed_variants[replicate.name] = failed_variants_list
+    conn.close()
+    return failed_variants
