@@ -293,6 +293,7 @@ def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
             check_read.close()
         # Line which delete singletons
         with open(sample_count_tsv, 'w') as test_output:
+            test_output.write("{}\t{}\t{}\n".format('sequence','sample_replicate', 'count'))
             for element in biosamples_count_variant:
                 dictio = biosamples_count_variant.get(str(element))
                 for things in dictio:
@@ -301,7 +302,7 @@ def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
                         continue
                     else:
                         replicate = things.split('_')[-1]
-                        test_output.write(element + '\t' + replicate+ '\t' + things + '\t' + str(count))
+                        test_output.write(element + '\t' + things + '\t' + str(count))
                         test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
