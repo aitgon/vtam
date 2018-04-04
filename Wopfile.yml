@@ -12,6 +12,7 @@ rule ReadCSV:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
+            Replicatemarker: wopmetabarcoding.model.Replicatemarker
 
 rule VsearchSort:
     tool: wopmetabarcoding.wrapper.VsearchSortReads
@@ -33,10 +34,10 @@ rule Filter:
     tool: wopmetabarcoding.wrapper.Filter
     input:
         table:
-          Marker: wopmetabarcoding.model.Marker
-          Variant: wopmetabarcoding.model.Variant
-          Replicate: wopmetabarcoding.model.Replicate
-
-
+            Marker: wopmetabarcoding.model.Marker
+            Variant: wopmetabarcoding.model.Variant
+            Replicate: wopmetabarcoding.model.Replicate
+        file:
+            file_cutoff: data/cutoff_variant.tsv
 
 
