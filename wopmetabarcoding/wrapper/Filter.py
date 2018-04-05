@@ -1,6 +1,6 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.Filter_function import filter1, filter2, filter3, filter4, min_repln
+from wopmetabarcoding.wrapper.Filter_function import lfn_per_replicate, lfn_per_variant, lfn_per_readcounts, lfn_per_cutoff, min_repln
 from sqlalchemy import select
 import pandas
 
@@ -44,25 +44,27 @@ class Filter(ToolWrapper):
             failed_variants = []
             file_name = marker.marker_name + '_sample_count.tsv'
             data_frame = pandas.read_csv(file_name, sep='\t')
-            result_filter1 = filter1(engine, replicate_model, variant_model, marker.marker_name, data_frame)
+            result_filter1 = lfn_per_replicate(engine, replicate_model, variant_model, marker.marker_name, data_frame)
             for sample_replicate in result_filter1:
                 variant_list = result_filter1.get(sample_replicate)
                 failed_variants += variant_list
-            result_filter2 = filter2(engine, replicate_model, variant_model, marker.marker_name, data_frame)
-            for variant in result_filter2:
-                variant_list = result_filter2.get(variant)
-                failed_variants += variant_list
-            result_filter3 = filter3(engine, replicate_model, variant_model, marker.marker_name, 5, data_frame)
-            for variant in result_filter3:
-                variant_list = result_filter3.get(variant)
-                failed_variants += variant_list
-            result_filter4 = filter4(engine, replicate_model, variant_model, marker.marker_name, data_frame, cutoff_file_tsv)
-            for variant in result_filter4:
-                variant_list = result_filter4.get(variant)
-                failed_variants += variant_list
-            failed_variants = sorted(set(failed_variants))
-            result_min_repln = min_repln(engine, file_name, failed_variants, variant_model, 2)
-            print(result_min_repln)
+            result_filter2 = lfn_per_variant(engine, replicate_model, variant_model, marker.marker_name, data_frame, True)
+            # for variant in result_filter2:
+            #     variant_list = result_filter2.get(variant)
+            #     failed_variants += variant_list
+
+            # result_filter3 = lfn_per_readcounts(engine, replicate_model, variant_model, marker.marker_name, 5, data_frame)
+            # for variant in result_filter3:
+            #     variant_list = result_filter3.get(variant)
+            #     failed_variants += variant_list
+            # result_filter4 = lfn_per_cutoff(engine, replicate_model, variant_model, marker.marker_name, data_frame, False, cutoff_file_tsv)
+            # for variant in result_filter4:
+            #     variant_list = result_filter4.get(variant)
+            #     failed_variants += variant_list
+            # failed_variants = sorted(set(failed_variants))
+            # print(failed_variants)
+            # # result_min_repln = min_repln(engine, file_name, failed_variants, variant_model, 2)
+            # # print(result_min_repln)
 
 
 
