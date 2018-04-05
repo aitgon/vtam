@@ -5,6 +5,7 @@ from setuptools import find_packages
 install_requires = [
 		'biopython>=1.14.2',
 		'wopmars>=1.1.29',
+		'Jinja2>=2.10',
 ]
 
 setup(
