@@ -1,0 +1,3 @@
+Tag Forward,Primer Forward,Tag Reverse,Primer Reverse,Marker name ,Sample,Replicate,Filename,Run
+cgatcgtcatcacg,TCCACTAATCACAARGATATTGGTAC,cacgatttgtagag,WACTAATCAATTWCCAAATCCTCC,MFZR,14Mon01,repl1,data/fastq_merged_fasta/prerun_MFZR_repl1.fasta,prerun
+tcgatcacgatgt,TCCACTAATCACAARGATATTGGTAC,cgcgtctgtagag,WACTAATCAATTWCCAAATCCTCC,MFZR,14Mon02,repl1,data/fastq_merged_fasta/prerun_MFZR_repl1.fasta,prerun
