@@ -3,7 +3,7 @@ import os
 import sqlite3
 from unittest import TestCase
 import subprocess
-import jinja2
+from jinja2 import Template
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
@@ -20,12 +20,11 @@ class TestWopMetabarcoding(TestCase):
     def test_01_ReadCSV(self):
         sample_info_csv = os.path.join(PathFinder.get_module_test_path(), "input", "1_sample_info.csv")
         #
-        from jinja2 import Template
         template = Template(self.__wopfile_template_str)
-        # print(template.render(SAMPLE_INFORMATION_CSV=sample_info_csv))
+        wopfile_str = template.render(SAMPLE_INFORMATION_CSV=sample_info_csv)
         wopfile_path = os.path.join(PathFinder.get_module_test_path(), "output", "Wopfile.yml")
         with open(wopfile_path, 'w') as fout:
-            self.__wopfile_template_str = fout.write(template.render(SAMPLE_INFORMATION_CSV=sample_info_csv))
+            self.__wopfile_template_str = fout.write(wopfile_str)
         #
         cmd_line = ["wopmars", "-w", wopfile_path, "-D", self.__db_url, "-d", PathFinder.get_module_path(), "-F", "-t", "ReadCSV"]
         p = subprocess.Popen(cmd_line)
