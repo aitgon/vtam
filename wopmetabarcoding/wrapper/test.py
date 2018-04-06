@@ -237,3 +237,35 @@ def lfn_per_variant_sc_filter4(engine, replicatemarker_model, variant_model, mar
 #                     failed_variants_list.append(variant.variant_id)
 #         failed_variants[variant.variant_id] = failed_variants_list
 #     return failed_variants
+
+def lfn_per_variant(engine, replicate_model, variant_model, marker_name, data_frame):
+    # Selecting lines of the variant table
+    variant_select = select([variant_model.variant_id, variant_model.sequence]) \
+        .where(variant_model.marker == marker_name)
+    variant_obj = engine.execute(variant_select)
+    failed_variants = {}
+    for variant in variant_obj:
+        # Selecting lines of the replicate table
+        replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
+            replicate_model.marker_name == marker_name)
+        replicate_obj = engine.execute(replicate_select)
+        data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
+        failed_variants_list = []
+        if data_variant.empty is False:
+            variant_replicate_count_series = data_variant['count']
+            variant_replicate_count = variant_replicate_count_series.sum()
+        for replicate in replicate_obj:
+            sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
+            data_variantreplicate = data_variant.loc[data_frame['sample_replicate'] == sample_replicate]
+            if data_variantreplicate.empty is False and data_variant.empty is False:
+                replicate_count_series = data_variantreplicate['count']
+                replicate_count = replicate_count_series.sum()
+                variant_replicate_count = variant_replicate_count_series.sum()
+                lfn_value = replicate_count / variant_replicate_count
+                print(replicate.name, variant.variant_id)
+                print(replicate_count)
+                print(variant_replicate_count)
+                if lfn_value > 0.001 and variant.variant_id not in failed_variants_list:
+                    failed_variants_list.append(variant.variant_id)
+            failed_variants[variant.variant_id] = failed_variants_list
+    return failed_variants
