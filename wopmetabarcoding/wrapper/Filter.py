@@ -1,6 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.Filter_function import lfn_per_replicate, lfn_per_variant, lfn_per_readcounts, lfn_per_cutoff, min_repln, min_replp
+from wopmetabarcoding.wrapper.Filter_function import lfn_per_replicate, lfn_per_variant, lfn_per_readcounts,\
+    lfn_per_cutoff, min_repln, min_replp, delete_filtered_variants, pcr_error
 from sqlalchemy import select
 import pandas
 
@@ -61,7 +62,11 @@ class Filter(ToolWrapper):
                 variant_list = result_filter4.get(variant)
                 failed_variants += variant_list
             failed_variants = sorted(set(failed_variants))
+            print(failed_variants)
+            delete_filtered_variants(session, variant_model, failed_variants)
+            session.commit()
+            pcr_error(engine, replicate_model, variant_model, 'denied', data_frame, marker.marker_name, False)
             # print(failed_variants)
             # result_min_repln = min_repln(engine, variant_model, replicate_model, marker.marker_name, data_frame)
             # print(result_min_repln)
-            result_min_replp = min_replp(engine, variant_model, replicate_model, marker.marker_name, data_frame, 3)
+            # result_min_replp = min_replp(engine, variant_model, replicate_model, marker.marker_name, data_frame, 3)

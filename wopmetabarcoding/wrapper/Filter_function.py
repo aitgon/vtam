@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 import pandas
 
 
@@ -179,6 +179,7 @@ def lfn_per_cutoff(engine, replicate_model, variant_model, marker_name, data_fra
 #                     succeed_variants.append(variant)
 #     return succeed_variants
 
+
 def min_repln(engine, variant_model, replicate_model, marker_name, data_frame):
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
         .where(variant_model.marker == marker_name)
@@ -213,3 +214,45 @@ def min_replp(engine, variant_model, replicate_model, marker_name, data_frame, r
             if repl_count >= ((1/3)*replicate_number) and variant.variant_id not in failed_variant:
                 failed_variant.append(variant.variant_id)
     return failed_variant
+
+
+def delete_filtered_variants(session, variant_model, failed_variants):
+    """
+    Function which delete variants which don't pass lfn filters
+    :param engine:
+    :param variant_model:
+    :param failed_variants:
+    :return:
+    """
+    if len(failed_variants) != 0:
+        for variant in failed_variants:
+            stmt = session.query(variant_model).filter(variant_model.variant_id == variant)
+            stmt.delete()
+    else:
+        pass
+
+
+def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
+    with open(sample_fasta, 'w') as fout:
+        for variant in variant_list:
+            variant_select = select([variant_model.variant_id, variant_model.sequence]).where(variant_model.sequence == variant)
+            variant_obj = engine.execute(variant_select)
+
+
+def pcr_error(engine, replicate_model, variant_model, sample_fas, data_frame,marker_name, pcr_error_by_sample):
+    select_replicate = select([replicate_model.biosample_name, replicate_model.name])\
+        .where(replicate_model.marker_name == marker_name)
+    replicate_obj = engine.execute(select_replicate)
+    for replicate in replicate_obj:
+        if pcr_error_by_sample is True:
+            data_variant = data_frame.loc[data_frame['sample'] == replicate.biosample_name]
+            sample_fasta_name = 'data/output/pcr_error/{}_{}.fasta'.format(replicate.biosample_name, marker_name)
+        else:
+            sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
+            data_variant = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
+            sample_fasta_name = '{}_{}.fasta'.format(sample_replicate, marker_name)
+        variant_list_series = data_variant['sequence']
+        if variant_list_series.empty is False:
+            variant_list = list(variant_list_series)
+            # pcr_error_fasta(engine, variant_model, variant_list,sample_fasta_name)
+

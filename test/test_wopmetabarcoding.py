@@ -22,7 +22,8 @@ class TestWopMetabarcoding(TestCase):
         #
         template = Template(self.__wopfile_template_str)
         wopfile_str = template.render(SAMPLE_INFORMATION_CSV=sample_info_csv)
-        wopfile_path = os.path.join(PathFinder.get_module_test_path(), "output", "Wopfile.yml")
+        wopfile_path = os.path.join(PathFinder.get_module_test_path(), "../wopfile", "Wopfile_template.yml")
+        print(wopfile_path)
         with open(wopfile_path, 'w') as fout:
             self.__wopfile_template_str = fout.write(wopfile_str)
         #
