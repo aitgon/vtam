@@ -1,6 +1,9 @@
+import tempfile
+
+import os
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.VsearchSortReads_functions import \
+from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, check_criteria_in_vsearch_output, read_counter, fasta_writer, trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
@@ -8,9 +11,9 @@ import subprocess
 
 
 
-class VsearchSortReads(ToolWrapper):
+class SortReads(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.VsearchSortReads"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.SortReads"
     }
     # Input
     # Input table
@@ -29,22 +32,22 @@ class VsearchSortReads(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            VsearchSortReads.__input_table_fileinformation,
-            VsearchSortReads.__input_table_file,
-            VsearchSortReads.__input_table_marker
+            SortReads.__input_table_fileinformation,
+            SortReads.__input_table_file,
+            SortReads.__input_table_marker
         ]
 
     # def specify_output_file(self):
     #     return [
-    #         VsearchSortReads.__output_file_vsearch_output_tsv,
-    #         VsearchSortReads.__output_file_primer_tag_fasta,
-    #         VsearchSortReads.__output_file_checked_vsearch_output_tsv
+    #         SortReads.__output_file_vsearch_output_tsv,
+    #         SortReads.__output_file_primer_tag_fasta,
+    #         SortReads.__output_file_checked_vsearch_output_tsv
     #     ]
 
     def specify_output_table(self):
         return [
-            VsearchSortReads.__output_table_readcount,
-            VsearchSortReads.__output_table_variant
+            SortReads.__output_table_readcount,
+            SortReads.__output_table_variant
         ]
 
     def specify_params(self):
@@ -78,27 +81,28 @@ class VsearchSortReads(ToolWrapper):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         conn = engine.connect()
-
+        #
         # Input tables models
-        file_information_model = self.input_table(VsearchSortReads.__input_table_fileinformation)
-        file_model = self.input_table(VsearchSortReads.__input_table_file)
-        marker_model = self.input_table(VsearchSortReads.__input_table_marker)
+        file_information_model = self.input_table(SortReads.__input_table_fileinformation)
+        file_model = self.input_table(SortReads.__input_table_file)
+        marker_model = self.input_table(SortReads.__input_table_marker)
 
         # # Output file
-        # vsearch_output_tsv = self.output_file(VsearchSortReads.__output_file_vsearch_output_tsv)
-        # primer_tag_fasta = self.output_file(VsearchSortReads.__output_file_primer_tag_fasta)
-        # checked_vsearch_output_tsv = self.output_file(VsearchSortReads.__output_file_checked_vsearch_output_tsv)
+        # vsearch_output_tsv = self.output_file(SortReads.__output_file_vsearch_output_tsv)
+        # primer_tag_fasta = self.output_file(SortReads.__output_file_primer_tag_fasta)
+        # checked_vsearch_output_tsv = self.output_file(SortReads.__output_file_checked_vsearch_output_tsv)
 
         # Temp variables:
+        tempdir = tempfile.mkdtemp()
         annoted_tsv_list = []
         run_list = {}
-        vsearch_output_tsv = 'data/output/vsearch_output.tsv'
-        primer_tag_fasta = 'data/output/primer_tag.fasta'
-        checked_vsearch_output_tsv = 'data/output/checked_vsearch_output.tsv'
+        vsearch_output_tsv = os.path.join(tempdir, 'vsearch_output.tsv')
+        primer_tag_fasta = os.path.join(tempdir, 'primer_tag.fasta')
+        checked_vsearch_output_tsv = os.path.join(tempdir, 'checked_vsearch_output.tsv')
 
         # Output tables models
-        readcount_model = self.output_table(VsearchSortReads.__output_table_readcount)
-        variant_model = self.output_table(VsearchSortReads.__output_table_variant)
+        readcount_model = self.output_table(SortReads.__output_table_readcount)
+        variant_model = self.output_table(SortReads.__output_table_variant)
 
         #  TODO: Later we will see in case files are already trimmed
         # for file_obj in session.query(file_model).all():
@@ -118,8 +122,8 @@ class VsearchSortReads(ToolWrapper):
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
             check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for forward trimming.")
-            trimmed_tsv = (file_obj.name).replace('.fasta', '_forward_trimmed.tsv')
-            trim_reads(checked_vsearch_output_tsv, file_obj.name, trimmed_tsv, is_forward_strand)
+            trimmed_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_forward_trimmed.tsv'))
+            trim_reads(checked_vsearch_output_tsv, file_obj.name, trimmed_tsv, is_forward_strand, tempdir)
             trimmed_fasta = trimmed_tsv.replace('.tsv', '.fasta')
             Logger.instance().info("Writing fasta file for forward trimming.")
             convert_trimmed_tsv_to_fasta(trimmed_tsv, trimmed_fasta)
@@ -134,11 +138,12 @@ class VsearchSortReads(ToolWrapper):
             check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for reverse trimming.")
             trimmed_tsv = trimmed_fasta.replace('_forward_trimmed.fasta', '_reverse_trimmed.tsv')
-            trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, is_forward_strand)
+            trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, is_forward_strand, tempdir)
             trimmed_fasta = trimmed_tsv.replace('.tsv', '.fasta')
             # for file_obj in session.query(file_model).all():
             Logger.instance().info("Annotating reads with Sample Information.")
-            annotated_reads_tsv = (file_obj.name).replace(".fasta", "_annotated_reads.tsv")
+            # annotated_reads_tsv = (file_obj.name).replace(".fasta", "_annotated_reads.tsv")
+            annotated_reads_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_annotated_reads.tsv'))
             annoted_tsv_list.append(annotated_reads_tsv)
             run_list[annotated_reads_tsv] = file_obj.run_name
             annotate_reads(session, file_information_model, trimmed_tsv,
@@ -147,12 +152,12 @@ class VsearchSortReads(ToolWrapper):
         # # For each marker, concatenate its files with the annotated reads and count unique reads per marker
         for marker_obj in session.query(marker_model).all():
             marker_name = marker_obj.marker_name
-            gathered_marker_file = marker_name + "_file.tsv"
-            sample_count_tsv = marker_name+ "_sample_count.tsv"
+            gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
+            sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
             count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
             Logger.instance().info("Gathering all files from annotated files the same marker into one.")
             gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
-            gathered_marker_file = marker_name + "_file_prerun.tsv"
+            gathered_marker_file = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
             # session.commit()
             # read_count_per_marker_sqlite = conn_name = marker_obj.marker_name + ".sqlite"
             Logger.instance().info("Counting reads for each marker.")

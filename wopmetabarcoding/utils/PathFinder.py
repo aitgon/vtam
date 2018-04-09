@@ -2,6 +2,8 @@
 Example of module documentation which can be
 multiple-lined
 """
+
+import errno
 import os
 
 class PathFinder:
@@ -41,4 +43,15 @@ class PathFinder:
         test_dir_path = os.path.join(os.path.dirname(__file__), "../../test")
         return test_dir_path
 
+
+
+
+    @staticmethod
+    def mkdir(path):
+        """ Does not fail if directory already exists"""
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
 

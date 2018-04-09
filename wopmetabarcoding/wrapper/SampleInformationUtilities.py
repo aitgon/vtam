@@ -1,4 +1,4 @@
-from wopmetabarcoding.wrapper.functions import insert_table
+from wopmetabarcoding.utils.utilities import insert_table
 
 
 def insert_marker(session, model, line):

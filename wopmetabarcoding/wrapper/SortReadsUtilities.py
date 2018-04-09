@@ -1,11 +1,9 @@
+import os
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.functions import insert_table
-import sqlalchemy
-from sqlalchemy import literal
+from wopmetabarcoding.utils.utilities import insert_table
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio import SeqIO
-import subprocess
 import sqlite3
 
 
@@ -123,7 +121,7 @@ def fasta_writer(session, model, file_name):
             j += 1
 
 
-def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv, is_forward_strand):
+def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv, is_forward_strand, tempdir):
     """
 
     :param checked_vsearch_output_tsv:
@@ -135,7 +133,8 @@ def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv
     """
     #
     # Import read_fasta_file_name into sqlite for indexing and faster access
-    read_fasta_db_sqlite = read_fasta_file_name.replace('.fasta', '.sqlite')
+    # read_fasta_db_sqlite = read_fasta_file_name.replace('.fasta', '.sqlite')
+    read_fasta_db_sqlite = os.path.join(tempdir, os.path.basename(read_fasta_file_name).replace('.fasta', '.sqlite'))
     conn = sqlite3.connect(read_fasta_db_sqlite)
     try:
         conn.execute("DROP TABLE IF EXISTS read_fasta")

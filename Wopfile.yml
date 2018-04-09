@@ -15,7 +15,7 @@ rule ReadCSV:
             Replicatemarker: wopmetabarcoding.model.Replicatemarker
 
 rule VsearchSort:
-    tool: wopmetabarcoding.wrapper.VsearchSortReads
+    tool: wopmetabarcoding.wrapper.SortReads
     input:
         table:
             File: wopmetabarcoding.model.File

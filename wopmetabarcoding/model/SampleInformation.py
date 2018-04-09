@@ -22,6 +22,7 @@ class SampleInformation(Base):
     tag_forward = Column(String(100), nullable=True) # Todo: Create Tag model
     tag_reverse = Column(String(100), nullable=True)
     file_name = Column(String(150), nullable=False) # Todo: should be foreign key to File model ID
+    file_id = Column(Integer, ForeignKey("FileAG.id"), nullable=False) # Todo: should be foreign key to File model ID
     run_name = Column(String(20), nullable=False)
     sample_name = Column(String(50), nullable=False)
     replicate_name = Column(String, nullable=False)
