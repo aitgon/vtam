@@ -33,31 +33,35 @@ class Filter(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        conn = engine.connect()
+        #
         # Input file path
         cutoff_file_tsv = self.input_file(Filter.__input_cutoff_file)
+        #
         # Input table models
         marker_model = self.input_table(Filter.__input_table_marker)
         variant_model = self.input_table(Filter.__input_table_variant)
         replicate_model = self.input_table(Filter.__input_table_replicate)
-        marker_select = select([marker_model.marker_name])
+        #
+        marker_select = select([marker_model.name])
         marker_obj = engine.execute(marker_select)
         for marker in marker_obj:
             failed_variants = []
-            file_name = marker.marker_name + '_sample_count.tsv'
+            file_name = marker.name + '_sample_count.tsv'
             data_frame = pandas.read_csv(file_name, sep='\t')
-            result_filter1 = lfn_per_replicate(engine, replicate_model, variant_model, marker.marker_name, data_frame)
+            result_filter1 = lfn_per_replicate(engine, replicate_model, variant_model, marker.name, data_frame)
             for sample_replicate in result_filter1:
                 variant_list = result_filter1.get(sample_replicate)
                 failed_variants += variant_list
-            result_filter2 = lfn_per_variant(engine, replicate_model, variant_model, marker.marker_name, data_frame, False)
+            result_filter2 = lfn_per_variant(engine, replicate_model, variant_model, marker.name, data_frame, False)
             for variant in result_filter2:
                 variant_list = result_filter2.get(variant)
                 failed_variants += variant_list
-            result_filter3 = lfn_per_readcounts(engine, replicate_model, variant_model, marker.marker_name, 2, data_frame)
+            result_filter3 = lfn_per_readcounts(engine, replicate_model, variant_model, marker.name, 2, data_frame)
             for variant in result_filter3:
                 variant_list = result_filter3.get(variant)
                 failed_variants += variant_list
-            result_filter4 = lfn_per_cutoff(engine, replicate_model, variant_model, marker.marker_name, data_frame, cutoff_file_tsv, False)
+            result_filter4 = lfn_per_cutoff(engine, replicate_model, variant_model, marker.name, data_frame, cutoff_file_tsv, False)
             for variant in result_filter4:
                 variant_list = result_filter4.get(variant)
                 failed_variants += variant_list
@@ -65,8 +69,8 @@ class Filter(ToolWrapper):
             print(failed_variants)
             delete_filtered_variants(session, variant_model, failed_variants)
             session.commit()
-            pcr_error(engine, replicate_model, variant_model, 'denied', data_frame, marker.marker_name, False)
+            pcr_error(engine, replicate_model, variant_model, 'denied', data_frame, marker.name, False)
             # print(failed_variants)
-            # result_min_repln = min_repln(engine, variant_model, replicate_model, marker.marker_name, data_frame)
+            # result_min_repln = min_repln(engine, variant_model, replicate_model, marker.name, data_frame)
             # print(result_min_repln)
-            # result_min_replp = min_replp(engine, variant_model, replicate_model, marker.marker_name, data_frame, 3)
+            # result_min_replp = min_replp(engine, variant_model, replicate_model, marker.name, data_frame, 3)

@@ -87,11 +87,6 @@ class SortReads(ToolWrapper):
         file_model = self.input_table(SortReads.__input_table_file)
         marker_model = self.input_table(SortReads.__input_table_marker)
 
-        # # Output file
-        # vsearch_output_tsv = self.output_file(SortReads.__output_file_vsearch_output_tsv)
-        # primer_tag_fasta = self.output_file(SortReads.__output_file_primer_tag_fasta)
-        # checked_vsearch_output_tsv = self.output_file(SortReads.__output_file_checked_vsearch_output_tsv)
-
         # Temp variables:
         tempdir = tempfile.mkdtemp()
         annoted_tsv_list = []
@@ -154,7 +149,7 @@ class SortReads(ToolWrapper):
         #
         # # For each marker, concatenate its files with the annotated reads and count unique reads per marker
         for marker_obj in session.query(marker_model).all():
-            marker_name = marker_obj.marker_name
+            marker_name = marker_obj.name
             gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
             sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
             count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
@@ -162,7 +157,7 @@ class SortReads(ToolWrapper):
             gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
             gathered_marker_file = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
             # session.commit()
-            # read_count_per_marker_sqlite = conn_name = marker_obj.marker_name + ".sqlite"
+            # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
             Logger.instance().info("Counting reads for each marker.")
             count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv)
             # session.commit()

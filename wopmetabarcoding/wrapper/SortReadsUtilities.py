@@ -217,7 +217,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
                         # Write a new tsv with these informations
                         fout.write(
                             read_id + "\t"
-                            + file_information_instance.marker_name + "\t"
+                            + str(file_information_instance.marker_id) + "\t"
                             + file_information_instance.run_name +"\t"
                             + file_information_instance.tag_forward + "\t"
                             + file_information_instance.tag_reverse + "\t"
@@ -226,7 +226,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
                             + read_sequence + "\n"
                         )
                     except AttributeError:
-                        print(file_information_instance.tag_forward, file_information_instance.tag_reverse, file_information_instance.marker_name)
+                        print(file_information_instance.tag_forward, file_information_instance.tag_reverse, file_information_instance.marker_id)
                 else:
                     i += 1
                     incoherent_list.append(read_id)
@@ -253,7 +253,7 @@ def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
     # Drop the table if the program has been launch before
     conn.execute("DROP TABLE IF EXISTS count_read")
     # Create a table in the databse file
-    conn.execute("CREATE TABLE  count_read (id VARCHAR , marker VARCHAR, count INT, seq VARCHAR PRIMARY KEY)")
+    conn.execute("CREATE TABLE  count_read (id VARCHAR , marker_id INT, count INT, seq VARCHAR PRIMARY KEY)")
     biosamples_count_variant = {}
     biosample_count = {}
     # Parse the csv
@@ -287,7 +287,7 @@ def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
                     marker_name = line[1]
                     read_count = 1
                     sequence = line[7]
-                    conn.execute("INSERT INTO count_read (id, marker, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
+                    conn.execute("INSERT INTO count_read (id, marker_id, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
                     i += 1
             check_read.close()
         # Line which delete singletons
@@ -320,10 +320,10 @@ def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list
     # Search the csv files for each marker in the Marker table
     # for element in session.query(marker_model).all():
     # Creating a filename for a database file for each marker
-    # filename = element.marker_name + "_file"
+    # filename = element.name + "_file"
     # file_place = "data/" + filename + ".csv"
     # Storing this name in the row of the corresponding marker
-    # session.query(marker_model).filter(marker_model.marker_name == element.marker_name).update({marker_model.marker_file: file_place})
+    # session.query(marker_model).filter(marker_model.name == element.name).update({marker_model.marker_file: file_place})
     i = 0
     for annotated_file in annotated_tsv_list:
         if i == 0:
@@ -350,7 +350,7 @@ def insert_variant(session, count_reads_marker, variant_model):
     # Opening the database
     conn = sqlite3.connect(count_reads_marker)
     # Selecting some attributes in the database files
-    variant_data = conn.execute("SELECT id, marker, seq, count FROM count_read")
+    variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
     for row in variant_data.fetchall():
         obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
         # Inserting theses information in the variant table

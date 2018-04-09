@@ -12,10 +12,8 @@ from Bio import Alphabet
 class Marker(Base):
     __tablename__ = 'Marker'  # current file
 
-    marker_id = Column(Integer, primary_key=True, autoincrement=True)
-    marker_name = Column(String(50), nullable=False)
-    marker_file = Column(String, nullable=True)
-    db_marker = Column(String, nullable=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), nullable=False)
 
 
 

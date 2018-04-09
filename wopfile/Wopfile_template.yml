@@ -12,7 +12,6 @@ rule SampleInformation:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
-            Replicatemarker: wopmetabarcoding.model.Replicatemarker
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads

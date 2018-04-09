@@ -11,12 +11,12 @@ from Bio.Alphabet import IUPAC
 class SampleInformation(Base):
     __tablename__ = 'SampleInformation'
     __table_args__ = (
-        UniqueConstraint('tag_forward', 'tag_reverse', 'marker_name', 'file_id'),
-        UniqueConstraint('marker_name', 'sample_name', 'replicate_name')
+        UniqueConstraint('tag_forward', 'tag_reverse', 'marker_id', 'file_id'),
+        UniqueConstraint('marker_id', 'sample_name', 'replicate_name')
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    marker_name = Column(String(50), nullable=False)
+    marker_id = Column(Integer, ForeignKey("Marker.id"), nullable=False)
     primer_forward = Column(String(100), nullable=False)
     primer_reverse = Column(String(100), nullable=False)
     tag_forward = Column(String(100), nullable=False) # Todo: Create Tag model
@@ -31,7 +31,7 @@ class SampleInformation(Base):
     #     assert ' ' not in path
     #     return path
 
-    @validates('marker_name', 'sample_name', 'run_name')
+    @validates('name', 'sample_name', 'run_name')
     def validates_names(self, key, name):
         if '_' in name:
             namebis = name.replace('_', '')
