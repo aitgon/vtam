@@ -17,7 +17,7 @@ class SortReads(ToolWrapper):
     }
     # Input
     # Input table
-    __input_table_fileinformation = "SampleInformation"
+    __input_table_sample_information = "SampleInformation"
     __input_table_file = "File"
     __input_table_marker = "Marker"
     # Output
@@ -32,7 +32,7 @@ class SortReads(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            SortReads.__input_table_fileinformation,
+            SortReads.__input_table_sample_information,
             SortReads.__input_table_file,
             SortReads.__input_table_marker
         ]
@@ -83,7 +83,7 @@ class SortReads(ToolWrapper):
         conn = engine.connect()
         #
         # Input tables models
-        file_information_model = self.input_table(SortReads.__input_table_fileinformation)
+        sample_information_model = self.input_table(SortReads.__input_table_sample_information)
         file_model = self.input_table(SortReads.__input_table_file)
         marker_model = self.input_table(SortReads.__input_table_marker)
 
@@ -112,11 +112,13 @@ class SortReads(ToolWrapper):
         #         # fasta_writer(session, readcount_model, file_obj.name)
         # else:
         for file_obj in session.query(file_model).all():
+            file_id = file_obj.id
+            sample_information_obj = session.query(sample_information_model).filter(sample_information_model.file_id==file_id).all()
             # 
             # First: Forward trim
             is_forward_strand = True
             Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for forward trimming.")
-            create_primer_tag_fasta_for_vsearch(session, file_information_model, primer_tag_fasta, file_obj.name,is_forward_strand)
+            create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             Logger.instance().info("Processing Vsearch for forward trimming.")
             self.vsearch_subprocess(file_obj.name, primer_tag_fasta, vsearch_output_tsv)
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
@@ -131,7 +133,8 @@ class SortReads(ToolWrapper):
             # Second: Reverse trim
             is_forward_strand = False
             Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for reverse trimming.")
-            create_primer_tag_fasta_for_vsearch(session, file_information_model,primer_tag_fasta, file_obj.name,is_forward_strand)
+            # create_primer_tag_fasta_for_vsearch(session, sample_information_model,primer_tag_fasta, file_obj.name,is_forward_strand)
+            create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             Logger.instance().info("Processing Vsearch for reverse trimming.")
             self.vsearch_subprocess(trimmed_fasta, primer_tag_fasta, vsearch_output_tsv)
             Logger.instance().info("Eliminating non SRS conforms reads for reverse trimming.")
@@ -146,8 +149,8 @@ class SortReads(ToolWrapper):
             annotated_reads_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_annotated_reads.tsv'))
             annoted_tsv_list.append(annotated_reads_tsv)
             run_list[annotated_reads_tsv] = file_obj.run_name
-            annotate_reads(session, file_information_model, trimmed_tsv,
-                           merged_fasta_file_name=file_obj.name, annotated_reads_tsv=annotated_reads_tsv)
+            annotate_reads(session, sample_information_model, trimmed_tsv,
+                           file_id=file_id, annotated_reads_tsv=annotated_reads_tsv)
         #
         # # For each marker, concatenate its files with the annotated reads and count unique reads per marker
         for marker_obj in session.query(marker_model).all():

@@ -7,25 +7,25 @@ from Bio import SeqIO
 import sqlite3
 
 
-def create_primer_tag_fasta_for_vsearch(session, file_information_model, primer_tag_fasta, merged_fasta_file,forward_strand):
+def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, primer_tag_fasta):
     """
     Function creating a fasta file which will be used as a database by vsearch
 
     :param session: Current session of the database
-    :param file_information_model: Model of the SampleInformation table
+    :param sample_information_obj: Model of the SampleInformation table
     :param primer_tag_fasta:
     :param forward_strand: Boolean
     :return:
     """
     with open(primer_tag_fasta, 'w') as fout:
-        for line in session.query(file_information_model).all():
-            if line.tag_forward != "" and line.primer_forward != "" and line.tag_reverse != "" and line.primer_reverse != "" and merged_fasta_file == line.file_name:
-                if forward_strand:
-                    fout.write(">" + line.tag_forward + line.primer_forward + "\n")
-                    fout.write(line.tag_forward + line.primer_forward + "\n")
-                else:
-                    fout.write(">" + line.tag_reverse + line.primer_reverse + "\n")
-                    fout.write(line.tag_reverse + line.primer_reverse + "\n")
+        for row in sample_information_obj:
+            # if row.tag_forward != "" and row.primer_forward != "" and row.tag_reverse != "" and row.primer_reverse != "":
+            if forward_strand:
+                fout.write(">" + row.tag_forward + row.primer_forward + "\n")
+                fout.write(row.tag_forward + row.primer_forward + "\n")
+            else:
+                fout.write(">" + row.tag_reverse + row.primer_reverse + "\n")
+                fout.write(row.tag_reverse + row.primer_reverse + "\n")
 
 
 def read_counter(session, file, model):
@@ -177,7 +177,7 @@ def convert_trimmed_tsv_to_fasta(trimmed_tsv, trimmed_fasta):
     # csv_file.close()
 
 
-def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_file_name, annotated_reads_tsv):
+def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annotated_reads_tsv):
     """
     Function used to merge all file information between the vsearch results reads and the file information csv
     :param session: Current session of the database
@@ -210,7 +210,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, merged_fasta_fi
                 file_information_instance = session.query(file_information_model)\
                     .filter(file_information_model.tag_forward == tag_forward)\
                     .filter(file_information_model.tag_reverse == tag_reverse)\
-                    .filter(file_information_model.file_name == merged_fasta_file_name).first()
+                    .filter(file_information_model.file_id == file_id).first()
                 if file_information_instance is not None:
 
                     try:

@@ -5,7 +5,6 @@ rule SampleInformation:
             csv: {{SAMPLE_INFORMATION_CSV}}
     output:
         table:
-            FileAG: wopmetabarcoding.model.FileAG
             File: wopmetabarcoding.model.File
             SampleInformation: wopmetabarcoding.model.SampleInformation
             Marker: wopmetabarcoding.model.Marker
