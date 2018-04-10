@@ -2,19 +2,19 @@ from sqlalchemy import select, delete
 import pandas
 
 
-def lfn_per_replicate(engine, replicate_model, variant_model, marker_name, data_frame):
+def lfn_per_replicate(engine, replicate_model, variant_model, marker_id, data_frame):
     """
     Filter out Low Frequency Noise which eliminate a variant from sample-replicate if Nvar-repl/Nrepl < lfn_repl
     :param engine: Engine of the database
     :param replicate_model: Model of the replicate table
     :param variant_model: Model of the variant table
-    :param marker_name: Name of the marker
+    :param marker_id: Name of the marker
     :param data_frame: Dataframe containing the content of the sample_count tsv
     :return: list failed_variants
     """
     # Selecting lines of the replicate table
     replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-        replicate_model.marker_name == marker_name)
+        replicate_model.marker_id == marker_id)
     replicate_obj = engine.execute(replicate_select)
     failed_variants = {}
     for replicate in replicate_obj:
@@ -22,7 +22,7 @@ def lfn_per_replicate(engine, replicate_model, variant_model, marker_name, data_
         sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
         # Selecting lines of the variant table
         variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-            .where(variant_model.marker == marker_name)
+            .where(variant_model.marker == marker_id)
         variant_obj = engine.execute(variant_select)
         # Creating a data frame with only the columns containing the sample replicate
         data_replicate = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
@@ -42,16 +42,16 @@ def lfn_per_replicate(engine, replicate_model, variant_model, marker_name, data_
     return failed_variants
 
 
-def lfn_per_variant(engine, replicate_model, variant_model, marker_name, data_frame, series_replicate):
+def lfn_per_variant(engine, replicate_model, variant_model, marker_id, data_frame, series_replicate):
         # Selecting lines of the variant table
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-            .where(variant_model.marker == marker_name)
+            .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
     failed_variants = {}
     for variant in variant_obj:
         # Selecting lines of the replicate table
         replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-                replicate_model.marker_name == marker_name)
+                replicate_model.marker_id == marker_id)
         replicate_obj = engine.execute(replicate_select)
         failed_variants_list = []
         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
@@ -80,26 +80,26 @@ def lfn_per_variant(engine, replicate_model, variant_model, marker_name, data_fr
     return failed_variants
 
 
-def lfn_per_readcounts(engine, replicate_model, variant_model, marker_name, custom_filter, data_frame):
+def lfn_per_readcounts(engine, replicate_model, variant_model, marker_id, custom_filter, data_frame):
     """
 
     :param engine:
     :param replicate_model:
     :param variant_model:
-    :param marker_name:
+    :param marker_id:
     :param custom_filter:
     :param data_frame:
     :return:
     """
     replicate_select = select(
-        [replicate_model.biosample_name, replicate_model.name]).where(replicate_model.marker_name == marker_name)
+        [replicate_model.biosample_name, replicate_model.name]).where(replicate_model.marker_id == marker_id)
     replicate_obj = engine.execute(replicate_select)
     failed_variants = {}
     for replicate in replicate_obj:
         sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
         failed_variants_list = []
         variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-            .where(variant_model.marker == marker_name)
+            .where(variant_model.marker == marker_id)
         variant_obj = engine.execute(variant_select)
         data_replicate = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
         for variant in variant_obj:
@@ -119,17 +119,17 @@ def create_cutoff_table(cutoff_file_tsv):
     return data_cutoff
 
 
-def lfn_per_cutoff(engine, replicate_model, variant_model, marker_name, data_frame, cutoff_tsv, series_replicate):
+def lfn_per_cutoff(engine, replicate_model, variant_model, marker_id, data_frame, cutoff_tsv, series_replicate):
     data_cutoff = create_cutoff_table(cutoff_tsv)
         # Selecting lines of the variant table
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-            .where(variant_model.marker == marker_name)
+            .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
     failed_variants = {}
     for variant in variant_obj:
         # Selecting lines of the replicate table
         replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-                replicate_model.marker_name == marker_name)
+                replicate_model.marker_id == marker_id)
         replicate_obj = engine.execute(replicate_select)
         failed_variants_list = []
         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
@@ -180,15 +180,15 @@ def lfn_per_cutoff(engine, replicate_model, variant_model, marker_name, data_fra
 #     return succeed_variants
 
 
-def min_repln(engine, variant_model, replicate_model, marker_name, data_frame):
+def min_repln(engine, variant_model, replicate_model, marker_id, data_frame):
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-        .where(variant_model.marker == marker_name)
+        .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
     for variant in variant_obj:
         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
         # Selecting lines of the replicate table
         replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-            replicate_model.marker_name == marker_name)
+            replicate_model.marker_id == marker_id)
         replicate_obj = engine.execute(replicate_select)
         for replicate in replicate_obj:
             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
@@ -197,16 +197,16 @@ def min_repln(engine, variant_model, replicate_model, marker_name, data_frame):
                 print(variant.variant_id, replicate.biosample_name)
 
 
-def min_replp(engine, variant_model, replicate_model, marker_name, data_frame, replicate_number):
+def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, replicate_number):
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-        .where(variant_model.marker == marker_name)
+        .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
     failed_variant = []
     for variant in variant_obj:
         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
         # Selecting lines of the replicate table
         replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-            replicate_model.marker_name == marker_name)
+            replicate_model.marker_id == marker_id)
         replicate_obj = engine.execute(replicate_select)
         for replicate in replicate_obj:
             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
@@ -234,25 +234,29 @@ def delete_filtered_variants(session, variant_model, failed_variants):
 
 def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
     with open(sample_fasta, 'w') as fout:
+        print(variant_list)
         for variant in variant_list:
             variant_select = select([variant_model.variant_id, variant_model.sequence]).where(variant_model.sequence == variant)
             variant_obj = engine.execute(variant_select)
+            variant_request = list(variant_obj.fetchone())
+            fout.write(">{}\n".format(variant_request[0]))
+            fout.write(variant_request[1] + '\n')
 
 
-def pcr_error(engine, replicate_model, variant_model, sample_fas, data_frame,marker_name, pcr_error_by_sample):
+def pcr_error(engine, replicate_model, variant_model, sample_fas, data_frame,marker_id, pcr_error_by_sample):
     select_replicate = select([replicate_model.biosample_name, replicate_model.name])\
-        .where(replicate_model.marker_name == marker_name)
+        .where(replicate_model.marker_id == marker_id)
     replicate_obj = engine.execute(select_replicate)
     for replicate in replicate_obj:
         if pcr_error_by_sample is True:
             data_variant = data_frame.loc[data_frame['sample'] == replicate.biosample_name]
-            sample_fasta_name = 'data/output/pcr_error/{}_{}.fasta'.format(replicate.biosample_name, marker_name)
+            sample_fasta_name = 'data/output/pcr_error/{}_{}.fasta'.format(replicate.biosample_name, marker_id)
         else:
             sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
             data_variant = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
-            sample_fasta_name = '{}_{}.fasta'.format(sample_replicate, marker_name)
+            sample_fasta_name = '{}_{}.fasta'.format(sample_replicate, marker_id)
         variant_list_series = data_variant['sequence']
         if variant_list_series.empty is False:
-            variant_list = list(variant_list_series)
-            # pcr_error_fasta(engine, variant_model, variant_list,sample_fasta_name)
+            variant_list = sorted(set(list(variant_list_series)))
+            pcr_error_fasta(engine, variant_model, variant_list,sample_fasta_name)
 

@@ -43,6 +43,7 @@ class SampleInformation(ToolWrapper):
         marker_model = self.output_table(SampleInformation.__output_table_marker)
         file_model = self.output_table(SampleInformation.__output_table_file)
         sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
+        replicate_model = self.output_table(SampleInformation.__output_table_replicate)
         with open(csv_path, 'r') as fin:
             next(fin)  # skip header
             for line in fin:
@@ -68,9 +69,11 @@ class SampleInformation(ToolWrapper):
                 marker_id = marker_instance.id
 
                 # Insert sample_information
-                sample_information_ag_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'sample_name': sample_name, 'replicate_name': replicate_name, 'run_name': run_name}
-                sample_information_ag_obj['file_id'] = file_id
-                sample_information_ag_obj['marker_id'] = marker_id
-                get_or_create(session, sampleinformation_model, **sample_information_ag_obj)
+                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'sample_name': sample_name, 'replicate_name': replicate_name, 'run_name': run_name}
+                sample_information_obj['file_id'] = file_id
+                sample_information_obj['marker_id'] = marker_id
+                get_or_create(session, sampleinformation_model, **sample_information_obj)
 
+                replicate_obj = {'biosample_name': sample_name, 'marker_id': marker_id, 'file_name': file_name, 'name': replicate_name}
+                get_or_create(session, replicate_model, **replicate_obj)
 

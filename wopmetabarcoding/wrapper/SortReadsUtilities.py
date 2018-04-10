@@ -238,7 +238,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
             Logger.instance().info("They are: " + incoherent_reads)
 
 
-def count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv):
+def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv):
     """
 
     :param gathered_marker_file:

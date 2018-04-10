@@ -76,7 +76,6 @@ class SortReads(ToolWrapper):
             " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
         )
 
-
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
@@ -151,7 +150,7 @@ class SortReads(ToolWrapper):
         for marker_obj in session.query(marker_model).all():
             marker_name = marker_obj.name
             gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
-            sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
+            sample_count_tsv = os.path.join('data/output/Sort_reads/', marker_name + "_sample_count.tsv")
             count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
             Logger.instance().info("Gathering all files from annotated files the same marker into one.")
             gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
@@ -159,7 +158,7 @@ class SortReads(ToolWrapper):
             # session.commit()
             # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
             Logger.instance().info("Counting reads for each marker.")
-            count_reads(gathered_marker_file, count_reads_marker, sample_count_tsv)
+            count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv)
             # session.commit()
             Logger.instance().info("Inserting variant in the Variant table of the database.")
             insert_variant(session, count_reads_marker, variant_model)

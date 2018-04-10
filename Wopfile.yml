@@ -1,5 +1,5 @@
-rule ReadCSV:
-    tool: wopmetabarcoding.wrapper.FileInformation
+rule SampleInformation:
+    tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
             csv: data/1_sample_info.csv
@@ -12,9 +12,8 @@ rule ReadCSV:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
-            Replicatemarker: wopmetabarcoding.model.Replicatemarker
 
-rule VsearchSort:
+rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
     input:
         table:
