@@ -4,6 +4,7 @@ def insert_table(session, model, obj):
     except:  # if not, add
         session.add(model(**obj))
 
+
 def get_or_create(session, model, **kwargs):
     instance = session.query(model).filter_by(**kwargs).first()
     if instance:

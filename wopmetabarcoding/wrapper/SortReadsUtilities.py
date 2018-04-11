@@ -1,6 +1,6 @@
 import os
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.utils.utilities import insert_table
+from wopmetabarcoding.utils.utilities import get_or_create
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio import SeqIO
@@ -354,7 +354,9 @@ def insert_variant(session, count_reads_marker, variant_model):
     for row in variant_data.fetchall():
         obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2], 'readcount': row[3]}
         # Inserting theses information in the variant table
-        insert_table(session, variant_model, obj_variant)
+        instance = session.query(variant_model).filter(variant_model.sequence == row[2]).first()
+        if not instance:
+            get_or_create(session, variant_model, **obj_variant)
     variant_data.close()
     conn.close()
 

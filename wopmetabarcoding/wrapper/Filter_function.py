@@ -75,8 +75,8 @@ def lfn_per_variant(engine, replicate_model, variant_model, marker_id, data_fram
                 else:
                     lfn_value = variantreplicate_count / variant_count
                 if lfn_value < 0.001 and variant.variant_id not in failed_variants_list:
-                    failed_variants_list.append(variant.variant_id)
-            failed_variants[variant.variant_id] = failed_variants_list
+                    failed_variants_list.append(variant.sequence)
+            failed_variants[sample_replicate] = failed_variants_list
     return failed_variants
 
 
@@ -108,7 +108,7 @@ def lfn_per_readcounts(engine, replicate_model, variant_model, marker_id, custom
                 variant_replicate_count_series = data_variant['count']
                 variant_replicate_count = variant_replicate_count_series.sum()
                 if variant_replicate_count < custom_filter and variant.variant_id not in failed_variants_list:
-                    failed_variants_list.append(variant.variant_id)
+                    failed_variants_list.append(variant.sequence)
         failed_variants[sample_replicate] = failed_variants_list
     return failed_variants
 
@@ -156,8 +156,8 @@ def lfn_per_cutoff(engine, replicate_model, variant_model, marker_id, data_frame
                 else:
                     lfn_value = variantreplicate_count / variant_count
                 if lfn_value < cutoff and variant.variant_id not in failed_variants_list:
-                    failed_variants_list.append(variant.variant_id)
-            failed_variants[variant.variant_id] = failed_variants_list
+                    failed_variants_list.append(variant.sequence)
+            failed_variants[sample_replicate] = failed_variants_list
     return failed_variants
 
 
@@ -212,11 +212,11 @@ def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, rep
             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
             repl_count = len(data_sample.index)
             if repl_count >= ((1/3)*replicate_number) and variant.variant_id not in failed_variant:
-                failed_variant.append(variant.variant_id)
+                failed_variant.append(variant.sequence)
     return failed_variant
 
 
-def delete_filtered_variants(session, variant_model, failed_variants):
+def delete_filtered_variants(engine, replicate_model, marker_name, data_frame, filter1, filter2, filter3, filter4):
     """
     Function which delete variants which don't pass lfn filters
     :param engine:
@@ -224,12 +224,17 @@ def delete_filtered_variants(session, variant_model, failed_variants):
     :param failed_variants:
     :return:
     """
-    if len(failed_variants) != 0:
-        for variant in failed_variants:
-            stmt = session.query(variant_model).filter(variant_model.variant_id == variant)
-            stmt.delete()
-    else:
-        pass
+    replicate_select = select([replicate_model.name, replicate_model.biosample_name])\
+        .where(replicate_model.marker_name == marker_name)
+    replicate_obj = engine.execute(replicate_select)
+    for replicate in replicate_obj:
+        sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
+        filter1_list = filter1.get(sample_replicate)
+        filter2_list = filter2.get(sample_replicate)
+        filter3_list = filter3.get(sample_replicate)
+        filter4_list = filter4.get(sample_replicate)
+        variant_list = filter1_list + filter2_list + filter3_list + filter4_list
+
 
 
 def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
@@ -321,9 +326,13 @@ def pcr_error(engine, replicate_model, variant_model, data_frame,marker_id, var_
     return data_frame
 
 
-
-
-
-
-
-
+# def chimera(engine, replicate_model, variant_model, data_frame, marker_id, var_prop, chimera_by):
+#
+#
+#
+#
+#
+#
+#
+#
+#
