@@ -352,7 +352,7 @@ def insert_variant(session, count_reads_marker, variant_model):
     # Selecting some attributes in the database files
     variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
     for row in variant_data.fetchall():
-        obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2]}
+        obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2], 'readcount': row[3]}
         # Inserting theses information in the variant table
         insert_table(session, variant_model, obj_variant)
     variant_data.close()

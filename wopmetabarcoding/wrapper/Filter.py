@@ -69,7 +69,7 @@ class Filter(ToolWrapper):
             # print(failed_variants)
             delete_filtered_variants(session, variant_model, failed_variants)
             session.commit()
-            pcr_error(engine, replicate_model, variant_model, 'denied', data_frame, marker.id, False)
+            data_frame = pcr_error(engine, replicate_model, variant_model, data_frame, marker.id, 0.2, False)
             # print(failed_variants)
             # result_min_repln = min_repln(engine, variant_model, replicate_model, marker.id, data_frame)
             # print(result_min_repln)

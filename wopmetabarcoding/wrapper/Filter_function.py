@@ -1,5 +1,5 @@
 from sqlalchemy import select, delete
-import pandas
+import pandas, subprocess
 
 
 def lfn_per_replicate(engine, replicate_model, variant_model, marker_id, data_frame):
@@ -234,7 +234,6 @@ def delete_filtered_variants(session, variant_model, failed_variants):
 
 def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
     with open(sample_fasta, 'w') as fout:
-        print(variant_list)
         for variant in variant_list:
             variant_select = select([variant_model.variant_id, variant_model.sequence]).where(variant_model.sequence == variant)
             variant_obj = engine.execute(variant_select)
@@ -243,20 +242,88 @@ def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
             fout.write(variant_request[1] + '\n')
 
 
-def pcr_error(engine, replicate_model, variant_model, sample_fas, data_frame,marker_id, pcr_error_by_sample):
+def pcr_error(engine, replicate_model, variant_model, data_frame,marker_id, var_prop, pcr_error_by_sample):
+    """
+
+    :param engine:
+    :param replicate_model:
+    :param variant_model:
+    :param data_frame:
+    :param marker_id:
+    :param pcr_error_by_sample:
+    :return:
+    """
     select_replicate = select([replicate_model.biosample_name, replicate_model.name])\
         .where(replicate_model.marker_id == marker_id)
     replicate_obj = engine.execute(select_replicate)
+
     for replicate in replicate_obj:
+
         if pcr_error_by_sample is True:
             data_variant = data_frame.loc[data_frame['sample'] == replicate.biosample_name]
-            sample_fasta_name = 'data/output/pcr_error/{}_{}.fasta'.format(replicate.biosample_name, marker_id)
+            sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(replicate.biosample_name, marker_id)
+
         else:
             sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
             data_variant = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
-            sample_fasta_name = '{}_{}.fasta'.format(sample_replicate, marker_id)
+            sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(sample_replicate, marker_id)
+
         variant_list_series = data_variant['sequence']
         if variant_list_series.empty is False:
             variant_list = sorted(set(list(variant_list_series)))
             pcr_error_fasta(engine, variant_model, variant_list,sample_fasta_name)
+            shortest_sequence = min(variant_list)
+            L = len(shortest_sequence)
+            id_raw = (L - 1)/ L
+            id_rounded = round(id_raw, 2)
+            sample_tsv_name = sample_fasta_name.replace('.fasta', '.tsv')
+            subprocess.call(
+                'vsearch --usearch_global ' + sample_fasta_name + ' --db ' + sample_fasta_name
+                + ' --id ' + str(id_rounded) + ' --maxrejects 0 --maxaccepts 0 --userout ' + sample_tsv_name +
+                ' --userfields query+target+alnlen+ids+mism+gaps --self', shell=True)
+
+            with open(sample_tsv_name, 'r') as fin:
+
+                for line in fin:
+                    line = line.strip().split('\t')
+                    query = line[0]
+                    target = line[1]
+                    mism = line[4]
+                    gaps = line[5]
+
+                    if (int(mism) + int(gaps)) == 0:
+                        query_variant_select = select([variant_model.sequence]).where(variant_model.variant_id == query)
+                        query_variant_obj = engine.execute(query_variant_select)
+                        query_variant_request = list(query_variant_obj.fetchone())
+                        query_variant_sequence = query_variant_request[0]
+                        target_variant_select = select([variant_model.sequence]).where(variant_model.variant_id == target)
+                        target_variant_obj = engine.execute(target_variant_select)
+                        target_variant_request = list(target_variant_obj.fetchone())
+                        target_variant_sequence = target_variant_request[0]
+                        data_query_variant = data_variant.loc[data_variant['sequence'] == query_variant_sequence]
+                        data_query_variant_series = data_query_variant['count']
+                        query_variant_count = data_query_variant_series.sum()
+                        data_target_variant = data_variant.loc[data_variant['sequence'] == target_variant_sequence]
+                        data_target_variant_series = data_target_variant['count']
+                        target_variant_count = data_target_variant_series.sum()
+                        count_ratio = query_variant_count / target_variant_count
+                        if count_ratio < var_prop:
+                            if pcr_error_by_sample is True:
+                                data_frame = data_frame.loc[
+                                    (data_frame['sequence'] != query_variant_sequence) &
+                                    (data_frame['sample'] != replicate.biosample_name)
+                                ]
+                            else:
+                                data_frame = data_frame.loc[
+                                    (data_frame['sequence'] != query_variant_sequence) &
+                                    (data_frame['sample'] != sample_replicate)
+                                    ]
+    return data_frame
+
+
+
+
+
+
+
 
