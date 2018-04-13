@@ -181,7 +181,7 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
     """
     Function used to merge all file information between the vsearch results reads and the file information csv
     :param session: Current session of the database
-    :param file_information_model: SampleInformation table, contains all the necessary information like marker names
+    :param file_information_model: SampleInformation table, contains all the necessary information like marker_id names
     :param model2: File table, contains all the information about files used
     :param trimmed_tsv: csv file to parse
     :param merged_fasta_file_name: Name of the original merged fasta file
@@ -311,18 +311,18 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
 
 def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list):
     """
-    Function used to gather all files of the same marker in one to count the reads occurrences
+    Function used to gather all files of the same marker_id in one to count the reads occurrences
     :param marker_name: Marker name
     :param gathered_marker_file: Output file
     :param annotated_tsv_list: List of annotated files
     :return: void
     """
-    # Search the csv files for each marker in the Marker table
+    # Search the csv files for each marker_id in the Marker table
     # for element in session.query(marker_model).all():
-    # Creating a filename for a database file for each marker
+    # Creating a filename for a database file for each marker_id
     # filename = element.name + "_file"
     # file_place = "data/" + filename + ".csv"
-    # Storing this name in the row of the corresponding marker
+    # Storing this name in the row of the corresponding marker_id
     # session.query(marker_model).filter(marker_model.name == element.name).update({marker_model.marker_file: file_place})
     i = 0
     for annotated_file in annotated_tsv_list:
@@ -352,7 +352,7 @@ def insert_variant(session, count_reads_marker, variant_model):
     # Selecting some attributes in the database files
     variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
     for row in variant_data.fetchall():
-        obj_variant = {'variant_id': row[0], 'marker': row[1], 'sequence': row[2], 'readcount': row[3]}
+        obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
         # Inserting theses information in the variant table
         instance = session.query(variant_model).filter(variant_model.sequence == row[2]).first()
         if not instance:

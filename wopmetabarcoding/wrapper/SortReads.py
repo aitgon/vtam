@@ -3,13 +3,15 @@ import tempfile
 import os
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
+
+from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, check_criteria_in_vsearch_output, read_counter, fasta_writer, trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
 import subprocess
 
-
+from wopmetabarcoding.utils.constants import tempdir
 
 class SortReads(ToolWrapper):
     __mapper_args__ = {
@@ -70,11 +72,23 @@ class SortReads(ToolWrapper):
         :param vsearch_output_tsv:
         :return:
         """
-        subprocess.call(
-            "vsearch --usearch_global " + file + " --db " + fasta_db + " --id " + str(self.option("min_id")) +
-            " --maxhits 1 --maxrejects 0 --maxaccepts 0 --minseqlength " + str(self.option("minseqlength")) +
-            " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
-        )
+        # subprocess.call(
+        #     "vsearch --usearch_global " + file + " --db " + fasta_db + " --id " + str(self.option("min_id")) +
+        #     " --maxhits 1 --maxrejects 0 --maxaccepts 0 --minseqlength " + str(self.option("minseqlength")) +
+        #     " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
+        # )
+        vsearch_params = {'db': fasta_db,
+                          'usearch_global': file,
+                          'id0': str(self.option("min_id")),
+                          'maxhits': 1,
+                          'maxrejects': 0,
+                          'maxaccepts': 0,
+                          'minseqlength': str(self.option("minseqlength")),
+                          'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+                          'userout': vsearch_output_tsv,
+                          }
+        vsearch1 = VSearch1(**vsearch_params)
+        vsearch1.run()
 
     def run(self):
         session = self.session()
@@ -87,7 +101,6 @@ class SortReads(ToolWrapper):
         marker_model = self.input_table(SortReads.__input_table_marker)
 
         # Temp variables:
-        tempdir = tempfile.mkdtemp()
         annoted_tsv_list = []
         run_list = {}
         vsearch_output_tsv = os.path.join(tempdir, 'vsearch_output.tsv')
@@ -146,18 +159,18 @@ class SortReads(ToolWrapper):
             annotate_reads(session, sample_information_model, trimmed_tsv,
                            file_id=file_id, annotated_reads_tsv=annotated_reads_tsv)
         #
-        # # For each marker, concatenate its files with the annotated reads and count unique reads per marker
+        # # For each marker_id, concatenate its files with the annotated reads and count unique reads per marker_id
         for marker_obj in session.query(marker_model).all():
             marker_name = marker_obj.name
             gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
-            sample_count_tsv = os.path.join('data/output/Sort_reads/', marker_name + "_sample_count.tsv")
+            sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
             count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
-            Logger.instance().info("Gathering all files from annotated files the same marker into one.")
+            Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")
             gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
             gathered_marker_file = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
             # session.commit()
             # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
-            Logger.instance().info("Counting reads for each marker.")
+            Logger.instance().info("Counting reads for each marker_id.")
             count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv)
             # session.commit()
             Logger.instance().info("Inserting variant in the Variant table of the database.")

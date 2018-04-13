@@ -63,7 +63,7 @@ class SampleInformation(ToolWrapper):
                 file_instance = get_or_create(session, file_model, **file_obj)
                 file_id = file_instance.id
                 #
-                # Insert marker
+                # Insert marker_id
                 marker_obj = {'name': marker_name}
                 marker_instance = get_or_create(session, marker_model, **marker_obj)
                 marker_id = marker_instance.id

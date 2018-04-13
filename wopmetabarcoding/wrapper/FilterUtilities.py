@@ -8,7 +8,7 @@ def lfn_per_replicate(engine, replicate_model, variant_model, marker_id, data_fr
     :param engine: Engine of the database
     :param replicate_model: Model of the replicate table
     :param variant_model: Model of the variant table
-    :param marker_id: Name of the marker
+    :param marker_id: Name of the marker_id
     :param data_frame: Dataframe containing the content of the sample_count tsv
     :return: list failed_variants
     """
