@@ -1,9 +1,8 @@
-# 'vsearch –uchime_denovo ' + sorted_repl_fasta_name + ' --borderline ' + borderline_repl_filename +
-#     ' --nonchimeras '+ nonchimera_repl_filename + ' --chimeras ' + chimera_repl_filename, shell=True
-
-
 import os
 import subprocess
+
+import sys
+
 
 class VSearch:
 

@@ -64,15 +64,13 @@ class TestWopMetabarcoding(TestCase):
         p = subprocess.Popen(cmd_line)
         p.wait()
         #
-        marker = 'ZFZR'
+        marker_id = 1
         sequence = 'AGCCTGAGCTGGAATAGTAGGTACTTCCCTTAGTATACTTATTCGAGCCGAATTAGGACACCCAGGCTCTCTAATTGGAGACGACCAAATTTATAATGTAATTGTTACTGCTCATGCTTTTGTAATAATTTTTTTTATAGTTATGCCAATTATAATT'
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         sql = "SELECT marker_id from Variant where sequence='%s';"%(sequence)
         cur.execute(sql)
-        # print(db_path)
-        # print(cur.fetchone())
-        # self.assertTrue(cur.fetchone()[0] == marker_id)
-        # #
-        # shutil.rmtree(test_outdir)
+        self.assertTrue(list(cur.fetchone()) == [1])
+        #
+        shutil.rmtree(test_outdir)
 

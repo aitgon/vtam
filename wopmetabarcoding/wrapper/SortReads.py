@@ -64,31 +64,31 @@ class SortReads(ToolWrapper):
 
         }
 
-    def vsearch_subprocess(self, file, fasta_db, vsearch_output_tsv):
-        """
-
-        :param file:
-        :param fasta_db:
-        :param vsearch_output_tsv:
-        :return:
-        """
-        # subprocess.call(
-        #     "vsearch --usearch_global " + file + " --db " + fasta_db + " --id " + str(self.option("min_id")) +
-        #     " --maxhits 1 --maxrejects 0 --maxaccepts 0 --minseqlength " + str(self.option("minseqlength")) +
-        #     " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
-        # )
-        vsearch_params = {'db': fasta_db,
-                          'usearch_global': file,
-                          'id0': str(self.option("min_id")),
-                          'maxhits': 1,
-                          'maxrejects': 0,
-                          'maxaccepts': 0,
-                          'minseqlength': str(self.option("minseqlength")),
-                          'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
-                          'userout': vsearch_output_tsv,
-                          }
-        vsearch1 = VSearch1(**vsearch_params)
-        vsearch1.run()
+    # def vsearch_subprocess(self, file, fasta_db, vsearch_output_tsv):
+    #     """
+    #
+    #     :param file:
+    #     :param fasta_db:
+    #     :param vsearch_output_tsv:
+    #     :return:
+    #     """
+    #     # subprocess.call(
+    #     #     "vsearch --usearch_global " + file + " --db " + fasta_db + " --id " + str(self.option("min_id")) +
+    #     #     " --maxhits 1 --maxrejects 0 --maxaccepts 0 --minseqlength " + str(self.option("minseqlength")) +
+    #     #     " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
+    #     # )
+    #     vsearch_params = {'db': fasta_db,
+    #                       'usearch_global': file,
+    #                       'id0': str(self.option("min_id")),
+    #                       'maxhits': 1,
+    #                       'maxrejects': 0,
+    #                       'maxaccepts': 0,
+    #                       'minseqlength': str(self.option("minseqlength")),
+    #                       'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+    #                       'userout': vsearch_output_tsv,
+    #                       }
+    #     vsearch1 = VSearch1(**vsearch_params)
+    #     vsearch1.run()
 
     def run(self):
         session = self.session()
@@ -127,7 +127,22 @@ class SortReads(ToolWrapper):
             Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for forward trimming.")
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             Logger.instance().info("Processing Vsearch for forward trimming.")
-            self.vsearch_subprocess(file_obj.name, primer_tag_fasta, vsearch_output_tsv)
+            #
+            # self.vsearch_subprocess(file_obj.name, primer_tag_fasta, vsearch_output_tsv)
+            vsearch_params = {'db': primer_tag_fasta,
+                              'usearch_global': file_obj.name,
+                              'id': str(self.option("min_id")),
+                              'maxhits': 1,
+                              'maxrejects': 0,
+                              'maxaccepts': 0,
+                              'minseqlength': str(self.option("minseqlength")),
+                              'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+                              'userout': vsearch_output_tsv,
+                              }
+            vsearch1 = VSearch1(**vsearch_params)
+            vsearch1.run()
+            del vsearch1
+            #
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
             check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for forward trimming.")
@@ -143,7 +158,22 @@ class SortReads(ToolWrapper):
             # create_primer_tag_fasta_for_vsearch(session, sample_information_model,primer_tag_fasta, file_obj.name,is_forward_strand)
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             Logger.instance().info("Processing Vsearch for reverse trimming.")
-            self.vsearch_subprocess(trimmed_fasta, primer_tag_fasta, vsearch_output_tsv)
+            #
+            # self.vsearch_subprocess(trimmed_fasta, primer_tag_fasta, vsearch_output_tsv)
+            vsearch_params = {'db': primer_tag_fasta,
+                              'usearch_global': trimmed_fasta,
+                              'id': str(self.option("min_id")),
+                              'maxhits': 1,
+                              'maxrejects': 0,
+                              'maxaccepts': 0,
+                              'minseqlength': str(self.option("minseqlength")),
+                              'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+                              'userout': vsearch_output_tsv,
+                              }
+            vsearch1 = VSearch1(**vsearch_params)
+            vsearch1.run()
+            del vsearch1
+            #
             Logger.instance().info("Eliminating non SRS conforms reads for reverse trimming.")
             check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for reverse trimming.")
