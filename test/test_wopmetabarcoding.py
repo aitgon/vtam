@@ -39,7 +39,9 @@ class TestWopMetabarcoding(TestCase):
         p.wait()
         #
         output = (1, 'ZFZR', 'AGATATTGGAACWTTATATTTTATTTTTGG', 'WACTAATCAATTWCCAAATCCTCC', 'cgatcgtcatcacg', 'ctcgatgatcacg', 1, 'prerun', '14Mon01', 'repl1')
+        print(self.__db_path)
         con = sqlite3.connect(self.__db_path)
+        print(con)
         cur = con.cursor()
         cur.execute("SELECT * from SampleInformation;")
         self.assertTrue(list(cur.fetchone()) == list(output))

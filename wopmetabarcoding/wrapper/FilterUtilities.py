@@ -97,6 +97,7 @@ def lfn_per_readcounts(engine, replicate_model, variant_model, marker_id, custom
     failed_variants = {}
     for replicate in replicate_obj:
         sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
+        # print(sample_replicate)
         failed_variants_list = []
         variant_select = select([variant_model.variant_id, variant_model.sequence]) \
             .where(variant_model.marker == marker_id)
@@ -107,15 +108,20 @@ def lfn_per_readcounts(engine, replicate_model, variant_model, marker_id, custom
             if data_variant.empty is False and data_replicate.empty is False:
                 variant_replicate_count_series = data_variant['count']
                 variant_replicate_count = variant_replicate_count_series.sum()
+                if sample_replicate == "14Mon06_repl1":
+                    print(variant.sequence)
+                    print(variant_replicate_count)
                 if variant_replicate_count < custom_filter and variant.variant_id not in failed_variants_list:
+                    if sample_replicate == "14Mon06_repl1":
+                        print("Denied: " + variant.sequence)
                     failed_variants_list.append(variant.sequence)
         failed_variants[sample_replicate] = failed_variants_list
+        # print(failed_variants_list)
     return failed_variants
 
 
 def create_cutoff_table(cutoff_file_tsv):
     data_cutoff = pandas.read_csv(cutoff_file_tsv, sep='\t')
-
     return data_cutoff
 
 
@@ -180,7 +186,7 @@ def lfn_per_cutoff(engine, replicate_model, variant_model, marker_id, data_frame
 #     return succeed_variants
 
 
-def min_repln(engine, variant_model, replicate_model, marker_id, data_frame):
+def min_repln(engine, variant_model, replicate_model, marker_id, data_frame, min_count):
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
         .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
@@ -192,16 +198,21 @@ def min_repln(engine, variant_model, replicate_model, marker_id, data_frame):
         replicate_obj = engine.execute(replicate_select)
         for replicate in replicate_obj:
             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
-            repl_count = len(data_sample.index)
-            if repl_count >= 2 and variant.variant_id:
-                print(variant.variant_id, replicate.biosample_name)
+            if data_variant.empty is False and data_sample.empty is False:
+                repl_count = len(data_sample.index)
+                if repl_count <= min_count:
+                    data_to_drop = data_frame.loc[
+                        (data_frame['sequence'] == variant.sequence) &
+                        (data_frame['sample'] == replicate.biosample_name)
+                        ]
+                    indexs_to_drop = data_to_drop.index.tolist()
+                    data_frame.drop(indexs_to_drop, inplace=True)
 
 
 def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, replicate_number):
     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
         .where(variant_model.marker == marker_id)
     variant_obj = engine.execute(variant_select)
-    failed_variant = []
     for variant in variant_obj:
         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
         # Selecting lines of the replicate table
@@ -211,12 +222,16 @@ def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, rep
         for replicate in replicate_obj:
             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
             repl_count = len(data_sample.index)
-            if repl_count >= ((1/3)*replicate_number) and variant.variant_id not in failed_variant:
-                failed_variant.append(variant.sequence)
-    return failed_variant
+            if repl_count <= ((1/3)*replicate_number):
+                data_to_drop = data_frame.loc[
+                    (data_frame['sequence'] == variant.sequence) &
+                    (data_frame['sample'] == replicate.biosample_name)
+                    ]
+                indexs_to_drop = data_to_drop.index.tolist()
+                data_frame.drop(indexs_to_drop, inplace=True)
 
 
-def delete_filtered_variants(engine, replicate_model, marker_name, data_frame, filter1, filter2, filter3, filter4):
+def delete_filtered_variants(engine, replicate_model, marker_id, data_frame, filter1, filter2, filter3, filter4):
     """
     Function which delete variants which don't pass lfn filters
     :param engine:
@@ -225,7 +240,7 @@ def delete_filtered_variants(engine, replicate_model, marker_name, data_frame, f
     :return:
     """
     replicate_select = select([replicate_model.name, replicate_model.biosample_name])\
-        .where(replicate_model.marker_name == marker_name)
+        .where(replicate_model.marker_id == marker_id)
     replicate_obj = engine.execute(replicate_select)
     for replicate in replicate_obj:
         sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
@@ -234,16 +249,28 @@ def delete_filtered_variants(engine, replicate_model, marker_name, data_frame, f
         filter3_list = filter3.get(sample_replicate)
         filter4_list = filter4.get(sample_replicate)
         variant_list = filter1_list + filter2_list + filter3_list + filter4_list
+        data_to_drop = data_frame.loc[(data_frame['sample_replicate'] == sample_replicate) & data_frame['sequence'].isin(variant_list)]
+        indexs_to_drop = data_to_drop.index.tolist()
+        data_frame.drop(indexs_to_drop, inplace=True)
+            # data_frame = data_frame.loc[
+            #     (data_frame['sample_replicate'] != sample_replicate) &
+            #     (data_frame['sequence'] != variant)
+            # ]
 
 
-
-def pcr_error_fasta(engine, variant_model, variant_list, sample_fasta):
+def filter_fasta(engine, variant_model, variant_list, sample_fasta, chimera):
     with open(sample_fasta, 'w') as fout:
         for variant in variant_list:
             variant_select = select([variant_model.variant_id, variant_model.sequence]).where(variant_model.sequence == variant)
             variant_obj = engine.execute(variant_select)
             variant_request = list(variant_obj.fetchone())
-            fout.write(">{}\n".format(variant_request[0]))
+            print("ok!")
+            if chimera is True:
+                fout.write(
+                    ">{};size={};\n".format(variant_request[0], str(len(variant_request[1])))
+                )
+            else:
+                fout.write(">{}\n".format(variant_request[0]))
             fout.write(variant_request[1] + '\n')
 
 
@@ -276,7 +303,7 @@ def pcr_error(engine, replicate_model, variant_model, data_frame,marker_id, var_
         variant_list_series = data_variant['sequence']
         if variant_list_series.empty is False:
             variant_list = sorted(set(list(variant_list_series)))
-            pcr_error_fasta(engine, variant_model, variant_list,sample_fasta_name)
+            filter_fasta(engine, variant_model, variant_list,sample_fasta_name, False)
             shortest_sequence = min(variant_list)
             L = len(shortest_sequence)
             id_raw = (L - 1)/ L
@@ -312,27 +339,63 @@ def pcr_error(engine, replicate_model, variant_model, data_frame,marker_id, var_
                         data_target_variant_series = data_target_variant['count']
                         target_variant_count = data_target_variant_series.sum()
                         count_ratio = query_variant_count / target_variant_count
+                        print(count_ratio)
                         if count_ratio < var_prop:
                             if pcr_error_by_sample is True:
-                                data_frame = data_frame.loc[
-                                    (data_frame['sequence'] != query_variant_sequence) &
-                                    (data_frame['sample'] != replicate.biosample_name)
+                                data_to_drop = data_frame.loc[
+                                    (data_frame['sequence'] == query_variant_sequence) &
+                                    (data_frame['sample'] == replicate.biosample_name)
                                 ]
+                                indexs_to_drop = data_to_drop.index.tolist()
+                                data_frame.drop(indexs_to_drop, inplace=True)
                             else:
-                                data_frame = data_frame.loc[
-                                    (data_frame['sequence'] != query_variant_sequence) &
-                                    (data_frame['sample'] != sample_replicate)
+                                data_to_drop = data_frame.loc[
+                                    (data_frame['sequence'] == query_variant_sequence) &
+                                    (data_frame['sample'] == sample_replicate)
                                     ]
-    return data_frame
+                                indexs_to_drop = data_to_drop.index.tolist()
+                                data_frame.drop(indexs_to_drop, inplace=True)
 
 
-# def chimera(engine, replicate_model, variant_model, data_frame, marker_id, var_prop, chimera_by):
-#
-#
-#
-#
-#
-#
-#
-#
-#
+def chimera(engine, replicate_model, variant_model, data_frame, marker_id, chimera_by):
+    """
+
+    :param engine: Engine of the database
+    :param replicate_model: Model of the replicate table
+    :param variant_model:
+    :param data_frame:
+    :param marker_id:
+    :param var_prop:
+    :param chimera_by:
+    :return:
+    """
+    select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
+        .where(replicate_model.marker_id == marker_id)
+    replicate_obj = engine.execute(select_replicate)
+
+    for replicate in replicate_obj:
+
+        if chimera_by == "sample":
+            data_variant = data_frame.loc[data_frame['sample'] == replicate.biosample_name]
+            repl_fasta_name = 'data/output/Filter/{}_{}_repl.fasta'.format(replicate.biosample_name, marker_id)
+
+        elif chimera_by == "sample_replicate":
+            sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
+            data_variant = data_frame.loc[data_frame['sample_replicate'] == sample_replicate]
+            repl_fasta_name = 'data/output/Filter/{}_{}_repl.fasta'.format(sample_replicate, marker_id)
+
+        sorted_repl_fasta_name = repl_fasta_name.replace('.fasta', '_sorted.fasta')
+        variant_list_series = data_variant['sequence']
+        if variant_list_series.empty is False:
+            variant_list_series = data_variant['sequence']
+            variant_list = sorted(set(list(variant_list_series)))
+            print(variant_list)
+            filter_fasta(engine, variant_model, variant_list, repl_fasta_name, True)
+            subprocess.call('vsearch --sortbysize ' + repl_fasta_name + ' --output ' + sorted_repl_fasta_name, shell = True)
+            # borderline_repl_filename = sorted_repl_fasta_name.replace('sorted', 'borderline')
+            # nonchimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'correct')
+            # chimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'chimera')
+            # subprocess.call(
+            #     'vsearch –uchime_denovo ' + sorted_repl_fasta_name + ' --borderline ' + borderline_repl_filename +
+            #     ' --nonchimeras '+ nonchimera_repl_filename + ' --chimeras ' + chimera_repl_filename, shell=True
+            # )

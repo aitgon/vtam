@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.Filter_function import lfn_per_replicate, lfn_per_variant, lfn_per_readcounts,\
-    lfn_per_cutoff, min_repln, min_replp, delete_filtered_variants, pcr_error
+from wopmetabarcoding.wrapper.FilterUtilities import lfn_per_replicate, lfn_per_variant, lfn_per_readcounts,\
+    lfn_per_cutoff, min_repln, min_replp, delete_filtered_variants, pcr_error, chimera
 from sqlalchemy import select
 import pandas, os
 
@@ -53,19 +53,12 @@ class Filter(ToolWrapper):
             result_filter2 = lfn_per_variant(engine, replicate_model, variant_model, marker.id, data_frame, False)
             result_filter3 = lfn_per_readcounts(engine, replicate_model, variant_model, marker.id, 2, data_frame)
             result_filter4 = lfn_per_cutoff(engine, replicate_model, variant_model, marker.id, data_frame, cutoff_file_tsv, False)
-            data_frame = delete_filtered_variants(
-                engine, replicate_model, marker.name, data_frame, result_filter1, result_filter2, result_filter3, result_filter4
+            delete_filtered_variants(
+                engine, replicate_model, marker.id, data_frame, result_filter1, result_filter2, result_filter3, result_filter4
             )
-            # for variant in result_filter4:
-            #     variant_list = result_filter4.get(variant)
-            #     failed_variants += variant_list
-            # failed_variants = sorted(set(failed_variants))
-            # print(failed_variants)
-            # # print(failed_variants)
-            # data_frame = delete_filtered_variants(session, variant_model, failed_variants)
-            # session.commit()
-            # data_frame = pcr_error(engine, replicate_model, variant_model, data_frame, marker.id, 0.2, False)
-            # # print(failed_variants)
-            # # result_min_repln = min_repln(engine, variant_model, replicate_model, marker.id, data_frame)
-            # # print(result_min_repln)
-            # # result_min_replp = min_replp(engine, variant_model, replicate_model, marker.id, data_frame, 3)
+            replp = True
+            if replp is False:
+                min_repln(engine, variant_model, replicate_model, marker.id, data_frame, 1)
+            else:
+                min_replp(engine, variant_model, replicate_model, marker.id, data_frame, 3)
+            chimera(engine, replicate_model, variant_model, data_frame, marker.id, 'sample_replicate')
