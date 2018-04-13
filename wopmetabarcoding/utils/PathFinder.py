@@ -9,8 +9,6 @@ import os
 class PathFinder:
 
 
-
-
     """
     Static class for finding paths
     """
