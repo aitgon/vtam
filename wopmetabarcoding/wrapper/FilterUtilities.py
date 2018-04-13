@@ -9,12 +9,14 @@ def lfn1_per_replicate(df, lfn_per_replicate_threshold):
     df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
     return list(df2.ix[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index) # select rare reads to discard later
 
+
 def lfn2_per_variant(df, lfn_per_variant_threshold):
     df2 = df.groupby(by=['sample_replicate']).sum()
     df2 = df.merge(df2, left_on='sample_replicate', right_index=True)
     df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
     df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
     return list(df2.ix[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
+
 
 def lfn2_per_replicate_series(df, lfn_per_replicate_series_threshold):
     df2 = df.groupby(by=['replicate']).sum()
@@ -23,8 +25,10 @@ def lfn2_per_replicate_series(df, lfn_per_replicate_series_threshold):
     df2['low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
     return list(df2.ix[df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].index) # select rare reads to discard later
 
+
 def lfn3_read_count(df, lfn_read_count_threshold):
     return list(df.ix[df['count'] <= lfn_read_count_threshold].index) # select rare reads to discard later
+
 
 def lfn4_per_variant_with_cutoff(df, cutoff_tsv):
     cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
@@ -38,6 +42,45 @@ def lfn4_per_variant_with_cutoff(df, cutoff_tsv):
     # merge with cutoff
     df2 = df.merge(cutoff_df, left_on="sequence", right_on="sequence")
     return list(df2.ix[df2.low_frequence_noice_per_variant < df2.cutoff].index) # select rare reads to discard later
+
+
+def lfn4_per_replicate_series_with_cutoff(df, cutoff_tsv):
+    cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
+    cutoff_df.columns = ['sequence', 'cutoff']
+    #
+    df2 = df.groupby(by=['replicate']).sum()
+    df2 = df.merge(df2, left_on='replicate', right_index=True)
+    df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_replicate_series']
+    df2['low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
+    #
+    # merge with cutoff
+    df2 = df.merge(cutoff_df, left_on="sequence", right_on="sequence")
+    return list(df2.ix[df2.low_frequence_noice_per_replicate_series < df2.cutoff].index) # select rare reads to discard later
+
+
+def delete_filtered_variants(df, filter1, filter2, filter3, filter4):
+    """
+    Function deleting all variants which didn't pass the LFNs filters
+    :param df:
+    :param filter1:
+    :param filter2:
+    :param filter3:
+    :param filter4:
+    :return:
+    """
+    failed_variants_lfn_filters = filter1 + filter2 + filter3 + filter4
+    failed_variants_lfn_filters = sorted(set(failed_variants_lfn_filters))
+    df.drop(failed_variants_lfn_filters, inplace=True)
+
+def min_repln(df, min_repln_count):
+    """
+
+    :param df:
+    :param min_repln_count:
+    :return:
+    """
+
+
 
 # def lfn_per_replicate(engine, replicate_model, variant_model, marker_id, data_frame):
 #     """
@@ -223,27 +266,27 @@ def lfn_per_cutoff(engine, replicate_model, variant_model, marker_id, data_frame
 #     return succeed_variants
 
 
-def min_repln(engine, variant_model, replicate_model, marker_id, data_frame, min_count):
-    variant_select = select([variant_model.variant_id, variant_model.sequence]) \
-        .where(variant_model.marker == marker_id)
-    variant_obj = engine.execute(variant_select)
-    for variant in variant_obj:
-        data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
-        # Selecting lines of the replicate table
-        replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-            replicate_model.marker_id == marker_id)
-        replicate_obj = engine.execute(replicate_select)
-        for replicate in replicate_obj:
-            data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
-            if data_variant.empty is False and data_sample.empty is False:
-                repl_count = len(data_sample.index)
-                if repl_count <= min_count:
-                    data_to_drop = data_frame.loc[
-                        (data_frame['sequence'] == variant.sequence) &
-                        (data_frame['sample'] == replicate.biosample_name)
-                        ]
-                    indexs_to_drop = data_to_drop.index.tolist()
-                    data_frame.drop(indexs_to_drop, inplace=True)
+# def min_repln(engine, variant_model, replicate_model, marker_id, data_frame, min_count):
+#     variant_select = select([variant_model.variant_id, variant_model.sequence]) \
+#         .where(variant_model.marker == marker_id)
+#     variant_obj = engine.execute(variant_select)
+#     for variant in variant_obj:
+#         data_variant = data_frame.loc[data_frame['sequence'] == variant.sequence]
+#         # Selecting lines of the replicate table
+#         replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
+#             replicate_model.marker_id == marker_id)
+#         replicate_obj = engine.execute(replicate_select)
+#         for replicate in replicate_obj:
+#             data_sample = data_variant.loc[data_variant['sample'] == replicate.biosample_name]
+#             if data_variant.empty is False and data_sample.empty is False:
+#                 repl_count = len(data_sample.index)
+#                 if repl_count <= min_count:
+#                     data_to_drop = data_frame.loc[
+#                         (data_frame['sequence'] == variant.sequence) &
+#                         (data_frame['sample'] == replicate.biosample_name)
+#                         ]
+#                     indexs_to_drop = data_to_drop.index.tolist()
+#                     data_frame.drop(indexs_to_drop, inplace=True)
 
 
 def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, replicate_number):
@@ -266,33 +309,6 @@ def min_replp(engine, variant_model, replicate_model, marker_id, data_frame, rep
                     ]
                 indexs_to_drop = data_to_drop.index.tolist()
                 data_frame.drop(indexs_to_drop, inplace=True)
-
-
-def delete_filtered_variants(engine, replicate_model, marker_id, data_frame, filter1, filter2, filter3, filter4):
-    """
-    Function which delete variants which don't pass lfn filters
-    :param engine:
-    :param variant_model:
-    :param failed_variants:
-    :return:
-    """
-    replicate_select = select([replicate_model.name, replicate_model.biosample_name])\
-        .where(replicate_model.marker_id == marker_id)
-    replicate_obj = engine.execute(replicate_select)
-    for replicate in replicate_obj:
-        sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
-        filter1_list = filter1.get(sample_replicate)
-        filter2_list = filter2.get(sample_replicate)
-        filter3_list = filter3.get(sample_replicate)
-        filter4_list = filter4.get(sample_replicate)
-        variant_list = filter1_list + filter2_list + filter3_list + filter4_list
-        data_to_drop = data_frame.loc[(data_frame['sample_replicate'] == sample_replicate) & data_frame['sequence'].isin(variant_list)]
-        indexs_to_drop = data_to_drop.index.tolist()
-        data_frame.drop(indexs_to_drop, inplace=True)
-            # data_frame = data_frame.loc[
-            #     (data_frame['sample_replicate'] != sample_replicate) &
-            #     (data_frame['sequence'] != variant)
-            # ]
 
 
 def filter_fasta(engine, variant_model, variant_list, sample_fasta, chimera):
