@@ -17,6 +17,7 @@ class VSearch:
             p = subprocess.Popen(cmd_line, stdout=FNULL, stderr=FNULL)
             p.wait()
 
+
 class VSearch1(VSearch):
 
     def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None):
@@ -34,12 +35,31 @@ class VSearch1(VSearch):
         if not userfields is None: self.params['--userfields'] = userfields
 
 
+class Vsearch2(VSearch):
+
+    def __init__(self, sortbysize, output):
+        VSearch.__init__(self)
+        self.params["--sortbysize"] = sortbysize
+        self.params["--output"] = output
+
+
+class Vsearch3(VSearch):
+
+    def __init__(self, uchime_denovo, borderline, nonchimeras, chimeras):
+        VSearch.__init__(self)
+        self.params["--uchime_denovo"] = uchime_denovo
+        self.params["--borderline"] = borderline
+        self.params["nonchimeras"] = nonchimeras
+        self.params["chimeras"] = chimeras
+
+
 def main():
     vsearch = VSearch()
     vsearch.run()
     vsearch_params = {'db' : 'dbpath', 'usearch_global' : 'usearch_global', 'maxrejects': 1}
     vsearch1 = VSearch1(**vsearch_params)
     vsearch1.run()
+
 
 if __name__ == '__main__':
     main()

@@ -3,7 +3,7 @@ from wopmars.utils.Logger import Logger
 
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.wrapper.FilterUtilities import lfn1_per_replicate, lfn2_per_variant, lfn2_per_replicate_series, \
-    lfn3_read_count, lfn4_per_variant_with_cutoff, lfn4_per_replicate_series_with_cutoff
+    lfn3_read_count, lfn4_per_variant_with_cutoff, lfn4_per_replicate_series_with_cutoff, delete_filtered_variants, min_repln, chimera, min_replp
 from sqlalchemy import select
 import pandas, os
 
@@ -62,7 +62,7 @@ class Filter(ToolWrapper):
             lfn_read_count_threshold = 2
             #
             failed_variant_list_lfn1_per_replicate = lfn1_per_replicate(df, lfn_per_replicate_threshold)
-            lfn_per_replicate_series = True
+            lfn_per_replicate_series = False
             if not lfn_per_replicate_series:
                 failed_variant_list_lfn2 = lfn2_per_variant(df, lfn_per_variant_threshold)
             else:
@@ -71,14 +71,16 @@ class Filter(ToolWrapper):
             if not lfn_per_replicate_series:
                 failed_variant_list_lfn4 = lfn4_per_variant_with_cutoff(df, cutoff_file_tsv)
             else:
-                failed_variant_list_lfn4 = lfn4_per_replicate_series_with_cutoff(df, cutoff_tsv)
+                failed_variant_list_lfn4 = lfn4_per_replicate_series_with_cutoff(df, cutoff_file_tsv)
             #
-            # delete_filtered_variants(
-            #     engine, replicate_model, marker.id, df, result_filter1, result_filter2, result_filter3, result_filter4
-            # )
-            # replp = True
-            # if replp is False:
-            #     min_repln(engine, variant_model, replicate_model, marker.id, df, 1)
-            # else:
-            #     min_replp(engine, variant_model, replicate_model, marker.id, df, 3)
-            # chimera(engine, replicate_model, variant_model, df, marker.id, 'sample_replicate')
+            delete_filtered_variants(
+                df, failed_variant_list_lfn1_per_replicate, failed_variant_list_lfn2,
+                failed_variant_list_lfn3_read_count, failed_variant_list_lfn4
+            )
+            # min_repln(df, 2)
+            replp = True
+            if replp is False:
+                min_repln(engine, variant_model, replicate_model, marker.id, df, 1)
+            else:
+                min_replp(engine, variant_model, replicate_model, marker.id, df, 3)
+            chimera(engine, replicate_model, variant_model, df, marker.id, 'sample_replicate')
