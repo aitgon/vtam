@@ -167,7 +167,7 @@ def pcr_error(engine, replicate_model, variant_model, df, marker_id, var_prop, p
             df.drop(index_to_drop, inplace=True)
 
 
-def chimera(engine, replicate_model, variant_model, df, marker_id, chimera_by):
+def chimera(replicate_obj_list, df, marker_id, chimera_by):
     """
 
     :param engine: Engine of the database
@@ -179,11 +179,11 @@ def chimera(engine, replicate_model, variant_model, df, marker_id, chimera_by):
     :param chimera_by:
     :return:
     """
-    select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
-        .where(replicate_model.marker_id == marker_id)
-    replicate_obj = engine.execute(select_replicate)
+    # select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
+    #     .where(replicate_model.marker_id == marker_id)
+    # replicate_obj = engine.execute(select_replicate)
 
-    for replicate in replicate_obj:
+    for replicate in replicate_obj_list:
 
         if chimera_by == "sample":
             df2 = df.loc[df['sample'] == replicate.biosample_name]
@@ -199,40 +199,41 @@ def chimera(engine, replicate_model, variant_model, df, marker_id, chimera_by):
         if variant_list_series.empty is False:
             variant_list_series = df2['sequence']
             variant_list = sorted(set(list(variant_list_series)))
-            filter_fasta(engine, variant_model, variant_list, repl_fasta_name, True)
-            vsearch_sortbysize_args = {"sortbysize": repl_fasta_name, "output": sorted_repl_fasta_name}
-            vsearch_sortbysize = Vsearch2(**vsearch_sortbysize_args)
-            vsearch_sortbysize.run()
-            del vsearch_sortbysize
-            borderline_repl_filename = sorted_repl_fasta_name.replace('sorted', 'borderline')
-            nonchimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'correct')
-            chimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'chimera')
-            vsearch_chimera_args = {
-                "uchime_denovo": sorted_repl_fasta_name,
-                "borderline": borderline_repl_filename,
-                "nonchimeras": nonchimera_repl_filename,
-                "chimeras": chimera_repl_filename
-            }
-            vsearch_chimera = Vsearch3(**vsearch_chimera_args)
-            vsearch_chimera.run()
-            del vsearch_chimera
-            with open(chimera_repl_filename, 'r') as fin:
-                for line in fin:
-
-                    if ">" in line:
-                        line = line.replace('>', '')
-                        variant_sequence = line.strip().split(';')[0]
-                        df_variant = df2.loc[df2['sequence'] == variant_sequence]
-
-                        if df_variant.empty is False:
-                            indexs_to_drop = df_variant.index.tolist()
-                            df.drop(indexs_to_drop, inplace=True)
-                        else:
-                            pass
-            borderline_variants = []
-            for record in SeqIO.parse(borderline_repl_filename, 'fasta'):
-                borderline_variants.append(record.description.strip().split(';')[0])
-            df['is_borderline'] = (df['sequence'] in borderline_variants)
+            print(variant_list)
+            # filter_fasta(engine, variant_model, variant_list, repl_fasta_name, True)
+            # vsearch_sortbysize_args = {"sortbysize": repl_fasta_name, "output": sorted_repl_fasta_name}
+            # vsearch_sortbysize = Vsearch2(**vsearch_sortbysize_args)
+            # vsearch_sortbysize.run()
+            # del vsearch_sortbysize
+            # borderline_repl_filename = sorted_repl_fasta_name.replace('sorted', 'borderline')
+            # nonchimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'correct')
+            # chimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'chimera')
+            # vsearch_chimera_args = {
+            #     "uchime_denovo": sorted_repl_fasta_name,
+            #     "borderline": borderline_repl_filename,
+            #     "nonchimeras": nonchimera_repl_filename,
+            #     "chimeras": chimera_repl_filename
+            # }
+            # vsearch_chimera = Vsearch3(**vsearch_chimera_args)
+            # vsearch_chimera.run()
+            # del vsearch_chimera
+            # with open(chimera_repl_filename, 'r') as fin:
+            #     for line in fin:
+            #
+            #         if ">" in line:
+            #             line = line.replace('>', '')
+            #             variant_sequence = line.strip().split(';')[0]
+            #             df_variant = df2.loc[df2['sequence'] == variant_sequence]
+            #
+            #             if df_variant.empty is False:
+            #                 indexs_to_drop = df_variant.index.tolist()
+            #                 df.drop(indexs_to_drop, inplace=True)
+            #             else:
+            #                 pass
+            # borderline_variants = []
+            # for record in SeqIO.parse(borderline_repl_filename, 'fasta'):
+            #     borderline_variants.append(record.description.strip().split(';')[0])
+            # df['is_borderline'] = (df['sequence'] in borderline_variants)
 
 
 def renkoken(engine, replicate_model, variant_model, df, marker_id):

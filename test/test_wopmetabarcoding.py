@@ -1,5 +1,6 @@
 import filecmp
 import os
+import pickle
 import shutil
 import sqlite3
 from unittest import TestCase
@@ -7,6 +8,7 @@ import subprocess
 from jinja2 import Template
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.wrapper.FilterUtilities import chimera
 
 
 
@@ -73,4 +75,15 @@ class TestWopMetabarcoding(TestCase):
         self.assertTrue(list(cur.fetchone()) == [1])
         #
         shutil.rmtree(test_outdir)
+
+    def test_03_chimera(self):
+        df_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/chimera", "df.pkl")
+        replicate_obj_list_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/chimera", "replicate_obj_list.pkl")
+        with open(df_pkl, 'rb') as fin:
+            df = pickle.load(fin)
+        with open(replicate_obj_list_pkl, 'rb') as fin:
+            replicate_obj_list = pickle.load(fin)
+        marker_id = 1
+        chimera_by = "sample_replicate"
+        chimera(replicate_obj_list, df, marker_id, chimera_by)
 
