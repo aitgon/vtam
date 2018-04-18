@@ -20,7 +20,7 @@ class VSearch:
 
 class VSearch1(VSearch):
 
-    def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None):
+    def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None, vself=None):
         #
         VSearch.__init__(self)
         self.params["--db"] = db
@@ -49,8 +49,8 @@ class Vsearch3(VSearch):
         VSearch.__init__(self)
         self.params["--uchime_denovo"] = uchime_denovo
         self.params["--borderline"] = borderline
-        self.params["nonchimeras"] = nonchimeras
-        self.params["chimeras"] = chimeras
+        self.params["--nonchimeras"] = nonchimeras
+        self.params["--chimeras"] = chimeras
 
 
 def main():

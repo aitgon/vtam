@@ -231,11 +231,6 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
                     i += 1
                     incoherent_list.append(read_id)
             Logger.instance().info(str(i) + " incoherent reads discarded.")
-            incoherent_reads = ""
-            for ids in incoherent_list:
-                temp = ids + ' '
-                incoherent_reads += temp
-            Logger.instance().info("They are: " + incoherent_reads)
 
 
 def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv):
