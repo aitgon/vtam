@@ -5,7 +5,7 @@ from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.wrapper.FilterUtilities import lfn1_per_replicate, lfn2_per_variant, lfn2_per_replicate_series, \
     lfn3_read_count, lfn4_per_variant_with_cutoff, lfn4_per_replicate_series_with_cutoff, delete_filtered_variants, \
-    min_repln, chimera, min_replp, pcr_error, renkoken
+    min_repln, chimera, min_replp, pcr_error, renkonen
 from sqlalchemy import select
 import pandas, os
 
@@ -37,7 +37,6 @@ class Filter(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        conn = engine.connect()
         #
         # Input file path
         cutoff_file_tsv = self.input_file(Filter.__input_cutoff_file)
@@ -84,10 +83,18 @@ class Filter(ToolWrapper):
                 min_replp(engine, replicate_model, marker.id, df, 3)
             Logger.instance().info("Launching PCR error filter:")
             pcr_error(engine, replicate_model, variant_model, df, marker.id, 0.5, False)
-            # Logger.instance().info("Launching chimera filter:")
-            # chimera(engine, replicate_model, variant_model, df, marker.id, 'sample_replicate')
-            # if replp is False:
-            #     min_repln(engine, variant_model, replicate_model, marker.id, df, 1)
-            # else:
-            #     min_replp(engine, variant_model, replicate_model, marker.id, df, 3)
-            # renkoken(engine, replicate_model, variant_model, df, marker.id)
+            Logger.instance().info("Launching chimera filter:")
+            select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
+                .where(replicate_model.marker_id == marker.id)
+            replicate_obj = engine.execute(select_replicate)
+            replicate_obj_list = replicate_obj.fetchall()
+            chimera(replicate_obj_list, df, marker.id, 'sample_replicate')
+            if replp is False:
+                min_repln(engine, replicate_model, marker.id, df, 1)
+            else:
+                min_replp(engine, replicate_model, marker.id, df, 3)
+            renkonen(engine, replicate_model, df, marker.id, 3)
+            if replp is False:
+                min_repln(engine, replicate_model, marker.id, df, 1)
+            else:
+                min_replp(engine, replicate_model, marker.id, df, 3)

@@ -6,10 +6,10 @@ import sqlite3
 from unittest import TestCase
 import subprocess
 from jinja2 import Template
+from wopmars.framework.parsing.Parser import ToolWrapper
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.wrapper.FilterUtilities import chimera
-
 
 
 class TestWopMetabarcoding(TestCase):
