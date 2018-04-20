@@ -5,19 +5,44 @@ from Bio import SeqIO
 import os
 from wopmetabarcoding.utils.constants import tempdir
 
+class Variant2Sample2Replicate2Count():
 
-def lfn1_per_replicate(df, lfn_per_replicate_threshold):
-    """
-    Function calculating the Low Frequency Noise per sample replicate
-    :param df: dataframe containing the information
-    :param lfn_per_replicate_threshold: threshold defined by the user
-    :return: List of the index which don't pass the filter
-    """
-    df2 = df.groupby(by=['sample_replicate']).sum()
-    df2 = df.merge(df2, left_on='sample_replicate', right_index=True)
-    df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
-    df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
-    return list(df2.ix[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index) # select rare reads to discard later
+    def __init__(self, variant2sample2replicate2count_df):
+        self.df = variant2sample2replicate2count_df
+        if self.df.shape[1] != 5:
+            raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
+        self.indices_to_drop = []
+
+    def lfn1_per_replicate(self, lfn_per_replicate_threshold):
+        """
+        Function calculating the Low Frequency Noise per sample replicate
+        :param df: dataframe containing the information
+        :param lfn_per_replicate_threshold: threshold defined by the user
+        :return: List of the index which don't pass the filter
+        """
+        df2 = self.df.groupby(by=['sample_replicate']).sum()
+        df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
+        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
+        df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
+        indices_to_drop= list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index)
+        self.indices_to_drop.append(indices_to_drop) # select rare reads to discard later
+        return self.indices_to_drop
+
+    def drop_indices(self):
+        self.df.drop(self.indices_to_drop, inplace=True)
+
+# def lfn1_per_replicate(df, lfn_per_replicate_threshold):
+#     """
+#     Function calculating the Low Frequency Noise per sample replicate
+#     :param df: dataframe containing the information
+#     :param lfn_per_replicate_threshold: threshold defined by the user
+#     :return: List of the index which don't pass the filter
+#     """
+#     df2 = df.groupby(by=['sample_replicate']).sum()
+#     df2 = df.merge(df2, left_on='sample_replicate', right_index=True)
+#     df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
+#     df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
+#     return list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index) # select rare reads to discard later
 
 
 def lfn2_per_variant(df, lfn_per_variant_threshold):
@@ -31,7 +56,7 @@ def lfn2_per_variant(df, lfn_per_variant_threshold):
     df2 = df.merge(df2, left_on='sample_replicate', right_index=True)
     df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
     df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
-    return list(df2.ix[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
+    return list(df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
 
 
 def lfn2_per_replicate_series(df, lfn_per_replicate_series_threshold):
