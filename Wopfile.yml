@@ -12,7 +12,6 @@ rule SampleInformation:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
-
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
     input:
@@ -39,3 +38,4 @@ rule Filter:
             Replicate: wopmetabarcoding.model.Replicate
         file:
             file_cutoff: data/cutoff_variant.tsv
+            genetic_code: data/genetic_codes.csv
