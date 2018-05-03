@@ -119,7 +119,7 @@ class Filter(ToolWrapper):
             else:
                 filter.min_replp(engine, replicate_model, marker.id, 3)
             Logger.instance().info("Launching PCR error filter:")
-            filter.pcr_error(engine, replicate_model, variant_model, marker.id, 0.5, False)
+            filter.pcr_error(engine, replicate_model, marker.id, 0.5, False)
             Logger.instance().info("Launching chimera filter:")
             select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
                 .where(replicate_model.marker_id == marker.id)
@@ -130,11 +130,17 @@ class Filter(ToolWrapper):
                 filter.min_repln(engine, replicate_model, marker.id, 1)
             else:
                 filter.min_replp(engine, replicate_model, marker.id, 3)
+            Logger.instance().info("Launching renkonen filter:")
             filter.renkonen(3, 0.1)
             if replp is False:
                 filter.min_repln(engine, replicate_model, marker.id, 1)
             else:
                 filter.min_replp(engine, replicate_model, marker.id, 3)
+            Logger.instance().info("Launching pseudogene detection with indel filter:")
             filter.indel(False)
             df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
+            Logger.instance().info("Launching pseudogene detection with codon stop filter:")
             filter.codon_stop(df_codon_stop_per_genetic_code, 2, False)
+            filter.consensus()
+            variant2sample2replicate2count_df = filter.filtered_variants()
+            # TODO: Log tables for pcr and chimera filter

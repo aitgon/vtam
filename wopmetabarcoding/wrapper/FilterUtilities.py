@@ -22,10 +22,14 @@ class Variant2Sample2Replicate2Count():
         :param lfn_per_replicate_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
+        # Calculating the total of reads by sample replicates
         df2 = self.df.groupby(by=['sample_replicate']).sum()
+        # Merge the column with the total reads by sample replicates for calculate the ratio
         df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
+        # Calculate the ratio
         df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
+        # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop= list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index)
         self.indices_to_drop.append(indices_to_drop) # select rare reads to discard later
         return self.indices_to_drop
@@ -37,8 +41,9 @@ class Variant2Sample2Replicate2Count():
         :param lfn_per_variant_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
-        df2 = self.df.groupby(by=['sample_replicate']).sum()
-        df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
+        # Calculating the total of reads by sample replicates
+        df2 = self.df.groupby(by=['sequence']).sum()
+        df2 = self.df.merge(df2, left_on='sequence', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
         indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
@@ -84,8 +89,8 @@ class Variant2Sample2Replicate2Count():
         cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
         cutoff_df.columns = ['sequence', 'cutoff']
         #
-        df2 = self.df.groupby(by=['sample_replicate']).sum()
-        df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
+        df2 = self.df.groupby(by=['sequence']).sum()
+        df2 = self.df.merge(df2, left_on='sequence', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
         #
@@ -185,7 +190,7 @@ class Variant2Sample2Replicate2Count():
                     fout.write(">{}\n".format(variant))
                 fout.write(variant + '\n')
 
-    def pcr_error(self, engine, replicate_model, variant_model, marker_id, var_prop, pcr_error_by_sample):
+    def pcr_error(self, engine, replicate_model, marker_id, var_prop, pcr_error_by_sample):
         """
         Function used to eliminate variants from the data frame in which a pcr error is spotted
         :param engine: engine of the database
@@ -244,6 +249,7 @@ class Variant2Sample2Replicate2Count():
                 df3.index = df3['query']
                 data_variant = data_variant.merge(df3, left_on='sequence', right_index=True)
                 index_to_drop = list(data_variant.ix[data_variant.count_ratio < var_prop].index)
+                # delete_variant = self.df(index_to_drop)
                 self.df.drop(index_to_drop, inplace=True)
 
     def chimera(self, replicate_obj_list, marker_id, chimera_by):
@@ -366,51 +372,96 @@ class Variant2Sample2Replicate2Count():
         # TODO Merge df1.merge(df2, left_on=[sample, sequence], right_on=[sample, sequence])
 
     def indel(self, delete_var):
+        """
+
+        :param delete_var:
+        :return:
+        """
         df2 = self.df.copy()
         df2['len_sequence'] = len(df2.sequence)
         df2['modulo3'] = len(df2.sequence)%3
         modulo3 = df2['modulo3'].tolist()
-        sequence_lenght_max = max(modulo3, key=modulo3.count)
+        sequence_length_max = max(modulo3, key=modulo3.count)
         if delete_var:
-            indices_to_drop = df2.loc[df2.modulo3 != sequence_lenght_max].index.tolist()
+            indices_to_drop = df2.loc[df2.modulo3 != sequence_length_max].index.tolist()
             self.df.drop(indices_to_drop, inplace=True)
         else:
-            df2['is_pseudogene_indel'] = (df2.modulo3 != sequence_lenght_max)
+            df2['is_pseudogene_indel'] = (df2.modulo3 != sequence_length_max)
             is_pseudogene = df2['is_pseudogene_indel']
             self.df = self.df.merge(is_pseudogene.to_frame(), left_index=True, right_index=True)
 
     def codon_stop(self, df_codon_stop_per_genetic_code, genetic_code, delete_var):
+        """
+        Function searching stop codon the different reading frame of a sequence and tag/delete variant if there is
+        stop codon in the 3 reading frames
+        :param df_codon_stop_per_genetic_code: data frame which contains all codon stop classified by genetic code
+        :param genetic_code: genetic code to search stop codon in the df_codon_stop_per_genetic_code dataframe
+        :param delete_var: option which define if the variants must be deleted or tagged
+        :return: void
+        """
         sequences = self.df['sequence'].tolist()
+        # Get the list of codon stop according to the genetic code given by the user
         df2 = df_codon_stop_per_genetic_code.loc[df_codon_stop_per_genetic_code['genetic_code'] == genetic_code]
         codon_stop_list = df2['codon'].tolist()
         indices_to_drop = []
+        # Take sequence 1 by 1
         for sequence in sequences:
+            # Keep the entire sequence for select in the dataframe
             entire_sequence = sequence
-            cadre_lecture = 1
+            # define the current reading_frame
+            reading_frame = 1
+            # Number of times when a codon stop is fin in the sequence
             fail = 0
             for i in range(3):
-                if cadre_lecture > 1 and fail == 0:
+                # if a codon stop is not find in the first reading frame no need to search the others
+                if reading_frame > 1 and fail == 0:
                     break
-                if cadre_lecture == 2:
+                # Get a new sequence eliminating the first nucleotide
+                if reading_frame == 2:
                     sequence = sequence[1:]
-                elif cadre_lecture == 3:
+                # Get a new sequence eliminating the first and the second nucleotides
+                elif reading_frame == 3:
                     sequence = sequence[2:]
+                # Divide the sequence in length 3 codons
                 codon_list = re.findall('...', sequence)
                 codon_stop_count = 0
+                # Count the number of codon stop in the sequence length
                 for codon_stop in codon_stop_list:
                     if codon_stop in codon_list:
                         codon_stop_count += 1
+                # If a codon stop or more are found then 1 fail is added
                 if codon_stop_count > 0:
                     print(entire_sequence)
                     fail += 1
-                cadre_lecture += 1
+                reading_frame += 1
+            # If a codon stop is find in every reading frames, all the indexes where the variant sequence appeared are
+            # kept and will be tagged or deleted at the loop end
             if fail == 3:
                 indices_to_drop.append(self.df.loc[self.df['sequence'] == entire_sequence].index().tolist())
+        # Depending on the user choice the variant will be tagged in dataframe or removed from it
         if delete_var:
             self.df.drop(indices_to_drop, inplace=True)
         else:
             self.df['is_pseudogene_codon_stop'] = (self.df.index in indices_to_drop)
-        print(self.df)
+
+    def consensus(self):
+        """
+        Function used to display the read average of the remaining variant
+        :return:
+        """
+        variants_sequences = self.df["sequence"]
+        variants_sequences =list(set(variants_sequences))
+        read_average_columns = ['variant', 'read_average']
+        read_average_df = pandas.DataFrame(columns=read_average_columns)
+        for variant in variants_sequences:
+            variant_df = self.df.loc[self.df["sequence"] == variant]
+            read_average = round(variant_df["count"].sum()/len(variant_df['count']), 0)
+            read_average_df.loc[len(read_average_df)] = [variant, read_average]
+        self.df = self.df.merge(read_average_df, left_on='sequence', right_on='variant')
+        self.df = self.df.drop(columns=['variant'])
+
+    def filtered_variants(self):
+        return self.df
 
 
 
@@ -418,20 +469,21 @@ class Variant2Sample2Replicate2Count():
 
 
 
-    # def lfn1_per_replicate(self, df, lfn_per_replicate_threshold):
-    #     """
-    #     Function calculating the Low Frequency Noise per sample replicate
-    #     :param df: dataframe containing the information
-    #     :param lfn_per_replicate_threshold: threshold defined by the user
-    #     :return: List of the index which don't pass the filter
-    #     """
-    #     df2 = self.df.groupby(by=['sample_replicate']).sum()
-    #     df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
-    #     df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
-    #     df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
-    #     indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index) # select rare reads to discard later
-    #     self.indices_to_drop.append(indices_to_drop)
-    #     return self.indices_to_drop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
