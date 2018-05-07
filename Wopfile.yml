@@ -39,3 +39,12 @@ rule Filter:
         file:
             file_cutoff: data/cutoff_variant.tsv
             genetic_code: data/genetic_codes.csv
+
+rule Taxassign:
+    tool: wopmetabarcoding.wrapper.Taxassign
+    input:
+        table:
+            Marker: wopmetabarcoding.model.Marker
+            Variant: wopmetabarcoding.model.Variant
+        file:
+            taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas

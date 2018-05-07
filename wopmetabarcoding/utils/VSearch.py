@@ -20,7 +20,7 @@ class VSearch:
 
 class VSearch1(VSearch):
 
-    def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None, vself=None):
+    def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None, query_cov=None):
         #
         VSearch.__init__(self)
         self.params["--db"] = db
@@ -33,6 +33,7 @@ class VSearch1(VSearch):
         if not minseqlength is None: self.params['--minseqlength'] = minseqlength
         if not userout is None: self.params['--userout'] = userout
         if not userfields is None: self.params['--userfields'] = userfields
+        if not query_cov is None: self.params['--query_cov'] = query_cov
 
 
 class Vsearch2(VSearch):

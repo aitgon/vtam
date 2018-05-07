@@ -41,11 +41,14 @@ class Variant2Sample2Replicate2Count():
         :param lfn_per_variant_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
-        # Calculating the total of reads by sample replicates
+        # Calculating the total of reads by variant
         df2 = self.df.groupby(by=['sequence']).sum()
+        # Merge the column with the total reads by variant for calculate the ratio
         df2 = self.df.merge(df2, left_on='sequence', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
+        # Calculate the ratio
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
+        # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
         self.indices_to_drop.append(indices_to_drop)
         return self.indices_to_drop
@@ -57,12 +60,15 @@ class Variant2Sample2Replicate2Count():
         :param lfn_per_replicate_series_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
+        # Calculating the total of reads by replicate series
         df2 = self.df.groupby(by=['replicate']).sum()
+        # Merge the column with the total reads by replicate series for calculate the ratio
         df2 = self.df.merge(df2, left_on='replicate', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate',
                        'read_count_per_variant_per_sample_replicate', 'read_count_per_replicate_series']
         df2[
             'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
+        # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop = list(df2.ix[
                         df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].index)  #  select rare reads to discard later
         self.indices_to_drop.append(indices_to_drop)
@@ -75,6 +81,7 @@ class Variant2Sample2Replicate2Count():
         :param lfn_read_count_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
+        # Selecting all the indexes where the ratio is below the minimal readcount
         indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index)
         self.indices_to_drop.append(indices_to_drop)
         return self.indices_to_drop
@@ -86,10 +93,13 @@ class Variant2Sample2Replicate2Count():
         :param cutoff_tsv: file containing the cutoffs for each variant
         :return: List of the index which don't pass the filter
         """
+
         cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
         cutoff_df.columns = ['sequence', 'cutoff']
         #
+        # Calculating the total of reads by variant
         df2 = self.df.groupby(by=['sequence']).sum()
+        # Merge the column with the total reads by variant for calculate the ratio
         df2 = self.df.merge(df2, left_on='sequence', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant

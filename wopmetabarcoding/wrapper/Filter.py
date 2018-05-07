@@ -5,7 +5,7 @@ from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
 from sqlalchemy import select
-import pandas, os
+import pandas, os, pickle
 
 
 class Filter(ToolWrapper):
@@ -143,4 +143,9 @@ class Filter(ToolWrapper):
             filter.codon_stop(df_codon_stop_per_genetic_code, 2, False)
             filter.consensus()
             variant2sample2replicate2count_df = filter.filtered_variants()
+            filtered_variants_list = list(set(variant2sample2replicate2count_df.sequence.tolist()))
+            output_fasta = os.path.join(tempdir, (marker.name + "_filtered_variants.fasta"))
+            dataframe_pickle_path = os.path.join(tempdir, (marker.name + "_filtered_dataframe.pkl"))
+            filter.filter_fasta(filtered_variants_list, output_fasta, False)
+            pickle.dump(variant2sample2replicate2count_df, open(dataframe_pickle_path, "wb"))
             # TODO: Log tables for pcr and chimera filter
