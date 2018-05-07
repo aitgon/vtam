@@ -15,15 +15,17 @@ class Variant2Sample2Replicate2Count():
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         self.indices_to_drop = []
 
-    def lfn1_per_replicate(self, lfn_per_replicate_threshold):
+    def store_index_below_lfn1_per_replicate(self, lfn_per_replicate_threshold):
         """
-        Function calculating the Low Frequency Noise per sample replicate
+        Function returning indices matching lfn1 filter.
+        It calculates the Low Frequency Noise per sample replicate
         :param df: dataframe containing the information
         :param lfn_per_replicate_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
         """
         # Calculating the total of reads by sample replicates
         df2 = self.df.groupby(by=['sample_replicate']).sum()
+        # import pdb; pdb.set_trace()
         # Merge the column with the total reads by sample replicates for calculate the ratio
         df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
         df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
@@ -32,9 +34,9 @@ class Variant2Sample2Replicate2Count():
         # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop= list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index)
         self.indices_to_drop.append(indices_to_drop) # select rare reads to discard later
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
-    def lfn2_per_variant(self, lfn_per_variant_threshold):
+    def store_index_below_lfn2_per_variant(self, lfn_per_variant_threshold):
         """
         Function calculating the Low Frequency Noise per variant
         :param df: dataframe containing the information
@@ -51,9 +53,9 @@ class Variant2Sample2Replicate2Count():
         # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
         self.indices_to_drop.append(indices_to_drop)
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
-    def lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
+    def store_index_below_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
         Function calculating the Low Frequency Noise per replicate series
         :param df: dataframe containing the information
@@ -72,9 +74,9 @@ class Variant2Sample2Replicate2Count():
         indices_to_drop = list(df2.ix[
                         df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].index)  #  select rare reads to discard later
         self.indices_to_drop.append(indices_to_drop)
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
-    def lfn3_read_count(self, lfn_read_count_threshold):
+    def store_index_below_lfn3_read_count(self, lfn_read_count_threshold):
         """
         Function calculating the Low Frequency Noise per users defined minimal readcount
         :param df: dataframe containing the information
@@ -84,9 +86,9 @@ class Variant2Sample2Replicate2Count():
         # Selecting all the indexes where the ratio is below the minimal readcount
         indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index)
         self.indices_to_drop.append(indices_to_drop)
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
-    def lfn4_per_variant_with_cutoff(self, cutoff_tsv):
+    def store_index_below_lfn4_per_variant_with_cutoff(self, cutoff_tsv):
         """
         Function calculating the Low Frequency Noise per variant against cutoff
         :param df: dataframe containing the information
@@ -108,9 +110,9 @@ class Variant2Sample2Replicate2Count():
         df2 = df2.merge(cutoff_df, left_on="sequence", right_on="sequence")
         indices_to_drop = list(df2.ix[df2.low_frequence_noice_per_variant < df2.cutoff].index)
         self.indices_to_drop.append(indices_to_drop)
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
-    def lfn4_per_replicate_series_with_cutoff(self, cutoff_tsv):
+    def store_index_below_lfn4_per_replicate_series_with_cutoff(self, cutoff_tsv):
         """
             Function calculating the Low Frequency Noise per replicate series against cutoff
             :param df: dataframe containing the information
@@ -131,15 +133,16 @@ class Variant2Sample2Replicate2Count():
         df2 = df2.merge(cutoff_df, left_on="sequence", right_on="sequence")
         indices_to_drop = list(df2.ix[df2.low_frequence_noice_per_replicate_series < df2.cutoff].index)
         self.indices_to_drop.append(indices_to_drop)
-        return self.indices_to_drop
+        # return self.indices_to_drop
 
     def drop_indices(self):
         indices_to_drop = []
         for lists in self.indices_to_drop:
             indices_to_drop += lists
         self.df.drop(indices_to_drop, inplace=True)
+        self.indices_to_drop = [] # reset indices_to_drop
 
-    def min_repln(self, engine, replicate_model, marker_id, min_count):
+    def store_index_below_min_repln(self, engine, replicate_model, marker_id, min_count):
         """
         Filter watching if a variant is present the minimal number of sample replicates of a sample
         :param engine: engine of the database
@@ -158,9 +161,10 @@ class Variant2Sample2Replicate2Count():
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
             index_to_drop = list(df2.ix[df2.sequence_count < min_count].index)
-            self.df.drop(index_to_drop, inplace=True)
+            # self.df.drop(index_to_drop, inplace=True)
+            self.indices_to_drop.append(index_to_drop)
 
-    def min_replp(self, engine, replicate_model, marker_id, replicate_count):
+    def store_index_below_min_replp(self, engine, replicate_model, marker_id, replicate_count):
         """
         Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
         :param engine: engine of the database
@@ -179,7 +183,7 @@ class Variant2Sample2Replicate2Count():
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
             index_to_drop = list(df2.ix[df2.sequence_count < ((1 / 3) * replicate_count)].index)
-            self.df.drop(index_to_drop, inplace=True)
+            self.indices_to_drop.append(index_to_drop)
 
     @staticmethod
     def filter_fasta(variant_list, sample_fasta, chimera):
@@ -187,7 +191,7 @@ class Variant2Sample2Replicate2Count():
         Function used to create fasta file from the dataframe
         :param variant_list: list of the variant present in the data frame
         :param sample_fasta: file name choose to name the fasta file
-        :param chimera: choose if the function is used for the pcr_error or the chimera step
+        :param chimera: choose if the function is used for the store_index_identified_as_pcr_error or the store_index_identified_as_chimera step
         :return: None
         """
         with open(sample_fasta, 'w') as fout:
@@ -200,7 +204,7 @@ class Variant2Sample2Replicate2Count():
                     fout.write(">{}\n".format(variant))
                 fout.write(variant + '\n')
 
-    def pcr_error(self, engine, replicate_model, marker_id, var_prop, pcr_error_by_sample):
+    def store_index_identified_as_pcr_error(self, engine, replicate_model, marker_id, var_prop, pcr_error_by_sample):
         """
         Function used to eliminate variants from the data frame in which a pcr error is spotted
         :param engine: engine of the database
@@ -259,12 +263,11 @@ class Variant2Sample2Replicate2Count():
                 df3.index = df3['query']
                 data_variant = data_variant.merge(df3, left_on='sequence', right_index=True)
                 index_to_drop = list(data_variant.ix[data_variant.count_ratio < var_prop].index)
-                # delete_variant = self.df(index_to_drop)
-                self.df.drop(index_to_drop, inplace=True)
+                self.indices_to_drop.append(index_to_drop)
 
-    def chimera(self, replicate_obj_list, marker_id, chimera_by):
+    def store_index_identified_as_chimera(self, replicate_obj_list, marker_id, chimera_by):
         """
-        Function using Vsearch to identify chimera or borderline variant
+        Function using Vsearch to identify store_index_identified_as_chimera or borderline variant
         :param replicate_obj_list: list of the sample and the corresponding sample replicate
         :param df: data frame containing the information
         :param marker_id: id of the marker
@@ -298,7 +301,7 @@ class Variant2Sample2Replicate2Count():
                 del vsearch_sortbysize
                 borderline_repl_filename = sorted_repl_fasta_name.replace('sorted', 'borderline')
                 nonchimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'correct')
-                chimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'chimera')
+                chimera_repl_filename = sorted_repl_fasta_name.replace('sorted', 'store_index_identified_as_chimera')
                 vsearch_chimera_args = {
                     "uchime_denovo": sorted_repl_fasta_name,
                     "borderline": borderline_repl_filename,
@@ -317,8 +320,8 @@ class Variant2Sample2Replicate2Count():
                             df_variant = df2.loc[df2['sequence'] == variant_sequence]
 
                             if df_variant.empty is False:
-                                indexs_to_drop = df_variant.index.tolist()
-                                self.df.drop(indexs_to_drop, inplace=True)
+                                index_to_drop = df_variant.index.tolist()
+                                self.indices_to_drop.append(index_to_drop)
                             else:
                                 pass
                 borderline_variants = []
@@ -326,7 +329,7 @@ class Variant2Sample2Replicate2Count():
                     borderline_variants.append(record.description.strip().split(';')[0])
                 self.df['is_borderline'] = (self.df['sequence'] in borderline_variants)
 
-    def renkonen(self, number_of_replicate, renkonen_tail):
+    def store_index_that_fails_renkonen(self, number_of_replicate, renkonen_tail):
         """
         Function calculating distance between sample replicate of the sample to determine if the sample replicate
         must be deleted or not
@@ -370,16 +373,8 @@ class Variant2Sample2Replicate2Count():
             for repl_i in repl_list:
                 df_calc = df_permutation_distance.loc[df_permutation_distance['repl_i'] == repl_i]
                 if len(df_calc) > ((number_of_replicate -1)/2):
-                    indices_to_drop = self.df.loc[self.df['sample_replicate'] == repl_i].index.tolist()
-                    self.df.drop(indices_to_drop, inplace=True)
-
-        # TODO Do not use database if data is already in dataframe
-        # Todo Create df_with_permutations: sample, replicate_i, replicate_j
-        # TODO Create permutations [1,2], [1,3], ...
-        # TODO For each sample and permutation combination [1,2] in df_with_permutations
-        # TODO Create df1 <- sample, repl_i, sequence, prop_seq
-        # TODO Create df2 <- sample, repl_j, sequence, prop_seq
-        # TODO Merge df1.merge(df2, left_on=[sample, sequence], right_on=[sample, sequence])
+                    index_to_drop = self.df.loc[self.df['sample_replicate'] == repl_i].index.tolist()
+                    self.indices_to_drop.append(index_to_drop)
 
     def indel(self, delete_var):
         """
@@ -393,8 +388,8 @@ class Variant2Sample2Replicate2Count():
         modulo3 = df2['modulo3'].tolist()
         sequence_length_max = max(modulo3, key=modulo3.count)
         if delete_var:
-            indices_to_drop = df2.loc[df2.modulo3 != sequence_length_max].index.tolist()
-            self.df.drop(indices_to_drop, inplace=True)
+            index_to_drop = df2.loc[df2.modulo3 != sequence_length_max].index.tolist()
+            self.indices_to_drop.append(index_to_drop)
         else:
             df2['is_pseudogene_indel'] = (df2.modulo3 != sequence_length_max)
             is_pseudogene = df2['is_pseudogene_indel']
