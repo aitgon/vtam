@@ -7,7 +7,7 @@ import os
 from wopmetabarcoding.utils.constants import tempdir
 
 
-class Variant2Sample2Replicate2Count():
+class Variant2Sample2Replicate2Count:
 
     def __init__(self, variant2sample2replicate2count_df):
         self.df = variant2sample2replicate2count_df
@@ -32,9 +32,10 @@ class Variant2Sample2Replicate2Count():
         # Calculate the ratio
         df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
         # Selecting all the indexes where the ratio is below the ratio
-        indices_to_drop= list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index)
-        self.indices_to_drop.append(indices_to_drop) # select rare reads to discard later
-        # return self.indices_to_drop
+        indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold].index)
+        #
+        # add indices to drop to main list and make indices unique
+        self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
 
     def store_index_below_lfn2_per_variant(self, lfn_per_variant_threshold):
         """
@@ -52,8 +53,9 @@ class Variant2Sample2Replicate2Count():
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
         # Selecting all the indexes where the ratio is below the ratio
         indices_to_drop = list(df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].index) # select rare reads to discard later
-        self.indices_to_drop.append(indices_to_drop)
-        # return self.indices_to_drop
+        #
+        # add indices to drop to main list and make indices unique
+        self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
 
     def store_index_below_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
