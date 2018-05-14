@@ -73,10 +73,11 @@ class Variant2Sample2Replicate2Count:
         df2[
             'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
         # Selecting all the indexes where the ratio is below the ratio
-        indices_to_drop = list(df2.ix[
+        indices_to_drop = list(df2.loc[
                         df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].index)  #  select rare reads to discard later
-        self.indices_to_drop.append(indices_to_drop)
-        # return self.indices_to_drop
+        #
+        # add indices to drop to main list and make indices unique
+        self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
 
     def store_index_below_lfn3_read_count(self, lfn_read_count_threshold):
         """
@@ -86,9 +87,10 @@ class Variant2Sample2Replicate2Count:
         :return: List of the index which don't pass the filter
         """
         # Selecting all the indexes where the ratio is below the minimal readcount
-        indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index)
-        self.indices_to_drop.append(indices_to_drop)
-        # return self.indices_to_drop
+        indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index) # Todo: strictement ou pas
+        #
+        # add indices to drop to main list and make indices unique
+        self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
 
     def store_index_below_lfn4_per_variant_with_cutoff(self, cutoff_tsv):
         """

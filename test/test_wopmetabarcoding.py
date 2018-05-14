@@ -106,12 +106,10 @@ class TestWopMetabarcoding(TestCase):
     def test_04_store_index_below_lfn1_per_replicate(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "03filter")
         PathFinder.mkdir(test_outdir)
-        variant2sample2replicate2count__df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
-        db_path = os.path.join(test_outdir, "db.sqlite")
-        db_url = "sqlite:///" + db_path
+        variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
         #
         # Input
-        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count__df_pkl_path)
+        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
         lfn1_per_replicate_threshold = 0.25
         #
         # Output
@@ -126,12 +124,10 @@ class TestWopMetabarcoding(TestCase):
     def test_05_store_index_below_lfn2_per_variant(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "03filter")
         PathFinder.mkdir(test_outdir)
-        variant2sample2replicate2count__df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
-        db_path = os.path.join(test_outdir, "db.sqlite")
-        db_url = "sqlite:///" + db_path
+        variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
         #
         # Input
-        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count__df_pkl_path)
+        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
         lfn2_per_variant_threshold = 0.025
         #
         # Output
@@ -140,6 +136,44 @@ class TestWopMetabarcoding(TestCase):
         indices_to_drop = variant2sample2replicate2count.indices_to_drop
         # print(indices_to_drop)
         indices_to_drop_bak = [36, 46, 53]
+        self.assertTrue(indices_to_drop == indices_to_drop_bak)
+        #
+        shutil.rmtree(test_outdir)
+
+    def test_06_store_index_below_lfn2_per_replicate_series(self):
+        test_outdir = os.path.join(self.__testdir_path, "output", "03filter")
+        PathFinder.mkdir(test_outdir)
+        variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
+        #
+        # Input
+        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
+        lfn2_per_variant_threshold = 0.0075
+        #
+        # Output
+        variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
+        variant2sample2replicate2count.store_index_below_lfn2_per_replicate_series(lfn2_per_variant_threshold)
+        indices_to_drop = variant2sample2replicate2count.indices_to_drop
+        # print(indices_to_drop)
+        indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
+        self.assertTrue(indices_to_drop == indices_to_drop_bak)
+        #
+        shutil.rmtree(test_outdir)
+
+    def test_07_store_index_below_lfn3_read_count(self):
+        test_outdir = os.path.join(self.__testdir_path, "output", "03filter")
+        PathFinder.mkdir(test_outdir)
+        variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "03filter", "variant2sample2replicate2count_df.pkl")
+        #
+        # Input
+        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
+        lfn_read_count_threshold = 3
+        #
+        # Output
+        variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
+        variant2sample2replicate2count.store_index_below_lfn3_read_count(lfn_read_count_threshold)
+        indices_to_drop = variant2sample2replicate2count.indices_to_drop
+        # print(indices_to_drop)
+        indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
         self.assertTrue(indices_to_drop == indices_to_drop_bak)
         #
         shutil.rmtree(test_outdir)

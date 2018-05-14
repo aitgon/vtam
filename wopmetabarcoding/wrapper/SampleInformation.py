@@ -58,6 +58,7 @@ class SampleInformation(ToolWrapper):
                 replicate_name = line.strip().split(',')[6]
                 file_name = line.strip().split(',')[7]
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
+                    # TODO: Add it to a exception logger
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
                 run_name = line.strip().split(',')[8]
                 #
