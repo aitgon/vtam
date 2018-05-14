@@ -12,6 +12,7 @@ rule SampleInformation:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
+
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
     input:
@@ -39,6 +40,11 @@ rule Filter:
         file:
             file_cutoff: data/cutoff_variant.tsv
             genetic_code: data/genetic_codes.csv
+    output:
+        file:
+            filtered_dataframe_path: data/filtered_dataframe_path.tsv
+      
+
 
 rule Taxassign:
     tool: wopmetabarcoding.wrapper.Taxassign
@@ -47,4 +53,6 @@ rule Taxassign:
             Marker: wopmetabarcoding.model.Marker
             Variant: wopmetabarcoding.model.Variant
         file:
+            filtered_dataframe_path: data/filtered_dataframe_path.tsv
             taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas
+

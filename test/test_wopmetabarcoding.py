@@ -88,7 +88,7 @@ class TestWopMetabarcoding(TestCase):
     #     variant2sample2replicate2count_df = pandas.read_csv(ZFZR_sample_count_tsv, sep='\t')
     #     lfn_per_replicate_threshold = 0.025
     #     failed_indices = [309, 353, 55, 237, 377, 263, 354, 408, 145, 178, 240, 287, 319, 339]
-    #     self.assertTrue(lfn1_per_replicate(variant2sample2replicate2count_df, lfn_per_replicate_threshold) == failed_indices)
+    #     self.assertTrue(store_index_below_lfn1_per_replicate(variant2sample2replicate2count_df, lfn_per_replicate_threshold) == failed_indices)
 
     # def test_class_variant2sample2replicate2count(self):
     #     #
@@ -99,17 +99,17 @@ class TestWopMetabarcoding(TestCase):
     #     variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
     #     lfn_per_replicate_threshold = 0.025
     #     failed_indices = [309, 353, 55, 237, 377, 263, 354, 408, 145, 178, 240, 287, 319, 339]
-    #     self.assertTrue(variant2sample2replicate2count.lfn1_per_replicate(lfn_per_replicate_threshold) == failed_indices)
+    #     self.assertTrue(variant2sample2replicate2count.store_index_below_lfn1_per_replicate(lfn_per_replicate_threshold) == failed_indices)
 
 
     # def test_03_chimera(self):
-    #     df_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/chimera", "df.pkl")
-    #     replicate_obj_list_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/chimera", "replicate_obj_list.pkl")
+    #     df_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/store_index_identified_as_chimera", "df.pkl")
+    #     replicate_obj_list_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/store_index_identified_as_chimera", "replicate_obj_list.pkl")
     #     with open(df_pkl, 'rb') as fin:
     #         df = pickle.load(fin)
     #     with open(replicate_obj_list_pkl, 'rb') as fin:
     #         replicate_obj_list = pickle.load(fin)
     #     marker_id = 1
     #     chimera_by = "sample_replicate"
-    #     chimera(replicate_obj_list, df, marker_id, chimera_by)
+    #     store_index_identified_as_chimera(replicate_obj_list, df, marker_id, chimera_by)
 

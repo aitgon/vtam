@@ -142,7 +142,7 @@ class Variant2Sample2Replicate2Count():
         self.df.drop(indices_to_drop, inplace=True)
         self.indices_to_drop = [] # reset indices_to_drop
 
-    def store_index_below_min_repln(self, engine, replicate_model, marker_id, min_count):
+    def store_index_below_min_repln(self, biosample_list, min_count):
         """
         Filter watching if a variant is present the minimal number of sample replicates of a sample
         :param engine: engine of the database
@@ -152,11 +152,9 @@ class Variant2Sample2Replicate2Count():
         :param min_count: minimal number of replicates in which the variant must be present
         :return: None
         """
-        replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-            replicate_model.marker_id == marker_id)
-        replicate_obj = engine.execute(replicate_select)
-        for replicate in replicate_obj:
-            df2 = self.df.loc[self.df['sample'] == replicate.biosample_name]
+
+        for biosample in biosample_list:
+            df2 = self.df.loc[self.df['sample'] == biosample]
             df3 = df2['sequence'].value_counts().to_frame()
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
@@ -164,7 +162,7 @@ class Variant2Sample2Replicate2Count():
             # self.df.drop(index_to_drop, inplace=True)
             self.indices_to_drop.append(index_to_drop)
 
-    def store_index_below_min_replp(self, engine, replicate_model, marker_id, replicate_count):
+    def store_index_below_min_replp(self, biosample_list, replicate_count):
         """
         Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
         :param engine: engine of the database
@@ -174,11 +172,8 @@ class Variant2Sample2Replicate2Count():
         :param replicate_count: number of sample_replicate in each
         :return: None
         """
-        replicate_select = select([replicate_model.biosample_name, replicate_model.name]).where(
-            replicate_model.marker_id == marker_id)
-        replicate_obj = engine.execute(replicate_select)
-        for replicate in replicate_obj:
-            df2 = self.df.loc[self.df['sample'] == replicate.biosample_name]
+        for biosample in biosample_list:
+            df2 = self.df.loc[self.df['sample'] == biosample]
             df3 = df2['sequence'].value_counts().to_frame()
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
@@ -204,7 +199,7 @@ class Variant2Sample2Replicate2Count():
                     fout.write(">{}\n".format(variant))
                 fout.write(variant + '\n')
 
-    def store_index_identified_as_pcr_error(self, engine, replicate_model, marker_id, var_prop, pcr_error_by_sample):
+    def store_index_identified_as_pcr_error(self, biosample_list, sample_replicate_list, marker_id, var_prop, pcr_error_by_sample):
         """
         Function used to eliminate variants from the data frame in which a pcr error is spotted
         :param engine: engine of the database
@@ -216,20 +211,21 @@ class Variant2Sample2Replicate2Count():
         :param pcr_error_by_sample: boolean used to choose if the analysis is made by sample or sample_replicate
         :return: None
         """
-        select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
-            .where(replicate_model.marker_id == marker_id)
-        replicate_obj = engine.execute(select_replicate)
 
-        for replicate in replicate_obj:
+        if pcr_error_by_sample:
+            element_list = biosample_list
+        else:
+            element_list = sample_replicate_list
 
-            if pcr_error_by_sample is True:
-                data_variant = self.df.loc[self.df['sample'] == replicate.biosample_name]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(replicate.biosample_name, marker_id)
+        for element in element_list:
+
+            if pcr_error_by_sample:
+                data_variant = self.df.loc[self.df['sample'] == element]
+                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
 
             else:
-                sample_replicate = '{}_{}'.format(replicate.biosample_name, replicate.name)
-                data_variant = self.df.loc[self.df['sample_replicate'] == sample_replicate]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(sample_replicate, marker_id)
+                data_variant = self.df.loc[self.df['sample_replicate'] == element]
+                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
 
             variant_list_series = data_variant['sequence']
             if variant_list_series.empty is False:

@@ -95,16 +95,17 @@ class Filter(ToolWrapper):
         variant_model = self.input_table(Filter.__input_table_variant)
         replicate_model = self.input_table(Filter.__input_table_replicate)
         # Output file path
-        filtered_dataframe_path =self.output_file(Filter.__output_filtered_dataframe)
+        filtered_dataframe_path = self.output_file(Filter.__output_filtered_dataframe)
         #
         fout = open(filtered_dataframe_path, 'w')
-        print(fout)
         marker_select = select([marker_model.id, marker_model.name])
         marker_obj = engine.execute(marker_select)
         for marker in marker_obj:
             file_name = os.path.join(tempdir, marker.name + '_sample_count.tsv')
             # cols "sequence", "replicate", "sample", "sample_replicate", "count"]
             variant2sample2replicate2count_df = pandas.read_csv(file_name, sep='\t')
+            biosample_list = list(set(variant2sample2replicate2count_df['sample'].tolist()))
+            sample_replicate_list = list(set(variant2sample2replicate2count_df['sample_replicate'].tolist()))
             filter_obj = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
             #
             # Filter parameters
@@ -142,14 +143,14 @@ class Filter(ToolWrapper):
             replp = False
             if replp is False:
                 # TODO: Fix this inconsistency. These filters remove directly indexing, while LFN filters just add indices to an internal list
-                filter_obj.store_index_below_min_repln(engine, replicate_model, marker.id, 2)
+                filter_obj.store_index_below_min_repln(biosample_list, 2)
             else:
-                filter_obj.store_index_below_min_replp(engine, replicate_model, marker.id, 3)
+                filter_obj.store_index_below_min_replp(biosample_list, 3)
             filter_obj.drop_indices()
             #
             # Filter: PCR
             Logger.instance().info("Launching PCR error filter:")
-            filter_obj.store_index_identified_as_pcr_error(engine, replicate_model, marker.id, 0.5, False)
+            filter_obj.store_index_identified_as_pcr_error(biosample_list, sample_replicate_list, marker.id, 0.5, False)
             filter_obj.drop_indices()
             #
             # Filter: Chimera
@@ -164,9 +165,9 @@ class Filter(ToolWrapper):
             #
             # Filter: replp
             if replp is False:
-                filter_obj.store_index_below_min_repln(engine, replicate_model, marker.id, 1)
+                filter_obj.store_index_below_min_repln(biosample_list, 1)
             else:
-                filter_obj.store_index_below_min_replp(engine, replicate_model, marker.id, 3)
+                filter_obj.store_index_below_min_replp(biosample_list, 3)
             filter_obj.drop_indices()
             #
             # Filter: Renkonen
@@ -176,9 +177,9 @@ class Filter(ToolWrapper):
             #
             # Filter: replp
             if replp is False:
-                filter_obj.store_index_below_min_repln(engine, replicate_model, marker.id, 1)
+                filter_obj.store_index_below_min_repln(biosample_list, 1)
             else:
-                filter_obj.store_index_below_min_replp(engine, replicate_model, marker.id, 3)
+                filter_obj.store_index_below_min_replp(biosample_list, 3)
             filter_obj.drop_indices()
             #
             # Filter: indel
