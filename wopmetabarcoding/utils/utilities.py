@@ -14,3 +14,4 @@ def get_or_create(session, model, **kwargs):
         session.add(instance)
         session.commit()
         return instance
+
