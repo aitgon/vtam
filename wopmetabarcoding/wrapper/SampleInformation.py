@@ -1,7 +1,9 @@
+import sys
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from wopmetabarcoding.utils.utilities import get_or_create
 
+import os
 
 class SampleInformation(ToolWrapper):
     __mapper_args__ = {
@@ -55,6 +57,9 @@ class SampleInformation(ToolWrapper):
                 sample_name = line.strip().split(',')[5]
                 replicate_name = line.strip().split(',')[6]
                 file_name = line.strip().split(',')[7]
+                if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
+                    # TODO: Add it to a exception logger
+                    raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
                 run_name = line.strip().split(',')[8]
                 #
                 # Insert file path

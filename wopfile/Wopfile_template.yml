@@ -39,4 +39,7 @@ rule Filter:
         file:
             file_cutoff: data/cutoff_variant.tsv
             genetic_code: data/genetic_codes.csv
+    output:
+        file:
+            filtered_dataframe_path: data/filtered_dataframe_path.tsv
 

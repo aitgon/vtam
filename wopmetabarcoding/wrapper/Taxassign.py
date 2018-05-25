@@ -1,6 +1,6 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
-from wopmetabarcoding.utils.constants import tempdir, order
+from wopmetabarcoding.utils.constants import tempdir, order, taxonomic_levels
 from wopmetabarcoding.wrapper.TaxassignUtilities import create_info_df
 from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
 from wopmetabarcoding.utils.VSearch import VSearch1
@@ -103,6 +103,7 @@ class Taxassign(ToolWrapper):
                         assign_info = df_assignlvl2id.loc[df_assignlvl2id['id'] == ids]
                         min_target_taxlevel = assign_info['min_target_taxlevel'].tolist()
                         min_target_taxlevel = min_target_taxlevel[0]
+                        print(min_target_taxlevel)
                         max_tax_resolution = assign_info['max_tax_resolution'].tolist()
                         max_tax_resolution = max_tax_resolution[0]
                         """
