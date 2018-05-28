@@ -7,6 +7,7 @@ Dependencies installation
 Miniconda:
 
 Installation:
+
 .. code-block:: bash
 
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -14,6 +15,7 @@ Installation:
     conda create --name myenv --python=3.6
 
 Use virtual environment:
+
 .. code-block:: bash
 
     source activate myenv
@@ -34,7 +36,7 @@ Vscearch:
 
 Wopmars:
 
-.. code-block::
+.. code-block:: bash
 
     pip install wopmars
 
@@ -49,7 +51,9 @@ pipeline.
 Step 2: Wopmars command
 
 Example:
+
 .. code-block:: bash
+
     wopmars -w Wopfile.yml -D "sqlite:///data/db.sqlite" -v -p -F
 
 -w: Path to the Wopfile
