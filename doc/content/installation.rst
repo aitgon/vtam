@@ -1,4 +1,4 @@
-Tutorial
+Installation
 =================================================
 
 Dependencies installation

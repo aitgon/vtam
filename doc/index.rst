@@ -13,8 +13,9 @@ Table of Contents
 .. toctree::
     :maxdepth: 3
 
+    content/installation.rst
     content/userinput.rst
-    content/tutorial.rst
+    content/cheatsheet
 
 .. Indices and tables
 .. ==================
