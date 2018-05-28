@@ -1,0 +1,84 @@
+import sys
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+
+from wopmetabarcoding.utils.utilities import get_or_create
+
+import os
+
+class SampleInformation(ToolWrapper):
+    __mapper_args__ = {
+        "polymorphic_identity": "wopmetabarcoding.wrapper.SampleInformation"
+    }
+    __input_file_csv = "csv"
+    #
+    __output_table_file = "File"
+    __output_table_sample_information = "SampleInformation"
+    __output_table_marker = "Marker"
+    __output_table_primerpair = "PrimerPair"
+    __output_table_biosample = "Biosample"
+    __output_table_tagpair = "TagPair"
+    __output_table_replicate = "Replicate"
+
+    def specify_input_file(self):
+        return [SampleInformation.__input_file_csv]
+
+    def specify_output_table(self):
+        return [
+            SampleInformation.__output_table_file,
+            SampleInformation.__output_table_sample_information,
+            SampleInformation.__output_table_marker,
+            SampleInformation.__output_table_primerpair,
+            SampleInformation.__output_table_biosample,
+            SampleInformation.__output_table_tagpair,
+            SampleInformation.__output_table_replicate
+        ]
+
+    def run(self):
+        session = self.session()
+        engine = session._WopMarsSession__session.bind
+        conn = engine.connect()
+        #
+        # input file paths
+        csv_path = self.input_file(SampleInformation.__input_file_csv)
+        #
+        # Input models
+        marker_model = self.output_table(SampleInformation.__output_table_marker)
+        file_model = self.output_table(SampleInformation.__output_table_file)
+        sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
+        replicate_model = self.output_table(SampleInformation.__output_table_replicate)
+        with open(csv_path, 'r') as fin:
+            next(fin)  # skip header
+            for line in fin:
+                tag_forward = line.strip().split(',')[0]
+                primer_forward = line.strip().split(',')[1]
+                tag_reverse = line.strip().split(',')[2]
+                primer_reverse = line.strip().split(',')[3]
+                marker_name = line.strip().split(',')[4]
+                sample_name = line.strip().split(',')[5]
+                replicate_name = line.strip().split(',')[6]
+                file_name = line.strip().split(',')[7]
+                if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
+                    # TODO: Add it to a exception logger
+                    raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
+                run_name = line.strip().split(',')[8]
+                #
+                # Insert file path
+                is_trimmed = False # Default
+                file_obj = {'name': file_name, 'run_name': run_name, 'is_trimmed': is_trimmed}
+                file_instance = get_or_create(session, file_model, **file_obj)
+                file_id = file_instance.id
+                #
+                # Insert marker_id
+                marker_obj = {'name': marker_name}
+                marker_instance = get_or_create(session, marker_model, **marker_obj)
+                marker_id = marker_instance.id
+
+                # Insert sample_information
+                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'sample_name': sample_name, 'replicate_name': replicate_name, 'run_name': run_name}
+                sample_information_obj['file_id'] = file_id
+                sample_information_obj['marker_id'] = marker_id
+                get_or_create(session, sampleinformation_model, **sample_information_obj)
+
+                replicate_obj = {'biosample_name': sample_name, 'marker_id': marker_id, 'file_name': file_name, 'name': replicate_name}
+                get_or_create(session, replicate_model, **replicate_obj)
+
