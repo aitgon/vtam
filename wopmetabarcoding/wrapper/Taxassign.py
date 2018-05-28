@@ -53,7 +53,7 @@ class Taxassign(ToolWrapper):
                 filtered_variants_fasta = line[2]
                 variant2sample2replicate2count_df = pickle.load(open(dataframe_path, 'rb'))
                 output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
-                output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
+                # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
                 # vsearch_usearch_global_args = {'db': taxassign_db_fasta,
                 #                                'usearch_global': filtered_variants,
                 #                                'id': 0,
@@ -64,11 +64,11 @@ class Taxassign(ToolWrapper):
                 #                                }
                 # vsearch_1 = VSearch1(**vsearch_usearch_global_args)
                 # vsearch_1.run()
-                # os.system(
-                #     "vsearch --usearch_global " + filtered_variants_fasta +" --db "+ taxassign_db_fasta +
-                #     " --maxaccept 0 --maxreject 0  --userout " + output_tsv + " --userfields query+target+id --id "
-                #     + str(0.8)
-                # )
+                os.system(
+                    "vsearch --usearch_global " + filtered_variants_fasta +" --db "+ taxassign_db_fasta +
+                    " --maxaccept 0 --maxreject 0  --userout " + output_tsv + " --userfields query+target+id --id "
+                    + str(0.8)
+                )
                 variants = list(set(variant2sample2replicate2count_df["sequence"].tolist()))
                 df = pandas.read_csv(output_tsv, sep='\t', names=['query', 'target', 'id'])
                 print(df.info())
@@ -81,7 +81,7 @@ class Taxassign(ToolWrapper):
                         df3 = df2.loc[df2['id'] >= ids]
                         targets = list(set(df3['target'].tolist()))
                         with open(taxassign_db_fasta, 'r') as fin:
-                            with open('/tmp/tmpe6yiaf0x/temp.tsv', 'w') as fout:
+                            with open(os.path.join(tempdir + 'temp.tsv'), 'w') as fout:
                                 for line in fin:
                                     if '>' in line:
                                         linebis = line.split(' ')
@@ -93,10 +93,11 @@ class Taxassign(ToolWrapper):
                                             seq_name = seq_name.replace('>', '')
                                             name = linefinal[1].replace(' tax_id', '')
                                             tax_id = linefinal[2].replace(' rank', '')
+                                            print(tax_id)
                                             rank = linefinal[3].replace(' parent_taxid', '')
                                             parent_id = linefinal[4]
                                             fout.write(seq_name + '\t' + name + "\t" + tax_id + "\t" + rank + "\t" + parent_id + "\n")
-                        df4 = pandas.read_csv('/tmp/tmpe6yiaf0x/temp.tsv', sep='\t', names=['sequence_name', 'name', 'tax_id', 'rank', 'parent_id'])
+                        df4 = pandas.read_csv(os.path.join(tempdir + 'temp.tsv'), sep='\t', names=['sequence_name', 'name', 'tax_id', 'rank', 'parent_id'])
                         # df4.columns = ['sequence_name', 'name', 'tax_id', 'rank', 'parent_id']
                         # rank_list = df4['rank'].tolist()
                         # most_common = max(rank_list, key = rank_list.count)

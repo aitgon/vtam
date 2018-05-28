@@ -54,6 +54,7 @@ rule Taxassign:
             Variant: wopmetabarcoding.model.Variant
         file:
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
+            # Reference database fasta path
             taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas
             assignlvl2id: data/input/taxassign/assignlvl2id.tsv
 

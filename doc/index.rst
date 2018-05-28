@@ -14,6 +14,7 @@ Table of Contents
     :maxdepth: 3
 
     content/userinput.rst
+    content/tutorial.rst
 
 .. Indices and tables
 .. ==================
