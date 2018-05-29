@@ -41,6 +41,18 @@ class Filter(ToolWrapper):
             Filter.__output_filtered_dataframe
         ]
 
+    def specify_params(self):
+        return {
+            "lfn_per_replicate_threshold": "float",
+            "lfn_per_variant_threshold": "float",
+            "lfn_per_replicate_series_threshold": "float",
+            "lfn_read_count_threshold": "float",
+            "repeatability_threshold": "int",
+            "pcr_error_var_prop": "float",
+            "renkonen_number_of_replicate": "int",
+            "renkonen_renkonen_tail": "float"
+        }
+
     # Todo: Needs output fields, eg table with paths to marker data frame pickles
 
     @staticmethod
@@ -109,10 +121,10 @@ class Filter(ToolWrapper):
             filter_obj = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
             #
             # Filter parameters
-            lfn_per_replicate_threshold = 0.001
-            lfn_per_variant_threshold = 0.001
-            lfn_per_replicate_series_threshold = 0.001
-            lfn_read_count_threshold = 1
+            lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
+            lfn_per_variant_threshold = self.option("lfn_per_variant_threshold")
+            lfn_per_replicate_series_threshold = self.option("lfn_per_replicate_series_threshold")
+            lfn_read_count_threshold = self.option("lfn_read_count_threshold")
             #
             Logger.instance().info("Launching LFN filter:")
             #
@@ -150,11 +162,11 @@ class Filter(ToolWrapper):
             #
             # Filter: PCR
             Logger.instance().info("Launching PCR error filter:")
-            filter_obj.store_index_identified_as_pcr_error(biosample_list, sample_replicate_list, marker.id, 0.5, False)
+            filter_obj.store_index_identified_as_pcr_error(biosample_list, sample_replicate_list, marker.id, self.option("pcr_error_var_prop"), False)
             filter_obj.drop_indices()
             #
             # Filter: Chimera
-            Logger.instance().info("Launching store_index_identified_as_chimera filter:")
+            Logger.instance().info("Launching store_index_identified_as_chimerenkonen_renkonen_tailra filter:")
             # TODO Remove this select and get information from df: variant2sample2replicate2count_df
             select_replicate = select([replicate_model.biosample_name, replicate_model.name]) \
                 .where(replicate_model.marker_id == marker.id)
@@ -172,7 +184,7 @@ class Filter(ToolWrapper):
             #
             # Filter: Renkonen
             Logger.instance().info("Launching store_index_that_fails_renkonen filter:")
-            filter_obj.store_index_that_fails_renkonen(3, 0.1)
+            filter_obj.store_index_that_fails_renkonen(self.option("renkonen_number_of_replicate"), self.option("renkonen_renkonen_tail"))
             filter_obj.drop_indices()
             #
             # Filter: replp

@@ -15,3 +15,16 @@ def create_info_df(fasta_name):
         sequence_info = [seq_name, name, tax_id, rank, parent_id]
         df_info.loc[len(df_info)] = sequence_info
     return df_info
+
+# test1 = open(output_tsv, 'w')
+                # test1.close()
+                # vsearch_usearch_global_args = {'db': taxassign_db_fasta,
+                #                                'usearch_global': filtered_variants_fasta,
+                #                                'id': str(0.80),
+                #                                'maxrejects': 0,
+                #                                'maxaccepts': 0,
+                #                                'userout': output_tsv,
+                #                                'userfields': "--userfields query+target+id --id",
+                #                                }
+                # vsearch_1 = VSearch1(**vsearch_usearch_global_args)
+                # vsearch_1.run()

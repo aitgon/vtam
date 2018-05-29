@@ -201,6 +201,11 @@ class Variant2Sample2Replicate2Count:
                     fout.write(">{}\n".format(variant))
                 fout.write(variant + '\n')
 
+    def create_log_table(self, indices):
+        print("ok")
+        # df_log_deleted = self.df.loc[self.df.index in indices]
+        # print(df_log_deleted)
+
     def store_index_identified_as_pcr_error(self, biosample_list, sample_replicate_list, marker_id, var_prop, pcr_error_by_sample):
         """
         Function used to eliminate variants from the data frame in which a pcr error is spotted
@@ -261,6 +266,8 @@ class Variant2Sample2Replicate2Count:
                 df3.index = df3['query']
                 data_variant = data_variant.merge(df3, left_on='sequence', right_index=True)
                 index_to_drop = list(data_variant.ix[data_variant.count_ratio < var_prop].index)
+                self.create_log_table(index_to_drop)
+                import pdb; pdb.set_trace()
                 self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
 
     def store_index_identified_as_chimera(self, replicate_obj_list, marker_id, chimera_by):

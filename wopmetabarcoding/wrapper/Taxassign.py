@@ -54,30 +54,20 @@ class Taxassign(ToolWrapper):
                 variant2sample2replicate2count_df = pickle.load(open(dataframe_path, 'rb'))
                 output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
-                # vsearch_usearch_global_args = {'db': taxassign_db_fasta,
-                #                                'usearch_global': filtered_variants,
-                #                                'id': 0,
-                #                                'maxrejects': 0,
-                #                                'maxaccepts': 0,
-                #                                'userout': output_tsv,
-                #                                'userfields': "--userfields query+target+id",
-                #                                }
-                # vsearch_1 = VSearch1(**vsearch_usearch_global_args)
-                # vsearch_1.run()
+                print(filtered_variants_fasta)
                 os.system(
                     "vsearch --usearch_global " + filtered_variants_fasta +" --db "+ taxassign_db_fasta +
                     " --maxaccept 0 --maxreject 0  --userout " + output_tsv + " --userfields query+target+id --id "
                     + str(0.8)
                 )
+
                 variants = list(set(variant2sample2replicate2count_df["sequence"].tolist()))
                 df = pandas.read_csv(output_tsv, sep='\t', names=['query', 'target', 'id'])
-                print(df.info())
                 # df_info = create_info_df(taxassign_db_fasta)
                 for variant in variants:
                     print(variant)
                     df2 = df.loc[df['query'] == variant]
                     for ids in order:
-                        print(ids)
                         df3 = df2.loc[df2['id'] >= ids]
                         targets = list(set(df3['target'].tolist()))
                         with open(taxassign_db_fasta, 'r') as fin:
@@ -92,8 +82,7 @@ class Taxassign(ToolWrapper):
                                             seq_name = linefinal[0].replace(' name', '')
                                             seq_name = seq_name.replace('>', '')
                                             name = linefinal[1].replace(' tax_id', '')
-                                            tax_id = linefinal[2].replace(' rank', '')
-                                            print(tax_id)
+                                            tax_id =linefinal[2].replace(' rank', '')
                                             rank = linefinal[3].replace(' parent_taxid', '')
                                             parent_id = linefinal[4]
                                             fout.write(seq_name + '\t' + name + "\t" + tax_id + "\t" + rank + "\t" + parent_id + "\n")
@@ -111,6 +100,7 @@ class Taxassign(ToolWrapper):
                         def most_common(lst):
                             return max(set(lst), key=lst.count)
                         """
+                        print(max_tax_resolution)
                         df5 = df4.loc[df4['rank'] == min_target_taxlevel]
                         print(df5)
                 del df

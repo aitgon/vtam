@@ -43,6 +43,15 @@ rule Filter:
     output:
         file:
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
+    params:
+        lfn_per_replicate_threshold: 0.001
+        lfn_per_variant_threshold: 0.001
+        lfn_per_replicate_series_threshold: 0.001
+        lfn_read_count_threshold: 1
+        repeatability_threshold: 2
+        pcr_error_var_prop: 0.1
+        renkonen_number_of_replicate: 3
+        renkonen_renkonen_tail: 0.5
       
 
 
