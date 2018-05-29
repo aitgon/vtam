@@ -1,3 +1,16 @@
+## Todo: Integrate MergeFastq
+#rule MergeFastq:
+#    tool: wopmetabarcoding.wrapper.MergeFastq
+#    input:
+#        file:
+#            csv: data/sample2fastq_information.csv
+#    params:
+#        fasta_directory: ????
+#    output:
+#        file:
+#            csv: data/sample2fasta_information.csv
+#            csv2: data/fastq2fasta_link.csv
+
 rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
