@@ -1,8 +1,29 @@
+rule Merge:
+  tool: wopmetabarcoding.wrapper.Merge
+  input:
+      file:
+          sample2fastq: data/sample2fastq_test.csv
+  output:
+      file:
+          sample2fasta: data/sample2fasta.csv
+  params:
+      fastq_directory: data/input/fastq
+      fasta_output_dir: data/output/fasta/
+      fastq_minovlen: 50
+      fastq_maxmergelen: 300
+      fastq_minmergelen: 100
+      fastq_minlen: 50
+      fastq_maxee: 1
+      fastq_truncqual: 10
+      fastq_maxns: 0
+      threads: 8
+      fastq_ascii: 33
+
 rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            csv: data/1_sample_info.csv
+            csv: data/sample2fasta.csv
     output:
         table:
             File: wopmetabarcoding.model.File
@@ -12,6 +33,8 @@ rule SampleInformation:
             Biosample: wopmetabarcoding.model.Biosample
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
+    params:
+        merged_fasta_path: data/fastq_merged_fasta
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -52,7 +75,7 @@ rule Filter:
         pcr_error_var_prop: 0.1
         renkonen_number_of_replicate: 3
         renkonen_renkonen_tail: 0.5
-      
+
 
 
 rule Taxassign:

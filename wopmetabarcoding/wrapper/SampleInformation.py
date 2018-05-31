@@ -33,6 +33,11 @@ class SampleInformation(ToolWrapper):
             SampleInformation.__output_table_replicate
         ]
 
+    def specify_params(self):
+        return{
+            "merged_fasta_path": "str"
+        }
+
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
@@ -49,18 +54,18 @@ class SampleInformation(ToolWrapper):
         with open(csv_path, 'r') as fin:
             next(fin)  # skip header
             for line in fin:
-                tag_forward = line.strip().split(',')[0]
-                primer_forward = line.strip().split(',')[1]
-                tag_reverse = line.strip().split(',')[2]
-                primer_reverse = line.strip().split(',')[3]
-                marker_name = line.strip().split(',')[4]
-                sample_name = line.strip().split(',')[5]
-                replicate_name = line.strip().split(',')[6]
-                file_name = line.strip().split(',')[7]
+                tag_forward = line.strip().split('\t')[0]
+                primer_forward = line.strip().split('\t')[1]
+                tag_reverse = line.strip().split('\t')[2]
+                primer_reverse = line.strip().split('\t')[3]
+                marker_name = line.strip().split('\t')[4]
+                sample_name = line.strip().split('\t')[5]
+                replicate_name = line.strip().split('\t')[6]
+                file_name = os.path.join(self.option("merged_fasta_path"), line.strip().split('\t')[8])
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
                     # TODO: Add it to a exception logger
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
-                run_name = line.strip().split(',')[8]
+                run_name = line.strip().split('\t')[7]
                 #
                 # Insert file path
                 is_trimmed = False # Default
