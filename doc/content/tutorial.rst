@@ -95,6 +95,27 @@ At this point, it is already possible to test the *Merge* rule. First try a dry-
 
     wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Merge -n
 
+
+And then a true run without the '-n' option
+
+.. code-block:: bash
+
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Merge
+
+Check that the *sample2fasta.tsv* file is there.
+
+.. code-block:: bash
+
+    $ head -n1 out/sample2fasta.tsv
+    cgatcgtcatcacg	TCCACTAATCACAARGATATTGGTAC	cgcgatctgtagag	WACTAATCAATTWCCAAATCCTCC	MFZR	14Mon01	repl2	prerun	prerun_MFZR_repl2.fasta
+
+and also the expected *FASTA* files
+
+.. code-block:: bash
+
+    $ ls  out/fasta/
+    prerun_MFZR_repl2.fasta  prerun_MFZR_repl3.fasta  prerun_ZFZR_repl1.fasta  prerun_ZFZR_repl2.fasta  prerun_ZFZR_repl3.fasta
+
 Update the *sample2fasta.csv* file path parameter in Wopfile
 ---------------------------------------------------------------
 
