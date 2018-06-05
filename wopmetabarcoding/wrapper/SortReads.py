@@ -6,10 +6,10 @@ from wopmars.utils.Logger import Logger
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
-    create_primer_tag_fasta_for_vsearch, check_criteria_in_vsearch_output, read_counter, fasta_writer, trim_reads, \
+    create_primer_tag_fasta_for_vsearch, check_criteria_in_vsearch_output,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
-import subprocess
+# import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
 

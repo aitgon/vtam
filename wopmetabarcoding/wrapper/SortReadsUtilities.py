@@ -28,37 +28,37 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
                 fout.write(row.tag_reverse + row.primer_reverse + "\n")
 
 
-def read_counter(session, file, model):
-    """
-    Function counting occurences of a read in the fasta file and store it in a table
-    :param session: Current of the database
-    :param file: fasta containing the reads
-    :param model: Model of the ReadCount table
-    :return: void
-    """
-    with open(file, "r") as fasta_file:
-        next(fasta_file)
-        sequence = ""
-        liste_tmp = []
-        for line in fasta_file:
-            if ">" in line:
-                if sequence in liste_tmp:
-                    session.query(model).filter(model.sequence == sequence).update({model.count: model.count+1})
-                    sequence = ""
-                else:
-                    obj_readcount = {"sequence": sequence, "count": 1}
-                    insert_table(session, model, obj_readcount)
-                    liste_tmp.append(sequence)
-                    sequence = ""
-            else:
-                sequence += line.strip()
-        if session.query(model.sequence.contains(sequence)) is True and sequence != "":
-            session.query(model).filter(model.sequence == sequence).update({model.count: model.count + 1})
-            sequence = ""
-        else:
-            obj_readcount = {"sequence": sequence, "count": 1}
-            insert_table(session, model, obj_readcount)
-            sequence = ""
+# def read_counter(session, file, model):
+#     """
+#     Function counting occurences of a read in the fasta file and store it in a table
+#     :param session: Current of the database
+#     :param file: fasta containing the reads
+#     :param model: Model of the ReadCount table
+#     :return: void
+#     """
+#     with open(file, "r") as fasta_file:
+#         next(fasta_file)
+#         sequence = ""
+#         liste_tmp = []
+#         for line in fasta_file:
+#             if ">" in line:
+#                 if sequence in liste_tmp:
+#                     session.query(model).filter(model.sequence == sequence).update({model.count: model.count+1})
+#                     sequence = ""
+#                 else:
+#                     obj_readcount = {"sequence": sequence, "count": 1}
+#                     insert_table(session, model, obj_readcount)
+#                     liste_tmp.append(sequence)
+#                     sequence = ""
+#             else:
+#                 sequence += line.strip()
+#         if session.query(model.sequence.contains(sequence)) is True and sequence != "":
+#             session.query(model).filter(model.sequence == sequence).update({model.count: model.count + 1})
+#             sequence = ""
+#         else:
+#             obj_readcount = {"sequence": sequence, "count": 1}
+#             insert_table(session, model, obj_readcount)
+#             sequence = ""
 
 
 def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):

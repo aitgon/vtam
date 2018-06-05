@@ -88,6 +88,8 @@ Set path to *sample2fastq.tsv* file in Wopfile. I set in the *Merge* rule of the
       file:
           sample2fastq: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/sample2fastq.tsv
 
+Run the *Merge* rule
+-------------------------------------------------------------------------
 
 At this point, it is already possible to test the *Merge* rule. First try a dry-run using the Wopmars '-n' option
 
@@ -116,51 +118,45 @@ and also the expected *FASTA* files
     $ ls  out/fasta/
     prerun_MFZR_repl2.fasta  prerun_MFZR_repl3.fasta  prerun_ZFZR_repl1.fasta  prerun_ZFZR_repl2.fasta  prerun_ZFZR_repl3.fasta
 
-Update the *sample2fasta.csv* file path parameter in Wopfile
----------------------------------------------------------------
 
-The simplest is to run Wopmars with the working directory in the same folder as *sample2fasta.csv*. Then you only need to change the *input/file/sample2fasta.csv* in the *SampleInformation* rule as shown here:
+Run the *SampleInformation* rule
+-------------------------------------------------------------------------
 
-.. code-block:: bash
-
-    rule SampleInformation:
-        tool: wopmetabarcoding.wrapper.SampleInformation
-        input:
-            file:
-                csv: sample2fasta.csv
-        output:
-            table:
-                File: wopmetabarcoding.model.File
-                SampleInformation: wopmetabarcoding.model.SampleInformation
-                Marker: wopmetabarcoding.model.Marker
-                PrimerPair: wopmetabarcoding.model.PrimerPair
-                Biosample: wopmetabarcoding.model.Biosample
-                TagPair: wopmetabarcoding.model.TagPair
-                Replicate: wopmetabarcoding.model.Replicate
-
-
-Update workflow parameters in Wopfile (Optional)
---------------------------------------------------------------------------------
-
-In the simplest case, just keep the default parameters.
-
-
-Run wopmars
---------------------------------------------------------------------------------
-
-A simple wopmars command to test the *SampleInformation* rule is here
+If the *Merge* rule was fine, then you can run until the *SampleInformation* step
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -F -t SampleInformation
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SampleInformation
 
-This command will store the primers, tags and other informations in the database *db.sqlite*, which can be opened with eg, sqlitebrowser.
+Check the *db.sqlite* file using *sqlitebrowser*. All table except *Variant* should be filled.
 
-In order to run the whole workflow, the files *cutoff_variant.tsv* and *genetic_codes.csv* are necessary and a valid path relative to Wopmars working directory. This path must be defined in the Wopfile:
+
+Run the *SortReads* rule
+-------------------------------------------------------------------------
+
+We can continue with the *SortReads* rule. This rule is quite long, so be patient or test it first with smaller datasets.
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -F -t SampleInformation
-    
-    
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SortReads
+
+This rule fills in the *Variant* table with the number of reads per variant and marker across all samples.
+
+You can have more count detail in each category in the tmp files listed in the *sortreads_samplecount.tsv* file
+
+
+Run the *Filter* rule
+-------------------------------------------------------------------------
+
+We can continue with the *Filter* rule. This rule is quite long, so be patient or test it first with smaller datasets.
+
+.. code-block:: bash
+
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SortReads
+
+This rule fills in the *Variant* table with the number of reads per variant and marker across all samples.
+
+You can have more count detail in each category in the tmp files listed in the *sortreads_samplecount.tsv* file
+
+
 
