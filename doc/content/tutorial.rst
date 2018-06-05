@@ -18,17 +18,22 @@ This is a full :download:`Wopfile example </data/Wopfile.yml>`. Here there are t
 
 .. code-block:: bash
 
-    rule SampleInformation:
-        tool: wopmetabarcoding.wrapper.SampleInformation
-        input:
-            file:
-                csv: data/1_sample_info.csv
+    rule Merge:
+      tool: wopmetabarcoding.wrapper.Merge
+      input:
+          file:
+              sample2fastq: data/sample2fastq_test.csv
+      output:
+          file:
+              sample2fasta: data/sample2fasta.csv
+      params:
+          fastq_directory: data/input/fastq
     ...
 
-Specify FASTQ pair input and FASTA output information (TO DISCUSS)
----------------------------------------------------------------------
+Check FASTQ file location
+---------------------------------------------------------------------------------
 
-In my case, FASTQ files look this and pairs are given by R1/R2:
+In my case, FASTQ files are here:
 
 .. code-block:: bash
 
@@ -37,55 +42,58 @@ In my case, FASTQ files look this and pairs are given by R1/R2:
     MFZR1_S4_L001_R2_001.fastq  MFZR3_S6_L001_R1_001.fastq  ZFZR1_S1_L001_R2_001.fastq  ZFZR3_S3_L001_R1_001.fastq
     MFZR2_S5_L001_R1_001.fastq  MFZR3_S6_L001_R2_001.fastq  ZFZR2_S2_L001_R1_001.fastq  ZFZR3_S3_L001_R2_001.fastq
 
-Therefore, my *fastq_pairs.csv* file is composed of three columns with forward and reversed FASTQ and output FASTA:
+
+Set FASTQ input and FASTA output directories in Wopfile
+---------------------------------------------------------------------
+
+Based on my FASTQ file location and desired FASTA output location, I set in the *Merge* rule of the *Wopfile*:
 
 .. code-block:: bash
 
-    fastq_fw,fastq_rev,fasta
-    MFZR1_S4_L001_R1_001.fastq,MFZR1_S4_L001_R2_001.fastq,prerun_MFZR_repl1.fasta
-    MFZR2_S5_L001_R1_001.fastq,MFZR2_S5_L001_R2_001.fastq,prerun_MFZR_repl2.fasta
-    MFZR3_S6_L001_R1_001.fastq,MFZR3_S6_L001_R2_001.fastq,prerun_MFZR_repl3.fasta
-    ZFZR1_S1_L001_R1_001.fastq,ZFZR1_S1_L001_R2_001.fastq,prerun_ZFZR_repl1.fasta
-    ZFZR2_S2_L001_R1_001.fastq,ZFZR2_S2_L001_R2_001.fastq,prerun_ZFZR_repl2.fasta
-    ZFZR3_S3_L001_R1_001.fastq,ZFZR3_S3_L001_R2_001.fastq,prerun_ZFZR_repl3.fasta
+    params:
+        fastq_directory: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/nuxeo/input/input_fastq
+        fasta_output_dir: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/out/fasta
 
 
-Specify sample information with FASTA paths
----------------------------------------------------------
+Define sample and FASTQ file pair information and set path in Wopfile
+-------------------------------------------------------------------------
 
-The sample information file (*sample_information.csv*) is a CSV file with header and 9 columns:
+Create a TSV (tab-separated file), with a header and 10 columns with all the information per FASTQ file pair.
 
-- Forward tag seq
-- Forward primer seq
-- Reverse tag seq
-- Reverse primer seq
-- Marker name
-- Biosample name
+These columns are needed
+
+- Tag_fwd
+- Primer_fwd
+- Tag_rev
+- Primer_rev
+- Marker
+- Biosample
 - Replicate
-- FASTA file path
-- Run name
+- Run
+- Fastq_fwd
+- Fastq_rev
 
-The absolute FASTA path or relative FASTA path relative to the *sample2fasta.csv* must be correct. For instance, you can have this file hierarchy:
-
-.. code-block:: bash
-
-    .
-    ├── fasta
-    │   ├── prerun_MFZR_repl2.fasta
-    │   ├── prerun_MFZR_repl3.fasta
-    │   ├── prerun_ZFZR_repl1.fasta
-    │   ├── prerun_ZFZR_repl2.fasta
-    │   └── prerun_ZFZR_repl3.fasta
-    └── sample2fasta.csv
-
-
-These are the first lines of the *sample2fasta.csv* file
+The first two lines of my *sample2fastq.tsv* look like this:
 
 .. code-block:: bash
 
-    Forward tag seq,Forward primer seq,Reverse tag seq,Reverse primer seq,Marker name,Biosample name,Replicate,FASTA file path,Run name
-    cgatcgtcatcacg,TCCACTAATCACAARGATATTGGTAC,cgcgatctgtagag,WACTAATCAATTWCCAAATCCTCC,MFZR,14Mon01,repl2,fasta/prerun_MFZR_repl2.fasta,prerun
+    Tag_fwd	Primer_fwd	Tag_rev	Primer_rev	Marker	 Biosample	Replicate	Run	Fastq_fwd	Fastq_rev
+    cgatcgtcatcacg	TCCACTAATCACAARGATATTGGTAC	cgcgatctgtagag	WACTAATCAATTWCCAAATCCTCC	MFZR	14Mon01	repl2	prerun	MFZR2_S5_L001_R1_001.fastq	MFZR2_S5_L001_R2_001.fastq
 
+Set path to *sample2fastq.tsv* file in Wopfile. I set in the *Merge* rule of the *Wopfile*:
+
+.. code-block:: bash
+
+  input:
+      file:
+          sample2fastq: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/sample2fastq.tsv
+
+
+At this point, it is already possible to test the *Merge* rule. First try a dry-run using the Wopmars '-n' option
+
+.. code-block:: bash
+
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Merge -n
 
 Update the *sample2fasta.csv* file path parameter in Wopfile
 ---------------------------------------------------------------
