@@ -87,13 +87,13 @@ class Taxassign(ToolWrapper):
                                             parent_id = linefinal[4]
                                             fout.write(seq_name + '\t' + name + "\t" + tax_id + "\t" + rank + "\t" + parent_id + "\n")
                         df4 = pandas.read_csv(os.path.join(tempdir + 'temp.tsv'), sep='\t', names=['sequence_name', 'name', 'tax_id', 'rank', 'parent_id'])
+                        print(df4)
                         # df4.columns = ['sequence_name', 'name', 'tax_id', 'rank', 'parent_id']
                         # rank_list = df4['rank'].tolist()
                         # most_common = max(rank_list, key = rank_list.count)
                         assign_info = df_assignlvl2id.loc[df_assignlvl2id['id'] == ids]
                         min_target_taxlevel = assign_info['min_target_taxlevel'].tolist()
                         min_target_taxlevel = min_target_taxlevel[0]
-                        print(min_target_taxlevel)
                         max_tax_resolution = assign_info['max_tax_resolution'].tolist()
                         max_tax_resolution = max_tax_resolution[0]
                         """
@@ -102,7 +102,7 @@ class Taxassign(ToolWrapper):
                         """
                         print(max_tax_resolution)
                         df5 = df4.loc[df4['rank'] == min_target_taxlevel]
-                        print(df5)
+                        # print(df5)
                 del df
 
 

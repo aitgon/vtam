@@ -87,7 +87,7 @@ class Variant2Sample2Replicate2Count:
         :return: List of the index which don't pass the filter
         """
         # Selecting all the indexes where the ratio is below the minimal readcount
-        indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index) # Todo: strictement ou pas
+        indices_to_drop = list(self.df.loc[self.df['count'] < lfn_read_count_threshold].index) # Todo: strictement ou pas
         #
         # add indices to drop to main list and make indices unique
         self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
@@ -160,7 +160,7 @@ class Variant2Sample2Replicate2Count:
             df3 = df2['sequence'].value_counts().to_frame()
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
-            index_to_drop = list(df2.ix[df2.sequence_count < min_count].index)
+            index_to_drop = list(df2.loc[df2.sequence_count < min_count].index)
             # self.df.drop(index_to_drop, inplace=True)
             self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
 
@@ -230,11 +230,11 @@ class Variant2Sample2Replicate2Count:
 
             if pcr_error_by_sample:
                 data_variant = self.df.loc[self.df['sample'] == element]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
+                sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
             else:
                 data_variant = self.df.loc[self.df['sample_replicate'] == element]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
+                sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
             variant_list_series = data_variant['sequence']
             if variant_list_series.empty is False:

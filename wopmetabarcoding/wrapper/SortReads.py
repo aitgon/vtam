@@ -24,6 +24,7 @@ class SortReads(ToolWrapper):
     __input_table_marker = "Marker"
     # Output
     # Output file
+    __output_sortreads_samplecount_csv = "SortReads_sample_counts"
     # __output_file_vsearch_output_tsv = "vsearch_output_tsv"
     # __output_file_primer_tag_fasta = "primer_tag_fasta"
     # __output_file_checked_vsearch_output_tsv = "checked_vsearch_output_tsv"
@@ -39,12 +40,10 @@ class SortReads(ToolWrapper):
             SortReads.__input_table_marker
         ]
 
-    # def specify_output_file(self):
-    #     return [
-    #         SortReads.__output_file_vsearch_output_tsv,
-    #         SortReads.__output_file_primer_tag_fasta,
-    #         SortReads.__output_file_checked_vsearch_output_tsv
-    #     ]
+    def specify_output_file(self):
+        return [
+            SortReads.__output_sortreads_samplecount_csv
+        ]
 
     def specify_output_table(self):
         return [
@@ -106,6 +105,9 @@ class SortReads(ToolWrapper):
         vsearch_output_tsv = os.path.join(tempdir, 'vsearch_output.tsv')
         primer_tag_fasta = os.path.join(tempdir, 'primer_tag.fasta')
         checked_vsearch_output_tsv = os.path.join(tempdir, 'checked_vsearch_output.tsv')
+
+        # Output file models
+        sortreads_samplecount = self.output_file(SortReads.__output_sortreads_samplecount_csv)
 
         # Output tables models
         readcount_model = self.output_table(SortReads.__output_table_readcount)
@@ -190,19 +192,22 @@ class SortReads(ToolWrapper):
                            file_id=file_id, annotated_reads_tsv=annotated_reads_tsv)
         #
         # # For each marker_id, concatenate its files with the annotated reads and count unique reads per marker_id
-        for marker_obj in session.query(marker_model).all():
-            marker_name = marker_obj.name
-            gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
-            sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
-            count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
-            Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")
-            gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
-            gathered_marker_file = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
-            # session.commit()
-            # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
-            Logger.instance().info("Counting reads for each marker_id.")
-            count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv)
-            # session.commit()
-            Logger.instance().info("Inserting variant in the Variant table of the database.")
-            insert_variant(session, count_reads_marker, variant_model)
-            session.commit()
+        with open(sortreads_samplecount, 'w') as fout_sortread_samplecount:
+            for marker_obj in session.query(marker_model).all():
+                marker_name = marker_obj.name
+                marker_id = marker_obj.id
+                gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
+                sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
+                fout_sortread_samplecount.write(marker_name + "\t" + str(marker_id) + "\t" + sample_count_tsv + "\n")
+                count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
+                Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")
+                gather_files(marker_name, gathered_marker_file, annoted_tsv_list, run_list)
+                gathered_marker_file = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
+                # session.commit()
+                # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
+                Logger.instance().info("Counting reads for each marker_id.")
+                count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv)
+                # session.commit()
+                Logger.instance().info("Inserting variant in the Variant table of the database.")
+                insert_variant(session, count_reads_marker, variant_model)
+                session.commit()

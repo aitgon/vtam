@@ -51,6 +51,10 @@ class SampleInformation(ToolWrapper):
         file_model = self.output_table(SampleInformation.__output_table_file)
         sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
         replicate_model = self.output_table(SampleInformation.__output_table_replicate)
+        biosample_model = self.output_table(SampleInformation.__output_table_biosample)
+        primerpair_model = self.output_table(SampleInformation.__output_table_primerpair)
+        tagpair_model = self.output_table(SampleInformation.__output_table_tagpair)
+
         with open(csv_path, 'r') as fin:
             next(fin)  # skip header
             for line in fin:
@@ -67,6 +71,10 @@ class SampleInformation(ToolWrapper):
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
                 run_name = line.strip().split('\t')[7]
                 #
+                # Insert Biosamples
+                biosample_obj = {'name': sample_name}
+                get_or_create(session, biosample_model, **biosample_obj)
+
                 # Insert file path
                 is_trimmed = False # Default
                 file_obj = {'name': file_name, 'run_name': run_name, 'is_trimmed': is_trimmed}
@@ -84,6 +92,15 @@ class SampleInformation(ToolWrapper):
                 sample_information_obj['marker_id'] = marker_id
                 get_or_create(session, sampleinformation_model, **sample_information_obj)
 
+                # Primer pair
+                primerpair_obj = {'primer_forward': primer_forward, 'primer_reverse': primer_reverse}
+                get_or_create(session, primerpair_model, **primerpair_obj)
+
+                # Tag pair
+                tagpair_obj = {'tag_forward': tag_forward, 'tag_reverse': tag_reverse}
+                get_or_create(session, tagpair_model, **tagpair_obj)
+
+                # Insert replicate
                 replicate_obj = {'biosample_name': sample_name, 'marker_id': marker_id, 'file_name': file_name, 'name': replicate_name}
                 get_or_create(session, replicate_model, **replicate_obj)
 

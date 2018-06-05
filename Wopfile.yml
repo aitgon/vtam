@@ -44,9 +44,12 @@ rule SortReads:
             SampleInformation: wopmetabarcoding.model.SampleInformation
             Marker: wopmetabarcoding.model.Marker
     output:
+        file:
+            SortReads_sample_counts: data/sortreads_samplecount.csv
         table:
             ReadCount: wopmetabarcoding.model.ReadCount
             Variant: wopmetabarcoding.model.Variant
+
     params:
         min_id: 0.8
         minseqlength: 32
@@ -61,6 +64,7 @@ rule Filter:
             Variant: wopmetabarcoding.model.Variant
             Replicate: wopmetabarcoding.model.Replicate
         file:
+            SortReads_sample_counts: data/sortreads_samplecount.csv
             file_cutoff: data/cutoff_variant.tsv
             genetic_code: data/genetic_codes.csv
     output:

@@ -8,5 +8,5 @@ class Biosample(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    positive_control = Column(Boolean, default=False)
-    negative_control = Column(Boolean, default=False)
+    positive_control = Column(Boolean, default=False, nullable=True)
+    negative_control = Column(Boolean, default=False, nullable=True)
