@@ -258,19 +258,19 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
             line = line.strip()
             line = line.split('\t')
             if line[7] in biosamples_count_variant:
-                temp = biosamples_count_variant.get(line[7])
+                temp_count_per_samplereplicate = biosamples_count_variant.get(line[7])
                 sample_replicate = line[5] + "_" + line[6]
-                if sample_replicate in temp:
-                    temp[sample_replicate] += 1
+                if sample_replicate in temp_count_per_samplereplicate:
+                    temp_count_per_samplereplicate[sample_replicate] += 1
                 else:
-                    temp[sample_replicate] = 1
-                biosamples_count_variant[line[7]] = temp
+                    temp_count_per_samplereplicate[sample_replicate] = 1
+                biosamples_count_variant[line[7]] = temp_count_per_samplereplicate
             else:
                 sequence = line[7]
                 sample_replicate = line[5] + "_" + line[6]
-                temp_biosample_count = biosample_count.copy()
-                temp_biosample_count[sample_replicate] = 1
-                biosamples_count_variant[sequence] = temp_biosample_count
+                count_per_samplereplicate = biosample_count.copy()
+                count_per_samplereplicate[sample_replicate] = 1
+                biosamples_count_variant[sequence] = count_per_samplereplicate
             check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
             for row in check_read.fetchone():
                 #  In case of the line already exist, the count number is updated
@@ -288,16 +288,16 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
         # Line which delete singletons
         with open(sample_count_tsv, 'w') as test_output:
             test_output.write("{}\t{}\t{}\t{}\t{}\n".format('sequence', 'replicate', 'sample','sample_replicate', 'count'))
-            for element in biosamples_count_variant:
-                dictio = biosamples_count_variant.get(str(element))
-                for things in dictio:
-                    count = dictio.get(str(things))
-                    if len(dictio) == 1 and count == 1:
+            for variant_seq in biosamples_count_variant:
+                count_per_samplerepl = biosamples_count_variant.get(str(variant_seq))
+                for sample_repl in count_per_samplerepl:
+                    count = count_per_samplerepl.get(str(sample_repl))
+                    if len(count_per_samplerepl) == 1 and count == 1:
                         continue
                     else:
-                        replicate = things.split('_')[-1]
-                        sample = things.split('_')[-2]
-                        test_output.write(element + '\t' + replicate + '\t'+ sample + '\t' + things + '\t' + str(count))
+                        replicate = sample_repl.split('_')[-1]
+                        sample = sample_repl.split('_')[-2]
+                        test_output.write(variant_seq + '\t' + replicate + '\t'+ sample + '\t' + sample_repl + '\t' + str(count))
                         test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()

@@ -9,7 +9,7 @@ class SampleInformation(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.SampleInformation"
     }
-    __input_file_csv = "csv"
+    __input_file_csv = "sample2fasta"
     #
     __output_table_file = "File"
     __output_table_sample_information = "SampleInformation"
@@ -35,7 +35,7 @@ class SampleInformation(ToolWrapper):
 
     def specify_params(self):
         return{
-            "merged_fasta_path": "str"
+            "fasta_dir": "str"
         }
 
     def run(self):
@@ -65,7 +65,7 @@ class SampleInformation(ToolWrapper):
                 marker_name = line.strip().split('\t')[4]
                 sample_name = line.strip().split('\t')[5]
                 replicate_name = line.strip().split('\t')[6]
-                file_name = os.path.join(self.option("merged_fasta_path"), line.strip().split('\t')[8])
+                file_name = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[10])
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
                     # TODO: Add it to a exception logger
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))

@@ -20,7 +20,7 @@ class Merge(ToolWrapper):
     def specify_params(self):
         return{
             "fastq_directory":"str",
-            "fasta_output_dir":"str",
+            "fasta_dir":"str",
             "fastq_minovlen":"int",
             "fastq_maxmergelen":"int",
             "fastq_minmergelen":"int",
@@ -43,23 +43,24 @@ class Merge(ToolWrapper):
             with open(sample2fastq, 'r') as csv_file:
                 next(csv_file)
                 csv_content = csv_file.readlines()
+                print(csv_content[0])
             with open(sample2fasta, 'w') as csv_fout:
                 for line in csv_content:
                     sample_info = line.strip().split("\t")
-                    merge_info = sample_info[8].split(';')
-                    fin_fw = os.path.join(self.option("fastq_directory"), merge_info[0])
-                    fin_rev = os.path.join(self.option("fastq_directory"), merge_info[1])
+                    print(sample_info)
+                    fin_fw = os.path.join(self.option("fastq_directory"), sample_info[8])
+                    fin_rev = os.path.join(self.option("fastq_directory"), sample_info[9])
                     fout_name = sample_info[7] + "_" + sample_info[4] + "_" +sample_info[6] + ".fasta"
-                    fout = os.path.join(self.option("fasta_output_dir"), fout_name)
-                    line2write = line.replace(sample_info[8], fout_name)
+                    fout = os.path.join(self.option("fasta_dir"), fout_name)
+                    line2write = line.strip() + '\t' + fout_name + "\n"
                     csv_fout.write(line2write)
                     if not os.path.isfile(fout):
                         if os.path.isfile(fin_fw) is False:
-                            error_file = merge_info[0]
+                            error_file = sample_info[8]
                             raise FileNotFoundError('One of the input file: ' + error_file + ' is missing.')
 
                         elif os.path.isfile(fin_rev) is False:
-                            error_file = merge_info[1]
+                            error_file = sample_info[9]
                             raise FileNotFoundError('One of the input file: ' + error_file + ' is missing.')
                         else:
                             command = "vsearch" + " -fastq_mergepairs " + fin_fw + " --reverse " + fin_rev

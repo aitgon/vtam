@@ -2,13 +2,13 @@ rule Merge:
   tool: wopmetabarcoding.wrapper.Merge
   input:
       file:
-          sample2fastq: data/sample2fastq_test.csv
+          sample2fastq: data/sample2fastq.tsv
   output:
       file:
           sample2fasta: data/sample2fasta.csv
   params:
       fastq_directory: data/input/fastq
-      fasta_output_dir: data/output/fasta/
+      fasta_dir: data/output/fasta/
       fastq_minovlen: 50
       fastq_maxmergelen: 300
       fastq_minmergelen: 100
@@ -23,7 +23,7 @@ rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            csv: data/sample2fasta.csv
+            sample2fasta: data/sample2fasta.csv
     output:
         table:
             File: wopmetabarcoding.model.File
@@ -34,7 +34,7 @@ rule SampleInformation:
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
     params:
-        merged_fasta_path: data/fastq_merged_fasta
+        fasta_dir: data/fastq_merged_fasta
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -47,7 +47,6 @@ rule SortReads:
         file:
             SortReads_sample_counts: data/sortreads_samplecount.csv
         table:
-            ReadCount: wopmetabarcoding.model.ReadCount
             Variant: wopmetabarcoding.model.Variant
 
     params:

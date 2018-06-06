@@ -13,6 +13,7 @@ from wopmetabarcoding.wrapper.SortReadsUtilities import \
 
 from wopmetabarcoding.utils.constants import tempdir
 
+
 class SortReads(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.SortReads"
@@ -29,7 +30,6 @@ class SortReads(ToolWrapper):
     # __output_file_primer_tag_fasta = "primer_tag_fasta"
     # __output_file_checked_vsearch_output_tsv = "checked_vsearch_output_tsv"
     # Output table
-    __output_table_readcount = "ReadCount"
     # __output_table_obifasta = 'ObiFasta'
     __output_table_variant = 'Variant'
 
@@ -47,8 +47,7 @@ class SortReads(ToolWrapper):
 
     def specify_output_table(self):
         return [
-            SortReads.__output_table_readcount,
-            SortReads.__output_table_variant
+            SortReads.__output_table_variant,
         ]
 
     def specify_params(self):
@@ -110,7 +109,6 @@ class SortReads(ToolWrapper):
         sortreads_samplecount = self.output_file(SortReads.__output_sortreads_samplecount_csv)
 
         # Output tables models
-        readcount_model = self.output_table(SortReads.__output_table_readcount)
         variant_model = self.output_table(SortReads.__output_table_variant)
 
         #  TODO: Later we will see in case files are already trimmed
