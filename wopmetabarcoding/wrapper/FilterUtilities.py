@@ -87,7 +87,7 @@ class Variant2Sample2Replicate2Count:
         :return: List of the index which don't pass the filter
         """
         # Selecting all the indexes where the ratio is below the minimal readcount
-        indices_to_drop = list(self.df.loc[self.df['count'] <= lfn_read_count_threshold].index) # Todo: strictement ou pas
+        indices_to_drop = list(self.df.loc[self.df['count'] < lfn_read_count_threshold].index) # Todo: strictement ou pas
         #
         # add indices to drop to main list and make indices unique
         self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
@@ -160,7 +160,7 @@ class Variant2Sample2Replicate2Count:
             df3 = df2['sequence'].value_counts().to_frame()
             df3.columns = ['sequence_count']
             df2 = df2.merge(df3, left_on='sequence', right_index=True)
-            index_to_drop = list(df2.ix[df2.sequence_count < min_count].index)
+            index_to_drop = list(df2.loc[df2.sequence_count < min_count].index)
             # self.df.drop(index_to_drop, inplace=True)
             self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
 
@@ -203,8 +203,10 @@ class Variant2Sample2Replicate2Count:
 
     def create_log_table(self, indices):
         print("ok")
-        # df_log_deleted = self.df.loc[self.df.index in indices]
-        # print(df_log_deleted)
+        indices_to_drop = self.df.index.tolist()
+        print(indices_to_drop)
+        df_log_deleted = self.df.loc[indices]
+        print(df_log_deleted)
 
     def store_index_identified_as_pcr_error(self, biosample_list, sample_replicate_list, marker_id, var_prop, pcr_error_by_sample):
         """
@@ -228,11 +230,11 @@ class Variant2Sample2Replicate2Count:
 
             if pcr_error_by_sample:
                 data_variant = self.df.loc[self.df['sample'] == element]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
+                sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
             else:
                 data_variant = self.df.loc[self.df['sample_replicate'] == element]
-                sample_fasta_name = 'data/output/Filter/{}_{}.fasta'.format(element, marker_id)
+                sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
             variant_list_series = data_variant['sequence']
             if variant_list_series.empty is False:
@@ -266,8 +268,8 @@ class Variant2Sample2Replicate2Count:
                 df3.index = df3['query']
                 data_variant = data_variant.merge(df3, left_on='sequence', right_index=True)
                 index_to_drop = list(data_variant.ix[data_variant.count_ratio < var_prop].index)
-                self.create_log_table(index_to_drop)
-                import pdb; pdb.set_trace()
+                # self.create_log_table(index_to_drop)
+                # import pdb; pdb.set_trace()
                 self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
 
     def store_index_identified_as_chimera(self, replicate_obj_list, marker_id, chimera_by):

@@ -24,14 +24,14 @@ class PathFinder:
         return module_path
 
     @staticmethod
-    def get_wopfile_template_path():
+    def get_wopfile_test_path():
         """
         Find the Src directory of the project
 
         :return: the path leading to the src file of the project
         """
 
-        wopfile_path = os.path.join(os.path.dirname(__file__), "../../wopfile/Wopfile_template.yml")
+        wopfile_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile.yml")
         return wopfile_path
 
     @staticmethod

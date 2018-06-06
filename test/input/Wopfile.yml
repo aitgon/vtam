@@ -23,7 +23,7 @@ rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: data/sample2fasta.csv
+            sample2fasta: {{SAMPLE_INFORMATION_TSV}}
     output:
         table:
             File: wopmetabarcoding.model.File
@@ -34,7 +34,7 @@ rule SampleInformation:
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
     params:
-        fasta_dir: data/fastq_merged_fasta
+        fasta_dir: {{FASTA_DIR}}
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -45,7 +45,7 @@ rule SortReads:
             Marker: wopmetabarcoding.model.Marker
     output:
         file:
-            SortReads_sample_counts: data/sortreads_samplecount.csv
+            SortReads_sample_counts: {{OUTDIR}}/variant_count_detail.tsv
         table:
             Variant: wopmetabarcoding.model.Variant
 

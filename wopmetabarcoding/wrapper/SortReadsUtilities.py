@@ -28,37 +28,37 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
                 fout.write(row.tag_reverse + row.primer_reverse + "\n")
 
 
-def read_counter(session, file, model):
-    """
-    Function counting occurences of a read in the fasta file and store it in a table
-    :param session: Current of the database
-    :param file: fasta containing the reads
-    :param model: Model of the ReadCount table
-    :return: void
-    """
-    with open(file, "r") as fasta_file:
-        next(fasta_file)
-        sequence = ""
-        liste_tmp = []
-        for line in fasta_file:
-            if ">" in line:
-                if sequence in liste_tmp:
-                    session.query(model).filter(model.sequence == sequence).update({model.count: model.count+1})
-                    sequence = ""
-                else:
-                    obj_readcount = {"sequence": sequence, "count": 1}
-                    insert_table(session, model, obj_readcount)
-                    liste_tmp.append(sequence)
-                    sequence = ""
-            else:
-                sequence += line.strip()
-        if session.query(model.sequence.contains(sequence)) is True and sequence != "":
-            session.query(model).filter(model.sequence == sequence).update({model.count: model.count + 1})
-            sequence = ""
-        else:
-            obj_readcount = {"sequence": sequence, "count": 1}
-            insert_table(session, model, obj_readcount)
-            sequence = ""
+# def read_counter(session, file, model):
+#     """
+#     Function counting occurences of a read in the fasta file and store it in a table
+#     :param session: Current of the database
+#     :param file: fasta containing the reads
+#     :param model: Model of the ReadCount table
+#     :return: void
+#     """
+#     with open(file, "r") as fasta_file:
+#         next(fasta_file)
+#         sequence = ""
+#         liste_tmp = []
+#         for line in fasta_file:
+#             if ">" in line:
+#                 if sequence in liste_tmp:
+#                     session.query(model).filter(model.sequence == sequence).update({model.count: model.count+1})
+#                     sequence = ""
+#                 else:
+#                     obj_readcount = {"sequence": sequence, "count": 1}
+#                     insert_table(session, model, obj_readcount)
+#                     liste_tmp.append(sequence)
+#                     sequence = ""
+#             else:
+#                 sequence += line.strip()
+#         if session.query(model.sequence.contains(sequence)) is True and sequence != "":
+#             session.query(model).filter(model.sequence == sequence).update({model.count: model.count + 1})
+#             sequence = ""
+#         else:
+#             obj_readcount = {"sequence": sequence, "count": 1}
+#             insert_table(session, model, obj_readcount)
+#             sequence = ""
 
 
 def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
@@ -258,19 +258,19 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
             line = line.strip()
             line = line.split('\t')
             if line[7] in biosamples_count_variant:
-                temp = biosamples_count_variant.get(line[7])
+                temp_count_per_samplereplicate = biosamples_count_variant.get(line[7])
                 sample_replicate = line[5] + "_" + line[6]
-                if sample_replicate in temp:
-                    temp[sample_replicate] += 1
+                if sample_replicate in temp_count_per_samplereplicate:
+                    temp_count_per_samplereplicate[sample_replicate] += 1
                 else:
-                    temp[sample_replicate] = 1
-                biosamples_count_variant[line[7]] = temp
+                    temp_count_per_samplereplicate[sample_replicate] = 1
+                biosamples_count_variant[line[7]] = temp_count_per_samplereplicate
             else:
                 sequence = line[7]
                 sample_replicate = line[5] + "_" + line[6]
-                temp_biosample_count = biosample_count.copy()
-                temp_biosample_count[sample_replicate] = 1
-                biosamples_count_variant[sequence] = temp_biosample_count
+                count_per_samplereplicate = biosample_count.copy()
+                count_per_samplereplicate[sample_replicate] = 1
+                biosamples_count_variant[sequence] = count_per_samplereplicate
             check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
             for row in check_read.fetchone():
                 #  In case of the line already exist, the count number is updated
@@ -288,16 +288,16 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
         # Line which delete singletons
         with open(sample_count_tsv, 'w') as test_output:
             test_output.write("{}\t{}\t{}\t{}\t{}\n".format('sequence', 'replicate', 'sample','sample_replicate', 'count'))
-            for element in biosamples_count_variant:
-                dictio = biosamples_count_variant.get(str(element))
-                for things in dictio:
-                    count = dictio.get(str(things))
-                    if len(dictio) == 1 and count == 1:
+            for variant_seq in biosamples_count_variant:
+                count_per_samplerepl = biosamples_count_variant.get(str(variant_seq))
+                for sample_repl in count_per_samplerepl:
+                    count = count_per_samplerepl.get(str(sample_repl))
+                    if len(count_per_samplerepl) == 1 and count == 1:
                         continue
                     else:
-                        replicate = things.split('_')[-1]
-                        sample = things.split('_')[-2]
-                        test_output.write(element + '\t' + replicate + '\t'+ sample + '\t' + things + '\t' + str(count))
+                        replicate = sample_repl.split('_')[-1]
+                        sample = sample_repl.split('_')[-2]
+                        test_output.write(variant_seq + '\t' + replicate + '\t'+ sample + '\t' + sample_repl + '\t' + str(count))
                         test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
