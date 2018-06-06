@@ -235,10 +235,22 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
 
 def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv):
     """
+    This function takes a TSV file with columns
+    - Read id
+    - Marker id
+    - Run name
+    - Tag forward sequence
+    - Tag reversed sequence
+    - Biosample
+    - Replicate name
+    - Read sequence
 
     :param gathered_marker_file:
     :param count_reads_marker:
     :return:
+    """
+    """
+
     """
     # Parse the database for Marker files
     # Creating a database name to store the results

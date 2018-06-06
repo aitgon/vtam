@@ -16,7 +16,7 @@ wopmars -w Wopfile.yml -D sqlite:///db.sqlite -p -v  -F
 
 ~~~
 python -m unittest discover
-python -m unittest test.test_wopmetabarcoding.TestWopMetabarcoding.test_01_sample_information
-python -m unittest test.test_wopmetabarcoding.TestWopMetabarcoding.test_03_sort_reads
+python -m unittest test.test_wopmetabarcoding.TestWopMetabarcoding.test_01sample_information
+python -m unittest test.test_wopmetabarcoding.TestWopMetabarcoding.test_03sort_reads
 ~~~
 
