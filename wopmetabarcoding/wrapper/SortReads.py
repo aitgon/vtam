@@ -6,7 +6,7 @@ from wopmars.utils.Logger import Logger
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
-    create_primer_tag_fasta_for_vsearch, check_tag_primer_alignment_on_sequence_quality,  trim_reads, \
+    create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
 # import subprocess
@@ -145,7 +145,7 @@ class SortReads(ToolWrapper):
             del vsearch1
             #
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
-            check_tag_primer_alignment_on_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
+            discard_tag_primer_alignment_with_low_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for forward trimming.")
             trimmed_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_forward_trimmed.tsv'))
             trim_reads(checked_vsearch_output_tsv, file_obj.name, trimmed_tsv, is_forward_strand, tempdir)
@@ -176,7 +176,7 @@ class SortReads(ToolWrapper):
             del vsearch1
             #
             Logger.instance().info("Eliminating non SRS conforms reads for reverse trimming.")
-            check_tag_primer_alignment_on_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
+            discard_tag_primer_alignment_with_low_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for reverse trimming.")
             trimmed_tsv = trimmed_fasta.replace('_forward_trimmed.fasta', '_reverse_trimmed.tsv')
             trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, is_forward_strand, tempdir)
