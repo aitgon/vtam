@@ -1,4 +1,4 @@
-import pandas
+import pandas, os
 from Bio import SeqIO
 
 
@@ -28,3 +28,14 @@ def create_info_df(fasta_name):
                 #                                }
                 # vsearch_1 = VSearch1(**vsearch_usearch_global_args)
                 # vsearch_1.run()
+
+def alignment_vsearch(filtered_variants_fasta, taxassign_db_fasta, output_tsv):
+    os.system(
+        "vsearch --usearch_global " + filtered_variants_fasta + " --db " + taxassign_db_fasta +
+        " --maxaccept 0 --maxreject 0  --userout " + output_tsv + " --userfields query+target+id --id "
+        + str(0.8)
+    )
+
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)

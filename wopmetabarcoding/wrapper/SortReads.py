@@ -6,7 +6,7 @@ from wopmars.utils.Logger import Logger
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
-    create_primer_tag_fasta_for_vsearch, check_criteria_in_vsearch_output,  trim_reads, \
+    create_primer_tag_fasta_for_vsearch, check_tag_primer_alignment_on_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
 # import subprocess
@@ -56,6 +56,7 @@ class SortReads(ToolWrapper):
         :return:
         """
         return {
+            "output_dir": 'str',
             "min_id": "float",
             "minseqlength": "int",
             "overhang": "int"
@@ -144,7 +145,7 @@ class SortReads(ToolWrapper):
             del vsearch1
             #
             Logger.instance().info("Eliminating non SRS conforms reads for forward trimming.")
-            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
+            check_tag_primer_alignment_on_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for forward trimming.")
             trimmed_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_forward_trimmed.tsv'))
             trim_reads(checked_vsearch_output_tsv, file_obj.name, trimmed_tsv, is_forward_strand, tempdir)
@@ -175,7 +176,7 @@ class SortReads(ToolWrapper):
             del vsearch1
             #
             Logger.instance().info("Eliminating non SRS conforms reads for reverse trimming.")
-            check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
+            check_tag_primer_alignment_on_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             Logger.instance().info("Trimming reads for reverse trimming.")
             trimmed_tsv = trimmed_fasta.replace('_forward_trimmed.fasta', '_reverse_trimmed.tsv')
             trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, is_forward_strand, tempdir)
@@ -195,7 +196,7 @@ class SortReads(ToolWrapper):
                 marker_name = marker_obj.name
                 marker_id = marker_obj.id
                 gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
-                sample_count_tsv = os.path.join(tempdir, marker_name + "_sample_count.tsv")
+                sample_count_tsv = os.path.join(self.option("output_dir"), marker_name + "_sample_count.tsv")
                 fout_sortread_samplecount.write(marker_name + "\t" + str(marker_id) + "\t" + sample_count_tsv + "\n")
                 count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
                 Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")

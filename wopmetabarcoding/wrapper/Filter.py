@@ -46,6 +46,7 @@ class Filter(ToolWrapper):
 
     def specify_params(self):
         return {
+            "output_dir": "str",
             "lfn_per_replicate_threshold": "float",
             "lfn_per_variant_threshold": "float",
             "lfn_per_replicate_series_threshold": "float",
@@ -120,10 +121,10 @@ class Filter(ToolWrapper):
                 line = line.strip().split('\t')
                 marker_name = line[0]
                 marker_id = line[1]
-                file_name = os.path.join(tempdir, marker_name + '_sample_count.tsv')
+                file_name = line[2]
                 # cols "sequence", "replicate", "sample", "sample_replicate", "count"]
                 variant2sample2replicate2count_df = pandas.read_csv(file_name, sep='\t')
-                biosample_list = list(set(variant2sample2replicate2count_df['sample'].tolist()))
+                biosample_list = list(set(variant2sample2replicate2count_df['biosample'].tolist()))
                 sample_replicate_list = list(set(variant2sample2replicate2count_df['sample_replicate'].tolist()))
                 filter_obj = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
                 #
@@ -163,12 +164,8 @@ class Filter(ToolWrapper):
                 if replp is False:
                     # TODO: Fix this inconsistency. These filters remove directly indexing, while LFN filters just add indices to an internal list
                     filter_obj.store_index_below_min_repln(biosample_list, 2)
-                    if marker_name == "ZFZR":
-                        print(filter_obj.indices_to_drop)
                 else:
                     filter_obj.store_index_below_min_replp(biosample_list, 3)
-                    if marker_name == "ZFZR":
-                        print(filter_obj.indices_to_drop)
 
                 filter_obj.drop_indices()
                 #
@@ -214,11 +211,11 @@ class Filter(ToolWrapper):
                 filter_obj.codon_stop(df_codon_stop_per_genetic_code, 2, False)
                 filter_obj.consensus()
                 variant2sample2replicate2count_df = filter_obj.filtered_variants()
-                filtered_variants_list = list(set(variant2sample2replicate2count_df.sequence.tolist()))
-                output_fasta = os.path.join(tempdir, (marker_name + "_filtered_variants.fasta"))
-                dataframe_pickle_path = os.path.join(tempdir, (marker_name + "_filtered_dataframe.pkl"))
+                filtered_variants_list = list(set(variant2sample2replicate2count_df.variant_seq.tolist()))
+                output_fasta = os.path.join(self.option("output_dir"), (marker_name + "_filtered_variants.fasta"))
+                dataframe_tsv_path = os.path.join(self.option("output_dir"), (marker_name + "_filtered_dataframe.tsv"))
                 filter_obj.filter_fasta(filtered_variants_list, output_fasta, False)
-                pickle.dump(variant2sample2replicate2count_df, open(dataframe_pickle_path, "wb"))
-                fout.write(marker_name + "\t" + dataframe_pickle_path + "\t" + output_fasta + "\n")
+                variant2sample2replicate2count_df.to_csv(dataframe_tsv_path, sep='\t', encoding='utf-8')
+                fout.write(marker_name + "\t" + dataframe_tsv_path + "\t" + output_fasta + "\n")
             fout.close()
             # TODO: Log tables for pcr and store_index_identified_as_chimera filter

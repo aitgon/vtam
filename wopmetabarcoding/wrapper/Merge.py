@@ -43,11 +43,9 @@ class Merge(ToolWrapper):
             with open(sample2fastq, 'r') as csv_file:
                 next(csv_file)
                 csv_content = csv_file.readlines()
-                print(csv_content[0])
             with open(sample2fasta, 'w') as csv_fout:
                 for line in csv_content:
                     sample_info = line.strip().split("\t")
-                    print(sample_info)
                     fin_fw = os.path.join(self.option("fastq_directory"), sample_info[8])
                     fin_rev = os.path.join(self.option("fastq_directory"), sample_info[9])
                     fout_name = sample_info[7] + "_" + sample_info[4] + "_" +sample_info[6] + ".fasta"

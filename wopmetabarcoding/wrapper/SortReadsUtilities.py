@@ -61,7 +61,7 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
 #             sequence = ""
 
 
-def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
+def check_tag_primer_alignment_on_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
     """
     Function to select lines of vsearch_output_tsv according to these SRS criteria:
     1. first position of target in the alignment (tilo) is 1
@@ -299,7 +299,7 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
             check_read.close()
         # Line which delete singletons
         with open(sample_count_tsv, 'w') as test_output:
-            test_output.write("{}\t{}\t{}\t{}\t{}\n".format('sequence', 'replicate', 'sample','sample_replicate', 'count'))
+            test_output.write("{}\t{}\t{}\t{}\t{}\n".format('variant_seq', 'replicate', 'biosample','sample_replicate', 'count'))
             for variant_seq in biosamples_count_variant:
                 count_per_samplerepl = biosamples_count_variant.get(str(variant_seq))
                 for sample_repl in count_per_samplerepl:
