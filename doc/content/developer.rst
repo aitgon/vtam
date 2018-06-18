@@ -128,33 +128,42 @@ for each vsearch identity idx ()
                                                \
                                                 ---------------> increase rank_name up to max_tax_resolution
 
-At the end of this step, we get this kind of data frame (*tax_lineage_df*).
+At the end of this step, we get this data frame (*tax_lineage_df*) with these columns:
+
+- tax_seq_id: Hits of vsearch aligned to variant with similarity percentage above a given threshold
+- following columns 
 
 .. code-block:: bash
 
-    tax_seq_id	species	genus	subfamily	family	infraorder	suborder	order	superorder	infraclass	subclass	class	phylum	no rank
-    6320345	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    4307609							6125			6102	6101	6073	131567
-    4314607							6125			6102	6101	6073	131567
-    2658650							7041		33340.0	7496	50557	6656	131567
-    2658649							7041		33340.0	7496	50557	6656	131567
-    6349460	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    6349457	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    8073839	65466	7374.0	43914.0	7371.0	43733.0	7203.0	7147		33340.0	7496	50557	6656	131567
-    6297084		6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    6349463	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    5144903				99213.0	1723665.0	281668.0	34634	6934.0		6933	6854	6656	131567
-    5285255							34634	6934.0		6933	6854	6656	131567
-    7492317		99225.0		99224.0	1723665.0	281668.0	34634	6934.0		6933	6854	6656	131567
-    6288281		6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
-    6349397	6116	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    tax_seq_id	no rank	phylum	class	subclass	infraclass	superorder	order	suborder	infraorder	family	subfamily	genus	species
+    6320345	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	86610
+    4307609	131567	6073	6101	6102			6125						
+    4314607	131567	6073	6101	6102			6125						
+    2658650	131567	6656	50557	7496	33340.0		7041						
+    2658649	131567	6656	50557	7496	33340.0		7041						
+    6349460	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	86610
+    6349457	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	86610
+    8073839	131567	6656	50557	7496	33340.0		7147	7203.0	43733.0	7371.0	43914.0	7374.0	65466
+    6297084	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	
+    6349463	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	86610
+    5144903	131567	6656	6854	6933		6934.0	34634	281668.0	1723665.0	99213.0			
+    5285255	131567	6656	6854	6933		6934.0	34634						
+    7492317	131567	6656	6854	6933		6934.0	34634	281668.0	1723665.0	99224.0		99225.0	
+    6288281	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	
+    6349397	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	6116
 
 Step 5: LTG assignement
 ------------------------------------------------------
 
-Given the tax_lineage (*tax_lineage_df*), the low taxonomy group (LTG) is a tax_id, that follows these contraints
+Given the taxon lineage data frame(*tax_lineage_df*), here we search for the low taxonomy group (LTG) with these rules
 
-- must comprise a percentage (90%) of hits (Number of rows in *tax_lineage_df*)
-- its rank must be more detailed than *min_tax_level*
-- its rank must be less detailed than *max_tax_resolution*
+- The LTG must comprise a percentage (90%) of hits (Number of rows in *tax_lineage_df*)
+- The rank of the LTG must be more detailed than *min_tax_level*
+
+The more detailed taxon and its rank following these rule will be set as a temporary *ltg* and *ltg_rank*. Then two situations:
+
+- *ltg_rank* less or equally detailed than *max_tax_resolution_id*. Then we keep this LTG
+- *ltg_rank* more detailed than *max_tax_resolution*.
+    * Then go up in the taxonomic line of current LTG up to *max_tax_resolution* rank of current LTG and set *max_tax_resolution* taxon to new LTG
+        + If *max_tax_resolution* taxon is not defined, then keep current LTG as LTG
 
