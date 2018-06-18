@@ -71,6 +71,7 @@ class Taxassign(ToolWrapper):
                         sequence = str(record.description)
                         fin_sequence_fasta.write(sequence + "\n")
                     alignment_vsearch(sequence_fasta, taxassign_db_fasta, output_tsv)
+                    import pdb; pdb.set_trace()
                     variants = list(set(variant2sample2replicate2count_df["variant_seq"].tolist()))
                     df = pandas.read_csv(output_tsv, sep='\t', names=['query', 'target', 'id'])
                     print(df)
