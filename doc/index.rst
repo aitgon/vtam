@@ -16,6 +16,7 @@ Table of Contents
     content/installation
     content/userinput
     content/tutorial
+    content/developer
 
 .. Indices and tables
 .. ==================

@@ -1,15 +1,33 @@
-Developper
+Developer
 =================================================
 
 Taxon assignation method
 ------------------------------------------------------
 
-Inputs:
+Input
 ------------------------------------------------------
-variant_sequence_fasta: Fasta file with 1 variant at a time.
 
-database_fasta: Fasta file with all reference sequence to be aligned on the 
-variant sequence.
+- variant_sequence_fasta: Fasta file with 1 variant at a time.
+- database_fasta: Fasta file with all reference sequence to be aligned on the variant sequence.
+- tax assign parameters: TSV table file  with four columns
+
+    * identity_threshold
+    * min_tax_level
+    * max_tax_resolution
+    * min_tax_n
+
+Example of tax assign parameters:
+
+*tax_assign_pars.tsv*
+
+.. code-block:: bash
+
+    100.0	species	subspecies	1
+    97.0	genus	species	1
+    95.0	family	species	3
+    90.0	order	family	3
+    85.0	order	order	3
+    80.0	class	order	5
 
 Step 0: Database creation with database_fasta:
 ------------------------------------------------------
@@ -42,6 +60,7 @@ Step 2: Taxonomic association parameters
 The user have to give a tsv file with the following information:
 
 .. code-block:: bash
+
     idx		min_taxon_level	max_taxon_resolution	min_taxon_n
     100.0	species	subspecies	1
     97.0	genus	species	1
@@ -109,9 +128,33 @@ for each vsearch identity idx ()
                                                \
                                                 ---------------> increase rank_name up to max_tax_resolution
 
+At the end of this step, we get this kind of data frame (*tax_lineage_df*).
 
+.. code-block:: bash
 
+    tax_seq_id	species	genus	subfamily	family	infraorder	suborder	order	superorder	infraclass	subclass	class	phylum	no rank
+    6320345	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    4307609							6125			6102	6101	6073	131567
+    4314607							6125			6102	6101	6073	131567
+    2658650							7041		33340.0	7496	50557	6656	131567
+    2658649							7041		33340.0	7496	50557	6656	131567
+    6349460	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    6349457	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    8073839	65466	7374.0	43914.0	7371.0	43733.0	7203.0	7147		33340.0	7496	50557	6656	131567
+    6297084		6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    6349463	86610	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    5144903				99213.0	1723665.0	281668.0	34634	6934.0		6933	6854	6656	131567
+    5285255							34634	6934.0		6933	6854	6656	131567
+    7492317		99225.0		99224.0	1723665.0	281668.0	34634	6934.0		6933	6854	6656	131567
+    6288281		6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
+    6349397	6116	6115.0		37511.0		86626.0	6103			6102	6101	6073	131567
 
-	
+Step 5: LTG assignement
+------------------------------------------------------
 
-	
+Given the tax_lineage (*tax_lineage_df*), the low taxonomy group (LTG) is a tax_id, that follows these contraints
+
+- must comprise a percentage (90%) of hits (Number of rows in *tax_lineage_df*)
+- its rank must be more detailed than *min_tax_level*
+- its rank must be less detailed than *max_tax_resolution*
+
