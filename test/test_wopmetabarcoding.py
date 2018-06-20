@@ -139,6 +139,10 @@ class TestWopMetabarcoding(TestCase):
         # remove output file
         shutil.rmtree(test_outdir)
 
+    def test_03sort_reads_utilities_read_count(self):
+        """
+        """
+
     def test_04filter_store_index_below_lfn1_per_replicate(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
         PathFinder.mkdir(test_outdir)
@@ -170,7 +174,7 @@ class TestWopMetabarcoding(TestCase):
         variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
         variant2sample2replicate2count.store_index_below_lfn2_per_variant(lfn2_per_variant_threshold)
         indices_to_drop = variant2sample2replicate2count.indices_to_drop
-        # print(indices_to_drop)
+        #
         indices_to_drop_bak = [36, 46, 53]
         self.assertTrue(indices_to_drop == indices_to_drop_bak)
         #
@@ -195,46 +199,24 @@ class TestWopMetabarcoding(TestCase):
         #
         shutil.rmtree(test_outdir)
 
-    def test_04filter_store_index_below_lfn3_read_count(self):
-        test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-        PathFinder.mkdir(test_outdir)
-        variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
-        #
-        # Input
-        variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
-        lfn_read_count_threshold = 3
-        #
-        # Output
-        variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
-        variant2sample2replicate2count.store_index_below_lfn3_read_count(lfn_read_count_threshold)
-        indices_to_drop = variant2sample2replicate2count.indices_to_drop
-        # print(indices_to_drop)
-        indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
-        # Todo: indices_to_drop returns empty []: TD needs to check it.
-        # self.assertTrue(indices_to_drop == indices_to_drop_bak)
-        #
-        shutil.rmtree(test_outdir)
-
-    # def test_class_variant2sample2replicate2count(self):
+    # def test_04filter_store_index_below_lfn3_read_count(self):
+    #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
+    #     PathFinder.mkdir(test_outdir)
+    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
-    #     db_sqlite = os.path.join(wopmetabarcoding_filter_test_data, "db.sqlite")
-    #     ZFZR_sample_count_tsv = os.path.join(wopmetabarcoding_filter_test_data, "ZFZR_sample_count.tsv")
-    #     variant2sample2replicate2count_df = pandas.read_csv(ZFZR_sample_count_tsv, sep='\t')
+    #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
+    #     lfn_read_count_threshold = 3
+    #     #
+    #     # Output
     #     variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
-    #     lfn_per_replicate_threshold = 0.025
-    #     failed_indices = [309, 353, 55, 237, 377, 263, 354, 408, 145, 178, 240, 287, 319, 339]
-    #     self.assertTrue(variant2sample2replicate2count.store_index_below_lfn1_per_replicate(lfn_per_replicate_threshold) == failed_indices)
+    #     variant2sample2replicate2count.store_index_below_lfn3_read_count(lfn_read_count_threshold)
+    #     indices_to_drop = variant2sample2replicate2count.indices_to_drop
+    #     # print(indices_to_drop)
+    #     indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
+    #     # Todo: indices_to_drop returns empty []: TD needs to check it.
+    #     # self.assertTrue(indices_to_drop == indices_to_drop_bak)
+    #     #
+    #     shutil.rmtree(test_outdir)
 
-
-    # def test_03_chimera(self):
-    #     df_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/store_index_identified_as_chimera", "df.pkl")
-    #     replicate_obj_list_pkl = os.path.join(PathFinder.get_module_test_path(), "input/filter/store_index_identified_as_chimera", "replicate_obj_list.pkl")
-    #     with open(df_pkl, 'rb') as fin:
-    #         df = pickle.load(fin)
-    #     with open(replicate_obj_list_pkl, 'rb') as fin:
-    #         replicate_obj_list = pickle.load(fin)
-    #     marker_id = 1
-    #     chimera_by = "sample_replicate"
-    #     store_index_identified_as_chimera(replicate_obj_list, df, marker_id, chimera_by)
 

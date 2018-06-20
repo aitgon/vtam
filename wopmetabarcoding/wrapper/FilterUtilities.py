@@ -28,7 +28,7 @@ class Variant2Sample2Replicate2Count:
         # import pdb; pdb.set_trace()
         # Merge the column with the total reads by sample replicates for calculate the ratio
         df2 = self.df.merge(df2, left_on='sample_replicate', right_index=True)
-        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
+        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_sample_replicate']
         # Calculate the ratio
         df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_sample_replicate
         # Selecting all the indexes where the ratio is below the ratio
@@ -45,10 +45,10 @@ class Variant2Sample2Replicate2Count:
         :return: List of the index which don't pass the filter
         """
         # Calculating the total of reads by variant
-        df2 = self.df.groupby(by=['sequence']).sum()
+        df2 = self.df.groupby(by=['variant_seq']).sum()
         # Merge the column with the total reads by variant for calculate the ratio
-        df2 = self.df.merge(df2, left_on='sequence', right_index=True)
-        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
+        df2 = self.df.merge(df2, left_on='variant_seq', right_index=True)
+        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
         # Calculate the ratio
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
         # Selecting all the indexes where the ratio is below the ratio
@@ -68,7 +68,7 @@ class Variant2Sample2Replicate2Count:
         df2 = self.df.groupby(by=['replicate']).sum()
         # Merge the column with the total reads by replicate series for calculate the ratio
         df2 = self.df.merge(df2, left_on='replicate', right_index=True)
-        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate',
+        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate',
                        'read_count_per_variant_per_sample_replicate', 'read_count_per_replicate_series']
         df2[
             'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
@@ -101,17 +101,17 @@ class Variant2Sample2Replicate2Count:
         """
 
         cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
-        cutoff_df.columns = ['sequence', 'cutoff']
+        cutoff_df.columns = ['variant_seq', 'cutoff']
         #
         # Calculating the total of reads by variant
-        df2 = self.df.groupby(by=['sequence']).sum()
+        df2 = self.df.groupby(by=['variant_seq']).sum()
         # Merge the column with the total reads by variant for calculate the ratio
-        df2 = self.df.merge(df2, left_on='sequence', right_index=True)
-        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
+        df2 = self.df.merge(df2, left_on='variant_seq', right_index=True)
+        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate', 'read_count_per_variant_per_sample_replicate', 'read_count_per_variant']
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_variant
         #
         # merge with cutoff
-        df2 = df2.merge(cutoff_df, left_on="sequence", right_on="sequence")
+        df2 = df2.merge(cutoff_df, left_on='variant_seq', right_on='variant_seq')
         indices_to_drop = list(df2.ix[df2.low_frequence_noice_per_variant < df2.cutoff].index)
         self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
         # return self.indices_to_drop
@@ -124,17 +124,17 @@ class Variant2Sample2Replicate2Count:
             :return: List of the index which don't pass the filter
             """
         cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
-        cutoff_df.columns = ['sequence', 'cutoff']
+        cutoff_df.columns = ['variant_seq', 'cutoff']
         #
         df2 = self.df.groupby(by=['replicate']).sum()
         df2 = self.df.merge(df2, left_on='replicate', right_index=True)
-        df2.columns = ['sequence', 'replicate', 'sample', 'sample_replicate',
+        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate',
                        'read_count_per_variant_per_sample_replicate', 'read_count_per_replicate_series']
         df2[
             'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_sample_replicate / df2.read_count_per_replicate_series
         #
         # merge with cutoff
-        df2 = df2.merge(cutoff_df, left_on="sequence", right_on="sequence")
+        df2 = df2.merge(cutoff_df, left_on='variant_seq', right_on='variant_seq')
         indices_to_drop = list(df2.ix[df2.low_frequence_noice_per_replicate_series < df2.cutoff].index)
         self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
         # return self.indices_to_drop
@@ -156,10 +156,10 @@ class Variant2Sample2Replicate2Count:
         """
 
         for biosample in biosample_list:
-            df2 = self.df.loc[self.df['sample'] == biosample]
-            df3 = df2['sequence'].value_counts().to_frame()
+            df2 = self.df.loc[self.df['biosample'] == biosample]
+            df3 = df2['variant_seq'].value_counts().to_frame()
             df3.columns = ['sequence_count']
-            df2 = df2.merge(df3, left_on='sequence', right_index=True)
+            df2 = df2.merge(df3, left_on='variant_seq', right_index=True)
             index_to_drop = list(df2.loc[df2.sequence_count < min_count].index)
             # self.df.drop(index_to_drop, inplace=True)
             self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
@@ -175,10 +175,10 @@ class Variant2Sample2Replicate2Count:
         :return: None
         """
         for biosample in biosample_list:
-            df2 = self.df.loc[self.df['sample'] == biosample]
-            df3 = df2['sequence'].value_counts().to_frame()
+            df2 = self.df.loc[self.df['biosample'] == biosample]
+            df3 = df2['variant_seq'].value_counts().to_frame()
             df3.columns = ['sequence_count']
-            df2 = df2.merge(df3, left_on='sequence', right_index=True)
+            df2 = df2.merge(df3, left_on='variant_seq', right_index=True)
             index_to_drop = list(df2.ix[df2.sequence_count < ((1 / 3) * replicate_count)].index)
             self.indices_to_drop = sorted(list(set(index_to_drop + self.indices_to_drop)))
 
@@ -202,11 +202,8 @@ class Variant2Sample2Replicate2Count:
                 fout.write(variant + '\n')
 
     def create_log_table(self, indices):
-        print("ok")
         indices_to_drop = self.df.index.tolist()
-        print(indices_to_drop)
         df_log_deleted = self.df.loc[indices]
-        print(df_log_deleted)
 
     def store_index_identified_as_pcr_error(self, biosample_list, sample_replicate_list, marker_id, var_prop, pcr_error_by_sample):
         """
@@ -229,14 +226,14 @@ class Variant2Sample2Replicate2Count:
         for element in element_list:
 
             if pcr_error_by_sample:
-                data_variant = self.df.loc[self.df['sample'] == element]
+                data_variant = self.df.loc[self.df['biosample'] == element]
                 sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
             else:
                 data_variant = self.df.loc[self.df['sample_replicate'] == element]
                 sample_fasta_name = os.path.join(tempdir, ('{}_{}.fasta'.format(element, marker_id)))
 
-            variant_list_series = data_variant['sequence']
+            variant_list_series = data_variant['variant_seq']
             if variant_list_series.empty is False:
                 variant_list = sorted(set(list(variant_list_series)))
                 self.filter_fasta(variant_list, sample_fasta_name, False)
@@ -260,13 +257,13 @@ class Variant2Sample2Replicate2Count:
                 false_df2 = list(df2.ix[(df2.mism + df2.gaps) != 1].index)
                 df2.drop(false_df2, inplace=True)
                 df3 = df2[['query', 'target']]
-                df4 = data_variant[['sequence', 'count']]
-                df3 = df3.merge(df4, left_on=['query'], right_on=['sequence'])
-                df3 = df3.merge(df4, left_on=['target'], right_on=['sequence'])
+                df4 = data_variant[['variant_seq', 'count']]
+                df3 = df3.merge(df4, left_on=['query'], right_on=['variant_seq'])
+                df3 = df3.merge(df4, left_on=['target'], right_on=['variant_seq'])
                 df3['count_ratio'] = df3.count_x / df3.count_y
                 df3 = df3[['query', 'count_ratio']]
                 df3.index = df3['query']
-                data_variant = data_variant.merge(df3, left_on='sequence', right_index=True)
+                data_variant = data_variant.merge(df3, left_on='variant_seq', right_index=True)
                 index_to_drop = list(data_variant.ix[data_variant.count_ratio < var_prop].index)
                 # self.create_log_table(index_to_drop)
                 # import pdb; pdb.set_trace()
@@ -285,7 +282,7 @@ class Variant2Sample2Replicate2Count:
         for replicate in replicate_obj_list:
 
             if chimera_by == "sample":
-                df2 = self.df.loc[self.df['sample'] == replicate.biosample_name]
+                df2 = self.df.loc[self.df['biosample'] == replicate.biosample_name]
                 filename = '{}_{}_repl.fasta'.format(replicate.biosample_name, marker_id)
                 repl_fasta_name = os.path.join(tempdir, filename)
 
@@ -297,9 +294,9 @@ class Variant2Sample2Replicate2Count:
                 repl_fasta_name = os.path.join(tempdir, filename)
 
             sorted_repl_fasta_name = repl_fasta_name.replace('.fasta', '_sorted.fasta')
-            variant_list_series = df2['sequence']
+            variant_list_series = df2['variant_seq']
             if variant_list_series.empty is False:
-                variant_list_series = df2['sequence']
+                variant_list_series = df2['variant_seq']
                 variant_list = sorted(set(list(variant_list_series)))
                 self.filter_fasta(variant_list, repl_fasta_name, True)
                 vsearch_sortbysize_args = {"sortbysize": repl_fasta_name, "output": sorted_repl_fasta_name}
@@ -324,7 +321,7 @@ class Variant2Sample2Replicate2Count:
                         if ">" in line:
                             line = line.replace('>', '')
                             variant_sequence = line.strip().split(';')[0]
-                            df_variant = df2.loc[df2['sequence'] == variant_sequence]
+                            df_variant = df2.loc[df2['variant_seq'] == variant_sequence]
 
                             if df_variant.empty is False:
                                 indices_to_drop = df_variant.index.tolist()
@@ -334,7 +331,7 @@ class Variant2Sample2Replicate2Count:
                 borderline_variants = []
                 for record in SeqIO.parse(borderline_repl_filename, 'fasta'):
                     borderline_variants.append(record.description.strip().split(';')[0])
-                self.df['is_borderline'] = (self.df['sequence'] in borderline_variants)
+                self.df['is_borderline'] = (self.df['variant_seq'] in borderline_variants)
 
     def store_index_that_fails_renkonen(self, number_of_replicate, renkonen_tail):
         """
@@ -353,21 +350,21 @@ class Variant2Sample2Replicate2Count:
         df_read_count_per_sample_replicate.columns = ['replicate_count']
         df_read_count_per_sample_replicate = self.df.merge(df_read_count_per_sample_replicate, left_on='sample_replicate', right_index=True)
         df_read_count_per_sample_replicate['proportion'] = df_read_count_per_sample_replicate['count'] / df_read_count_per_sample_replicate['replicate_count']
-        # df_replicate = df_read_count_per_sample_replicate.groupby(by=['sample'])['sample_replicate'].to_frame()
-        samples = df_read_count_per_sample_replicate['sample']
+        # df_replicate = df_read_count_per_sample_replicate.groupby(by=['biosample'])['sample_replicate'].to_frame()
+        samples = df_read_count_per_sample_replicate['biosample']
         samples = list(set(samples.tolist()))
         for sample in samples:
             df_permutation_distance = pandas.DataFrame(columns=columns_name)
-            df_replicate = df_read_count_per_sample_replicate.loc[df_read_count_per_sample_replicate['sample'] == sample]
+            df_replicate = df_read_count_per_sample_replicate.loc[df_read_count_per_sample_replicate['biosample'] == sample]
             replicates = list(set(df_replicate['sample_replicate'].tolist()))
             for combi in itertools.permutations(replicates, 2):
                 combi = list(combi)
                 df_repli = df_replicate.loc[df_replicate['sample_replicate'] == combi[0]]
-                data_repli = df_repli[['sequence', 'sample_replicate', 'proportion']]
+                data_repli = df_repli[['variant_seq', 'sample_replicate', 'proportion']]
                 df_replj = df_replicate.loc[df_replicate['sample_replicate'] == combi[1]]
-                data_replj = df_replj[['sequence', 'sample_replicate', 'proportion']]
+                data_replj = df_replj[['variant_seq', 'sample_replicate', 'proportion']]
                 df_replij = data_repli.append(data_replj)
-                group_repl = df_replij.groupby(by=['sequence'])['proportion'].min()
+                group_repl = df_replij.groupby(by=['variant_seq'])['proportion'].min()
                 distance = 1 - group_repl.sum()
                 query = [combi[0], combi[1], distance]
                 df_permutation_distance.loc[len(df_permutation_distance)] = query
@@ -390,8 +387,8 @@ class Variant2Sample2Replicate2Count:
         :return:
         """
         df2 = self.df.copy()
-        df2['len_sequence'] = len(df2.sequence)
-        df2['modulo3'] = len(df2.sequence)%3
+        df2['len_sequence'] = len(df2.variant_seq)
+        df2['modulo3'] = len(df2.variant_seq)%3
         modulo3 = df2['modulo3'].tolist()
         sequence_length_max = max(modulo3, key=modulo3.count)
         if delete_var:
@@ -411,7 +408,7 @@ class Variant2Sample2Replicate2Count:
         :param delete_var: option which define if the variants must be deleted or tagged
         :return: void
         """
-        sequences = self.df['sequence'].tolist()
+        sequences = self.df['variant_seq'].tolist()
         # Get the list of codon stop according to the genetic code given by the user
         df2 = df_codon_stop_per_genetic_code.loc[df_codon_stop_per_genetic_code['genetic_code'] == genetic_code]
         codon_stop_list = df2['codon'].tolist()
@@ -448,7 +445,7 @@ class Variant2Sample2Replicate2Count:
             # If a codon stop is find in every reading frames, all the indexes where the variant sequence appeared are
             # kept and will be tagged or deleted at the loop end
             if fail == 3:
-                indices_to_drop.append(self.df.loc[self.df['sequence'] == entire_sequence].index().tolist())
+                indices_to_drop.append(self.df.loc[self.df['variant_seq'] == entire_sequence].index().tolist())
         # Depending on the user choice the variant will be tagged in dataframe or removed from it
         if delete_var:
             self.indices_to_drop = sorted(list(set(indices_to_drop + self.indices_to_drop)))
@@ -460,15 +457,15 @@ class Variant2Sample2Replicate2Count:
         Function used to display the read average of the remaining variant
         :return:
         """
-        variants_sequences = self.df["sequence"]
+        variants_sequences = self.df['variant_seq']
         variants_sequences =list(set(variants_sequences))
         read_average_columns = ['variant', 'read_average']
         read_average_df = pandas.DataFrame(columns=read_average_columns)
         for variant in variants_sequences:
-            variant_df = self.df.loc[self.df["sequence"] == variant]
+            variant_df = self.df.loc[self.df['variant_seq'] == variant]
             read_average = round(variant_df["count"].sum()/len(variant_df['count']), 0)
             read_average_df.loc[len(read_average_df)] = [variant, read_average]
-        self.df = self.df.merge(read_average_df, left_on='sequence', right_on='variant')
+        self.df = self.df.merge(read_average_df, left_on='variant_seq', right_on='variant')
         self.df = self.df.drop(columns=['variant'])
 
     def filtered_variants(self):

@@ -50,6 +50,7 @@ rule SortReads:
             Variant: wopmetabarcoding.model.Variant
 
     params:
+        output_dir: {{OUTDIR}}
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -80,16 +81,4 @@ rule Filter:
         renkonen_renkonen_tail: 0.5
 
 
-
-rule Taxassign:
-    tool: wopmetabarcoding.wrapper.Taxassign
-    input:
-        table:
-            Marker: wopmetabarcoding.model.Marker
-            Variant: wopmetabarcoding.model.Variant
-        file:
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
-            # Reference database fasta path
-            taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas
-            assignlvl2id: data/input/taxassign/assignlvl2id.tsv
 

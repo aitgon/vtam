@@ -1,29 +1,29 @@
-rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
-  input:
-      file:
-          sample2fastq: data/sample2fastq.tsv
-  output:
-      file:
-          sample2fasta: data/sample2fasta.csv
-  params:
-      fastq_directory: data/input/fastq
-      fasta_dir: data/output/fasta/
-      fastq_minovlen: 50
-      fastq_maxmergelen: 300
-      fastq_minmergelen: 100
-      fastq_minlen: 50
-      fastq_maxee: 1
-      fastq_truncqual: 10
-      fastq_maxns: 0
-      threads: 8
-      fastq_ascii: 33
+#rule Merge:
+#  tool: wopmetabarcoding.wrapper.Merge
+#  input:
+#      file:
+#          sample2fastq: data/sample2fastq.tsv
+#  output:
+#      file:
+#          sample2fasta: data/sample2fasta.csv
+#  params:
+#      fastq_directory: data/input/fastq
+#      fasta_dir: data/output/fasta/
+#      fastq_minovlen: 50
+#      fastq_maxmergelen: 300
+#      fastq_minmergelen: 100
+#      fastq_minlen: 50
+#      fastq_maxee: 1
+#      fastq_truncqual: 10
+#      fastq_maxns: 0
+#      threads: 8
+#      fastq_ascii: 33
 
 rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: data/sample2fasta.csv
+            sample2fasta: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/sample2fasta.tsv
     output:
         table:
             File: wopmetabarcoding.model.File
@@ -34,7 +34,7 @@ rule SampleInformation:
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
     params:
-        fasta_dir: data/fastq_merged_fasta
+        fasta_dir: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/fasta_medium
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -50,6 +50,7 @@ rule SortReads:
             Variant: wopmetabarcoding.model.Variant
 
     params:
+        sort_reads_output_dir: data/output/Sort_reads
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -64,12 +65,13 @@ rule Filter:
             Replicate: wopmetabarcoding.model.Replicate
         file:
             SortReads_sample_counts: data/sortreads_samplecount.csv
-            file_cutoff: data/cutoff_variant.tsv
-            genetic_code: data/genetic_codes.csv
+            file_cutoff: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/data/cutoff_variant.tsv
+            genetic_code: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/data/genetic_codes.csv
     output:
         file:
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
     params:
+        filter_output_dir: data/output/Filter
         lfn_per_replicate_threshold: 0.001
         lfn_per_variant_threshold: 0.001
         lfn_per_replicate_series_threshold: 0.001
@@ -84,12 +86,12 @@ rule Filter:
 rule Taxassign:
     tool: wopmetabarcoding.wrapper.Taxassign
     input:
-        table:
-            Marker: wopmetabarcoding.model.Marker
-            Variant: wopmetabarcoding.model.Variant
         file:
+            taxassign_db_fasta: /home/gonzalez/Data/2017_meglecz_metabarcoding/analysis/180612_tax_assign/seq2taxon_db.fas
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
-            # Reference database fasta path
-            taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas
-            assignlvl2id: data/input/taxassign/assignlvl2id.tsv
+            assignlvl2id: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/tax_assign_pars.tsv
+            tax_assign_db_sqlite: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/tax_assign.sqlite
+    output:
+        file:
+            default_output: data/output.txt
 

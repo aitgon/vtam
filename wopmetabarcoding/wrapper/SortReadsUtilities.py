@@ -60,8 +60,30 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
 #             insert_table(session, model, obj_readcount)
 #             sequence = ""
 
+def is_true_tag_primer_alignment_on_sequence_quality(line):
+    r""">>> line = 'M00842:118:000000000-ABGKE:1:1101:18466:2072\tgatcgacagatcTCCACTAATCACAARGATATTGGTAC\t38\t1\t38\t1\t38\tGATCGACAGATCTCCACTAATCACAAAGATATTGGTAC\n'
+    >>> is_true_tag_primer_alignment_on_sequence_quality(line)
+    True
+    >>> line = 'M00842:118:000000000-ABGKE:1:1101:16776:2172|acgatccacagtg|TCCACTAATCACAARGATATTGGTAC\tagatcgagcactcaWACTAATCAATTWCCAAATCCTCC\t38\t1\t38\t1\t38\tGGATCGAGCACTCATACTAATCAATTTCCAAATCCTCC\n'
+    >>> is_true_tag_primer_alignment_on_sequence_quality(line)
+    False
+    """
+    tag_primer_sequence_query = line.split("\t")[1]
+    vsearch_tl = line.split('\t')[2]
+    vsearch_tilo = line.split('\t')[5]
+    vsearch_tihi = line.split('\t')[6]
+    tag_primer2read_alignment = line.split('\t')[7].strip()
+    tag_sequence = ""
+    for nucleotide in tag_primer_sequence_query:
+        if nucleotide.islower():
+            tag_sequence += nucleotide.upper()
+    tag_position = tag_primer2read_alignment.find(tag_sequence)
+    if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl \
+            and tag_sequence in tag_primer2read_alignment:
+        return True
+    return False
 
-def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
+def discard_tag_primer_alignment_with_low_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, overhang_value):
     """
     Function to select lines of vsearch_output_tsv according to these SRS criteria:
     1. first position of target in the alignment (tilo) is 1
@@ -84,21 +106,25 @@ def check_criteria_in_vsearch_output(vsearch_output_tsv, checked_vsearch_output_
             i = 0
             for line in fin:
                 if line.split("\t")[5] == "1":
-                    tag_primer_sequence_query = line.split('\t')[1]
-                    vsearch_tl = line.split('\t')[2]
-                    vsearch_tilo = line.split('\t')[5]
-                    vsearch_tihi = line.split('\t')[6]
-                    tag_primer2read_alignment = line.split('\t')[7].strip()
-                    tag_sequence = ""
-                    for nucleotide in tag_primer_sequence_query:
-                        if nucleotide.islower():
-                            tag_sequence += nucleotide.upper()
-                    tag_position = tag_primer2read_alignment.find(tag_sequence)
-                    if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl \
-                            and tag_sequence in tag_primer2read_alignment:
+                    # tag_primer_sequence_query = line.split('\t')[1]
+                    # vsearch_tl = line.split('\t')[2]
+                    # vsearch_tilo = line.split('\t')[5]
+                    # vsearch_tihi = line.split('\t')[6]
+                    # tag_primer2read_alignment = line.split('\t')[7].strip()
+                    # tag_sequence = ""
+                    # for nucleotide in tag_primer_sequence_query:
+                    #     if nucleotide.islower():
+                    #         tag_sequence += nucleotide.upper()
+                    # tag_position = tag_primer2read_alignment.find(tag_sequence)
+                    # if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl \
+                    #         and tag_sequence in tag_primer2read_alignment:
+                    #     fout.write(line)
+                    # else:
+                    #     i += 1
+                    if is_true_tag_primer_alignment_on_sequence_quality(line):
                         fout.write(line)
                     else:
-                        i += 1
+                        i += 1 # count discarded lines
             Logger.instance().info(str(i) + " reads were discarded.")
 
 
@@ -235,10 +261,22 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
 
 def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv):
     """
+    This function takes a TSV file with columns
+    - Read id
+    - Marker id
+    - Run name
+    - Tag forward sequence
+    - Tag reversed sequence
+    - Biosample
+    - Replicate name
+    - Read sequence
 
     :param gathered_marker_file:
     :param count_reads_marker:
     :return:
+    """
+    """
+
     """
     # Parse the database for Marker files
     # Creating a database name to store the results
@@ -285,9 +323,9 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
                     conn.execute("INSERT INTO count_read (id, marker_id, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
                     i += 1
             check_read.close()
-        # Line which delete singletons
+        # Create output dir for sample_count_tsv
         with open(sample_count_tsv, 'w') as test_output:
-            test_output.write("{}\t{}\t{}\t{}\t{}\n".format('sequence', 'replicate', 'sample','sample_replicate', 'count'))
+            test_output.write("{}\t{}\t{}\t{}\t{}\n".format('variant_seq', 'replicate', 'biosample','sample_replicate', 'count'))
             for variant_seq in biosamples_count_variant:
                 count_per_samplerepl = biosamples_count_variant.get(str(variant_seq))
                 for sample_repl in count_per_samplerepl:
@@ -356,12 +394,6 @@ def insert_variant(session, count_reads_marker, variant_model):
     conn.close()
 
 
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
