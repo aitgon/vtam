@@ -9,6 +9,7 @@ from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
 
+import errno
 # import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
@@ -56,7 +57,7 @@ class SortReads(ToolWrapper):
         :return:
         """
         return {
-            "output_dir": 'str',
+            "sort_reads_output_dir": 'str',
             "min_id": "float",
             "minseqlength": "int",
             "overhang": "int"
@@ -98,7 +99,6 @@ class SortReads(ToolWrapper):
         sample_information_model = self.input_table(SortReads.__input_table_sample_information)
         file_model = self.input_table(SortReads.__input_table_file)
         marker_model = self.input_table(SortReads.__input_table_marker)
-
         # Temp variables:
         annoted_tsv_list = []
         run_list = {}
@@ -111,7 +111,14 @@ class SortReads(ToolWrapper):
 
         # Output tables models
         variant_model = self.output_table(SortReads.__output_table_variant)
-
+        #
+        # Parameters
+        sort_reads_output_dir = self.option("sort_reads_output_dir")
+        try:
+            os.makedirs(sort_reads_output_dir)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
         #  TODO: Later we will see in case files are already trimmed
         # for file_obj in session.query(file_model).all():
         #     if file_obj.trimmed_status is "1":
@@ -196,7 +203,7 @@ class SortReads(ToolWrapper):
                 marker_name = marker_obj.name
                 marker_id = marker_obj.id
                 gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
-                sample_count_tsv = os.path.join(self.option("output_dir"), marker_name + "_sample_count.tsv")
+                sample_count_tsv = os.path.join(sort_reads_output_dir, marker_name + "_sample_count.tsv")
                 fout_sortread_samplecount.write(marker_name + "\t" + str(marker_id) + "\t" + sample_count_tsv + "\n")
                 count_reads_marker = gathered_marker_file.replace(".tsv", ".sqlite")
                 Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")

@@ -45,15 +45,17 @@ class Taxassign(ToolWrapper):
                 filtered_variants_fasta = line[2]
                 output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
+                # TODO Loop over groups of records
                 for record in SeqIO.parse(filtered_variants_fasta, 'fasta'):
+                    # TODO Do not use user folder: Use tmp
                     sequence_fasta = "data/sequence_fasta.fasta"
                     with open(sequence_fasta, 'w') as fin_sequence_fasta:
                         sequence_id = str(record.description)
                         fin_sequence_fasta.write(">" + sequence_id + "\n")
                         sequence = str(record.description)
                         fin_sequence_fasta.write(sequence + "\n")
+                    # TODO Check that an index is reused
                     alignment_vsearch(sequence_fasta, taxassign_db_fasta, output_tsv)
-                    # import pdb; pdb.set_trace()
                     vsearch2seq2tax_df = pandas.read_csv(output_tsv, sep="\t", header=None, index_col=1)
                     vsearch2seq2tax_df.columns = ["var_seq", "alignment_identity"]
                     vsearch2seq2tax_df.index.name = 'tax_seq_id'

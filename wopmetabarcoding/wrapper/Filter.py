@@ -1,3 +1,4 @@
+import errno
 from wopmars.utils.Logger import Logger
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
@@ -46,7 +47,7 @@ class Filter(ToolWrapper):
 
     def specify_params(self):
         return {
-            "output_dir": "str",
+            "filter_output_dir": "str",
             "lfn_per_replicate_threshold": "float",
             "lfn_per_variant_threshold": "float",
             "lfn_per_replicate_series_threshold": "float",
@@ -113,6 +114,14 @@ class Filter(ToolWrapper):
         replicate_model = self.input_table(Filter.__input_table_replicate)
         # Output file path
         filtered_dataframe_path = self.output_file(Filter.__output_filtered_dataframe)
+        #
+        # Parameters
+        filter_output_dir = self.option("filter_output_dir")
+        try:
+            os.makedirs(filter_output_dir)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
         #
         # fout = open(filtered_dataframe_path, 'w')
         with open(sortreads_samplecount, 'r') as sortreads_fin:
@@ -212,8 +221,8 @@ class Filter(ToolWrapper):
                 filter_obj.consensus()
                 variant2sample2replicate2count_df = filter_obj.filtered_variants()
                 filtered_variants_list = list(set(variant2sample2replicate2count_df.variant_seq.tolist()))
-                output_fasta = os.path.join(self.option("output_dir"), (marker_name + "_filtered_variants.fasta"))
-                dataframe_tsv_path = os.path.join(self.option("output_dir"), (marker_name + "_filtered_dataframe.tsv"))
+                output_fasta = os.path.join(filter_output_dir, (marker_name + "_filtered_variants.fasta"))
+                dataframe_tsv_path = os.path.join(filter_output_dir, (marker_name + "_filtered_dataframe.tsv"))
                 filter_obj.filter_fasta(filtered_variants_list, output_fasta, False)
                 variant2sample2replicate2count_df.to_csv(dataframe_tsv_path, sep='\t', encoding='utf-8')
                 fout.write(marker_name + "\t" + dataframe_tsv_path + "\t" + output_fasta + "\n")

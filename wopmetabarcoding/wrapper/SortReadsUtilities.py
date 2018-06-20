@@ -323,7 +323,7 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
                     conn.execute("INSERT INTO count_read (id, marker_id, count, seq) VALUES (?, ?, ?, ?)", (variant_id, marker_name, int(read_count), sequence))
                     i += 1
             check_read.close()
-        # Line which delete singletons
+        # Create output dir for sample_count_tsv
         with open(sample_count_tsv, 'w') as test_output:
             test_output.write("{}\t{}\t{}\t{}\t{}\n".format('variant_seq', 'replicate', 'biosample','sample_replicate', 'count'))
             for variant_seq in biosamples_count_variant:

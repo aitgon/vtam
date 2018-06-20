@@ -65,7 +65,12 @@ class SampleInformation(ToolWrapper):
                 marker_name = line.strip().split('\t')[4]
                 sample_name = line.strip().split('\t')[5]
                 replicate_name = line.strip().split('\t')[6]
-                file_name = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[10])
+                if len(line.strip().split('\t')) == 9: # No fastq file columns
+                    file_name = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[8])
+                elif len(line.strip().split('\t')) == 11: # Yes fastq file columns
+                    file_name = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[10])
+                else:
+                    raise IndexError("{} error. Verify nb of columns in this input file: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), csv_path)))
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
                     # TODO: Add it to a exception logger
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
