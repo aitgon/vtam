@@ -394,12 +394,6 @@ def insert_variant(session, count_reads_marker, variant_model):
     conn.close()
 
 
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
