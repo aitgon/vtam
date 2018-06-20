@@ -81,7 +81,7 @@ class Taxassign(ToolWrapper):
                         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 85, "order", "order", 3
                         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 80, "class", "order", 5
                         identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = tax_assign_pars_df_row.tolist()
-                        print(identity_threshold)
+                        Logger.instance().info("Selecting sequences with " + str(identity_threshold) + "% identity.")
                         min_tax_level_id = rank_hierarchy.index(min_tax_level)
                         max_tax_resolution_id = rank_hierarchy.index(max_tax_resolution)
                         #
@@ -89,6 +89,9 @@ class Taxassign(ToolWrapper):
                         vsearch2seq2tax_df_selected = vsearch2seq2tax_df.loc[
                             vsearch2seq2tax_df.alignment_identity >= identity_threshold]
                         if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
+                            Logger.instance().info(
+                                "Any sequences are selected passing to next identity threshold."
+                            )
                             continue  #  next identity threshold
                         #  continue only if selected lines
                         #
@@ -96,11 +99,18 @@ class Taxassign(ToolWrapper):
                         vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[
                             vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
                         if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
+                            Logger.instance().info(
+                                "Any sequence with enought detailled taxonomic "
+                                "level found, passing to next identity threshold."
+                            )
                             continue  #  next identity threshold
                         #  continue only if selected lines
                         #
                         # test min_tax_n
                         if vsearch2seq2tax_df_selected.shape[0] < min_tax_n:
+                            Logger.instance().info(
+                                "Not enought sequences are selected passing to next identity threshold."
+                            )
                             continue  #  next identity threshold
                         # continue only if selected lines
                         tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
@@ -113,6 +123,9 @@ class Taxassign(ToolWrapper):
                         #
                         # test min_tax_n
                         if tax_count_perc.empty:
+                            Logger.instance().info(
+                                "Any taxonomic level with the given proportion to become LTG."
+                            )
                             continue  #  next identity threshold
                         tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in
                                                         tax_count_perc.index.tolist()]
@@ -121,6 +134,9 @@ class Taxassign(ToolWrapper):
                         tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
                         tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
                         if tax_count_perc_ltg.empty:
+                            Logger.instance().info(
+                                "Nothing survive."
+                            )
                             continue
                         ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
                         ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
