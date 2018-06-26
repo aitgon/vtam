@@ -153,18 +153,26 @@ def batch_iterator(iterator, batch_size):
             yield batch
 
 
-def sub_fasta_creator(filtered_varaints_fasta, sequence_number, marker_name):
-    record_iter = SeqIO.parse(open(filtered_varaints_fasta),"fasta")
+def sub_fasta_creator(marker_variant_fasta, sequence_number, marker_name):
+    """
+    Split a FASTA file into FASTA pieces of given sequence number
+
+    :param marker_variant_fasta: Path to FASTA file with marker variants
+    :param sequence_number: Maximal sequence number in split FASTA files
+    :param marker_name: Marker name to prefix split FASTA files
+    :return: List with paths to split FASTA files
+    """
+    record_iter = SeqIO.parse(open(marker_variant_fasta), "fasta")
     print(str(record_iter))
-    file_group_list = []
+    sub_fasta_path_list = []
     for i, batch in enumerate(batch_iterator(record_iter, sequence_number)):
-        filename = "group_%i" % (i + 1)
-        filename = filename + "_" + marker_name + ".fasta"
-        filename = os.path.join(tempdir, filename)
-        with open(filename, "w") as handle:
+        sub_fasta_path = "group_{}_{}.fasta".format(i + 1, marker_name)
+        # filename = filename + "_" + marker_name + ".fasta"
+        sub_fasta_path = os.path.join(tempdir, sub_fasta_path)
+        with open(sub_fasta_path, "w") as handle:
             count = SeqIO.write(batch, handle, "fasta")
-        file_group_list.append(filename)
-    return file_group_list
+        sub_fasta_path_list.append(sub_fasta_path)
+    return sub_fasta_path_list
 
 
 def create_tsv_per_variant(filename, db_to_create):

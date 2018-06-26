@@ -69,7 +69,7 @@ rule Filter:
             genetic_code: data/genetic_codes.csv
     output:
         file:
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
+            marker_variant_path: data/marker_variant_path.tsv
     params:
         filter_output_dir: data/output/Filter
         lfn_per_replicate_threshold: 0.001
@@ -89,7 +89,7 @@ rule Taxassign:
         file:
             taxassign_db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas
             udb_database: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
+            marker_variant_path: data/marker_variant_path.tsv
             assignlvl2id: data/input/tax_assign_pars.tsv
             tax_assign_db_sqlite: data/tax_assign.sqlite
     output:

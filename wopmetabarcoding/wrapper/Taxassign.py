@@ -10,7 +10,7 @@ class Taxassign(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.Taxassign"
     }
     __input_file_taxassign_db = "taxassign_db_fasta"
-    __filtered_dataframe_path = "filtered_dataframe_path"
+    __marker_variant_path = "marker_variant_path"
     __assignlvl2id = "assignlvl2id"
     __tax_assign_db_sqlite = "tax_assign_db_sqlite"
     __default_output = 'default_output'
@@ -19,7 +19,7 @@ class Taxassign(ToolWrapper):
     def specify_input_file(self):
         return [
             Taxassign.__input_file_taxassign_db,
-            Taxassign.__filtered_dataframe_path,
+            Taxassign.__marker_variant_path,
             Taxassign.__assignlvl2id,
             Taxassign.__tax_assign_db_sqlite,
             Taxassign.__udb_database
@@ -37,7 +37,7 @@ class Taxassign(ToolWrapper):
         # Input files
         taxassign_db_fasta = self.input_file(Taxassign.__input_file_taxassign_db)
         # path to the tsv with filtered variants
-        filter_output = self.input_file(Taxassign.__filtered_dataframe_path)
+        marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
         tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
         udb_database = self.input_file(Taxassign.__udb_database)
@@ -45,19 +45,19 @@ class Taxassign(ToolWrapper):
         # 80.0 class order    5
         #
         default_output = self.output_file(Taxassign.__default_output)
-        with open(filter_output, 'r') as fin:
-            for line in fin:
-                line = line.strip().split('\t')
-                marker_name = line[0]
-                filtered_variants_fasta = line[2] # path to fasta with filtered variants
-                output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
+        with open(marker_variant_path, 'r') as fin:
+            for marker_line in fin:
+                marker_line = marker_line.strip().split('\t')
+                marker_name = marker_line[0]
+                marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
+                marker_variant_vsearch_tsv = marker_variant_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
                 nb_variants = 100
                 # Loop over groups of records
-                file_list = sub_fasta_creator(filtered_variants_fasta, nb_variants, marker_name)
-                for file in file_list:
-                    # alignment_vsearch(file, udb_database, output_tsv)
-                    create_tsv_per_variant(output_tsv, "data/dbtaxa.sqlite")
+                sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
+                for sub_fasta_path in sub_fasta_path_list:
+                    # alignment_vsearch(sub_fasta_path, udb_database, marker_variant_vsearch_tsv)
+                    create_tsv_per_variant(marker_variant_vsearch_tsv, "data/dbtaxa.sqlite")
 
 
 

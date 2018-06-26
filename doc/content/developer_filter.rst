@@ -10,8 +10,8 @@ Output
 The Filter wrapper outputs three files:
 
 - filtered_dataframe_path.tsv
-- MFZR_filtered_dataframe.tsv
-- MFZR_filtered_variants.fasta
+- MFZR_variant_info.tsv
+- MFZR_variant.fasta
 
 filtered_dataframe_path.tsv
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,8 +34,8 @@ Example of *filtered_dataframe_path.tsv*
 
 .. code-block:: bash
 
-    MFZR	data/output/Filter/MFZR_filtered_dataframe.tsv	data/output/Filter/MFZR_filtered_variants.fasta
-    ZFZR	data/output/Filter/ZFZR_filtered_dataframe.tsv	data/output/Filter/ZFZR_filtered_variants.fasta
+    MFZR	data/output/Filter/MFZR_variant_info.tsv	data/output/Filter/MFZR_variant.fasta
+    ZFZR	data/output/Filter/ZFZR_variant_info.tsv	data/output/Filter/ZFZR_variant.fasta
 
 The directory path of the TSV and FASTA files of the markers is defined in the Wopfile *Filter* rule here:
 
@@ -44,14 +44,14 @@ The directory path of the TSV and FASTA files of the markers is defined in the W
     params:
         filter_output_dir: data/output/Filter
 
-First two lines of *MFZR_filtered_dataframe.tsv* for marker *MFZR*
+First two lines of *MFZR_variant_info.tsv* for marker *MFZR*
 
 .. code-block:: bash
 
 	    variant_seq	replicate	biosample	sample_replicate	count	is_borderline	is_pseudogene_indel	is_pseudogene_codon_stop	read_average
     0	TTTATACTTCATTTTTGGGGCTTGATCTGGTATAGTAGGGACATCTCTTAGTCTACTAATTCGAGCTGAATTAGGACAACCAGGATCCCTTATTGGAGACGACCAAATTTACAATGTAATTGTCACAGCCCATGCCTTTATTATAATTTTCTTCATGGTTATGCCCATTATAATT	repl2	14Cro11	14Cro11_repl2	26	False	False	False	12.0
 
-First two lines of *MFZR_filtered_variants.fasta* for marker *MFZR*
+First two lines of *MFZR_variant.fasta* for marker *MFZR*
 
 .. code-block:: bash
 
