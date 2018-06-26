@@ -1,6 +1,7 @@
-import pandas, os, sqlite3, itertools
+import pandas, os, sqlite3, itertools, csv
 from Bio import SeqIO
 from numpy import nan
+from wopmetabarcoding.utils.constants import tempdir
 
 rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 
@@ -32,6 +33,12 @@ rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infrac
                 # vsearch_1 = VSearch1(**vsearch_usearch_global_args)
                 # vsearch_1.run()
 
+def indexed_db_creation(taxassign_db_fasta, udb_database):
+    os.system(
+        "vsearch --makeudb_usearch " + taxassign_db_fasta + " --output " + udb_database
+    )
+
+
 def alignment_vsearch(filtered_variants_fasta, taxassign_db_fasta, output_tsv):
     os.system(
         "vsearch --usearch_global " + filtered_variants_fasta + " --db " + taxassign_db_fasta +
@@ -47,6 +54,7 @@ def most_common(lst):
 def create_list_of_lists(n, tax_seq_id_list):
     tax_seq_id_list = iter(tax_seq_id_list)
     return list(iter(lambda: list(itertools.islice(tax_seq_id_list, n)), []))
+
 
 def seq2tax_db_sqlite_to_df(seq2tax_db_sqlite, tax_seq_id_list):
     """
@@ -115,3 +123,66 @@ def dataframe2ltgdefinition(tax_lineage_df):
     tax_count_perc.drop(['tax_seq_id', 'no rank'], axis=0, inplace=True)
     tax_count_perc = tax_count_perc.loc[tax_count_perc.perc >= 90.0]
     return tax_count_perc
+
+
+def batch_iterator(iterator, batch_size):
+    """Returns lists of length batch_size.
+
+    This can be used on any iterator, for example to batch up
+    SeqRecord objects from Bio.SeqIO.parse(...), or to batch
+    Alignment objects from Bio.AlignIO.parse(...), or simply
+    lines from a file handle.
+
+    This is a generator function, and it returns lists of the
+    entries from the supplied iterator.  Each list will have
+    batch_size entries, although the final list may be shorter.
+    """
+    entry = True  # Make sure we loop once
+    while entry:
+        batch = []
+        while len(batch) < batch_size:
+            try:
+                entry = iterator.__next__()
+            except StopIteration:
+                entry = None
+            if entry is None:
+                # End of file
+                break
+            batch.append(entry)
+        if batch:
+            yield batch
+
+
+def sub_fasta_creator(filtered_varaints_fasta, sequence_number, marker_name):
+    record_iter = SeqIO.parse(open(filtered_varaints_fasta),"fasta")
+    print(str(record_iter))
+    file_group_list = []
+    for i, batch in enumerate(batch_iterator(record_iter, sequence_number)):
+        filename = "group_%i" % (i + 1)
+        filename = filename + "_" + marker_name + ".fasta"
+        filename = os.path.join(tempdir, filename)
+        with open(filename, "w") as handle:
+            count = SeqIO.write(batch, handle, "fasta")
+        file_group_list.append(filename)
+    return file_group_list
+
+
+def create_tsv_per_variant(filename, db_to_create):
+    conn = sqlite3.connect(db_to_create)
+    conn.execute("DROP TABLE IF EXISTS alignedtsv")
+    cur = conn.cursor()
+    conn.execute(
+        "CREATE TABLE alignedtsv (id INTEGER PRIMARY KEY AUTOINCREMENT, query_variant VARCHAR, target VARCHAR, identity_thresold FLOAT)"
+    )
+    with open(filename, 'r') as fin:
+        print(filename)
+        for line in fin:
+            line = line.strip().split("\t")
+            cur.execute("INSERT INTO alignedtsv (query_variant, target, identity_thresold) VALUES (?,?,?);", line)
+    cur.close()
+    conn.commit()
+    conn.close()
+
+
+
+

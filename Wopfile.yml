@@ -23,7 +23,7 @@ rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/sample2fasta.tsv
+            sample2fasta: data/sample2fasta.csv
     output:
         table:
             File: wopmetabarcoding.model.File
@@ -34,7 +34,7 @@ rule SampleInformation:
             TagPair: wopmetabarcoding.model.TagPair
             Replicate: wopmetabarcoding.model.Replicate
     params:
-        fasta_dir: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/fasta_medium
+        fasta_dir: data/fastq_merged_fasta
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -65,8 +65,8 @@ rule Filter:
             Replicate: wopmetabarcoding.model.Replicate
         file:
             SortReads_sample_counts: data/sortreads_samplecount.csv
-            file_cutoff: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/data/cutoff_variant.tsv
-            genetic_code: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/data/genetic_codes.csv
+            file_cutoff: data/cutoff_variant.tsv
+            genetic_code: data/genetic_codes.csv
     output:
         file:
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
@@ -87,10 +87,11 @@ rule Taxassign:
     tool: wopmetabarcoding.wrapper.Taxassign
     input:
         file:
-            taxassign_db_fasta: /home/gonzalez/Data/2017_meglecz_metabarcoding/analysis/180612_tax_assign/seq2taxon_db.fas
+            taxassign_db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas
+            udb_database: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
             filtered_dataframe_path: data/filtered_dataframe_path.tsv
-            assignlvl2id: /home/gonzalez/Data/2017_meglecz_metabarcoding/repositories/wopmetabarcoding-appli/tax_assign_pars.tsv
-            tax_assign_db_sqlite: /home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/tax_assign.sqlite
+            assignlvl2id: data/input/tax_assign_pars.tsv
+            tax_assign_db_sqlite: data/tax_assign.sqlite
     output:
         file:
             default_output: data/output.txt
