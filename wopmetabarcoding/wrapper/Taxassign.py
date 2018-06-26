@@ -36,6 +36,7 @@ class Taxassign(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         # Input files
         taxassign_db_fasta = self.input_file(Taxassign.__input_file_taxassign_db)
+        # path to the tsv with filtered variants
         filter_output = self.input_file(Taxassign.__filtered_dataframe_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
         tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
@@ -47,11 +48,13 @@ class Taxassign(ToolWrapper):
         with open(filter_output, 'r') as fin:
             for line in fin:
                 line = line.strip().split('\t')
-                filtered_variants_fasta = line[2]
+                marker_name = line[0]
+                filtered_variants_fasta = line[2] # path to fasta with filtered variants
                 output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
-                # TODO Loop over groups of records
-                file_list = sub_fasta_creator(filtered_variants_fasta, 100, line[0])
+                nb_variants = 100
+                # Loop over groups of records
+                file_list = sub_fasta_creator(filtered_variants_fasta, nb_variants, marker_name)
                 for file in file_list:
                     # alignment_vsearch(file, udb_database, output_tsv)
                     create_tsv_per_variant(output_tsv, "data/dbtaxa.sqlite")
