@@ -1,6 +1,6 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation
+from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation, indexed_db_creation
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
@@ -16,7 +16,6 @@ class Taxassign(ToolWrapper):
     __assignlvl2id = "assignlvl2id"
     __tax_assign_db_sqlite = "tax_assign_db_sqlite"
     __default_output = 'default_output'
-    __udb_database = 'udb_database'
 
     def specify_input_file(self):
         return [
@@ -24,14 +23,17 @@ class Taxassign(ToolWrapper):
             Taxassign.__marker_variant_path,
             Taxassign.__assignlvl2id,
             Taxassign.__tax_assign_db_sqlite,
-            Taxassign.__udb_database
-
         ]
 
     def specify_output_file(self):
         return [
             Taxassign.__default_output
         ]
+
+    def specify_params(self):
+        return {
+            "udb_database": "str"
+        }
 
     def run(self):
         session = self.session()
@@ -42,11 +44,13 @@ class Taxassign(ToolWrapper):
         marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
         tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
-        udb_database = self.input_file(Taxassign.__udb_database)
+        udb_database = self.option("udb_database")
+        indexed_db_creation(taxassign_db_fasta, udb_database)
         #
         # 80.0 class order    5
         #
         default_output = self.output_file(Taxassign.__default_output)
+
         with open(marker_variant_path, 'r') as fin:
 
             for marker_line in fin:
@@ -68,8 +72,10 @@ class Taxassign(ToolWrapper):
                         tsv_output = os.path.join(tempdir, (marker_name + "_"  + record.description + '.tsv'))
                         get_vsearch_results_per_variant("data/dbtaxa.sqlite", record.description, tsv_output)
                         taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
+                        print("ok")
                         print(tsv_output)
         print(result_dataframe)
+
 
 
 
