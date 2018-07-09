@@ -50,7 +50,7 @@ rule SortReads:
             Variant: wopmetabarcoding.model.Variant
 
     params:
-        output_dir: {{OUTDIR}}
+        sort_reads_output_dir: {{OUTDIR}}
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -69,7 +69,7 @@ rule Filter:
             genetic_code: data/genetic_codes.csv
     output:
         file:
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
+            marker_variant_path: data/filtered_dataframe_path.tsv
     params:
         lfn_per_replicate_threshold: 0.001
         lfn_per_variant_threshold: 0.001

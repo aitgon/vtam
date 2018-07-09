@@ -23,7 +23,7 @@ class Filter(ToolWrapper):
     __input_cutoff_file = "file_cutoff"
     __input_genetic_code_file = "genetic_code"
     # Output file
-    __output_filtered_dataframe = "marker_variant_path"
+    __output_marker_variant_path = "marker_variant_path"
 
 
     def specify_input_table(self):

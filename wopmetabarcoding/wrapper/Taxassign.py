@@ -1,8 +1,10 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant
-import pandas
+from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation
+import pandas,os
+from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
+from numpy import nan
 
 
 class Taxassign(ToolWrapper):
@@ -46,18 +48,28 @@ class Taxassign(ToolWrapper):
         #
         default_output = self.output_file(Taxassign.__default_output)
         with open(marker_variant_path, 'r') as fin:
+
             for marker_line in fin:
                 marker_line = marker_line.strip().split('\t')
                 marker_name = marker_line[0]
                 marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
+                result_dataframe = pandas.read_csv(marker_line[1], sep="\t")
+                result_dataframe["taxa"] = nan
+                print(result_dataframe)
                 marker_variant_vsearch_tsv = marker_variant_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
                 nb_variants = 100
                 # Loop over groups of records
                 sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
                 for sub_fasta_path in sub_fasta_path_list:
-                    # alignment_vsearch(sub_fasta_path, udb_database, marker_variant_vsearch_tsv)
+                    alignment_vsearch(sub_fasta_path, udb_database, marker_variant_vsearch_tsv)
                     create_tsv_per_variant(marker_variant_vsearch_tsv, "data/dbtaxa.sqlite")
+                    for record in SeqIO.parse(sub_fasta_path, 'fasta'):
+                        tsv_output = os.path.join(tempdir, (marker_name + "_"  + record.description + '.tsv'))
+                        get_vsearch_results_per_variant("data/dbtaxa.sqlite", record.description, tsv_output)
+                        taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
+                        print(tsv_output)
+        print(result_dataframe)
 
 
 
