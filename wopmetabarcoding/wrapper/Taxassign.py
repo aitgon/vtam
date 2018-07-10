@@ -6,7 +6,6 @@ from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
 from numpy import nan
 
-
 class Taxassign(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.Taxassign"
@@ -67,10 +66,11 @@ class Taxassign(ToolWrapper):
                 sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
                 for sub_fasta_path in sub_fasta_path_list:
                     alignment_vsearch(sub_fasta_path, udb_database, marker_variant_vsearch_tsv)
-                    create_tsv_per_variant(marker_variant_vsearch_tsv, "data/dbtaxa.sqlite")
+                    vsearch_output_variant2taxa_seq2perc_identity_sqlite = os.path.join(tempdir, "vsearch_output_variant2taxa_seq2perc_identity.sqlite")
+                    create_tsv_per_variant(marker_variant_vsearch_tsv, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
                     for record in SeqIO.parse(sub_fasta_path, 'fasta'):
                         tsv_output = os.path.join(tempdir, (marker_name + "_"  + record.description + '.tsv'))
-                        get_vsearch_results_per_variant("data/dbtaxa.sqlite", record.description, tsv_output)
+                        get_vsearch_results_per_variant(vsearch_output_variant2taxa_seq2perc_identity_sqlite, record.description, tsv_output)
                         taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
                         print("ok")
                         print(tsv_output)
