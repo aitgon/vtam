@@ -39,6 +39,8 @@ class Taxassign(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         # Input files
         taxassign_db_fasta = self.input_file(Taxassign.__input_file_taxassign_db)
+        # Output files
+        default_output = self.output_file(Taxassign.__default_output)
         # path to the tsv with filtered variants
         marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
@@ -74,7 +76,7 @@ class Taxassign(ToolWrapper):
                         taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
                         print("ok")
                         print(tsv_output)
-        print(result_dataframe)
+        result_dataframe.to_csv(default_output, sep='\t', header=True)
 
 
 
