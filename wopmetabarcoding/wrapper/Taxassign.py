@@ -76,7 +76,7 @@ class Taxassign(ToolWrapper):
                         taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
                         print("ok")
                         print(tsv_output)
-        result_dataframe.to_csv(default_output, sep='\t', header=True)
+        result_dataframe.to_csv(default_output, sep='\t', header=True, index=False)
 
 
 
