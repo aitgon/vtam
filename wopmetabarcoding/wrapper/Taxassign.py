@@ -64,7 +64,6 @@ class Taxassign(ToolWrapper):
                 result_dataframe = pandas.read_csv(marker_line[1], sep="\t")
                 result_dataframe["taxa"] = nan
                 print(result_dataframe)
-                import pdb; pdb.set_trace()
                 marker_variant_vsearch_tsv = marker_variant_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
                 nb_variants = 100
