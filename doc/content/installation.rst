@@ -11,7 +11,7 @@ Miniconda
 
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
     bash Miniconda3-latest-Linux-x86_64.sh
-    conda create --name wopmetabarcoding --python=3.6
+    conda create --name wopmetabarcoding python=3.6
 
 Use virtual environment:
 
