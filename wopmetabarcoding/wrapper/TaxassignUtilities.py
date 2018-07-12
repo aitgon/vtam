@@ -354,24 +354,31 @@ def taxassignation(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, result_da
 
 
 def otu_tables_creator(dataframe_assigned, otu_file):
-    columns, biosamples = dataframe_assigned["sample_replicate"].tolist()
-    columns.append(["is_borderline", "is_chimera", "is_pseudogene_indel", "is_pseudogene_codon_stop","taxassign"])
-    d = {}
-    for k in columns:
-        d[k] = ""
+    columns = dataframe_assigned["sample_replicate"].tolist()
+    biosamples = dataframe_assigned["sample_replicate"].tolist()
+    file_header = columns + ["is_borderline", "is_pseudogene_indel", "is_pseudogene_codon_stop","taxassign"]
     variants = dataframe_assigned['variant_seq'].tolist()
     separator = "\t|\t"
+    separator.join(file_header)
     with open(otu_file, 'w') as fout:
-        fout.write(columns)
+        for item in file_header:
+            fout.write("%s\n" % item)
         for variant in variants:
-            dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq' == variant]]
+            print(variant)
+            dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
+            d = {}
+            for k in columns:
+                d[k] = False
             biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
             for sample in biosamples_variant:
-                if sample in biosamples.keys():
+                if sample in biosamples:
                     d[sample] = True
-            assignation = dataframe_assigned_variant["taxassign"].tolist()
-            d["taxassign"] = assignation
-
-            print(d.items())
-            print(assignation)
-            print(dataframe_assigned_variant)
+            assignation = dataframe_assigned_variant["taxa"].tolist()[0]
+            is_pseudogene_indel = dataframe_assigned_variant["is_pseudogene_indel"].tolist()[0]
+            is_pseudogene_codon_stop = dataframe_assigned_variant["is_pseudogene_codon_stop"].tolist()[0]
+            is_borderline = dataframe_assigned_variant["is_borderline"].tolist()[0]
+            items = ""
+            for item in d.values():
+                    items
+            items = str(items) + str(is_borderline) + str(is_pseudogene_indel) + str(is_pseudogene_codon_stop) + str(assignation)
+            fout.write("%s\n" % items)
