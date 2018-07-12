@@ -1,6 +1,6 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation, indexed_db_creation
+from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation, indexed_db_creation, otu_tables_creator
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
@@ -15,6 +15,7 @@ class Taxassign(ToolWrapper):
     __assignlvl2id = "assignlvl2id"
     __tax_assign_db_sqlite = "tax_assign_db_sqlite"
     __default_output = 'default_output'
+    __otu_table_tsv = 'otu_table_tsv'
 
     def specify_input_file(self):
         return [
@@ -26,7 +27,8 @@ class Taxassign(ToolWrapper):
 
     def specify_output_file(self):
         return [
-            Taxassign.__default_output
+            Taxassign.__default_output,
+            Taxassign.__otu_table_tsv,
         ]
 
     def specify_params(self):
@@ -41,6 +43,7 @@ class Taxassign(ToolWrapper):
         taxassign_db_fasta = self.input_file(Taxassign.__input_file_taxassign_db)
         # Output files
         default_output = self.output_file(Taxassign.__default_output)
+        otu_file = self.output_file(Taxassign.__otu_table_tsv)
         # path to the tsv with filtered variants
         marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
@@ -77,7 +80,7 @@ class Taxassign(ToolWrapper):
                         print("ok")
                         print(tsv_output)
         result_dataframe.to_csv(default_output, sep='\t', header=True, index=False)
-
+        otu_tables_creator(result_dataframe, otu_file)
 
 
 

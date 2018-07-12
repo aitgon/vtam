@@ -353,3 +353,25 @@ def taxassignation(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, result_da
         break
 
 
+def otu_tables_creator(dataframe_assigned, otu_file):
+    columns, biosamples = dataframe_assigned["sample_replicate"].tolist()
+    columns.append(["is_borderline", "is_chimera", "is_pseudogene_indel", "is_pseudogene_codon_stop","taxassign"])
+    d = {}
+    for k in columns:
+        d[k] = ""
+    variants = dataframe_assigned['variant_seq'].tolist()
+    separator = "\t|\t"
+    with open(otu_file, 'w') as fout:
+        fout.write(columns)
+        for variant in variants:
+            dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq' == variant]]
+            biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
+            for sample in biosamples_variant:
+                if sample in biosamples.keys():
+                    d[sample] = True
+            assignation = dataframe_assigned_variant["taxassign"].tolist()
+            d["taxassign"] = assignation
+
+            print(d.items())
+            print(assignation)
+            print(dataframe_assigned_variant)

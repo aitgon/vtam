@@ -94,6 +94,7 @@ rule Taxassign:
     output:
         file:
             default_output: data/output.txt
+            otu_table_tsv: data/otu_table.tsv
     params:
          udb_database: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
 
