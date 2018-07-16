@@ -1,7 +1,7 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 from wopmetabarcoding.utils.constants import tempdir, order, taxonomic_levels
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch
+from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command
 from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
 from wopmetabarcoding.utils.VSearch import VSearch1
 import os, pickle, pandas
@@ -72,7 +72,7 @@ class Taxassign(ToolWrapper):
                         fin_sequence_fasta.write(sequence + "\n")
                     print(type(sequence_fasta))
                     print(type(taxassign_db_fasta))
-                    alignment_vsearch(sequence_fasta, taxassign_db_fasta, output_tsv)
+                    vsearch_command(sequence_fasta, taxassign_db_fasta, output_tsv)
                     variants = list(set(variant2sample2replicate2count_df["variant_seq"].tolist()))
                     df = pandas.read_csv(output_tsv, sep='\t', names=['query', 'target', 'id'])
                     # df_info = create_info_df(taxassign_db_fasta)

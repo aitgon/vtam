@@ -1,6 +1,6 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation, indexed_db_creation, otu_tables_creator
+from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, vsearch_output_to_sqlite, get_vsearch_output_for_variant_as_df, taxassignation, indexed_db_creation, otu_tables_creator
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
@@ -70,28 +70,31 @@ class Taxassign(ToolWrapper):
             for marker_line in fin:
                 marker_line = marker_line.strip().split('\t')
                 marker_name = marker_line[0]
+                marker_variant_filter_info_tsv = marker_line[1]
                 marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
-                result_dataframe = pandas.read_csv(marker_line[1], sep="\t")
-                result_dataframe["taxa"] = nan
-                print(result_dataframe)
-                #marker_variant_vsearch_tsv = marker_variant_fasta.replace('.fasta', '.tsv')
-                marker_variant_vsearch_tsv = os.path.join(output_dir_taxassign, "output_vsearch_{}.tsv".format(marker_name))
-                # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
-                nb_variants = 100
+                marker_variant_filter_info_taxa_df = pandas.read_csv(marker_variant_filter_info_tsv, sep="\t")
+                marker_variant_filter_info_taxa_df["taxa"] = nan # add column taxa
+                print(marker_variant_filter_info_taxa_df)
+                # vsearch output file path
+                output_vsearch_marker = os.path.join(output_dir_taxassign, "output_vsearch_{}.tsv".format(marker_name))
+                nb_variants = 100 # sequence group for vsearch
                 # Loop over groups of records
                 sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
                 for sub_fasta_path in sub_fasta_path_list:
-                    alignment_vsearch(sub_fasta_path, db_udb, marker_variant_vsearch_tsv)
+                    vsearch_command(sub_fasta_path, db_udb, output_vsearch_marker)
+                    # sqlite db path to store vsearch output
                     vsearch_output_variant2taxa_seq2perc_identity_sqlite = os.path.join(tempdir, "vsearch_output_variant2taxa_seq2perc_identity.sqlite")
-                    create_tsv_per_variant(marker_variant_vsearch_tsv, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
-                    for record in SeqIO.parse(sub_fasta_path, 'fasta'):
-                        tsv_output = os.path.join(tempdir, (marker_name + "_"  + record.description + '.tsv'))
-                        get_vsearch_results_per_variant(vsearch_output_variant2taxa_seq2perc_identity_sqlite, record.description, tsv_output)
-                        taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
+                    vsearch_output_to_sqlite(output_vsearch_marker, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
+                    # retrieve and analyse each variant
+                    for variant in SeqIO.parse(sub_fasta_path, 'fasta'):
+                        variant_seq = variant.description
+                        tsv_output = os.path.join(tempdir, (marker_name + "_"  + variant_seq + '.tsv'))
+                        vsearch_output_for_variant_df = get_vsearch_output_for_variant_as_df(vsearch_output_variant2taxa_seq2perc_identity_sqlite, variant_seq)
+                        taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv, marker_variant_filter_info_taxa_df, variant_seq)
                         print("ok")
                         print(tsv_output)
-        result_dataframe.to_csv(default_output, sep='\t', header=True, index=False)
-        otu_tables_creator(result_dataframe, otu_file)
+        marker_variant_filter_info_taxa_df.to_csv(default_output, sep='\t', header=True, index=False)
+        otu_tables_creator(marker_variant_filter_info_taxa_df, otu_file)
 
 
 
