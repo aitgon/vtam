@@ -354,20 +354,21 @@ def taxassignation(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, result_da
 
 
 def otu_tables_creator(dataframe_assigned, otu_file):
-    columns = dataframe_assigned["sample_replicate"].tolist()
-    biosamples = dataframe_assigned["sample_replicate"].tolist()
-    file_header = columns + ["is_borderline", "is_pseudogene_indel", "is_pseudogene_codon_stop","taxassign"]
+    biosamples = sorted(list(set(dataframe_assigned["sample_replicate"].tolist())))
+    print(biosamples)
+    file_header = biosamples + ["is_borderline", "is_pseudogene_indel", "is_pseudogene_codon_stop","taxassign"]
     variants = dataframe_assigned['variant_seq'].tolist()
     separator = "\t|\t"
     separator.join(file_header)
     with open(otu_file, 'w') as fout:
+        header = ""
         for item in file_header:
-            fout.write("%s\n" % item)
+            header += (item + "\t")
+        fout.write("%s\n" % header.strip())
         for variant in variants:
-            print(variant)
             dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
             d = {}
-            for k in columns:
+            for k in biosamples:
                 d[k] = False
             biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
             for sample in biosamples_variant:
@@ -379,6 +380,6 @@ def otu_tables_creator(dataframe_assigned, otu_file):
             is_borderline = dataframe_assigned_variant["is_borderline"].tolist()[0]
             items = ""
             for item in d.values():
-                    items
-            items = str(items) + str(is_borderline) + str(is_pseudogene_indel) + str(is_pseudogene_codon_stop) + str(assignation)
+                    items += (str(item) + "\t")
+            items = str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation)
             fout.write("%s\n" % items)
