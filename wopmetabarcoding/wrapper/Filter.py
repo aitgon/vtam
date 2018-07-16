@@ -23,7 +23,7 @@ class Filter(ToolWrapper):
     __input_cutoff_file = "file_cutoff"
     __input_genetic_code_file = "genetic_code"
     # Output file
-    __output_filtered_dataframe = "filtered_dataframe_path"
+    __output_marker_variant_path = "marker_variant_path"
 
 
     def specify_input_table(self):
@@ -42,7 +42,7 @@ class Filter(ToolWrapper):
 
     def specify_output_file(self):
         return[
-            Filter.__output_filtered_dataframe
+            Filter.__output_marker_variant_path
         ]
 
     def specify_params(self):
@@ -113,7 +113,7 @@ class Filter(ToolWrapper):
         variant_model = self.input_table(Filter.__input_table_variant)
         replicate_model = self.input_table(Filter.__input_table_replicate)
         # Output file path
-        filtered_dataframe_path = self.output_file(Filter.__output_filtered_dataframe)
+        marker_variant_path = self.output_file(Filter.__output_marker_variant_path)
         #
         # Parameters
         filter_output_dir = self.option("filter_output_dir")
@@ -123,9 +123,9 @@ class Filter(ToolWrapper):
             if exception.errno != errno.EEXIST:
                 raise
         #
-        # fout = open(filtered_dataframe_path, 'w')
+        # fout = open(marker_variant_path, 'w')
         with open(sortreads_samplecount, 'r') as sortreads_fin:
-            fout = open(filtered_dataframe_path, 'w')
+            fout = open(marker_variant_path, 'w')
             for line in sortreads_fin:
                 line = line.strip().split('\t')
                 marker_name = line[0]
@@ -221,8 +221,8 @@ class Filter(ToolWrapper):
                 filter_obj.consensus()
                 variant2sample2replicate2count_df = filter_obj.filtered_variants()
                 filtered_variants_list = list(set(variant2sample2replicate2count_df.variant_seq.tolist()))
-                output_fasta = os.path.join(filter_output_dir, (marker_name + "_filtered_variants.fasta"))
-                dataframe_tsv_path = os.path.join(filter_output_dir, (marker_name + "_filtered_dataframe.tsv"))
+                output_fasta = os.path.join(filter_output_dir, (marker_name + "_variant.fasta"))
+                dataframe_tsv_path = os.path.join(filter_output_dir, (marker_name + "_variant_info.tsv"))
                 filter_obj.filter_fasta(filtered_variants_list, output_fasta, False)
                 variant2sample2replicate2count_df.to_csv(dataframe_tsv_path, sep='\t', encoding='utf-8')
                 fout.write(marker_name + "\t" + dataframe_tsv_path + "\t" + output_fasta + "\n")

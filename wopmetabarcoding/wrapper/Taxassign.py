@@ -1,152 +1,88 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df
-import pandas
+from wopmetabarcoding.wrapper.TaxassignUtilities import alignment_vsearch, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, create_tsv_per_variant, get_vsearch_results_per_variant, taxassignation, indexed_db_creation, otu_tables_creator
+import pandas,os
+from wopmetabarcoding.utils.constants import tempdir
 from Bio import SeqIO
-
+from numpy import nan
 
 class Taxassign(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.Taxassign"
     }
     __input_file_taxassign_db = "taxassign_db_fasta"
-    __filtered_dataframe_path = "filtered_dataframe_path"
+    __marker_variant_path = "marker_variant_path"
     __assignlvl2id = "assignlvl2id"
     __tax_assign_db_sqlite = "tax_assign_db_sqlite"
     __default_output = 'default_output'
+    __otu_table_tsv = 'otu_table_tsv'
 
     def specify_input_file(self):
         return [
             Taxassign.__input_file_taxassign_db,
-            Taxassign.__filtered_dataframe_path,
+            Taxassign.__marker_variant_path,
             Taxassign.__assignlvl2id,
-            Taxassign.__tax_assign_db_sqlite
-
+            Taxassign.__tax_assign_db_sqlite,
         ]
 
     def specify_output_file(self):
         return [
-            Taxassign.__default_output
+            Taxassign.__default_output,
+            Taxassign.__otu_table_tsv,
         ]
+
+    def specify_params(self):
+        return {
+            "udb_database": "str"
+        }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         # Input files
         taxassign_db_fasta = self.input_file(Taxassign.__input_file_taxassign_db)
-        filter_output = self.input_file(Taxassign.__filtered_dataframe_path)
+        # Output files
+        default_output = self.output_file(Taxassign.__default_output)
+        otu_file = self.output_file(Taxassign.__otu_table_tsv)
+        # path to the tsv with filtered variants
+        marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
         tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
+        udb_database = self.option("udb_database")
+        indexed_db_creation(taxassign_db_fasta, udb_database)
+        #
+        # 80.0 class order    5
         #
         default_output = self.output_file(Taxassign.__default_output)
-        with open(filter_output, 'r') as fin:
-            for line in fin:
-                line = line.strip().split('\t')
-                filtered_variants_fasta = line[2]
-                output_tsv = filtered_variants_fasta.replace('.fasta', '.tsv')
+
+        with open(marker_variant_path, 'r') as fin:
+
+            for marker_line in fin:
+                marker_line = marker_line.strip().split('\t')
+                marker_name = marker_line[0]
+                marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
+                result_dataframe = pandas.read_csv(marker_line[1], sep="\t")
+                result_dataframe["taxa"] = nan
+                print(result_dataframe)
+                marker_variant_vsearch_tsv = marker_variant_fasta.replace('.fasta', '.tsv')
                 # output_tsv = output_tsv.replace(tempdir, '/tmp/tmpe6yiaf0x/')
-                # TODO Loop over groups of records
-                for record in SeqIO.parse(filtered_variants_fasta, 'fasta'):
-                    # TODO Do not use user folder: Use tmp
-                    sequence_fasta = "data/sequence_fasta.fasta"
-                    with open(sequence_fasta, 'w') as fin_sequence_fasta:
-                        sequence_id = str(record.description)
-                        fin_sequence_fasta.write(">" + sequence_id + "\n")
-                        sequence = str(record.description)
-                        fin_sequence_fasta.write(sequence + "\n")
-                    # TODO Check that an index is reused
-                    alignment_vsearch(sequence_fasta, taxassign_db_fasta, output_tsv)
-                    vsearch2seq2tax_df = pandas.read_csv(output_tsv, sep="\t", header=None, index_col=1)
-                    vsearch2seq2tax_df.columns = ["var_seq", "alignment_identity"]
-                    vsearch2seq2tax_df.index.name = 'tax_seq_id'
-                    #
-                    tax_seq_id_list = vsearch2seq2tax_df.index.tolist()
-                    #
-                    seq2tax_df = seq2tax_db_sqlite_to_df(tax_assign_sqlite, tax_seq_id_list)
-                    #
-                    # tax_assign_pars df
-                    names = ["identity_threshold", "min_tax_level", "max_tax_resolution", "min_tax_n"]
-                    tax_assign_pars_df = pandas.read_csv(tax_assign_pars_tsv, sep="\t", header=None, names=names)
-                    #
-                    # Merge of the vsearch alignment, the sequence and taxa information
-                    vsearch2seq2tax_df = pandas.merge(vsearch2seq2tax_df, seq2tax_df, left_index=True,
-                                                      right_on="tax_seq_id")
-                    vsearch2seq2tax_df = vsearch2seq2tax_df.assign(
-                        rank_id=vsearch2seq2tax_df.rank_name.apply(lambda x: rank_hierarchy.index(x)))
-                    #
-                    # Loop over each identity threshold
-                    for tax_assign_pars_df_row_i, tax_assign_pars_df_row in tax_assign_pars_df.iterrows():
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 100, "species", "subspecies", 1
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 97, "genus", "species", 1
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 95, "family", "species", 3
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 90, "order", "family", 3
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 85, "order", "order", 3
-                        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 80, "class", "order", 5
-                        identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = tax_assign_pars_df_row.tolist()
-                        Logger.instance().info("Selecting sequences with " + str(identity_threshold) + "% identity.")
-                        min_tax_level_id = rank_hierarchy.index(min_tax_level)
-                        max_tax_resolution_id = rank_hierarchy.index(max_tax_resolution)
-                        #
-                        # test identity_threshold
-                        vsearch2seq2tax_df_selected = vsearch2seq2tax_df.loc[
-                            vsearch2seq2tax_df.alignment_identity >= identity_threshold]
-                        if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
-                            Logger.instance().info(
-                                "Any sequences are selected passing to next identity threshold."
-                            )
-                            continue  #  next identity threshold
-                        #  continue only if selected lines
-                        #
-                        # test min_tax_level
-                        vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[
-                            vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
-                        if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
-                            Logger.instance().info(
-                                "Any sequence with enought detailled taxonomic "
-                                "level found, passing to next identity threshold."
-                            )
-                            continue  #  next identity threshold
-                        #  continue only if selected lines
-                        #
-                        # test min_tax_n
-                        if vsearch2seq2tax_df_selected.shape[0] < min_tax_n:
-                            Logger.instance().info(
-                                "Not enought sequences are selected passing to next identity threshold."
-                            )
-                            continue  #  next identity threshold
-                        # continue only if selected lines
-                        tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
-                        #
-                        # Create lineage df
-                        tax_lineage_df = create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite)
-                        #
-                        #  Search LTG
-                        tax_count_perc = dataframe2ltgdefinition(tax_lineage_df)
-                        #
-                        # test min_tax_n
-                        if tax_count_perc.empty:
-                            Logger.instance().info(
-                                "Any taxonomic level with the given proportion to become LTG."
-                            )
-                            continue  #  next identity threshold
-                        tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in
-                                                        tax_count_perc.index.tolist()]
-                        #
-                        #  Criteria: lineage df tax id more detailed than
-                        tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
-                        tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
-                        if tax_count_perc_ltg.empty:
-                            Logger.instance().info(
-                                "Nothing survive."
-                            )
-                            continue
-                        ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
-                        ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
-                        #
-                        if ltg_rank_id > max_tax_resolution_id:  #  go up in lineage of ltg_tax_id up to max_tax_resolution_id
-                            ltg_tax_id = tax_lineage_df.loc[
-                                tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
-                        print(ltg_tax_id)
+                nb_variants = 100
+                # Loop over groups of records
+                sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
+                for sub_fasta_path in sub_fasta_path_list:
+                    alignment_vsearch(sub_fasta_path, udb_database, marker_variant_vsearch_tsv)
+                    vsearch_output_variant2taxa_seq2perc_identity_sqlite = os.path.join(tempdir, "vsearch_output_variant2taxa_seq2perc_identity.sqlite")
+                    create_tsv_per_variant(marker_variant_vsearch_tsv, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
+                    for record in SeqIO.parse(sub_fasta_path, 'fasta'):
+                        tsv_output = os.path.join(tempdir, (marker_name + "_"  + record.description + '.tsv'))
+                        get_vsearch_results_per_variant(vsearch_output_variant2taxa_seq2perc_identity_sqlite, record.description, tsv_output)
+                        taxassignation(tsv_output, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, record.description)
+                        print("ok")
+                        print(tsv_output)
+        result_dataframe.to_csv(default_output, sep='\t', header=True, index=False)
+        otu_tables_creator(result_dataframe, otu_file)
+
+
 
 
 

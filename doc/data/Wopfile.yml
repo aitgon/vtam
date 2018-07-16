@@ -50,6 +50,7 @@ rule SortReads:
             Variant: wopmetabarcoding.model.Variant
 
     params:
+        sort_reads_output_dir: data/output/Sort_reads
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -68,8 +69,9 @@ rule Filter:
             genetic_code: data/genetic_codes.csv
     output:
         file:
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
+            marker_variant_path: data/marker_variant_path.tsv
     params:
+        filter_output_dir: data/output/Filter
         lfn_per_replicate_threshold: 0.001
         lfn_per_variant_threshold: 0.001
         lfn_per_replicate_series_threshold: 0.001
@@ -84,12 +86,13 @@ rule Filter:
 rule Taxassign:
     tool: wopmetabarcoding.wrapper.Taxassign
     input:
-        table:
-            Marker: wopmetabarcoding.model.Marker
-            Variant: wopmetabarcoding.model.Variant
         file:
-            filtered_dataframe_path: data/filtered_dataframe_path.tsv
-            # Reference database fasta path
-            taxassign_db_fasta: data/input/taxassign/Metazoa_BOLD_non_nt_2016_06_23.fas
-            assignlvl2id: data/input/taxassign/assignlvl2id.tsv
+            taxassign_db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas
+            udb_database: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
+            marker_variant_path: data/marker_variant_path.tsv
+            assignlvl2id: data/input/tax_assign_pars.tsv
+            tax_assign_db_sqlite: data/tax_assign.sqlite
+    output:
+        file:
+            default_output: data/output.txt
 

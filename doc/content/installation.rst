@@ -4,25 +4,33 @@ Installation
 Dependencies installation
 -------------------------------------------------
 
-Miniconda:
-
-Installation:
+Miniconda
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
     bash Miniconda3-latest-Linux-x86_64.sh
-    conda create --name myenv --python=3.6
+    conda create --name wopmetabarcoding python=3.6
 
 Use virtual environment:
 
 .. code-block:: bash
 
-    source activate myenv
+    source activate wopmetabarcoding
 
     source deactivate
 
-Vscearch:
+Vsearch
+~~~~~~~~~~~~~~~~~~~~~~
+
+The simplest and safest is to install it via Bioconda
+
+.. code-block:: bash
+
+    conda install -c bioconda vsearch 
+
+It is also possible to install it directly
 
 .. code-block:: bash
 
@@ -34,7 +42,8 @@ Vscearch:
     make
     make install  # as root or sudo make install
 
-Wopmars:
+Wopmars
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 

@@ -6,6 +6,7 @@ install_requires = [
 		'biopython>=1.14.2',
 		'wopmars>=1.1.29',
 		'Jinja2>=2.10',
+		'pandas==0.23.3',
 ]
 
 setup(

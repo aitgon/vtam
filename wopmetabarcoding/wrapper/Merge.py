@@ -2,6 +2,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 import os
 from wopmars.utils.Logger import Logger
 import subprocess
+import errno
 
 class Merge(ToolWrapper):
     __mapper_args__ = {
@@ -49,6 +50,11 @@ class Merge(ToolWrapper):
                     fin_fw = os.path.join(self.option("fastq_directory"), sample_info[8])
                     fin_rev = os.path.join(self.option("fastq_directory"), sample_info[9])
                     fout_name = sample_info[7] + "_" + sample_info[4] + "_" +sample_info[6] + ".fasta"
+                    try:
+                        os.makedirs(self.option("fasta_dir"))
+                    except OSError as exception:
+                        if exception.errno != errno.EEXIST:
+                            raise
                     fout = os.path.join(self.option("fasta_dir"), fout_name)
                     line2write = line.strip() + '\t' + fout_name + "\n"
                     csv_fout.write(line2write)

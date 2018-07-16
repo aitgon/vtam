@@ -219,4 +219,6 @@ class TestWopMetabarcoding(TestCase):
     #     #
     #     shutil.rmtree(test_outdir)
 
+    def test05_taxassign_vsearch(self):
+        test_outdir = os.path.join(self.__testdir_path, "output", "05taxassign")
 

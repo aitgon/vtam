@@ -152,7 +152,7 @@ We can continue with the *Filter* rule. This rule is quite long, so be patient o
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SortReads
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Filter
 
 This rule fills in the *Variant* table with the number of reads per variant and marker across all samples.
 
@@ -166,7 +166,7 @@ We can continue with the *Taxassign* rule. This rule is long, so be patient or t
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SortReads
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Taxassign
 
 This rule determine the LTG (Lower taxonomic group) for each variant
 

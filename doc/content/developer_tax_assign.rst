@@ -1,11 +1,8 @@
-Developer
-=================================================
-
-Taxon assignation method
-------------------------------------------------------
+Developer - TaxAssign
+================================
 
 Input
-------------------------------------------------------
+----------------------------------
 
 - variant_sequence_fasta: Fasta file with 1 variant at a time.
 - database_fasta: Fasta file with all reference sequence to be aligned on the variant sequence.
@@ -30,13 +27,14 @@ Example of tax assign parameters:
     80.0	class	order	5
 
 Step 0: Database creation with database_fasta:
-------------------------------------------------------
+--------------------------------------------------------------------
+
 The sequences ids of database_fasta contains needed information as taxon id,
 taxonomic rank etc ... This information will be stored in a database table for
 be used on all variants and gain time.
 
 Step1: Vsearch
-------------------------------------------------------
+----------------------------------
 
 Goal: Align the variant sequence on the database
 
@@ -55,7 +53,7 @@ The output tsv must be on the following shape:
     TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT	6764813	100.0
 
 Step 2: Taxonomic association parameters
-------------------------------------------------------
+--------------------------------------------------------------------
 
 The user have to give a tsv file with the following information:
 
@@ -71,7 +69,7 @@ max_taxon_resolution: more accurate taxonomy level accorded to a idx
 min_taxon_n: minimum of hits after filter required for an taxonomic association
 
 Step3: Looping on idx and 1st filters application
-------------------------------------------------------
+--------------------------------------------------------------------
 
 For each idx containend in taxassign parameters (Allow to use the join information as min_taxon_level, ...):
 
@@ -83,7 +81,7 @@ For each idx containend in taxassign parameters (Allow to use the join informati
     - If there are less lines remaining in the selected_dataframe. Pass to the next idx.
 
 Step 4: Phylogenetic lineage creation
-------------------------------------------------------
+--------------------------------------------------------------------
 
 After removing non conform its.
 
@@ -153,7 +151,7 @@ At the end of this step, we get this data frame (*tax_lineage_df*) with these co
     6349397	131567	6073	6101	6102			6103	86626.0		37511.0		6115.0	6116
 
 Step 5: LTG assignement
-------------------------------------------------------
+--------------------------------------------------------------------
 
 Given the taxon lineage data frame(*tax_lineage_df*), here we search for the low taxonomy group (LTG) with these rules
 
