@@ -364,7 +364,7 @@ def otu_tables_creator(dataframe_assigned, otu_file):
         header = ""
         for item in file_header:
             header += (item + "\t")
-        fout.write("%s\n" % header.strip())
+        fout.write("Variant\t%s\n" % header.strip())
         for variant in variants:
             dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
             d = {}
@@ -381,5 +381,5 @@ def otu_tables_creator(dataframe_assigned, otu_file):
             items = ""
             for item in d.values():
                     items += (str(item) + "\t")
-            items = str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation)
+            items = str(variant) + "\t" + str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation)
             fout.write("%s\n" % items)
