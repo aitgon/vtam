@@ -2,4 +2,8 @@ dist
 output
 wopmetabarcoding.egg-info
 __pycache__
+.idea
+db.sqlite
+_build
+data0
 

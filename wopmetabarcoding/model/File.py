@@ -1,12 +1,16 @@
 from wopmars.framework.database.Base import Base
 
-from sqlalchemy import Column, String, Integer
-from sqlalchemy.orm import validates
+from sqlalchemy import Column, String, Integer, UniqueConstraint, Boolean
 
 
 class File(Base):
-	__tablename__ = 'File'
+    __tablename__ = 'File'
+    __table_args__ = (
+        UniqueConstraint('name'),
+    )
 
-	file_id = Column(Integer, primary_key=True, autoincrement=True)
-	file_name = Column(String(150), nullable=False)
-	run_name = Column(String(20), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(150), nullable=False)
+    # Todo: (Opt) Create model "Run"?
+    run_name = Column(String(20), nullable=False)
+    is_trimmed = Column(Boolean, nullable=False)
