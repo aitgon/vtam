@@ -452,7 +452,7 @@ def taxassignation_bak(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, resul
         break
 
 
-def otu_tables_creator(dataframe_assigned, otu_file):
+def otu_tables_creator(dataframe_assigned, fout):
     biosamples = sorted(list(set(dataframe_assigned["sample_replicate"].tolist())))
     print(biosamples)
     file_header = biosamples + ["is_borderline", "is_pseudogene_indel", "is_pseudogene_codon_stop","tax_id"]
@@ -460,26 +460,27 @@ def otu_tables_creator(dataframe_assigned, otu_file):
     variants = list(set(variants))
     separator = "\t|\t"
     separator.join(file_header)
-    with open(otu_file, 'w') as fout:
-        header = ""
-        for item in file_header:
-            header += (item + "\t")
-        fout.write("Variant\t%s\n" % header.strip())
-        for variant in variants:
-            dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
-            d = {}
-            for k in biosamples:
-                d[k] = False
-            biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
-            for sample in biosamples_variant:
-                if sample in biosamples:
-                    d[sample] = True
-            assignation = dataframe_assigned_variant["taxa"].tolist()[0]
-            is_pseudogene_indel = dataframe_assigned_variant["is_pseudogene_indel"].tolist()[0]
-            is_pseudogene_codon_stop = dataframe_assigned_variant["is_pseudogene_codon_stop"].tolist()[0]
-            is_borderline = dataframe_assigned_variant["is_borderline"].tolist()[0]
-            items = ""
-            for item in d.values():
-                    items += (str(item) + "\t")
-            items = str(variant) + "\t" + str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation)
-            fout.write("%s\n" % items)
+
+    header = ""
+    for item in file_header:
+        header += (item + "\t")
+    fout.write("Variant\t%s\n" % header.strip())
+    for variant in variants:
+        dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
+        d = {}
+        for k in biosamples:
+            d[k] = False
+        biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
+        for sample in biosamples_variant:
+            if sample in biosamples:
+                d[sample] = True
+        assignation = dataframe_assigned_variant["taxa"].tolist()[0]
+        is_pseudogene_indel = dataframe_assigned_variant["is_pseudogene_indel"].tolist()[0]
+        is_pseudogene_codon_stop = dataframe_assigned_variant["is_pseudogene_codon_stop"].tolist()[0]
+        is_borderline = dataframe_assigned_variant["is_borderline"].tolist()[0]
+        marker_name = dataframe_assigned_variant["marker_name"].tolist()[0]
+        items = ""
+        for item in d.values():
+                items += (str(item) + "\t")
+        items = str(variant)+ '\t'+ marker_name + "\t" + str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation) + "\t" + str(marker_name)
+        fout.write("%s\n" % items)

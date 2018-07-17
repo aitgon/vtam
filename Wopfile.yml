@@ -19,75 +19,82 @@
 #      threads: 8
 #      fastq_ascii: 33
 
-rule SampleInformation:
-    tool: wopmetabarcoding.wrapper.SampleInformation
+#rule SampleInformation:
+#    tool: wopmetabarcoding.wrapper.SampleInformation
+#    input:
+#        file:
+#            sample2fasta: data/sample2fasta.csv
+#    output:
+#        table:
+#            File: wopmetabarcoding.model.File
+#            SampleInformation: wopmetabarcoding.model.SampleInformation
+#            Marker: wopmetabarcoding.model.Marker
+#            PrimerPair: wopmetabarcoding.model.PrimerPair
+#            Biosample: wopmetabarcoding.model.Biosample
+#            TagPair: wopmetabarcoding.model.TagPair
+#            Replicate: wopmetabarcoding.model.Replicate
+#    params:
+#        fasta_dir: data/fastq_merged_fasta
+#
+#rule SortReads:
+#    tool: wopmetabarcoding.wrapper.SortReads
+#    input:
+#        table:
+#            File: wopmetabarcoding.model.File
+#            SampleInformation: wopmetabarcoding.model.SampleInformation
+#            Marker: wopmetabarcoding.model.Marker
+#    output:
+#        file:
+#            SortReads_sample_counts: data/sortreads_samplecount.csv
+#        table:
+#            Variant: wopmetabarcoding.model.Variant
+#
+#    params:
+#        sort_reads_output_dir: data/output/Sort_reads
+#        min_id: 0.8
+#        minseqlength: 32
+#        overhang: 0
+#
+#
+#rule Filter:
+#    tool: wopmetabarcoding.wrapper.Filter
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Variant: wopmetabarcoding.model.Variant
+#            Replicate: wopmetabarcoding.model.Replicate
+#        file:
+#            SortReads_sample_counts: data/sortreads_samplecount.csv
+#            file_cutoff: data/cutoff_variant.tsv
+#            genetic_code: data/genetic_codes.csv
+#    output:
+#        file:
+#            marker_variant_path: data/marker_variant_path.tsv
+#    params:
+#        filter_output_dir: data/output/Filter
+#        lfn_per_replicate_threshold: 0.001
+#        lfn_per_variant_threshold: 0.001
+#        lfn_per_replicate_series_threshold: 0.001
+#        lfn_read_count_threshold: 1
+#        repeatability_threshold: 2
+#        pcr_error_var_prop: 0.1
+#        renkonen_number_of_replicate: 3
+#        renkonen_renkonen_tail: 0.5
+
+rule db_fasta2udb:
+    tool: wopmetabarcoding.wrapper.DbFasta2Udb
     input:
         file:
-            sample2fasta: data/sample2fasta.csv
-    output:
-        table:
-            File: wopmetabarcoding.model.File
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
-            PrimerPair: wopmetabarcoding.model.PrimerPair
-            Biosample: wopmetabarcoding.model.Biosample
-            TagPair: wopmetabarcoding.model.TagPair
-            Replicate: wopmetabarcoding.model.Replicate
-    params:
-        fasta_dir: data/fastq_merged_fasta
-
-rule SortReads:
-    tool: wopmetabarcoding.wrapper.SortReads
-    input:
-        table:
-            File: wopmetabarcoding.model.File
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
+            db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas
     output:
         file:
-            SortReads_sample_counts: data/sortreads_samplecount.csv
-        table:
-            Variant: wopmetabarcoding.model.Variant
-
-    params:
-        sort_reads_output_dir: data/output/Sort_reads
-        min_id: 0.8
-        minseqlength: 32
-        overhang: 0
-
-
-rule Filter:
-    tool: wopmetabarcoding.wrapper.Filter
-    input:
-        table:
-            Marker: wopmetabarcoding.model.Marker
-            Variant: wopmetabarcoding.model.Variant
-            Replicate: wopmetabarcoding.model.Replicate
-        file:
-            SortReads_sample_counts: data/sortreads_samplecount.csv
-            file_cutoff: data/cutoff_variant.tsv
-            genetic_code: data/genetic_codes.csv
-    output:
-        file:
-            marker_variant_path: data/marker_variant_path.tsv
-    params:
-        filter_output_dir: data/output/Filter
-        lfn_per_replicate_threshold: 0.001
-        lfn_per_variant_threshold: 0.001
-        lfn_per_replicate_series_threshold: 0.001
-        lfn_read_count_threshold: 1
-        repeatability_threshold: 2
-        pcr_error_var_prop: 0.1
-        renkonen_number_of_replicate: 3
-        renkonen_renkonen_tail: 0.5
-
-
+            db_udb: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
 
 rule Taxassign:
     tool: wopmetabarcoding.wrapper.Taxassign
     input:
         file:
-            taxassign_db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas
+            db_udb: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
             marker_variant_path: data/marker_variant_path.tsv
             assignlvl2id: data/input/tax_assign_pars.tsv
             tax_assign_db_sqlite: data/tax_assign.sqlite
@@ -96,5 +103,4 @@ rule Taxassign:
             default_output: data/output.txt
             otu_table_tsv: data/otu_table.tsv
     params:
-         udb_database: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
-
+        output_dir_taxassign: data/output/TaxAssign
