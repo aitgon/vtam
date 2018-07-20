@@ -66,34 +66,34 @@ class Taxassign(ToolWrapper):
         default_output = self.output_file(Taxassign.__default_output)
         otu_df = pandas.DataFrame()
         with open(marker_variant_path, 'r') as fin:
-            with open(otu_file, 'w') as fout:
-                for marker_line in fin:
-                    marker_line = marker_line.strip().split('\t')
-                    marker_name = marker_line[0]
-                    marker_variant_filter_info_tsv = marker_line[1]
-                    marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
-                    marker_variant_filter_info_taxa_df = pandas.read_csv(marker_variant_filter_info_tsv, sep="\t")
-                    marker_variant_filter_info_taxa_df["taxa"] = nan # add column taxa
-                    marker_variant_filter_info_taxa_df["marker_name"] = marker_name
-                    # vsearch output file path
-                    output_vsearch_marker = os.path.join(output_dir_taxassign, "output_vsearch_{}.tsv".format(marker_name))
-                    nb_variants = 100 # sequence group for vsearch
-                    # Loop over groups of records
-                    sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
-                    for sub_fasta_path in sub_fasta_path_list:
-                        vsearch_command(sub_fasta_path, db_udb, output_vsearch_marker)
-                        # sqlite db path to store vsearch output
-                        vsearch_output_variant2taxa_seq2perc_identity_sqlite = os.path.join(tempdir, "vsearch_output_variant2taxa_seq2perc_identity.sqlite")
-                        vsearch_output_to_sqlite(output_vsearch_marker, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
-                        # retrieve and analyse each variant
-                        for variant in SeqIO.parse(sub_fasta_path, 'fasta'):
-                            variant_seq = variant.description
-                            tsv_output = os.path.join(tempdir, (marker_name + "_"  + variant_seq + '.tsv'))
-                            vsearch_output_for_variant_df = get_vsearch_output_for_variant_as_df(vsearch_output_variant2taxa_seq2perc_identity_sqlite, variant_seq)
-                            taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv, marker_variant_filter_info_taxa_df, variant_seq)
-                            otu_df = otu_df.append(marker_variant_filter_info_taxa_df, ignore_index=True)
-                    marker_variant_filter_info_taxa_df.to_csv(default_output, sep='\t', header=True, index=False)
-                otu_tables_creator(otu_df, fout)
+            # with open(otu_file, 'w') as fout:
+            for marker_line in fin:
+                marker_line = marker_line.strip().split('\t')
+                marker_name = marker_line[0]
+                marker_variant_filter_info_tsv = marker_line[1]
+                marker_variant_fasta = marker_line[2] # path to fasta with filtered variants
+                marker_variant_filter_info_taxa_df = pandas.read_csv(marker_variant_filter_info_tsv, sep="\t")
+                marker_variant_filter_info_taxa_df["taxa"] = nan # add column taxa
+                marker_variant_filter_info_taxa_df["marker_name"] = marker_name
+                # vsearch output file path
+                output_vsearch_marker = os.path.join(output_dir_taxassign, "output_vsearch_{}.tsv".format(marker_name))
+                nb_variants = 100 # sequence group for vsearch
+                # Loop over groups of records
+                sub_fasta_path_list = sub_fasta_creator(marker_variant_fasta, nb_variants, marker_name)
+                for sub_fasta_path in sub_fasta_path_list:
+                    vsearch_command(sub_fasta_path, db_udb, output_vsearch_marker)
+                    # sqlite db path to store vsearch output
+                    vsearch_output_variant2taxa_seq2perc_identity_sqlite = os.path.join(tempdir, "vsearch_output_variant2taxa_seq2perc_identity.sqlite")
+                    vsearch_output_to_sqlite(output_vsearch_marker, vsearch_output_variant2taxa_seq2perc_identity_sqlite)
+                    # retrieve and analyse each variant
+                    for variant in SeqIO.parse(sub_fasta_path, 'fasta'):
+                        variant_seq = variant.description
+                        tsv_output = os.path.join(tempdir, (marker_name + "_"  + variant_seq + '.tsv'))
+                        vsearch_output_for_variant_df = get_vsearch_output_for_variant_as_df(vsearch_output_variant2taxa_seq2perc_identity_sqlite, variant_seq)
+                        taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv, marker_variant_filter_info_taxa_df, variant_seq)
+                        otu_df = otu_df.append(marker_variant_filter_info_taxa_df, ignore_index=True)
+                marker_variant_filter_info_taxa_df.to_csv(default_output, sep='\t', header=True, index=False)
+            otu_tables_creator(otu_df, otu_file)
 
     # def run(self):
     #     session = self.session()
