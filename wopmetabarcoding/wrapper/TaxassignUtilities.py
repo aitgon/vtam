@@ -470,6 +470,7 @@ def otu_tables_creator(dataframe_assigned, otu_file):
     dataframe_assigned['True'] = True
     dataframe_assigned = pandas.pivot_table(dataframe_assigned, index=cols, columns=['sample_replicate'], values='True',
                                             fill_value=False)
+    dataframe_assigned.sort_values(by=['marker_name', 'taxa', 'variant_seq'], inplace=True)
     dataframe_assigned.to_csv(otu_file, sep="\t", index=True, header=True)
     # import pdb; pdb.set_trace()
     #
