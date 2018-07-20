@@ -92,7 +92,7 @@ class Taxassign(ToolWrapper):
                         vsearch_output_for_variant_df = get_vsearch_output_for_variant_as_df(vsearch_output_variant2taxa_seq2perc_identity_sqlite, variant_seq)
                         taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv, marker_variant_filter_info_taxa_df, variant_seq)
                         otu_df = otu_df.append(marker_variant_filter_info_taxa_df, ignore_index=True)
-                marker_variant_filter_info_taxa_df.to_csv(default_output, sep='\t', header=True, index=False)
+                #marker_variant_filter_info_taxa_df.to_csv(default_output, sep='\t', header=True, index=False)
             otu_tables_creator(otu_df, otu_file)
 
     # def run(self):
