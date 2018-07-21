@@ -168,27 +168,49 @@ def batch_iterator(iterator, batch_size):
             yield batch
 
 
-def sub_fasta_creator(marker_variant_fasta, sequence_number, marker_name):
+def sub_fasta_creator(fasta_file_path, fasta_subset_size, sub_fasta_dir):
     """
     Split a FASTA file into FASTA pieces of given sequence number
 
-    :param marker_variant_fasta: Path to FASTA file with marker variants
-    :param sequence_number: Maximal sequence number in split FASTA files
+    :param fasta_file_path: Path to FASTA file with marker variants
+    :param fasta_subset_size: Maximal sequence number in split FASTA files
     :param marker_name: Marker name to prefix split FASTA files
     :return: List with paths to split FASTA files
     """
-    record_iter = SeqIO.parse(open(marker_variant_fasta), "fasta")
-    print(str(record_iter))
+    record_iter = SeqIO.parse(open(fasta_file_path), "fasta")
+    # print(str(record_iter))
     sub_fasta_path_list = []
-    for i, batch in enumerate(batch_iterator(record_iter, sequence_number)):
-        sub_fasta_path = "group_{}_{}.fasta".format(i + 1, marker_name)
+    for i, batch in enumerate(batch_iterator(record_iter, fasta_subset_size)):
+        sub_fasta_path = os.path.join(sub_fasta_dir, "i_{}.fasta".format(i))
         # filename = filename + "_" + marker_name + ".fasta"
-        sub_fasta_path = os.path.join(tempdir, sub_fasta_path)
+        # sub_fasta_path = os.path.join(tempdir, sub_fasta_path)
         with open(sub_fasta_path, "w") as handle:
             count = SeqIO.write(batch, handle, "fasta")
         sub_fasta_path_list.append(sub_fasta_path)
-    print(sub_fasta_path_list)
+    # print(sub_fasta_path_list)
     return sub_fasta_path_list
+
+# def sub_fasta_creator(fasta_file_path, fasta_subset_size, marker_name):
+#     """
+#     Split a FASTA file into FASTA pieces of given sequence number
+#
+#     :param fasta_file_path: Path to FASTA file with marker variants
+#     :param fasta_subset_size: Maximal sequence number in split FASTA files
+#     :param marker_name: Marker name to prefix split FASTA files
+#     :return: List with paths to split FASTA files
+#     """
+#     record_iter = SeqIO.parse(open(fasta_file_path), "fasta")
+#     # print(str(record_iter))
+#     sub_fasta_path_list = []
+#     for i, batch in enumerate(batch_iterator(record_iter, fasta_subset_size)):
+#         sub_fasta_path = "marker_{}_i_{}.fasta".format(marker_name, i)
+#         # filename = filename + "_" + marker_name + ".fasta"
+#         sub_fasta_path = os.path.join(tempdir, sub_fasta_path)
+#         with open(sub_fasta_path, "w") as handle:
+#             count = SeqIO.write(batch, handle, "fasta")
+#         sub_fasta_path_list.append(sub_fasta_path)
+#     # print(sub_fasta_path_list)
+#     return sub_fasta_path_list
 
 
 # def vsearch_output_to_sqlite(filename, db_to_create):
@@ -261,7 +283,8 @@ def get_vsearch_output_for_variant_as_df(db_sqlite, variant_seq):
     return vsearch_output_for_variant_df
 
 
-def taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, sequence_variant):
+def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
+    ltg_tax_id = 0 # default
     # vsearch2seq2tax_df = pandas.read_csv(output_tsv, sep="\t", header=None, index_col=1)
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
     # vsearch2seq2tax_df.index.name = 'tax_seq_id'
@@ -353,8 +376,10 @@ def taxassignation(vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_
         if ltg_rank_id > max_tax_resolution_id:  #  go up in lineage of ltg_tax_id up to max_tax_resolution_id
             ltg_tax_id = tax_lineage_df.loc[
                 tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
-        result_dataframe["taxa"].loc[result_dataframe["variant_seq"] == sequence_variant] = ltg_tax_id
-        break
+        # result_dataframe["taxa"].loc[result_dataframe["variant_seq"] == sequence_variant] = ltg_tax_id
+        # break
+        return ltg_tax_id
+    return ltg_tax_id
 
 
 def taxassignation_bak(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, result_dataframe, sequence_variant):
@@ -452,56 +477,20 @@ def taxassignation_bak(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, resul
         break
 
 
-def otu_tables_creator(dataframe_assigned, otu_file):
-    dataframe_assigned.drop('Unnamed: 0', axis=1, inplace=True) # remove unnecessary column
+def convert_fileinfo_to_otu_df(filterinfo_df):
+    # filterinfo_df.drop('Unnamed: 0', axis=1, inplace=True) # remove unnecessary column
     #
-    # move marker and taxid to first positions
-    cols = dataframe_assigned.columns.tolist()
-    cols.insert(0, cols.pop(cols.index('taxa')))
-    cols.insert(0, cols.pop(cols.index('marker_name')))
-    dataframe_assigned = dataframe_assigned.reindex(columns=cols)
-    #
-    # Long to wide format for sample_replicate column
-    cols = dataframe_assigned.columns.tolist()
+    #  move marker and taxid to first positions
+    cols = filterinfo_df.columns.tolist()
     cols.remove('biosample')
     cols.remove('replicate')
-    cols.remove('sample_replicate')
     cols.remove('count')
-    dataframe_assigned['True'] = True
-    dataframe_assigned = pandas.pivot_table(dataframe_assigned, index=cols, columns=['sample_replicate'], values='True',
-                                            fill_value=False)
-    dataframe_assigned.sort_values(by=['marker_name', 'taxa', 'variant_seq'], inplace=True)
-    dataframe_assigned.to_csv(otu_file, sep="\t", index=True, header=True)
-    # import pdb; pdb.set_trace()
+    filterinfo_df = filterinfo_df.reindex(columns=cols)
     #
-    # biosamples = sorted(list(set(dataframe_assigned["sample_replicate"].tolist())))
-    # print(biosamples)
-    # file_header = biosamples + ["is_borderline", "is_pseudogene_indel", "is_pseudogene_codon_stop","tax_id"]
-    # variants = dataframe_assigned['variant_seq'].tolist()
-    # variants = list(set(variants))
-    # separator = "\t|\t"
-    # separator.join(file_header)
-    #
-    # header = ""
-    # for item in file_header:
-    #     header += (item + "\t")
-    # otu_file.write("Variant\t%s\n" % header.strip())
-    # for variant in variants:
-    #     dataframe_assigned_variant = dataframe_assigned.loc[dataframe_assigned['variant_seq'] == variant]
-    #     d = {}
-    #     for k in biosamples:
-    #         d[k] = False
-    #     biosamples_variant = dataframe_assigned_variant["sample_replicate"].tolist()
-    #     for sample in biosamples_variant:
-    #         if sample in biosamples:
-    #             d[sample] = True
-    #     assignation = dataframe_assigned_variant["taxa"].tolist()[0]
-    #     is_pseudogene_indel = dataframe_assigned_variant["is_pseudogene_indel"].tolist()[0]
-    #     is_pseudogene_codon_stop = dataframe_assigned_variant["is_pseudogene_codon_stop"].tolist()[0]
-    #     is_borderline = dataframe_assigned_variant["is_borderline"].tolist()[0]
-    #     marker_name = dataframe_assigned_variant["marker_name"].tolist()[0]
-    #     items = ""
-    #     for item in d.values():
-    #             items += (str(item) + "\t")
-    #     items = str(variant)+ '\t'+ marker_name + "\t" + str(items.strip()) + "\t" + str(is_borderline) + "\t" + str(is_pseudogene_indel) + "\t" + str(is_pseudogene_codon_stop) + "\t"+ str(assignation) + "\t" + str(marker_name)
-    #     otu_file.write("%s\n" % items)
+    #  Long to wide format for sample_replicate column
+    filterinfo_df['True'] = 1
+    cols.remove('sample_replicate')
+    filterinfo_df = pandas.pivot_table(filterinfo_df, index=cols, columns=['sample_replicate'], values='True',
+                                       fill_value=0)
+    filterinfo_df.reset_index(inplace=True)
+    return filterinfo_df

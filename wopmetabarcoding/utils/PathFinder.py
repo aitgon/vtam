@@ -6,6 +6,7 @@ multiple-lined
 import errno
 import os
 
+
 class PathFinder:
 
 
@@ -46,10 +47,8 @@ class PathFinder:
         return test_dir_path
 
 
-
-
     @staticmethod
-    def mkdir(path):
+    def mkdir_p(path):
         """ Does not fail if directory already exists"""
         try:
             os.makedirs(path)
