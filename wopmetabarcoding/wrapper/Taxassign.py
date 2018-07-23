@@ -179,7 +179,7 @@ class Taxassign(ToolWrapper):
             tax_id_list=",".join(str(tax_id) for tax_id in tax_id_list))
         cur.execute(sql)
         records = cur.fetchall()
-        taxid2taxname_dic = {k: v for k, v in records}
+        taxid2taxname_dic = {int(k): v for k, v in records}
         cur.close()
         # taxid2taxname_df = pandas.read_sql(con=con, sql=sql).drop_duplicates()
         #
@@ -187,12 +187,18 @@ class Taxassign(ToolWrapper):
         logger.debug(
             "file: {}; line: {}; variant_seq_list {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
         otu_df['marker'] = None
+        otu_df['tax_id'] = None
         otu_df['tax_name'] = None
         for row in variant2marker2taxid_list_df.itertuples():
             logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, row))
             variant_seq = row.variant_seq
+            tax_id = row.tax_id
             otu_df.loc[otu_df.variant_seq == variant_seq, 'marker'] = row.marker
-            tax_name = taxid2taxname_dic[row.tax_id]
+            try:
+                tax_name = taxid2taxname_dic[tax_id]
+            except KeyError:
+                tax_name = None
+            otu_df.loc[otu_df.variant_seq == variant_seq, 'tax_id'] = tax_id
             otu_df.loc[otu_df.variant_seq == variant_seq, 'tax_name'] = tax_name
         #
         # move some columns to beginning and write
@@ -200,6 +206,7 @@ class Taxassign(ToolWrapper):
         cols.insert(0, cols.pop(cols.index('variant_seq')))
         cols.insert(0, cols.pop(cols.index('read_average')))
         cols.insert(0, cols.pop(cols.index('tax_name')))
+        cols.insert(0, cols.pop(cols.index('tax_id')))
         cols.insert(0, cols.pop(cols.index('marker')))
         otu_df = otu_df.reindex(columns=cols)
         #
