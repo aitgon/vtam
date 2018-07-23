@@ -175,10 +175,10 @@ class Taxassign(ToolWrapper):
         tax_id_list = variant2marker2taxid_list_df.tax_id.tolist()
         con = sqlite3.connect(tax_assign_sqlite)
         cur = con.cursor()
-        sql = "SELECT tax_id,tax_name FROM seq2tax2parent WHERE tax_id in ({tax_id_list})".format(
+        sql = "SELECT distinct tax_id,tax_name FROM seq2tax2parent WHERE tax_id in ({tax_id_list})".format(
             tax_id_list=",".join(str(tax_id) for tax_id in tax_id_list))
         cur.execute(sql)
-        records = set(cur.fetchall())
+        records = cur.fetchall()
         taxid2taxname_dic = {k: v for k, v in records}
         cur.close()
         # taxid2taxname_df = pandas.read_sql(con=con, sql=sql).drop_duplicates()
