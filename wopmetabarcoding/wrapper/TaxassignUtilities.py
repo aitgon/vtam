@@ -477,10 +477,11 @@ def taxassignation_bak(output_tsv, tax_assign_sqlite, tax_assign_pars_tsv, resul
         break
 
 
-def convert_fileinfo_to_otu_df(filterinfo_df):
+def convert_fileinfo_to_otu_df(variant_seq, filterinfo_df):
     # filterinfo_df.drop('Unnamed: 0', axis=1, inplace=True) # remove unnecessary column
     #
     #  move marker and taxid to first positions
+    filterinfo_df = filterinfo_df.ix[filterinfo_df.variant_seq == variant_seq]
     cols = filterinfo_df.columns.tolist()
     cols.remove('biosample')
     cols.remove('replicate')

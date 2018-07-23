@@ -4,7 +4,7 @@ from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, vsearch_output_to_sqlite, get_vsearch_output_for_variant_as_df, taxassignation, indexed_db_creation, convert_fileinfo_to_otu_df
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.logger import logger, LOGGER_LEVEL
 from Bio import SeqIO
 import errno
 from itertools import repeat
@@ -82,7 +82,6 @@ class Taxassign(ToolWrapper):
         marker_class = {}
         ####################
         for row in marker2filteranalysis2fasta_df.itertuples(index=True, name='Pandas'):
-            # from logger import get_logger
             logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, row))
             marker_name = row[0]
             marker_class[marker_name] = {}
@@ -106,7 +105,7 @@ class Taxassign(ToolWrapper):
         #
         # Run vsearch and and store it in sqlite DB
         for marker_name in marker_class:
-            marker_class[marker_name]
+            logger.debug("file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno, marker_name))
             for sub_fasta_path_i,sub_fasta_path in enumerate(marker_class[marker_name]['sub_fasta_path_list']):
                 #
                 # run vsearch
@@ -122,6 +121,7 @@ class Taxassign(ToolWrapper):
         # for each variant retrieve vsearch output as and store variant, marker, and vsearch output df
         variant_class = {}
         for marker_name in marker_class:
+            logger.debug("file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno, marker_name))
             for sub_fasta_path in marker_class[marker_name]['sub_fasta_path_list']:
                 for fasta_entry in SeqIO.parse(sub_fasta_path, 'fasta'):
                     variant_seq = fasta_entry.description
@@ -131,30 +131,72 @@ class Taxassign(ToolWrapper):
         #
         # For each variant, carry out parallel taxassignation
         variant_seq_list = variant_class.keys()
+        logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
         with Pool() as p:
-            # variant_class, marker_class, tax_assign_sqlite, tax_assign_pars_tsv
             variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(marker_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)))
+        logger.debug(
+            "file: {}; line: {}; variant2marker2taxid_list {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list))
         variant2marker2taxid_list_df = pandas.DataFrame.from_records(variant2marker2taxid_list, columns=['variant_seq', 'marker', 'tax_id'])
+        # Start logging
+        variant2marker2taxid_list_df_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.pkl")
+        variant2marker2taxid_list_df.to_pickle(variant2marker2taxid_list_df_pkl)
+        logger.debug(
+            "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_pkl))
+        variant2marker2taxid_list_df_tsv = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.tsv")
+        variant2marker2taxid_list_df.to_csv(variant2marker2taxid_list_df_tsv, sep="\t")
+        logger.debug(
+            "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_tsv))
+        # End logging
+        if LOGGER_LEVEL == 10:
+            variant2marker2taxid_list_df_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.pkl")
+            variant2marker2taxid_list_df.to_pickle(variant2marker2taxid_list_df_pkl)
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_pkl))
+            variant2marker2taxid_list_df_tsv = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.tsv")
+            variant2marker2taxid_list_df.to_csv(variant2marker2taxid_list_df_tsv, sep="\t")
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_tsv))
         #
         # merge tax_ids to other informations and write
+        logger.debug(
+            "file: {}; line: {}; variant_seq_list {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
         for variant_seq in variant_seq_list:
+            logger.debug("file: {}; line: {}; variant_seq {}".format(__file__, inspect.currentframe().f_lineno, variant_seq))
             marker_name = variant_class[variant_seq][0]
-            # vsearch_per_variant_df = variant_class[variant_seq][1]
             marker_filterinfo_tsv = marker_class[marker_name]['marker_filterinfo_tsv']
-        #     # tax_id = taxassignation(variant_seq, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
-        #     #######################""
-        #     tax_id = f_variant2taxid(variant_seq, variant_class, marker_class, tax_assign_sqlite, tax_assign_pars_tsv)
-        #     print(tax_id)
-        #
             marker_filterinfo_df = pandas.read_csv(marker_filterinfo_tsv, sep="\t")
-            variant_otu_df = convert_fileinfo_to_otu_df(marker_filterinfo_df)
+            # TODO Do not reshape this df for each variant as it can be done once for the whole marker
+            variant_otu_df = convert_fileinfo_to_otu_df(variant_seq, marker_filterinfo_df)
             if otu_table_long_df.shape == (0,0):
                 otu_table_long_df = variant_otu_df
             else:
                 # vertical merge
                 otu_table_long_df = pandas.concat([otu_table_long_df, variant_otu_df], axis=0, join='outer', sort=False)
+            # Start logging
+            if LOGGER_LEVEL == 10:
+                mkdir_p(os.path.join(tempdir, "TaxAssign", variant_seq))
+                #
+                variant_otu_df_pkl = os.path.join(tempdir, "TaxAssign", variant_seq, "variant_otu_df.pkl")
+                variant_otu_df.to_pickle(variant_otu_df_pkl)
+                logger.debug(
+                    "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_otu_df_pkl))
+                variant_otu_df_tsv = os.path.join(tempdir, "TaxAssign", variant_seq, "variant_otu_df.tsv")
+                variant_otu_df.to_csv(variant_otu_df_tsv, sep="\t")
+                logger.debug(
+                    "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_otu_df_tsv))
+                #
+                otu_table_long_df_pkl = os.path.join(tempdir, "TaxAssign", variant_seq, "otu_table_long_df.pkl")
+                otu_table_long_df.to_pickle(otu_table_long_df_pkl)
+                logger.debug(
+                    "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_table_long_df_pkl))
+                otu_table_long_df_tsv = os.path.join(tempdir, "TaxAssign", variant_seq, "otu_table_long_df.tsv")
+                otu_table_long_df.to_csv(otu_table_long_df_tsv, sep="\t")
+                logger.debug(
+                    "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_table_long_df_tsv))
+        #
         otu_table_long_df = pandas.merge(variant2marker2taxid_list_df, otu_table_long_df, on=['variant_seq'], how='outer')
         otu_table_long_df = otu_table_long_df.reindex(columns=sorted(otu_table_long_df.columns))
+        # End logging
         #
         # move some columns to beginning and write
         cols = otu_table_long_df.columns.tolist()
@@ -166,6 +208,7 @@ class Taxassign(ToolWrapper):
         #
         # sort and write
         otu_table_long_df.sort_values(by=otu_table_long_df.columns.tolist(), inplace=True)
+        # TODO Spaces must be filled with 0
         otu_table_long_df.to_csv(otu_file, sep="\t", index=False, header=True)
         #
         #
