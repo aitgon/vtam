@@ -1,15 +1,17 @@
-import time
+import logging
+
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
-from wopmars.utils.Logger import Logger
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, create_phylogenetic_line_df, sub_fasta_creator,dataframe2ltgdefinition, rank_hierarchy, seq2tax_db_sqlite_to_df, vsearch_output_to_sqlite, get_vsearch_output_for_variant_as_df, taxassignation, indexed_db_creation, convert_fileinfo_to_otu_df
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.logger import logger
 from Bio import SeqIO
-from numpy import nan
 import errno
 from itertools import repeat
 
 from multiprocessing import Pool
+
+import inspect
 
 def mkdir_p(path):
     """ Does not fail if directory already exists"""
@@ -80,6 +82,8 @@ class Taxassign(ToolWrapper):
         marker_class = {}
         ####################
         for row in marker2filteranalysis2fasta_df.itertuples(index=True, name='Pandas'):
+            # from logger import get_logger
+            logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, row))
             marker_name = row[0]
             marker_class[marker_name] = {}
             marker_filterinfo_tsv = row[1]
