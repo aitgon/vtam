@@ -11,7 +11,10 @@ logger = logging.getLogger("wopmetabarcoding")
 logger.setLevel(LOGGER_LEVEL)
 loggerHandlerStdout = logging.StreamHandler(sys.stdout)
 
-loggerHandlerFile = logging.FileHandler('wopmetabarcoding.log')
+WOPMETABARCODING_LOG_PATH = "wopmetabarcoding.log"
+if "WOPMETABARCODING_LOG_PATH" in os.environ:
+    WOPMETABARCODING_LOG_PATH = int(os.environ["WOPMETABARCODING_LOG_PATH"])
+loggerHandlerFile = logging.FileHandler(WOPMETABARCODING_LOG_PATH)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 loggerHandlerStdout.setFormatter(formatter)
