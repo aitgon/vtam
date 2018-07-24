@@ -85,7 +85,7 @@ class Taxassign(ToolWrapper):
             marker_fasta = row[2]
             #
             # split fasta file for vsearch
-            fasta_subset_size = 100
+            fasta_subset_size = 10
             sub_fasta_dir = os.path.join(tempdir, "TaxAssign", marker_name)
             PathFinder.mkdir_p(sub_fasta_dir)
             # sub_fasta_path_template = "marker_%s_i_{}.fasta"%marker_name
@@ -103,11 +103,14 @@ class Taxassign(ToolWrapper):
                 #
                 # run vsearch
                 vsearch_output_tsv = os.path.join(tempdir, "TaxAssign", marker_name, "vsearch_i_{}.tsv".format(sub_fasta_path_i))
+                logger.debug("file: {}; line: {}; sub_fasta_path {}".format(__file__, inspect.currentframe().f_lineno, sub_fasta_path))
                 vsearch_command(sub_fasta_path, db_udb, vsearch_output_tsv)
                 marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_tsv'] = vsearch_output_tsv
                 #
                 # store vsearch output in sqlite db
                 vsearch_output_sqlite = os.path.join(tempdir, "TaxAssign", marker_name, "vsearch_i_{}.sqlite".format(sub_fasta_path_i))
+                logger.debug("file: {}; line: {}; vsearch_output_sqlite {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                                               vsearch_output_sqlite))
                 vsearch_output_to_sqlite(vsearch_output_tsv, vsearch_output_sqlite)
                 marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_sqlite'] = vsearch_output_sqlite
         #
@@ -124,7 +127,19 @@ class Taxassign(ToolWrapper):
         #
         # For each variant, carry out parallel taxassignation
         variant_seq_list = sorted(variant_class.keys())
-        logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
+        if LOGGER_LEVEL == 10:
+            PathFindermkdir_p(os.path.join(tempdir, "TaxAssign", "129"))
+            variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "129", "variant_seq_list.pkl")
+            with open(variant_seq_list_pkl, 'wb') as f:
+                pickle.dump(variant_seq_list, f)
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_pkl))
+            variant_seq_list_txt = os.path.join(tempdir, "TaxAssign", "129", "variant_seq_list.txt")
+            with open(variant_seq_list_txt, 'w') as f:
+                for item in variant_seq_list:
+                    f.write("{}\n".format(item))
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_txt))
         # Start of Parallel Version: Comment out after debugging
         with Pool() as p:
             variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)))
@@ -190,8 +205,6 @@ class Taxassign(ToolWrapper):
         # taxid2taxname_df = pandas.read_sql(con=con, sql=sql).drop_duplicates()
         #
         # Add variant_seq and tax_id to output otu table
-        logger.debug(
-            "file: {}; line: {}; variant_seq_list {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
         if LOGGER_LEVEL == 10:
             variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "variant_seq_list.pkl")
             with open(variant_seq_list_pkl, 'wb') as f:
@@ -203,7 +216,7 @@ class Taxassign(ToolWrapper):
                 for item in variant_seq_list:
                     f.write("{}\n".format(item))
             logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_txt))
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_txt))
         otu_df['marker'] = None
         otu_df['tax_id'] = None
         otu_df['tax_name'] = None
