@@ -1,4 +1,4 @@
-import logging
+import pickle
 import sqlite3
 
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
@@ -16,19 +16,13 @@ from multiprocessing import Pool
 import inspect
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
-# def mkdir_p(path):
-#     """ Does not fail if directory already exists"""
-#     try:
-#         os.makedirs(path)
-#     except OSError as exception:
-#         if exception.errno != errno.EEXIST:
-#             raise
-
-def f_variant2taxid(variant_seq, variant_class, marker_class, tax_assign_sqlite, tax_assign_pars_tsv):
+def f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pars_tsv):
     marker_name = variant_class[variant_seq][0]
+    logger.debug(
+        "file: {}; line: {}; marker_name {} variant_seq {}...".format(__file__, inspect.currentframe().f_lineno,
+                                                                   marker_name, variant_seq[1:20]))
     vsearch_per_variant_df = variant_class[variant_seq][1]
-    # marker_filterinfo_tsv = marker_class[marker_name]['marker_filterinfo_tsv']
-    tax_id = taxassignation(variant_seq, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
+    tax_id = taxassignation(variant_seq, marker_name, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
     return (variant_seq, marker_name, tax_id)
 
 
@@ -129,18 +123,30 @@ class Taxassign(ToolWrapper):
                     variant_class[variant_seq] = (marker_name, vsearch_per_variant_df)
         #
         # For each variant, carry out parallel taxassignation
-        variant_seq_list = variant_class.keys()
+        variant_seq_list = sorted(variant_class.keys())
         logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
+        # Start of Parallel Version: Comment out after debugging
         with Pool() as p:
-            variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(marker_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)))
+            variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)))
+        # End of Parallel Version: Comment out after debugging
         # Start of Non Parallel Version: Comment out after debugging
         # variant2marker2taxid_list = []
         # for variant_seq in variant_seq_list:
-        #     tax_id = f_variant2taxid(variant_seq, variant_class, marker_class, tax_assign_sqlite, tax_assign_pars_tsv)
+        #     tax_id = f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pars_tsv)
         #     variant2marker2taxid_list.append(tax_id)
         # End of Non Parallel Version: Comment out after debugging
-        logger.debug(
-            "file: {}; line: {}; variant2marker2taxid_list {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list))
+        if LOGGER_LEVEL == 10:
+            variant2marker2taxid_list_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list.pkl")
+            with open(variant2marker2taxid_list_pkl, 'wb') as f:
+                pickle.dump(variant2marker2taxid_list, f)
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_pkl))
+            variant2marker2taxid_list_txt = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list.txt")
+            with open(variant2marker2taxid_list_txt, 'w') as f:
+                for item in variant2marker2taxid_list:
+                    f.write("{}\n".format(item))
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_txt))
         variant2marker2taxid_list_df = pandas.DataFrame.from_records(variant2marker2taxid_list, columns=['variant_seq', 'marker', 'tax_id'])
         if LOGGER_LEVEL == 10:
             variant2marker2taxid_list_df_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.pkl")
@@ -186,6 +192,18 @@ class Taxassign(ToolWrapper):
         # Add variant_seq and tax_id to output otu table
         logger.debug(
             "file: {}; line: {}; variant_seq_list {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list))
+        if LOGGER_LEVEL == 10:
+            variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "variant_seq_list.pkl")
+            with open(variant_seq_list_pkl, 'wb') as f:
+                pickle.dump(variant_seq_list, f)
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_pkl))
+            variant_seq_list_txt = os.path.join(tempdir, "TaxAssign", "variant_seq_list.txt")
+            with open(variant_seq_list_txt, 'w') as f:
+                for item in variant_seq_list:
+                    f.write("{}\n".format(item))
+            logger.debug(
+                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_txt))
         otu_df['marker'] = None
         otu_df['tax_id'] = None
         otu_df['tax_name'] = None

@@ -254,7 +254,7 @@ def get_vsearch_output_for_variant_as_df(db_sqlite, variant_seq):
     return vsearch_output_for_variant_df
 
 
-def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
+def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
     ltg_tax_id = 0 # default
     # vsearch2seq2tax_df = pandas.read_csv(output_tsv, sep="\t", header=None, index_col=1)
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
@@ -284,38 +284,43 @@ def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_s
         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 85, "order", "order", 3
         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 80, "class", "order", 5
         identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = tax_assign_pars_df_row.tolist()
-        # TODO: replace all wopmars with wopmetabarcoding loggers
-        Logger.instance().info("Selecting sequences with " + str(identity_threshold) + "% identity.")
+        # Logger.instance().info("Selecting sequences with " + str(identity_threshold) + "% identity.")
         min_tax_level_id = rank_hierarchy.index(min_tax_level)
         max_tax_resolution_id = rank_hierarchy.index(max_tax_resolution)
         #
         # test identity_threshold
+        # import pdb; pdb.set_trace()
         vsearch2seq2tax_df_selected = vsearch_output_for_variant_df.loc[
             vsearch_output_for_variant_df.alignment_identity >= identity_threshold]
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} vsearch2seq2tax_df_selected shape {}".format(__file__, inspect.currentframe().f_lineno,
+            marker_name, variant_seq[1:20], identity_threshold, vsearch2seq2tax_df_selected.shape))
         if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
-            Logger.instance().info(
-                "Any sequences are selected passing to next identity threshold."
-            )
             continue  #  next identity threshold
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
         #  continue only if selected lines
         #
         # test min_tax_level
         vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[
             vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
         if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
-            Logger.instance().info(
-                "Any sequence with enought detailled taxonomic "
-                "level found, passing to next identity threshold."
-            )
+            # )
             continue  #  next identity threshold
-        #  continue only if selected lines
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
         #
         # test min_tax_n
         if vsearch2seq2tax_df_selected.shape[0] < min_tax_n:
-            Logger.instance().info(
-                "Not enought sequences are selected passing to next identity threshold."
-            )
+            # Logger.instance().info(
+            #     "Not enought sequences are selected passing to next identity threshold."
+            # )
             continue  #  next identity threshold
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
         # continue only if selected lines
         tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
         #
@@ -327,10 +332,10 @@ def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_s
         #
         # test min_tax_n
         if tax_count_perc.empty:
-            Logger.instance().info(
-                "Any taxonomic level with the given proportion to become LTG."
-            )
             continue  #  next identity threshold
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
         tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in
                                         tax_count_perc.index.tolist()]
         #
@@ -338,20 +343,21 @@ def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_s
         tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
         tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
         if tax_count_perc_ltg.empty:
-            Logger.instance().info(
-                "Nothing survive."
-            )
             continue
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
         ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
         ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
         #
         if ltg_rank_id > max_tax_resolution_id:  #  go up in lineage of ltg_tax_id up to max_tax_resolution_id
             ltg_tax_id = tax_lineage_df.loc[
                 tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
-        # result_dataframe["taxa"].loc[result_dataframe["variant_seq"] == sequence_variant] = ltg_tax_id
-        # break
-        return ltg_tax_id
-    return ltg_tax_id
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} ltg_tax_id {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold, ltg_tax_id))
+        return int(ltg_tax_id)
+    return int(ltg_tax_id)
 
 
 def convert_fileinfo_to_otu_df(filterinfo_df):
