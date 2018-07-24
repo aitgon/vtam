@@ -216,45 +216,6 @@ def sub_fasta_creator(fasta_file_path, fasta_subset_size, sub_fasta_dir):
     # print(sub_fasta_path_list)
     return sub_fasta_path_list
 
-# def sub_fasta_creator(fasta_file_path, fasta_subset_size, marker_name):
-#     """
-#     Split a FASTA file into FASTA pieces of given sequence number
-#
-#     :param fasta_file_path: Path to FASTA file with marker variants
-#     :param fasta_subset_size: Maximal sequence number in split FASTA files
-#     :param marker_name: Marker name to prefix split FASTA files
-#     :return: List with paths to split FASTA files
-#     """
-#     record_iter = SeqIO.parse(open(fasta_file_path), "fasta")
-#     # print(str(record_iter))
-#     sub_fasta_path_list = []
-#     for i, batch in enumerate(batch_iterator(record_iter, fasta_subset_size)):
-#         sub_fasta_path = "marker_{}_i_{}.fasta".format(marker_name, i)
-#         # filename = filename + "_" + marker_name + ".fasta"
-#         sub_fasta_path = os.path.join(tempdir, sub_fasta_path)
-#         with open(sub_fasta_path, "w") as handle:
-#             count = SeqIO.write(batch, handle, "fasta")
-#         sub_fasta_path_list.append(sub_fasta_path)
-#     # print(sub_fasta_path_list)
-#     return sub_fasta_path_list
-
-
-# def vsearch_output_to_sqlite(filename, db_to_create):
-#     conn = sqlite3.connect(db_to_create)
-#     conn.execute("DROP TABLE IF EXISTS alignedtsv")
-#     cur = conn.cursor()
-#     conn.execute(
-#         "CREATE TABLE alignedtsv (id INTEGER PRIMARY KEY AUTOINCREMENT, query_variant VARCHAR, target VARCHAR, identity_thresold FLOAT)"
-#     )
-#     with open(filename, 'r') as fin:
-#         print(filename)
-#         for line in fin:
-#             line = line.strip().split("\t")
-#             cur.execute("INSERT INTO alignedtsv (query_variant, target, identity_thresold) VALUES (?,?,?);", line)
-#     cur.close()
-#     conn.commit()
-#     conn.close()
-
 def vsearch_output_to_sqlite(filename, db_to_create):
     """
     Function creating a sqlite table to store data from Vsearch and allow us to filter variant by variant for taxonomic associaton
@@ -394,18 +355,28 @@ def taxassignation(sequence_variant, vsearch_output_for_variant_df, tax_assign_s
 
 
 def convert_fileinfo_to_otu_df(filterinfo_df):
+    """
+    Pivot filterinfo_df (long DF) to be used as base for the find OTU table with the tax information (wide DF)
+
+    :param filterinfo_df: DF from marker_filterinfo_tsv in long format with variant and sample_replicate count. This are three first example lines for the MFZR marker
+    variant_seq	replicate	biosample	sample_replicate	count	is_borderline	is_pseudogene_indel	is_pseudogene_codon_stop	read_average
+CCTTTATCTAGTATTCGGTGCTTGGGCTGGGATAGTTGGAACAGCCCTTAGCTTACTAATCCGTGCAGAGCTTAGCCAACCTGGCGCCCTGCTCGGTGACGACCAAGTTTACAACGTGATCGTAACAGCTCATGCTTTCGTAATAATCTTCTTTATAGTAATGCCAATTATGATT	repl2	P3	P3_repl2	18	False	False	False	20
+CCTTTATCTAGTATTCGGTGCTTGGGCTGGGATAGTTGGAACAGCCCTTAGCTTACTAATCCGTGCAGAGCTTAGCCAACCTGGCGCCCTGCTCGGTGACGACCAAGTTTACAACGTGATCGTAACAGCTCATGCTTTCGTAATAATCTTCTTTATAGTAATGCCAATTATGATT	repl2	P4	P4_repl2	28	False	False	False	20
+
+    :return: Pivotted DF with one variant per line and read_count per sample_replicate in columns
+    """
     # filterinfo_df.drop('Unnamed: 0', axis=1, inplace=True) # remove unnecessary column
     #
     cols = filterinfo_df.columns.tolist()
     cols.remove('biosample')
     cols.remove('replicate')
-    cols.remove('count')
+    #cols.remove('count')
     filterinfo_df = filterinfo_df.reindex(columns=cols)
     #
     #  Long to wide format for sample_replicate column
-    filterinfo_df['True'] = 1
+    #filterinfo_df['True'] = 1
     cols.remove('sample_replicate')
-    filterinfo_df = pandas.pivot_table(filterinfo_df, index=cols, columns=['sample_replicate'], values='True',
-                                       fill_value=0)
+    cols.remove('count')
+    filterinfo_df = pandas.pivot_table(filterinfo_df, index=cols, columns=['sample_replicate'], values='count')
     filterinfo_df.reset_index(inplace=True)
     return filterinfo_df
