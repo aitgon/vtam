@@ -99,7 +99,7 @@ def seq2tax_db_sqlite_to_df(seq2tax_db_sqlite, tax_seq_id_list):
 
 def create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite):
     """
-    Given a list taxon sequence ids (tax_seq_id_list), create a df with a taxon lineage per df
+    Given a list of taxon sequence ids (tax_seq_id_list), create a df with a taxon lineage per df
 
     :param tax_seq_id_list: Integer with taxon sequence id, eg: [7524480]
     :param tax_assign_sqlite: SQLITE DB with tax_seq_id, tax_id and parent_id
@@ -168,7 +168,7 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
 
 def create_phylogenetic_line_df_bak(tax_seq_id_list, tax_assign_sqlite):
     """
-    Given a list taxon sequence ids (tax_seq_id_list), create a df with a taxon lineage per df
+    Given a list of taxon sequence ids (tax_seq_id_list), create a df with a taxon lineage per df
 
     :param tax_seq_id_list: Integer with taxon sequence id, eg: [7524480]
     :param tax_assign_sqlite: SQLITE DB with tax_seq_id, tax_id and parent_id
@@ -235,6 +235,25 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
 
 
 def dataframe2ltgdefinition(tax_lineage_df):
+    """
+    Given the lineages for a list of tax_seq_ids, this function will compute the percentage of the most common tax_id at each rank level
+
+    :param tax_lineage_df: Output of tax_lineage_df that looks like this
+  tax_seq_id  no rank  phylum  class  subclass  infraclass  order  suborder  \
+6      3433568   131567    6656  50557      7496       33340   7524       NaN
+9      4000774   131567    6656  50557      7496       33340   7088       NaN
+17     4472326   131567    6656  50557      7496       33340   7088   41191.0
+7      4472342   131567    6656  50557      7496       33340   7088   41191.0
+13     4473884   131567    6656  50557      7496       33340   7088   41191.0
+
+    :return:a df with this information
+
+(Pdb) tax_count_perc
+           tax_id  count   perc
+phylum     6656.0     20  100.0
+class     50557.0     20  100.0
+subclass   7496.0     20  100.0
+    """
     tax_count_perc = pandas.DataFrame({'tax_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0)})
     tax_count_perc['count'] = tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)
     tax_count_perc['perc'] = tax_count_perc['count'] / tax_lineage_df.shape[0] * 100
