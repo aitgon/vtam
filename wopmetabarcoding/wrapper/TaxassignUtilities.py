@@ -109,7 +109,13 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
     """
     # Do not log tax_seq_id_list because this is a huge list
     # logger.debug("file: {}; line: {}; tax_seq_id_list {}".format(__file__, inspect.currentframe().f_lineno, tax_seq_id_list))
-    conn = sqlite3.connect(tax_assign_sqlite)
+    try:
+        conn = sqlite3.connect(tax_assign_sqlite)
+    except sqlite3.OperationalError as e:
+        logger.error(
+             "file: {}; line: {}; Error {}. Check the db path: {}".format(__file__, inspect.currentframe().f_lineno, e,
+                                                                       tax_assign_sqlite))
+        raise
     # conn2 = sqlite3.connect(metabarcoding_sqlite)
     lineage_list = []
     tax_lineage_header = ['tax_seq_id'] + rank_hierarchy
@@ -117,32 +123,34 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
         tax_lineage = dict(zip(tax_lineage_header, [None]*len(tax_lineage_header)))
         tax_lineage['tax_seq_id'] = tax_seq_id
         cur = conn.cursor()
-        sql = "SELECT tax_id, tax_name, rank_name, tax_parent_id FROM seq2tax2parent WHERE tax_seq_id = ?"
+        sql = "SELECT tax_id, rank_name, tax_parent_id FROM seq2tax2parent WHERE tax_seq_id = ?"
         filter_string = tax_seq_id
         cur.execute(sql, (filter_string,))
         row = cur.fetchone()
         tax_id = row[0]
-        rank_name = row[2]
-        tax_parent_id = row[3]
+        rank_name = row[1]
+        tax_parent_id = row[2]
         # while not row is None or row[0] != 1:
         while row[0] != 1:
             tax_lineage[rank_name] = tax_id
             filter_string = tax_parent_id
-            sql = "SELECT tax_id, tax_name, parent_id, rank FROM tax2parent WHERE tax_id = ?"
+            sql = "SELECT tax_id, parent_id, rank FROM tax2parent WHERE tax_id = ?"
             cur.execute(sql, (filter_string,))
             row = cur.fetchone()
             if row is None:
                 break
             tax_id = row[0]
-            rank_name = row[3]
-            tax_parent_id = row[2]
+            tax_parent_id = row[1]
+            rank_name = row[2]
         lineage_list.append(tax_lineage)
         cur.close()
     conn.close()
     tax_lineage_df = pandas.DataFrame(lineage_list)
     tax_lineage_df = tax_lineage_df[tax_lineage_header]
-    tax_lineage_df.fillna(value=nan, inplace=True)
+    tax_lineage_df.fillna(value=0, inplace=True)
+    tax_lineage_df = tax_lineage_df.replace('', 0, regex=True) # replace empty with zero
     tax_lineage_df = tax_lineage_df.dropna(axis=1, how='all')
+    tax_lineage_df = tax_lineage_df.astype(int) # convert everything with integers
     #
     if LOGGER_LEVEL == 10:
         PathFinder.mkdir_p(os.path.join(tempdir, "TaxassignUtilities"))
@@ -325,6 +333,8 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
         tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
         #
         # Create lineage df
+        logger.debug(
+            "file: {}; line: {}; create_phylogenetic_line_df".format(__file__, inspect.currentframe().f_lineno))
         tax_lineage_df = create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite)
         #
         #  Search LTG

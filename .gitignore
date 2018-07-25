@@ -6,4 +6,6 @@ __pycache__
 db.sqlite
 _build
 data0
+*.log
+wopmetabarcoding/bin
 
