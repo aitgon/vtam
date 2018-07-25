@@ -128,7 +128,7 @@ class Taxassign(ToolWrapper):
         # For each variant, carry out parallel taxassignation
         variant_seq_list = sorted(variant_class.keys())
         if LOGGER_LEVEL == 10:
-            PathFindermkdir_p(os.path.join(tempdir, "TaxAssign", "129"))
+            PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign", "129"))
             variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "129", "variant_seq_list.pkl")
             with open(variant_seq_list_pkl, 'wb') as f:
                 pickle.dump(variant_seq_list, f)
