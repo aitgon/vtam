@@ -11,7 +11,7 @@ from Bio import SeqIO
 import errno
 from itertools import repeat
 
-from multiprocessing import Pool
+import multiprocessing
 
 import inspect
 from wopmetabarcoding.utils.PathFinder import PathFinder
@@ -141,8 +141,8 @@ class Taxassign(ToolWrapper):
             logger.debug(
                 "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_txt))
         # Start of Parallel Version: Comment out after debugging
-        with Pool() as p:
-            variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)))
+        with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
+            variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)), chunksize=1)
         # End of Parallel Version: Comment out after debugging
         # Start of Non Parallel Version: Comment out after debugging
         # variant2marker2taxid_list = []

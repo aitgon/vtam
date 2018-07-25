@@ -270,8 +270,8 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
     #
     # Merge of the vsearch alignment, the sequence and taxa information
     vsearch_output_for_variant_df[["tax_seq_id"]] = vsearch_output_for_variant_df[["tax_seq_id"]].astype('int64')
-    vsearch_output_for_variant_df = pandas.merge(vsearch_output_for_variant_df, seq2tax_df, left_on="tax_seq_id",
-                                      right_on="tax_seq_id")
+    seq2tax_df[["tax_seq_id"]] = seq2tax_df[["tax_seq_id"]].astype('int64')
+    vsearch_output_for_variant_df = pandas.merge(vsearch_output_for_variant_df, seq2tax_df, left_on="tax_seq_id", right_on="tax_seq_id")
     vsearch_output_for_variant_df = vsearch_output_for_variant_df.assign(
         rank_id=vsearch_output_for_variant_df.rank_name.apply(lambda x: rank_hierarchy.index(x)))
     #
