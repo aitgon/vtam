@@ -221,6 +221,7 @@ class TestWopMetabarcoding(TestCase):
         tax_lineage_df = tax_lineage_df.apply(pandas.to_numeric)
         tax_lineage_df_bak = tax_lineage_df_bak.apply(pandas.to_numeric)
         tax_lineage_df.equals(tax_lineage_df_bak)
+        # import pdb; pdb.set_trace()
         self.assertTrue(tax_lineage_df.equals(tax_lineage_df_bak))
 
 
