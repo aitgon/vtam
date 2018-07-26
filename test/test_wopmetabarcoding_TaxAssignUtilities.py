@@ -54,7 +54,6 @@ class TestWopMetabarcoding(TestCase):
         #
         # Run
         tax_count_perc = dataframe2ltgdefinition(tax_lineage_df)
-        TODO
         # import pdb; pdb.set_trace()
 
 
