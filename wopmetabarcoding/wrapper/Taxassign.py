@@ -62,12 +62,12 @@ class Taxassign(ToolWrapper):
         db_udb = self.input_file(Taxassign.__input_file_db_udb)
         # Output files
         otu_file = self.output_file(Taxassign.__otu_table_tsv)
-        # path to the tsv with filtered variants
+        # path to the tsv with filtered variants
         marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
         tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
         tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
         #
-        # Parameters
+        # Parameters
         output_dir_taxassign = self.option("output_dir_taxassign")
         PathFinder.mkdir_p(output_dir_taxassign)
         marker2filteranalysis2fasta_df = pandas.read_csv(marker_variant_path, sep="\t", names=['marker', 'variantinfo', 'fasta'], index_col=0)
@@ -191,8 +191,8 @@ class Taxassign(ToolWrapper):
                 "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_df_tsv))
         #
         # Final operations to format otu_table
-        # 
-        # Convert tax_id to tax_name
+        #
+        # Convert tax_id to tax_name
         tax_id_list = variant2marker2taxid_list_df.tax_id.tolist()
         con = sqlite3.connect(tax_assign_sqlite)
         cur = con.cursor()

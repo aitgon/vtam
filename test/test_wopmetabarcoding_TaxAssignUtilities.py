@@ -40,23 +40,23 @@ class TestWopMetabarcoding(TestCase):
         tax_lineage_df = tax_lineage_df.apply(pandas.to_numeric)
         tax_lineage_df_bak = tax_lineage_df_bak.apply(pandas.to_numeric)
         tax_lineage_df.equals(tax_lineage_df_bak)
-        # import pdb; pdb.set_trace()
         self.assertTrue(tax_lineage_df.equals(tax_lineage_df_bak))
 
 
-    def test_create_phylogenetic_line_df(self):
+    def test_dataframe2ltgdefinition(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "TaxAssignUtilities")
         PathFinder.mkdir_p(test_outdir)
         tax_lineage_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_lineage_df.pkl")
+        tax_count_perc_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_count_perc_df.pkl")
         #
         # Input
         tax_lineage_df = pandas.read_pickle(tax_lineage_df_pkl)
         #
+        tax_count_perc_bak_df = pandas.read_pickle(tax_count_perc_df_pkl)
+        #
         # Run
-        tax_count_perc = dataframe2ltgdefinition(tax_lineage_df)
-        # import pdb; pdb.set_trace()
-
-
+        tax_count_perc_df = dataframe2ltgdefinition(tax_lineage_df)
+        self.assertTrue(tax_count_perc_df.equals(tax_count_perc_bak_df))
 
 
     # def test_04filter_store_index_below_lfn3_read_count(self):

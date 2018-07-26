@@ -258,7 +258,6 @@ subclass   7496.0     20  100.0
     tax_count_perc['count'] = tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)
     tax_count_perc['perc'] = tax_count_perc['count'] / tax_lineage_df.shape[0] * 100
     tax_count_perc.drop(['tax_seq_id', 'no rank'], axis=0, inplace=True)
-    tax_count_perc = tax_count_perc.loc[tax_count_perc.perc >= 90.0]
     return tax_count_perc
 
 
@@ -351,10 +350,8 @@ def get_vsearch_output_for_variant_as_df(db_sqlite, variant_seq):
 
 
 def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
-    ltg_tax_id = 0 # default
-    # vsearch2seq2tax_df = pandas.read_csv(output_tsv, sep="\t", header=None, index_col=1)
+    ltg_tax_id = 0 # default ltg_tax_id
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
-    # vsearch2seq2tax_df.index.name = 'tax_seq_id'
     #
     tax_seq_id_list = vsearch_output_for_variant_df.tax_seq_id.tolist()
     #
@@ -380,80 +377,107 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 85, "order", "order", 3
         # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 80, "class", "order", 5
         identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = tax_assign_pars_df_row.tolist()
-        # Logger.instance().info("Selecting sequences with " + str(identity_threshold) + "% identity.")
-        min_tax_level_id = rank_hierarchy.index(min_tax_level)
+        min_tax_level_id = rank_hierarchy.index(min_tax_level) # id of tax_level
         max_tax_resolution_id = rank_hierarchy.index(max_tax_resolution)
         #
-        # test identity_threshold
-        # import pdb; pdb.set_trace()
+        ########################
+        # Aucun hit a 100 => on passe au niveau de similarite suivant
+        # At given threshold, assignation fails if no hits
+        ########################
         vsearch2seq2tax_df_selected = vsearch_output_for_variant_df.loc[
             vsearch_output_for_variant_df.alignment_identity >= identity_threshold]
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} vsearch2seq2tax_df_selected shape {}".format(__file__, inspect.currentframe().f_lineno,
             marker_name, variant_seq[1:20], identity_threshold, vsearch2seq2tax_df_selected.shape))
-        if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
-            continue  #  next identity threshold
+        if vsearch2seq2tax_df_selected.empty:  # no lines selected at this alignment identity threshold
+            continue  # next identity threshold
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
                                                                        marker_name, variant_seq[1:20], identity_threshold))
-        #  continue only if selected lines
         #
-        # test min_tax_level
-        vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[
-            vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
-        if vsearch2seq2tax_df_selected.empty:  #  no lines selected at this alignment identity threshold
+        ########################################################################
+        # A ce pourcentage on accepte que des hits qui sont annotes au niveau famille (min_tax_level_id) ou plus precise (rank_id plus eleve) (genus, espece) => On garde les 6 hits
+        # At given threshold, discard hits that are annotated with tax_id less detailed than min_tax_level_id
+        # Assignation fails if no hits after selection
+        ########################################################################
+        vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
+        if vsearch2seq2tax_df_selected.empty:  # no lines selected at this alignment identity threshold
             # )
-            continue  #  next identity threshold
+            continue  # next identity threshold
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
                                                                        marker_name, variant_seq[1:20], identity_threshold))
         #
-        # test min_tax_n
+        ########################################################################
+        # Il faut au moins 3 (min_tax_n) taxa parmi les hits => on a 3 (86610, 6115, 6116), donc c'est bon (si non, on passe au niveau de pourcentage superieure)
+        # At given threshold, assignation fails if the number of different taxa is strictly lower than min_tax_n
+        ########################################################################
         if vsearch2seq2tax_df_selected.shape[0] < min_tax_n:
-            # Logger.instance().info(
-            #     "Not enought sequences are selected passing to next identity threshold."
-            # )
-            continue  #  next identity threshold
+            continue  # next identity threshold
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
                                                                        marker_name, variant_seq[1:20], identity_threshold))
         # continue only if selected lines
         tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
         #
+        ########################################################################
+        # On prend le plus petit groupe taxonomique qui contient au moins 90% des hits
+        # We have to
+        # 1. Create tax_lineage_df
+        # 2. Select majority taxon_id at each level
+        # 3. Compute percentage of majority taxon_id at each level
+        # 4. Select majority taxon_id with more 90% presence at a given level
+        # 5. Select tax_id's with rank level be less detailed than max_tax_resolution
+        # 6. The LTG is the most detailed tax_id among the remaining tax_id
+        ########################################################################
+        #
         # Create lineage df
         logger.debug(
             "file: {}; line: {}; create_phylogenetic_line_df".format(__file__, inspect.currentframe().f_lineno))
+        # 1. Create tax_lineage_df
         tax_lineage_df = create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite)
         #
-        #  Search LTG
+        # 2. Select majority taxon_id at each level
+        # 3. Compute percentage of majority taxon_id at each level
         tax_count_perc = dataframe2ltgdefinition(tax_lineage_df)
         #
-        # test min_tax_n
         if tax_count_perc.empty:
-            continue  #  next identity threshold
+            continue  # next identity threshold
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
                                                                        marker_name, variant_seq[1:20], identity_threshold))
-        tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in
-                                        tax_count_perc.index.tolist()]
+        # 4. Select majority taxon_id with more 90% presence at a given level
+        tax_count_perc = tax_count_perc.loc[tax_count_perc.perc >= 90.0]
         #
-        #  Criteria: lineage df tax id more detailed than
-        tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
-        tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
-        if tax_count_perc_ltg.empty:
+        if tax_count_perc.empty:
+            continue  # next identity threshold
+        logger.debug(
+            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                       marker_name, variant_seq[1:20], identity_threshold))
+        tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in tax_count_perc.index.tolist()]
+        #
+        # 5. The rank level of the ltg must be less detailed than max_tax_resolution
+        tax_count_perc = tax_count_perc.loc[tax_count_perc.rank_index <= max_tax_resolution_id]
+        #
+        # This line was commented out but be careful, because unclear if really unnecessary.
+        # tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
+        if tax_count_perc.empty:
             continue
         logger.debug(
             "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
                                                                        marker_name, variant_seq[1:20], identity_threshold))
-        ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
-        ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
         #
-        if ltg_rank_id > max_tax_resolution_id:  #  go up in lineage of ltg_tax_id up to max_tax_resolution_id
-            ltg_tax_id = tax_lineage_df.loc[
-                tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
-        logger.debug(
-            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} ltg_tax_id {}".format(__file__, inspect.currentframe().f_lineno,
-                                                                       marker_name, variant_seq[1:20], identity_threshold, ltg_tax_id))
+        # 6. The LTG is the most detailed tax_id among the remaining tax_id
+        ltg_tax_id = tax_count_perc.tail(1)['tax_id'].values[0]
+        # ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
+        # ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
+        # #
+        # if ltg_rank_id > max_tax_resolution_id:  # go up in lineage of ltg_tax_id up to max_tax_resolution_id
+        #     ltg_tax_id = tax_lineage_df.loc[
+        #         tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
+        # logger.debug(
+        #     "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} ltg_tax_id {}".format(__file__, inspect.currentframe().f_lineno,
+        #                                                                marker_name, variant_seq[1:20], identity_threshold, ltg_tax_id))
         return int(ltg_tax_id)
     return int(ltg_tax_id)
 
