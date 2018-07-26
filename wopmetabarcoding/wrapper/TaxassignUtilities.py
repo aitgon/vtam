@@ -145,81 +145,9 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
     tax_lineage_df = pandas.DataFrame(lineage_list)
     tax_lineage_df = tax_lineage_df[tax_lineage_header]
     #
-    # import pdb; pdb.set_trace()
-    # tax_lineage_df.fillna(value=0, inplace=True)
-    # tax_lineage_df = tax_lineage_df.replace(nan, 0, regex=True) # replace empty with zero
-    # tax_lineage_df = tax_lineage_df.dropna(axis=1, how='all')
-    # tax_lineage_df = tax_lineage_df.astype(int) # convert everything with integers
-    #
     tax_lineage_df.fillna(value=nan, inplace=True)
+    tax_lineage_df.replace(to_replace='', value=nan, inplace=True)
     tax_lineage_df = tax_lineage_df.dropna(axis=1, how='all')
-    #
-    if LOGGER_LEVEL == 10:
-        PathFinder.mkdir_p(os.path.join(tempdir, "TaxassignUtilities"))
-        tax_lineage_df_pkl = os.path.join(tempdir,"TaxassignUtilities", "tax_lineage_df.pkl")
-        tax_lineage_df.to_pickle(tax_lineage_df_pkl)
-        logger.debug(
-            "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, tax_lineage_df_pkl))
-        tax_lineage_df_tsv = os.path.join(tempdir, "TaxassignUtilities", "tax_lineage_df.tsv")
-        tax_lineage_df.to_csv(tax_lineage_df_tsv, sep="\t")
-        logger.debug(
-            "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, tax_lineage_df_tsv))
-    return tax_lineage_df
-
-def create_phylogenetic_line_df_bak(tax_seq_id_list, tax_assign_sqlite):
-    """
-    Given a list of taxon sequence ids (tax_seq_id_list), create a df with a taxon lineage per df
-
-    :param tax_seq_id_list: Integer with taxon sequence id, eg: [7524480]
-    :param tax_assign_sqlite: SQLITE DB with tax_seq_id, tax_id and parent_id
-    :return: Df with one taxon lineage df per row, eg:
-tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	family	subfamily	genus	species
-5345503	131567	6656	50557	7496	33340	7088	41191	41196	7128	82617	119289	325869
-    """
-    # Do not log tax_seq_id_list because this is a huge list
-    # logger.debug("file: {}; line: {}; tax_seq_id_list {}".format(__file__, inspect.currentframe().f_lineno, tax_seq_id_list))
-    try:
-        conn = sqlite3.connect(tax_assign_sqlite)
-    except sqlite3.OperationalError as e:
-        logger.error(
-             "file: {}; line: {}; Error {}. Check the db path: {}".format(__file__, inspect.currentframe().f_lineno, e,
-                                                                       tax_assign_sqlite))
-        raise
-    # conn2 = sqlite3.connect(metabarcoding_sqlite)
-    lineage_list = []
-    tax_lineage_header = ['tax_seq_id'] + rank_hierarchy
-    for tax_seq_id in tax_seq_id_list:
-        tax_lineage = dict(zip(tax_lineage_header, [None]*len(tax_lineage_header)))
-        tax_lineage['tax_seq_id'] = tax_seq_id
-        cur = conn.cursor()
-        sql = "SELECT tax_id, rank_name, tax_parent_id FROM seq2tax2parent WHERE tax_seq_id = ?"
-        filter_string = tax_seq_id
-        cur.execute(sql, (filter_string,))
-        row = cur.fetchone()
-        tax_id = row[0]
-        rank_name = row[1]
-        tax_parent_id = row[2]
-        # while not row is None or row[0] != 1:
-        while row[0] != 1:
-            tax_lineage[rank_name] = tax_id
-            filter_string = tax_parent_id
-            sql = "SELECT tax_id, parent_id, rank FROM tax2parent WHERE tax_id = ?"
-            cur.execute(sql, (filter_string,))
-            row = cur.fetchone()
-            if row is None:
-                break
-            tax_id = row[0]
-            tax_parent_id = row[1]
-            rank_name = row[2]
-        lineage_list.append(tax_lineage)
-        cur.close()
-    conn.close()
-    tax_lineage_df = pandas.DataFrame(lineage_list)
-    tax_lineage_df = tax_lineage_df[tax_lineage_header]
-    tax_lineage_df.fillna(value=0, inplace=True)
-    tax_lineage_df = tax_lineage_df.replace('', 0, regex=True) # replace empty with zero
-    tax_lineage_df = tax_lineage_df.dropna(axis=1, how='all')
-    tax_lineage_df = tax_lineage_df.astype(int) # convert everything with integers
     #
     if LOGGER_LEVEL == 10:
         PathFinder.mkdir_p(os.path.join(tempdir, "TaxassignUtilities"))
@@ -258,6 +186,7 @@ subclass   7496.0     20  100.0
     tax_count_perc['count'] = tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)
     tax_count_perc['perc'] = tax_count_perc['count'] / tax_lineage_df.shape[0] * 100
     tax_count_perc.drop(['tax_seq_id', 'no rank'], axis=0, inplace=True)
+    # converting to int, makes it sure that there are non empty cells
     tax_count_perc[['tax_id', 'count']] = tax_count_perc[['tax_id', 'count']].astype('int')
     return tax_count_perc
 
@@ -351,7 +280,7 @@ def get_vsearch_output_for_variant_as_df(db_sqlite, variant_seq):
 
 
 def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
-    ltg_tax_id = 0 # default ltg_tax_id
+    ltg_tax_id = nan # default ltg_tax_id
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
     #
     tax_seq_id_list = vsearch_output_for_variant_df.tax_seq_id.tolist()
@@ -479,8 +408,8 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
         # logger.debug(
         #     "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} ltg_tax_id {}".format(__file__, inspect.currentframe().f_lineno,
         #                                                                marker_name, variant_seq[1:20], identity_threshold, ltg_tax_id))
-        return int(ltg_tax_id)
-    return int(ltg_tax_id)
+        return ltg_tax_id
+    return ltg_tax_id
 
 
 def convert_fileinfo_to_otu_df(filterinfo_df):
@@ -506,6 +435,6 @@ CCTTTATCTAGTATTCGGTGCTTGGGCTGGGATAGTTGGAACAGCCCTTAGCTTACTAATCCGTGCAGAGCTTAGCCAAC
     #filterinfo_df['True'] = 1
     cols.remove('sample_replicate')
     cols.remove('count')
-    filterinfo_df = pandas.pivot_table(filterinfo_df, index=cols, columns=['sample_replicate'], values='count')
+    filterinfo_df = pandas.pivot_table(filterinfo_df, index=cols, columns=['sample_replicate'], values='count', fill_value=0)
     filterinfo_df.reset_index(inplace=True)
     return filterinfo_df
