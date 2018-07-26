@@ -4,7 +4,7 @@ from unittest import TestCase
 import pandas
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, dataframe2ltgdefinition
+from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage
 
 
 class TestWopMetabarcoding(TestCase):
@@ -55,30 +55,5 @@ class TestWopMetabarcoding(TestCase):
         tax_count_perc_bak_df = pandas.read_pickle(tax_count_perc_df_pkl)
         #
         # Run
-        tax_count_perc_df = dataframe2ltgdefinition(tax_lineage_df)
+        tax_count_perc_df = f_majoritytaxid2percentage(tax_lineage_df)
         self.assertTrue(tax_count_perc_df.equals(tax_count_perc_bak_df))
-
-
-    # def test_04filter_store_index_below_lfn3_read_count(self):
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-    #     PathFinder.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
-    #     #
-    #     # Input
-    #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
-    #     lfn_read_count_threshold = 3
-    #     #
-    #     # Output
-    #     variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
-    #     variant2sample2replicate2count.store_index_below_lfn3_read_count(lfn_read_count_threshold)
-    #     indices_to_drop = variant2sample2replicate2count.indices_to_drop
-    #     # print(indices_to_drop)
-    #     indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
-    #     # Todo: indices_to_drop returns empty []: TD needs to check it.
-    #     # self.assertTrue(indices_to_drop == indices_to_drop_bak)
-    #     #
-    #     shutil.rmtree(test_outdir)
-
-    def test05_taxassign_vsearch(self):
-        test_outdir = os.path.join(self.__testdir_path, "output", "05taxassign")
-

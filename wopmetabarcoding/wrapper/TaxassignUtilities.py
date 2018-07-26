@@ -234,7 +234,7 @@ tax_seq_id	no rank	phylum	class	subclass	infraclass	order	suborder	infraorder	fa
     return tax_lineage_df
 
 
-def dataframe2ltgdefinition(tax_lineage_df):
+def f_majoritytaxid2percentage(tax_lineage_df):
     """
     Given the lineages for a list of tax_seq_ids, this function will compute the percentage of the most common tax_id at each rank level
 
@@ -258,6 +258,7 @@ subclass   7496.0     20  100.0
     tax_count_perc['count'] = tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)
     tax_count_perc['perc'] = tax_count_perc['count'] / tax_lineage_df.shape[0] * 100
     tax_count_perc.drop(['tax_seq_id', 'no rank'], axis=0, inplace=True)
+    tax_count_perc[['tax_id', 'count']] = tax_count_perc[['tax_id', 'count']].astype('int')
     return tax_count_perc
 
 
@@ -439,7 +440,7 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
         #
         # 2. Select majority taxon_id at each level
         # 3. Compute percentage of majority taxon_id at each level
-        tax_count_perc = dataframe2ltgdefinition(tax_lineage_df)
+        tax_count_perc = f_majoritytaxid2percentage(tax_lineage_df)
         #
         if tax_count_perc.empty:
             continue  # next identity threshold
