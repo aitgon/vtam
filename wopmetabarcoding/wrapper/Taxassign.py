@@ -3,7 +3,7 @@ import sqlite3
 
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
-    get_vsearch_output_for_variant_as_df, taxassignation, convert_fileinfo_to_otu_df, f_taxid2taxname
+    get_vsearch_output_for_variant_as_df, f_variant_vsearch_output_to_ltg, convert_fileinfo_to_otu_df, f_taxid2taxname
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.logger import logger, LOGGER_LEVEL
@@ -23,7 +23,7 @@ def f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pa
         "file: {}; line: {}; marker_name {} variant_seq {}...".format(__file__, inspect.currentframe().f_lineno,
                                                                    marker_name, variant_seq[1:20]))
     vsearch_per_variant_df = variant_class[variant_seq][1]
-    tax_id = taxassignation(variant_seq, marker_name, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
+    tax_id = f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
     return (variant_seq, marker_name, tax_id)
 
 
@@ -130,7 +130,7 @@ class Taxassign(ToolWrapper):
                     vsearch_per_variant_df = get_vsearch_output_for_variant_as_df(vsearch_sqlite, variant_seq)
                     variant_class[variant_seq] = (marker_name, vsearch_per_variant_df)
         #
-        # For each variant, carry out parallel taxassignation
+        # For each variant, carry out parallel f_variant_vsearch_output_to_ltg
         variant_seq_list = sorted(variant_class.keys())
         if LOGGER_LEVEL == 10:
             PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign", "129"))
@@ -252,7 +252,8 @@ class Taxassign(ToolWrapper):
         otu_df = otu_df.reindex(columns=cols)
         #
         # format, sort and write
-        otu_df['tax_name'].fillna("NAN", inplace=True) # if tax_name is nan, replace it with string
+        otu_df['tax_id'].fillna(str(nan), inplace=True) # if a tax_id was not found, replace it with string str(nan)='nan'
+        otu_df['tax_name'].fillna(str(nan), inplace=True) # if tax_name is nan, replace it with string str(nan)='nan'
         otu_df = otu_df * 1 # convert boolean to integer
         #otu_df = otu_df.apply(lambda col: pandas.to_numeric(col, errors='ignore', downcast='unsigned'))
         otu_df.sort_values(by=otu_df.columns.tolist(), inplace=True)

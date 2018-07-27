@@ -229,6 +229,7 @@ def sub_fasta_creator(fasta_file_path, fasta_subset_size, sub_fasta_dir):
     # print(sub_fasta_path_list)
     return sub_fasta_path_list
 
+
 def vsearch_output_to_sqlite(filename, db_to_create):
     """
     Function creating a sqlite table to store data from Vsearch and allow us to filter variant by variant for taxonomic associaton
@@ -255,19 +256,40 @@ def vsearch_output_to_sqlite(filename, db_to_create):
 
 def get_vsearch_output_for_variant_as_df(db_sqlite, variant_seq):
     con = sqlite3.connect(db_sqlite)
-    # cur = conn.cursor()
-    # data = cur.execute("SELECT query_variant, target, identity_thresold FROM alignedtsv WHERE query_variant == ?", (record_name,))
-    # with open(output_tsv, 'w', newline="") as fout:
-    #     writer = csv.writer(fout, delimiter='\t')
-    #     writer.writerows(data)
-    # cur.close()
     sql = "SELECT target, identity_thresold FROM alignedtsv WHERE query_variant == '{}'".format(variant_seq)
     vsearch_output_for_variant_df = pandas.read_sql(sql=sql, con=con)
     con.close()
     return vsearch_output_for_variant_df
 
 
-def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
+def f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id):
+    #
+    # 2. Select majority taxon_id at each level
+    # 3. Compute percentage of majority taxon_id at each level
+    tax_count_perc = f_majoritytaxid2percentage(tax_lineage_df)
+    #
+    if tax_count_perc.empty:
+        return None  # next identity threshold
+    # 4. Select majority taxon_id with more 90% presence at a given level
+    tax_count_perc = tax_count_perc.loc[tax_count_perc.perc >= 90.0]
+    #
+    if tax_count_perc.empty:
+        return None  # next identity threshold
+    tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in tax_count_perc.index.tolist()]
+    #
+    # 5. The rank level of the ltg must be less detailed than max_tax_resolution
+    tax_count_perc = tax_count_perc.loc[tax_count_perc.rank_index <= max_tax_resolution_id]
+    #
+    # This line was commented out but be careful, because unclear if really unnecessary.
+    # tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
+    if tax_count_perc.empty:
+        return None
+    #
+    # 6. The LTG is the most detailed tax_id among the remaining tax_id
+    ltg_tax_id = tax_count_perc.tail(1)['tax_id'].values[0]
+    return ltg_tax_id
+
+def f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
     ltg_tax_id = nan # default ltg_tax_id
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
     #
@@ -276,8 +298,9 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
     seq2tax_df = seq2tax_db_sqlite_to_df(tax_assign_sqlite, tax_seq_id_list)
     #
     # tax_assign_pars df
-    names = ["identity_threshold", "min_tax_level", "max_tax_resolution", "min_tax_n"]
-    tax_assign_pars_df = pandas.read_csv(tax_assign_pars_tsv, sep="\t", header=None, names=names)
+    #names = ["identity_threshold", "min_tax_level", "max_tax_resolution", "min_tax_n"]
+    # header is now provided in the pars tsv file
+    tax_assign_pars_df = pandas.read_csv(tax_assign_pars_tsv, sep="\t", header=0)
     #
     # Merge of the vsearch alignment, the sequence and taxa information
     vsearch_output_for_variant_df[["tax_seq_id"]] = vsearch_output_for_variant_df[["tax_seq_id"]].astype('int64')
@@ -354,50 +377,17 @@ def taxassignation(variant_seq, marker_name, vsearch_output_for_variant_df, tax_
             "file: {}; line: {}; create_phylogenetic_line_df".format(__file__, inspect.currentframe().f_lineno))
         # 1. Create tax_lineage_df
         tax_lineage_df = create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite)
-        #
         # 2. Select majority taxon_id at each level
         # 3. Compute percentage of majority taxon_id at each level
-        tax_count_perc = f_majoritytaxid2percentage(tax_lineage_df)
-        #
-        if tax_count_perc.empty:
-            continue  # next identity threshold
-        logger.debug(
-            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
-                                                                       marker_name, variant_seq[1:20], identity_threshold))
         # 4. Select majority taxon_id with more 90% presence at a given level
-        tax_count_perc = tax_count_perc.loc[tax_count_perc.perc >= 90.0]
-        #
-        if tax_count_perc.empty:
-            continue  # next identity threshold
-        logger.debug(
-            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
-                                                                       marker_name, variant_seq[1:20], identity_threshold))
-        tax_count_perc['rank_index'] = [rank_hierarchy.index(rank_name) for rank_name in tax_count_perc.index.tolist()]
-        #
-        # 5. The rank level of the ltg must be less detailed than max_tax_resolution
-        tax_count_perc = tax_count_perc.loc[tax_count_perc.rank_index <= max_tax_resolution_id]
-        #
-        # This line was commented out but be careful, because unclear if really unnecessary.
-        # tax_count_perc_ltg = tax_count_perc.loc[tax_count_perc.rank_index >= min_tax_level_id]
-        if tax_count_perc.empty:
-            continue
-        logger.debug(
-            "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
-                                                                       marker_name, variant_seq[1:20], identity_threshold))
-        #
+        # 5. Select tax_id's with rank level be less detailed than max_tax_resolution
         # 6. The LTG is the most detailed tax_id among the remaining tax_id
-        ltg_tax_id = tax_count_perc.tail(1)['tax_id'].values[0]
-        # ltg_tax_id = tax_count_perc_ltg.tax_id.tolist()[-1]
-        # ltg_rank_id = tax_count_perc_ltg.rank_index.tolist()[-1]
-        # #
-        # if ltg_rank_id > max_tax_resolution_id:  # go up in lineage of ltg_tax_id up to max_tax_resolution_id
-        #     ltg_tax_id = tax_lineage_df.loc[
-        #         tax_lineage_df[rank_hierarchy[ltg_rank_id]] == ltg_tax_id, max_tax_resolution].unique()
-        # logger.debug(
-        #     "file: {}; line: {}; marker_name {} variant_seq {}... identity_threshold {} ltg_tax_id {}".format(__file__, inspect.currentframe().f_lineno,
-        #                                                                marker_name, variant_seq[1:20], identity_threshold, ltg_tax_id))
-        return ltg_tax_id
-    return ltg_tax_id
+        ltg_tax_id = f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id)
+        if ltg_tax_id is None:
+            continue  # next identity threshold
+        else:
+            return ltg_tax_id
+    return nan
 
 
 def convert_fileinfo_to_otu_df(filterinfo_df):
