@@ -2,9 +2,11 @@ import os
 from unittest import TestCase
 
 import pandas
+from numpy import nan
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage
+from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage, \
+    f_taxid2taxname, f_taxlineage_to_ltg
 
 
 class TestWopMetabarcoding(TestCase):
@@ -46,10 +48,10 @@ class TestWopMetabarcoding(TestCase):
     def test_dataframe2ltgdefinition(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "TaxAssignUtilities")
         PathFinder.mkdir_p(test_outdir)
-        tax_lineage_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_lineage_df.pkl")
         tax_count_perc_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_count_perc_df.pkl")
         #
         # Input
+        tax_lineage_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_lineage_df.pkl")
         tax_lineage_df = pandas.read_pickle(tax_lineage_df_pkl)
         #
         tax_count_perc_bak_df = pandas.read_pickle(tax_count_perc_df_pkl)
@@ -57,3 +59,22 @@ class TestWopMetabarcoding(TestCase):
         # Run
         tax_count_perc_df = f_majoritytaxid2percentage(tax_lineage_df)
         self.assertTrue(tax_count_perc_df.equals(tax_count_perc_bak_df))
+
+
+    def test_f_taxid2taxname(self):
+        tax_id_list = [603345, 325869, 0]
+        taxid2taxname_dic = f_taxid2taxname(tax_id_list, "/home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/tax_assign.sqlite")
+        self.assertTrue(taxid2taxname_dic == {603345: 'Zebrias synapturoides', 325869: 'Xylophanes tersa', 0: nan})
+
+
+    def test_f_taxlineage_to_ltg(self):
+        # test_outdir = os.path.join(self.__testdir_path, "output", "TaxAssignUtilities")
+        # PathFinder.mkdir_p(test_outdir)
+        tax_count_perc_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "tax_count_perc_df.pkl")
+        #
+        # Input
+        tax_lineage_df_pkl = os.path.join(PathFinder.get_module_test_path(), "input", "TaxAssignUtilities", "f_taxlineage_to_ltg", "tax_lineage_df.pkl")
+        tax_lineage_df = pandas.read_pickle(tax_lineage_df_pkl)
+        #
+        max_tax_resolution_id = 15
+        self.assertTrue(f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id), 325869)
