@@ -289,8 +289,9 @@ def f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id):
     ltg_tax_id = tax_count_perc.tail(1)['tax_id'].values[0]
     return ltg_tax_id
 
-def f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_output_for_variant_df, tax_assign_sqlite, tax_assign_pars_tsv):
+def f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_output_for_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv):
     ltg_tax_id = nan # default ltg_tax_id
+    vsearch_output_for_variant_df = pandas.read_pickle(vsearch_output_for_variant_df_pkl, compression='gzip')
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
     #
     tax_seq_id_list = vsearch_output_for_variant_df.tax_seq_id.tolist()
