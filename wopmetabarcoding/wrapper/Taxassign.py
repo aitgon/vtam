@@ -1,6 +1,7 @@
 import pickle
 import sqlite3
 
+import resource
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
     get_vsearch_output_for_variant_as_df, f_variant_vsearch_output_to_ltg, convert_fileinfo_to_otu_df, f_taxid2taxname
@@ -22,8 +23,8 @@ def f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pa
     logger.debug(
         "file: {}; line: {}; marker_name {} variant_seq {}...".format(__file__, inspect.currentframe().f_lineno,
                                                                    marker_name, variant_seq[1:20]))
-    vsearch_per_variant_df = variant_class[variant_seq][1]
-    tax_id = f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_per_variant_df, tax_assign_sqlite, tax_assign_pars_tsv)
+    vsearch_per_variant_df_pkl = variant_class[variant_seq][1]
+    tax_id = f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_per_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv)
     return (variant_seq, marker_name, tax_id)
 
 
@@ -118,7 +119,7 @@ class Taxassign(ToolWrapper):
                 marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_sqlite'] = vsearch_output_sqlite
         #
         ################################################
-        # for each variant retrieve vsearch output as and store variant, marker, and vsearch output df
+        # for each variant retrieve vsearch output, and pickle it as df
         ################################################
         variant_class = {}
         for marker_name in marker_class:
@@ -128,7 +129,10 @@ class Taxassign(ToolWrapper):
                     variant_seq = fasta_entry.description
                     vsearch_sqlite = marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_sqlite']
                     vsearch_per_variant_df = get_vsearch_output_for_variant_as_df(vsearch_sqlite, variant_seq)
-                    variant_class[variant_seq] = (marker_name, vsearch_per_variant_df)
+                    PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign", marker_name, variant_seq))
+                    vsearch_per_variant_df_pkl = os.path.join(tempdir, "TaxAssign", marker_name, variant_seq, "vsearch_per_variant_df.pkl")
+                    vsearch_per_variant_df.to_pickle(vsearch_per_variant_df_pkl, compression='gzip')
+                    variant_class[variant_seq] = (marker_name, vsearch_per_variant_df_pkl)
         #
         # For each variant, carry out parallel f_variant_vsearch_output_to_ltg
         variant_seq_list = sorted(variant_class.keys())
@@ -149,6 +153,8 @@ class Taxassign(ToolWrapper):
         ################################################
         # Start of Parallel Version: Comment out after debugging
         ################################################
+        logger.debug(
+            "file: {}; line: {}; Parallel. Mem {}".format(__file__, inspect.currentframe().f_lineno, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
             variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)), chunksize=1)
         # End of Parallel Version: Comment out after debugging
