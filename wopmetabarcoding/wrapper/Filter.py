@@ -224,7 +224,7 @@ class Filter(ToolWrapper):
                 output_fasta = os.path.join(filter_output_dir, (marker_name + "_variant.fasta"))
                 dataframe_tsv_path = os.path.join(filter_output_dir, (marker_name + "_variant_info.tsv"))
                 filter_obj.filter_fasta(filtered_variants_list, output_fasta, False)
-                variant2sample2replicate2count_df.to_csv(dataframe_tsv_path, sep='\t', encoding='utf-8')
+                variant2sample2replicate2count_df.to_csv(dataframe_tsv_path, sep='\t', encoding='utf-8', index=False)
                 fout.write(marker_name + "\t" + dataframe_tsv_path + "\t" + output_fasta + "\n")
             fout.close()
             # TODO: Log tables for pcr and store_index_identified_as_chimera filter

@@ -1,5 +1,7 @@
+import inspect
 import os
 from wopmars.utils.Logger import Logger
+from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.utilities import get_or_create
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
@@ -213,6 +215,8 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
     :param merged_fasta_file_name: Name of the original merged fasta file
     :return: void
     """
+    logger.debug(
+        "file: {}; line: {}; function annotate_reads".format(__file__, inspect.currentframe().f_lineno))
     # # Creating a merged_fasta_file_name for the output csv file
     # annotated_reads_tsv = trimmed_tsv.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
     # # Inserting the merged_fasta_file_name in the database for used it later in an iteration

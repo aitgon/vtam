@@ -13,8 +13,8 @@ from wopmars.framework.parsing.Parser import ToolWrapper
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
-from wopmetabarcoding.utils.constants import wopmetabarcoding_filter_test_data
-
+#from wopmetabarcoding.utils.constants import wopmetabarcoding_filter_test_data
+from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df
 
 
 class TestWopMetabarcoding(TestCase):
@@ -26,6 +26,7 @@ class TestWopMetabarcoding(TestCase):
         self.__wopfile_test_str = ""
         with open(self.__wopfile_test_path, 'r') as fin:
             self.__wopfile_test_str = fin.read()
+        self.TAX_ASSIGN_SQLITE = "/home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/tax_assign.sqlite"
 
     def test_02sample_information(self):
         # input
@@ -33,7 +34,7 @@ class TestWopMetabarcoding(TestCase):
         fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
         # output
         test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         db_path = os.path.join(test_outdir, "db.sqlite")
         db_url = "sqlite:///" + db_path
         #
@@ -64,7 +65,7 @@ class TestWopMetabarcoding(TestCase):
         fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
         # output
         test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         # db
         db_path = os.path.join(test_outdir, "db.sqlite")
         db_url = "sqlite:///" + db_path
@@ -97,7 +98,7 @@ class TestWopMetabarcoding(TestCase):
         fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
         # output
         test_outdir = os.path.join(self.__testdir_path, "output", "03sort_reads")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         # db
         db_path = os.path.join(test_indir, "db.sqlite")
         db_url = "sqlite:///" + db_path
@@ -145,7 +146,7 @@ class TestWopMetabarcoding(TestCase):
 
     def test_04filter_store_index_below_lfn1_per_replicate(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
         #
         # Input
@@ -163,7 +164,7 @@ class TestWopMetabarcoding(TestCase):
 
     def test_04filter_store_index_below_lfn2_per_variant(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
         #
         # Input
@@ -182,7 +183,7 @@ class TestWopMetabarcoding(TestCase):
 
     def test_04filter_store_index_below_lfn2_per_replicate_series(self):
         test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-        PathFinder.mkdir(test_outdir)
+        PathFinder.mkdir_p(test_outdir)
         variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
         #
         # Input
@@ -199,9 +200,10 @@ class TestWopMetabarcoding(TestCase):
         #
         shutil.rmtree(test_outdir)
 
+
     # def test_04filter_store_index_below_lfn3_read_count(self):
     #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-    #     PathFinder.mkdir(test_outdir)
+    #     PathFinder.mkdir_p(test_outdir)
     #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input

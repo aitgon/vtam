@@ -1,3 +1,4 @@
+import inspect
 import tempfile
 
 import os
@@ -5,6 +6,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
 from wopmetabarcoding.utils.VSearch import VSearch1
+from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
@@ -63,32 +65,6 @@ class SortReads(ToolWrapper):
             "overhang": "int"
 
         }
-
-    # def vsearch_subprocess(self, file, fasta_db, vsearch_output_tsv):
-    #     """
-    #
-    #     :param file:
-    #     :param fasta_db:
-    #     :param vsearch_output_tsv:
-    #     :return:
-    #     """
-    #     # subprocess.call(
-    #     #     "vsearch --usearch_global " + file + " --db " + fasta_db + " --id " + str(self.option("min_id")) +
-    #     #     " --maxhits 1 --maxrejects 0 --maxaccepts 0 --minseqlength " + str(self.option("minseqlength")) +
-    #     #     " --userout " + vsearch_output_tsv + " --userfields query+target+tl+qilo+qihi+tilo+tihi+qrow", shell=True
-    #     # )
-    #     vsearch_params = {'db': fasta_db,
-    #                       'usearch_global': file,
-    #                       'id0': str(self.option("min_id")),
-    #                       'maxhits': 1,
-    #                       'maxrejects': 0,
-    #                       'maxaccepts': 0,
-    #                       'minseqlength': str(self.option("minseqlength")),
-    #                       'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
-    #                       'userout': vsearch_output_tsv,
-    #                       }
-    #     vsearch1 = VSearch1(**vsearch_params)
-    #     vsearch1.run()
 
     def run(self):
         session = self.session()
@@ -194,6 +170,8 @@ class SortReads(ToolWrapper):
             annotated_reads_tsv = os.path.join(tempdir, os.path.basename(file_obj.name).replace('.fasta', '_annotated_reads.tsv'))
             annoted_tsv_list.append(annotated_reads_tsv)
             run_list[annotated_reads_tsv] = file_obj.run_name
+            logger.debug(
+                "file: {}; line: {}; trimmed_tsv {}".format(__file__, inspect.currentframe().f_lineno, trimmed_tsv))
             annotate_reads(session, sample_information_model, trimmed_tsv,
                            file_id=file_id, annotated_reads_tsv=annotated_reads_tsv)
         #
@@ -201,6 +179,9 @@ class SortReads(ToolWrapper):
         with open(sortreads_samplecount, 'w') as fout_sortread_samplecount:
             for marker_obj in session.query(marker_model).all():
                 marker_name = marker_obj.name
+                logger.debug(
+                    "file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                marker_name))
                 marker_id = marker_obj.id
                 gathered_marker_file = os.path.join(tempdir, marker_name + "_file.tsv")
                 sample_count_tsv = os.path.join(sort_reads_output_dir, marker_name + "_sample_count.tsv")
