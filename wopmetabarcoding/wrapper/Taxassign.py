@@ -3,7 +3,7 @@ import sqlite3
 
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
-    get_vsearch_output_for_variant_as_df, taxassignation, convert_fileinfo_to_otu_df
+    get_vsearch_output_for_variant_as_df, taxassignation, convert_fileinfo_to_otu_df, f_taxid2taxname
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.logger import logger, LOGGER_LEVEL
@@ -205,17 +205,10 @@ class Taxassign(ToolWrapper):
                 "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_df_tsv))
         #
         ################################################
-        # Get tax_name of tax_id
+        # create tax_id to tax_name dict
         ################################################
         tax_id_list = variant2marker2taxid_list_df.tax_id.tolist()
-        con = sqlite3.connect(tax_assign_sqlite)
-        cur = con.cursor()
-        sql = "SELECT distinct tax_id,tax_name FROM seq2tax2parent WHERE tax_id in ({tax_id_list})".format(
-            tax_id_list=",".join(str(tax_id) for tax_id in tax_id_list))
-        cur.execute(sql)
-        records = cur.fetchall()
-        taxid2taxname_dic = {int(k): v for k, v in records}
-        cur.close()
+        taxid2taxname_dic = f_taxid2taxname(tax_id_list, tax_assign_sqlite)
         #
         ################################################
         # Add variant_seq and tax_id to output otu table

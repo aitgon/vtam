@@ -4,7 +4,8 @@ from unittest import TestCase
 import pandas
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage
+from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage, \
+    f_taxid2taxname
 
 
 class TestWopMetabarcoding(TestCase):
@@ -57,3 +58,9 @@ class TestWopMetabarcoding(TestCase):
         # Run
         tax_count_perc_df = f_majoritytaxid2percentage(tax_lineage_df)
         self.assertTrue(tax_count_perc_df.equals(tax_count_perc_bak_df))
+
+
+    def test_f_taxid2taxname(self):
+        tax_id_list = [603345, 325869]
+        taxid2taxname_dic = f_taxid2taxname(tax_id_list, "/home/gonzalez/Data/2017_meglecz_metabarcoding/data/wopmetabarcoding_data/tax_assign.sqlite"")
+        self.assertTrue(taxid2taxname_dic == {603345: 'Zebrias synapturoides', 325869: 'Xylophanes tersa'})
