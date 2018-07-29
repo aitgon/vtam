@@ -214,7 +214,8 @@ class Filter(ToolWrapper):
                 #
                 # Filter: indel
                 Logger.instance().info("Launching pseudogene detection with indel filter:")
-                filter_obj.indel(False)
+                # TODO check if here it is empty
+                filter_obj.indel(delete_var=False)
                 df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
                 Logger.instance().info("Launching pseudogene detection with codon stop filter:")
                 filter_obj.codon_stop(df_codon_stop_per_genetic_code, 2, False)

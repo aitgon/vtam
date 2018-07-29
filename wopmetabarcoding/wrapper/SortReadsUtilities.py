@@ -1,5 +1,7 @@
 import inspect
 import os
+
+import sqlalchemy
 from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.utilities import get_or_create
@@ -149,7 +151,8 @@ def fasta_writer(session, model, file_name):
             j += 1
 
 
-def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv, is_forward_strand, tempdir):
+def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv, temp_db_sqlite):
+    # TODO Why is is_forward_strand not used?
     """
 
     :param checked_vsearch_output_tsv:
@@ -162,8 +165,8 @@ def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv
     #
     # Import read_fasta_file_name into sqlite for indexing and faster access
     # read_fasta_db_sqlite = read_fasta_file_name.replace('.fasta', '.sqlite')
-    read_fasta_db_sqlite = os.path.join(tempdir, os.path.basename(read_fasta_file_name).replace('.fasta', '.sqlite'))
-    conn = sqlite3.connect(read_fasta_db_sqlite)
+    # read_fasta_db_sqlite = os.path.join(tempdir, os.path.basename(read_fasta_file_name).replace('.fasta', '.sqlite'))
+    conn = sqlite3.connect(temp_db_sqlite)
     try:
         conn.execute("DROP TABLE IF EXISTS read_fasta")
         conn.execute("CREATE TABLE  read_fasta (id VARCHAR PRIMARY KEY , seq VARCHAR)")
@@ -375,8 +378,7 @@ def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list
         previous_run = run_list.get(annotated_file)
         i += 1
 
-
-def insert_variant(session, count_reads_marker, variant_model):
+def insert_variant(con, count_reads_marker, variant_model):
     """
     Function used to insert variants in the variant table
     :param session: Current session of the database
@@ -385,17 +387,49 @@ def insert_variant(session, count_reads_marker, variant_model):
     :return: void
     """
     # Opening the database
-    conn = sqlite3.connect(count_reads_marker)
+    con_local = sqlite3.connect(count_reads_marker)
     # Selecting some attributes in the database files
-    variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
+    variant_data = con_local.execute("SELECT id, marker_id, seq, count FROM count_read")
     for row in variant_data.fetchall():
-        obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
-        # Inserting theses information in the variant table
-        instance = session.query(variant_model).filter(variant_model.sequence == row[2]).first()
-        if not instance:
-            get_or_create(session, variant_model, **obj_variant)
+        variant_table = variant_model.__table__
+        try:
+            stmt = variant_table.insert().values(variant_id=row[0], marker_id=row[1], sequence=row[2], readcount=row[3])
+            con.execute(stmt)
+            # logger.debug(
+            #     "file: {}; line: {}; variant_id {} insert".format(__file__, inspect.currentframe().f_lineno, row[0]))
+        except sqlalchemy.exc.IntegrityError:
+            stmt = variant_table.update().where(variant_table.c.sequence==row[2]).values(readcount=row[3])
+            con.execute(stmt)
+            # logger.debug(
+            #     "file: {}; line: {}; variant_id {} update".format(__file__, inspect.currentframe().f_lineno, row[0]))
+        # obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
+        # # Inserting theses information in the variant table
+        # instance = con.query(variant_model).filter(variant_model.sequence == row[2]).first()
+        # if not instance:
+        #     get_or_create(con, variant_model, **obj_variant)
     variant_data.close()
-    conn.close()
+    con_local.close()
+
+# def insert_variant_bak(session, count_reads_marker, variant_model):
+#     """
+#     Function used to insert variants in the variant table
+#     :param session: Current session of the database
+#     :param count_reads_marker: Temp database with a table for count database
+#     :param variant_model: Variant table
+#     :return: void
+#     """
+#     # Opening the database
+#     conn = sqlite3.connect(count_reads_marker)
+#     # Selecting some attributes in the database files
+#     variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
+#     for row in variant_data.fetchall():
+#         obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
+#         # Inserting theses information in the variant table
+#         instance = session.query(variant_model).filter(variant_model.sequence == row[2]).first()
+#         if not instance:
+#             get_or_create(session, variant_model, **obj_variant)
+#     variant_data.close()
+#     conn.close()
 
 
 if __name__ == "__main__":
