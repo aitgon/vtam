@@ -11,8 +11,8 @@ from Bio.Alphabet import IUPAC
 class SampleInformation(Base):
     __tablename__ = 'SampleInformation'
     __table_args__ = (
-        UniqueConstraint('tag_forward', 'tag_reverse', 'marker_id', 'file_id'),
-        UniqueConstraint('marker_id', 'sample_name', 'replicate_name')
+        UniqueConstraint('tag_forward', 'tag_reverse', 'marker_id', 'fasta_id'),
+        UniqueConstraint('marker_id', 'biosample_id', 'replicate_id')
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -21,10 +21,10 @@ class SampleInformation(Base):
     primer_reverse = Column(String(100), nullable=False)
     tag_forward = Column(String(100), nullable=False) # Todo: Create Tag model
     tag_reverse = Column(String(100), nullable=False)
-    file_id = Column(Integer, ForeignKey("File.id"), nullable=False) # Todo: should be foreign key to File model ID
+    fasta_id = Column(Integer, ForeignKey("Fasta.id"), nullable=False) # Todo: should be foreign key to Fasta model ID
     run_name = Column(String(20), nullable=False)
-    sample_name = Column(String(50), nullable=False)
-    replicate_name = Column(String, nullable=False)
+    biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
+    replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
 
     # @validates('file_name')
     # def validates_filename(self, key, path):
