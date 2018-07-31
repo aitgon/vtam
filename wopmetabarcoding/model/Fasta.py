@@ -2,9 +2,9 @@ from wopmars.framework.database.Base import Base
 
 from sqlalchemy import Column, String, Integer, UniqueConstraint, Boolean
 
-
-class File(Base):
-    __tablename__ = 'File'
+# TODO rename Fasta to Fasta
+class Fasta(Base):
+    __tablename__ = 'Fasta'
     __table_args__ = (
         UniqueConstraint('name'),
     )

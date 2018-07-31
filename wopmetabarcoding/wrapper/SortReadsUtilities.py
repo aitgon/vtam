@@ -1,14 +1,18 @@
 import inspect
-import os
 
+import pandas
 import sqlalchemy
 from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils.utilities import get_or_create
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio import SeqIO
 import sqlite3
+
+class SortReadFilePath:
+
+    def __index__(self):
+        self.df = pandas.DataFrame()
 
 
 def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, primer_tag_fasta):
@@ -16,7 +20,7 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
     Function creating a fasta file which will be used as a database by vsearch
 
     :param session: Current session of the database
-    :param sample_information_obj: Model of the SampleInformation table
+    :param sample_information_obj: Model of the FastaInformation table
     :param primer_tag_fasta:
     :param forward_strand: Boolean
     :return:
@@ -208,12 +212,12 @@ def convert_trimmed_tsv_to_fasta(trimmed_tsv, trimmed_fasta):
     # csv_file.close()
 
 
-def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annotated_reads_tsv):
+def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out_tsv):
     """
     Function used to merge all file information between the vsearch results reads and the file information csv
     :param session: Current session of the database
-    :param file_information_model: SampleInformation table, contains all the necessary information like marker_id names
-    :param model2: File table, contains all the information about files used
+    :param sample_information_model: FastaInformation table, contains all the necessary information like marker_id names
+    :param model2: Fasta table, contains all the information about files used
     :param trimmed_tsv: csv file to parse
     :param merged_fasta_file_name: Name of the original merged fasta file
     :return: void
@@ -221,12 +225,12 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
     logger.debug(
         "file: {}; line: {}; function annotate_reads".format(__file__, inspect.currentframe().f_lineno))
     # # Creating a merged_fasta_file_name for the output csv file
-    # annotated_reads_tsv = trimmed_tsv.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
+    # out_tsv = trimmed_tsv.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
     # # Inserting the merged_fasta_file_name in the database for used it later in an iteration
-    # session.query(model2).filter(model2.file_name == merged_fasta_file_name).update({model2.final_csv: annotated_reads_tsv})
+    # session.query(model2).filter(model2.file_name == merged_fasta_file_name).update({model2.final_csv: out_tsv})
     # # Open output file
-    # output = open(annotated_reads_tsv, 'w')
-    with open(annotated_reads_tsv, 'w') as fout:
+    # output = open(out_tsv, 'w')
+    with open(out_tsv, 'w') as fout:
         # Parsing input csv file
         with open(trimmed_tsv, 'r') as fin:
             i = 0
@@ -239,34 +243,42 @@ def annotate_reads(session, file_information_model, trimmed_tsv, file_id, annota
                 tag_forward = id_tag_primer.split('|')[1]
                 tag_reverse = "".join([character for character in line[1] if character.islower()])
                 read_sequence = line[8]
-                # Get the information in the SampleInformation table with tags and helped by the merged_fasta_file_name
-                file_information_instance = session.query(file_information_model)\
-                    .filter(file_information_model.tag_forward == tag_forward)\
-                    .filter(file_information_model.tag_reverse == tag_reverse)\
-                    .filter(file_information_model.file_id == file_id).first()
-                if file_information_instance is not None:
-
+                # Get the information in the FastaInformation table with tags and helped by the merged_fasta_file_name
+                sampleinformation_instance = session.query(sample_information_model)\
+                    .filter(sample_information_model.tag_forward == tag_forward)\
+                    .filter(sample_information_model.tag_reverse == tag_reverse)\
+                    .filter(sample_information_model.fasta_id == fasta_id).first()
+                if sampleinformation_instance is not None:
                     try:
                         # Write a new tsv with these informations
-                        fout.write(
-                            read_id + "\t"
-                            + str(file_information_instance.marker_id) + "\t"
-                            + file_information_instance.run_name +"\t"
-                            + file_information_instance.tag_forward + "\t"
-                            + file_information_instance.tag_reverse + "\t"
-                            + file_information_instance.sample_name + "\t"
-                            + file_information_instance.replicate_name + "\t"
-                            + read_sequence + "\n"
-                        )
+                        out_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(read_id,
+                            sampleinformation_instance.marker_id,
+                            sampleinformation_instance.run_name,
+                            sampleinformation_instance.tag_forward,
+                            sampleinformation_instance.tag_reverse,
+                            sampleinformation_instance.biosample_id,
+                            sampleinformation_instance.replicate_id,
+                            read_sequence)
+                        fout.write(out_line)
+                        # fout.write(
+                        #     str(read_id) + "\t"
+                        #     + sampleinformation_instance.marker_id + "\t"
+                        #     + sampleinformation_instance.run_name +"\t"
+                        #     + sampleinformation_instance.tag_forward + "\t"
+                        #     + sampleinformation_instance.tag_reverse + "\t"
+                        #     + sampleinformation_instance.biosample_id + "\t"
+                        #     + sampleinformation_instance.replicate_id + "\t"
+                        #     + read_sequence + "\n"
+                        # )
                     except AttributeError:
-                        print(file_information_instance.tag_forward, file_information_instance.tag_reverse, file_information_instance.marker_id)
+                        print(sampleinformation_instance.tag_forward, sampleinformation_instance.tag_reverse, sampleinformation_instance.marker_id)
                 else:
                     i += 1
                     incoherent_list.append(read_id)
             Logger.instance().info(str(i) + " incoherent reads discarded.")
 
 
-def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_count_tsv):
+def count_reads(read_count_marker_tsv, count_reads_marker, marker_name, out_tsv):
     """
     This function takes a TSV file with columns
     - Read id
@@ -278,7 +290,7 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
     - Replicate name
     - Read sequence
 
-    :param gathered_marker_file:
+    :param read_count_marker_tsv:
     :param count_reads_marker:
     :return:
     """
@@ -297,24 +309,24 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
     biosamples_count_variant = {}
     biosample_count = {}
     # Parse the csv
-    with open(gathered_marker_file, 'r') as marker_file:
+    with open(read_count_marker_tsv, 'r') as marker_file:
         i = 1
         for line in marker_file:
             line = line.strip()
             line = line.split('\t')
             if line[7] in biosamples_count_variant:
                 temp_count_per_samplereplicate = biosamples_count_variant.get(line[7])
-                sample_replicate = line[5] + "_" + line[6]
-                if sample_replicate in temp_count_per_samplereplicate:
-                    temp_count_per_samplereplicate[sample_replicate] += 1
+                biosample_replicate = line[5] + "_" + line[6]
+                if biosample_replicate in temp_count_per_samplereplicate:
+                    temp_count_per_samplereplicate[biosample_replicate] += 1
                 else:
-                    temp_count_per_samplereplicate[sample_replicate] = 1
+                    temp_count_per_samplereplicate[biosample_replicate] = 1
                 biosamples_count_variant[line[7]] = temp_count_per_samplereplicate
             else:
                 sequence = line[7]
-                sample_replicate = line[5] + "_" + line[6]
+                biosample_replicate = line[5] + "_" + line[6]
                 count_per_samplereplicate = biosample_count.copy()
-                count_per_samplereplicate[sample_replicate] = 1
+                count_per_samplereplicate[biosample_replicate] = 1
                 biosamples_count_variant[sequence] = count_per_samplereplicate
             check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
             for row in check_read.fetchone():
@@ -331,30 +343,30 @@ def count_reads(gathered_marker_file, count_reads_marker, marker_name, sample_co
                     i += 1
             check_read.close()
         # Create output dir for sample_count_tsv
-        with open(sample_count_tsv, 'w') as test_output:
-            test_output.write("{}\t{}\t{}\t{}\t{}\n".format('variant_seq', 'replicate', 'biosample','sample_replicate', 'count'))
+        with open(sample_count_tsv, 'a') as test_output:
+            # test_output.write("{}\t{}\t{}\t{}\t{}\t{}\n".format('variant_seq', 'replicate', 'biosample','biosample_replicate', 'count'))
             for variant_seq in biosamples_count_variant:
                 count_per_samplerepl = biosamples_count_variant.get(str(variant_seq))
-                for sample_repl in count_per_samplerepl:
-                    count = count_per_samplerepl.get(str(sample_repl))
+                for biosample_repl in count_per_samplerepl:
+                    count = count_per_samplerepl.get(str(biosample_repl))
                     if len(count_per_samplerepl) == 1 and count == 1:
                         continue
                     else:
-                        replicate = sample_repl.split('_')[-1]
-                        sample = sample_repl.split('_')[-2]
-                        test_output.write(variant_seq + '\t' + replicate + '\t'+ sample + '\t' + sample_repl + '\t' + str(count))
+                        replicate = biosample_repl.split('_')[-1]
+                        sample = biosample_repl.split('_')[-2]
+                        test_output.write(marker_name + '\t' + variant_seq + '\t' + replicate + '\t'+ sample + '\t' + biosample_repl + '\t' + str(count))
                         test_output.write('\n')
         conn.execute("DELETE FROM count_read WHERE count=1")
         conn.commit()
         conn.close()
 
 
-def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list):
+def gather_files(marker_name, gathered_marker_file, tsv_file_list_with_read_annotations, run_list):
     """
     Function used to gather all files of the same marker_id in one to count the reads occurrences
     :param marker_name: Marker name
     :param gathered_marker_file: Output file
-    :param annotated_tsv_list: List of annotated files
+    :param tsv_file_list_with_read_annotations: List of annotated files
     :return: void
     """
     # Search the csv files for each marker_id in the Marker table
@@ -365,7 +377,7 @@ def gather_files(marker_name, gathered_marker_file, annotated_tsv_list, run_list
     # Storing this name in the row of the corresponding marker_id
     # session.query(marker_model).filter(marker_model.name == element.name).update({marker_model.marker_file: file_place})
     i = 0
-    for annotated_file in annotated_tsv_list:
+    for annotated_file in tsv_file_list_with_read_annotations:
         if i == 0:
             previous_run = run_list.get(annotated_file)
             gathered_marker_file = gathered_marker_file.replace(".tsv", "_" + previous_run + ".tsv")
@@ -400,36 +412,8 @@ def insert_variant(con, count_reads_marker, variant_model):
         except sqlalchemy.exc.IntegrityError:
             stmt = variant_table.update().where(variant_table.c.sequence==row[2]).values(readcount=row[3])
             con.execute(stmt)
-            # logger.debug(
-            #     "file: {}; line: {}; variant_id {} update".format(__file__, inspect.currentframe().f_lineno, row[0]))
-        # obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
-        # # Inserting theses information in the variant table
-        # instance = con.query(variant_model).filter(variant_model.sequence == row[2]).first()
-        # if not instance:
-        #     get_or_create(con, variant_model, **obj_variant)
     variant_data.close()
     con_local.close()
-
-# def insert_variant_bak(session, count_reads_marker, variant_model):
-#     """
-#     Function used to insert variants in the variant table
-#     :param session: Current session of the database
-#     :param count_reads_marker: Temp database with a table for count database
-#     :param variant_model: Variant table
-#     :return: void
-#     """
-#     # Opening the database
-#     conn = sqlite3.connect(count_reads_marker)
-#     # Selecting some attributes in the database files
-#     variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
-#     for row in variant_data.fetchall():
-#         obj_variant = {'variant_id': row[0], 'marker_id': row[1], 'sequence': row[2], 'readcount': row[3]}
-#         # Inserting theses information in the variant table
-#         instance = session.query(variant_model).filter(variant_model.sequence == row[2]).first()
-#         if not instance:
-#             get_or_create(session, variant_model, **obj_variant)
-#     variant_data.close()
-#     conn.close()
 
 
 if __name__ == "__main__":

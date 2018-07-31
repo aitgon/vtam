@@ -45,7 +45,7 @@ class TestWopMetabarcoding(TestCase):
         with open(wopfile_path, 'w') as fout:
             self.__wopfile_test_str = fout.write(wopfile_str)
         #
-        cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-F", "-t", "SampleInformation"]
+        cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-F", "-t", "FastaInformation"]
         with self.assertRaises(SystemExit) as se:
             WopMars().run(cmd_line)
         self.assertEqual(se.exception.code, 0)
@@ -77,7 +77,7 @@ class TestWopMetabarcoding(TestCase):
         with open(wopfile_path, 'w') as fout:
             self.__wopfile_test_str = fout.write(wopfile_str)
         #
-        cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-t", "SampleInformation"]
+        cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-t", "FastaInformation"]
         with self.assertRaises(SystemExit) as se:
             WopMars().run(cmd_line)
         self.assertEqual(se.exception.code, 1)

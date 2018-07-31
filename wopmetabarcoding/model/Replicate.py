@@ -8,7 +8,7 @@ class Replicate(Base):
     __tablename__ = 'Replicate'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    biosample_name = Column(String)
+    biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     marker_id = Column(Integer) # Todo: remplace par marker_id
     file_name = Column(String)
     name = Column(String(50), nullable=False)
