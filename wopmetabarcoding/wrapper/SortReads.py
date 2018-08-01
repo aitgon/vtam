@@ -302,6 +302,18 @@ class SortReads(ToolWrapper):
             fasta_variant_count_df = read_annotation_df.groupby(['run', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='count')
             logger.debug(
                 "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
+            #
+            ################################
+            # Remove singletons, variants with absolute read_count = 1
+            ################################
+            variant2readcount = fasta_variant_count_df[['variant_sequence', 'count']].groupby(
+                by=['variant_sequence']).sum().reset_index()
+            fasta_variant_count_df.loc[variant2readcount['count'] > 1]
+            fasta_variant_count_df = fasta_variant_count_df.loc[(variant2readcount['count'] > 1).tolist()]
+            #
+            ################################
+            # Insert into db
+            ################################
             for row in fasta_variant_count_df.itertuples():
                 biosample_id = row[2]
                 replicate_id = row[3]

@@ -86,7 +86,7 @@ class FastaInformation(ToolWrapper):
                 biosample_name = biosample_instance.name
                 #
                 # Insert replicate
-                replicate_obj = {'biosample_id': biosample_id, 'marker_id': marker_id, 'file_name': file_name, 'name': replicate_name}
+                replicate_obj = {'name': replicate_name}
                 replicate_instance = get_or_create(session, replicate_model, **replicate_obj)
                 replicate_id = replicate_instance.id
                 #
