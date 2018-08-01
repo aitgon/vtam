@@ -3,6 +3,7 @@ import inspect
 import os
 
 import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy.sql import select
 
 import pandas
@@ -48,11 +49,6 @@ class SortReads(ToolWrapper):
             SortReads.__input_table_marker
         ]
 
-    def specify_output_file(self):
-        return [
-            # SortReads.__output_read_count_tsv
-        ]
-
     def specify_output_table(self):
         return [
             SortReads.__output_table_variant,
@@ -65,49 +61,35 @@ class SortReads(ToolWrapper):
         :return:
         """
         return {
-            # "sort_reads_output_dir": 'str',
             "min_id": "float",
             "minseqlength": "int",
             "overhang": "int"
-
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        conn = engine.connect()
+        # conn = engine.connect()
         #
         # Input tables models
         sample_information_model = self.input_table(SortReads.__input_table_sample_information)
         fasta_model = self.input_table(SortReads.__input_table_fasta)
         marker_model = self.input_table(SortReads.__input_table_marker)
-        # Temp variables:
+        #
+        # Output tables models
+        variant_read_count_model = self.output_table(SortReads.__output_table_variant_read_count)
+        with engine.connect() as conn:
+            conn.execute(variant_read_count_model.__table__.delete())
+        variant_model = self.output_table(SortReads.__output_table_variant)
+        with engine.connect() as conn:
+            conn.execute(variant_model.__table__.delete())
+        #
+        # Some variables
         tsv_file_list_with_read_annotations = [] # List of TSV files with read annotations
         run_list = {}
         primer_tag_fasta = os.path.join(tempdir, 'primer_tag.fasta')
         checked_vsearch_output_tsv = os.path.join(tempdir, 'checked_vsearch_output.tsv')
-
-        # Output file models
-        # read_count_tsv = self.output_file(SortReads.__output_read_count_tsv)
-
-        # Output tables models
-        variant_model = self.output_table(SortReads.__output_table_variant)
-        variant_read_count_model = self.output_table(SortReads.__output_table_variant_read_count)
         #
-        # Parameters
-        sort_reads_output_dir = self.option("sort_reads_output_dir")
-        # try:
-        #     os.makedirs(sort_reads_output_dir)
-        # except OSError as exception:
-        #     if exception.errno != errno.EEXIST:
-        #         raise
-        #  TODO: Later we will see in case files are already trimmed
-        # for file_obj in session.query(file_model).all():
-        #     if file_obj.trimmed_status is "1":
-        #         raise Exception('Read trimming cannot be skipped')
-        #         # read_counter(session, file_obj.name, readcount_model)
-        #         # fasta_writer(session, readcount_model, merged_fasta)
-        # else:
         marker2fasta2readannotationtsv_dict = {} # Dict of dicts, where for each marker, there are fasta and readannotationtsv
         for fasta_obj in session.query(fasta_model).order_by('name').all():
             fasta_id = fasta_obj.id
@@ -304,14 +286,6 @@ class SortReads(ToolWrapper):
                 "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
             #
             ################################
-            # Remove singletons, variants with absolute read_count = 1
-            ################################
-            variant2readcount = fasta_variant_count_df[['variant_sequence', 'count']].groupby(
-                by=['variant_sequence']).sum().reset_index()
-            fasta_variant_count_df.loc[variant2readcount['count'] > 1]
-            fasta_variant_count_df = fasta_variant_count_df.loc[(variant2readcount['count'] > 1).tolist()]
-            #
-            ################################
             # Insert into db
             ################################
             for row in fasta_variant_count_df.itertuples():
@@ -319,23 +293,22 @@ class SortReads(ToolWrapper):
                 replicate_id = row[3]
                 variant_sequence = row[4]
                 read_count = row[5]
-                # stmt = variant_model.__table__.insert().values(marker_id=marker_id, biosample_id=biosample_id, replicate_id=replicate_id,
-                #                                                sequence=variant_sequence,
-                #                                                read_count=read_count)
-                # conn.execute(stmt)
-                # variant_table = variant_model.__table__
-                # variant_id = None
                 try:
                     stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
-                    stmt_result_var = conn.execute(stmt_ins_var)
+                    with engine.connect() as conn:
+                        stmt_result_var = conn.execute(stmt_ins_var)
                     variant_id = stmt_result_var.inserted_primary_key[0]
                 except sqlalchemy.exc.IntegrityError:
                     stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
-                    variant_id = conn.execute(stmt_select_var).first()[0]
+                    with engine.connect() as conn:
+                        variant_id = conn.execute(stmt_select_var).first()[0]
+                        variant_id = conn.execute(stmt_select_var).first()[0]
+                #
                 try:
                     #
                     stmt_ins_read_count = variant_read_count_model.__table__.insert().values(variant_id=variant_id, marker_id=marker_id, biosample_id=biosample_id, replicate_id=replicate_id, read_count=read_count)
-                    conn.execute(stmt_ins_read_count)
+                    with engine.connect() as conn:
+                        conn.execute(stmt_ins_read_count)
                 except sqlalchemy.exc.IntegrityError:
                     stmt_upd = variant_read_count_model.__table__.update()\
                         .where(variant_read_count_model.__table__.c.variant_id==variant_id)\
@@ -343,65 +316,23 @@ class SortReads(ToolWrapper):
                         .where(variant_read_count_model.__table__.c.biosample_id==biosample_id)\
                         .where(variant_read_count_model.__table__.c.replicate_id==replicate_id)\
                         .values(read_count=read_count)
-                    # import pdb; pdb.set_trace()
-                    conn.execute(stmt_upd)
+                    with engine.connect() as conn:
+                        conn.execute(stmt_upd)
             logger.debug("file: {}; line: {};  Insert variants: Finished".format(__file__, inspect.currentframe().f_lineno))
-            # variant_data = conn.execute("SELECT id, marker_id, seq, count FROM count_read")
-            # check_read = conn.execute('SELECT EXISTS (SELECT id FROM count_read WHERE seq=?)', (line[7],))
-            # from sqlalchemy.sql import select
-            # s = select([users])
-            # for row in conn.execute(s):
-            #     print(row)
-        # for marker_obj in session.query(marker_model).all():
-        #     marker_name = marker_obj.name
-        #     marker_read_count_tsv = os.path.join(sort_reads_output_dir, "read_count_{}.tsv".format(marker_name))
-        #     for marker_name_fasta in marker2fasta2readannotationtsv_dict[marker_name]:
-        #
-        # For each marker_id, concatenate its files with the annotated reads and count unique reads per marker_id
-        # # instead of function gather_files
-        # for marker_obj in session.query(marker_model).all():
-        #     marker_name = marker_obj.name
-        #     PathFinder.mkdir_p(os.path.join(tempdir, "SortReads", marker_name))
-        #     trimmed_marker_tsv = os.path.join(tempdir, "SortReads", marker_name, 'trimmed_marker.tsv')
-        #     with open(trimmed_marker_tsv, 'a') as fout:
-        #         for marker_fasta in marker2fasta2readannotationtsv_dict[marker_name]:
-        #             read_annotation_tsv = marker2fasta2readannotationtsv_dict[marker_name][marker_fasta]
-        #             with open(read_annotation_tsv, 'r') as marker_fasta_fin:
-        #                 fout.write(marker_fasta_fin.read())
-        #     read_count_marker_tsv = os.path.join(tempdir, "SortReads", marker_name, 'read_count.tsv')
-        #     read_count_marker_sqlite = os.path.join(tempdir, "SortReads", marker_name, 'read_count.sqlite')
-        #     out_tsv = os.path.join(tempdir, "SortReads", marker_name, 'out.sqlite')
-        #     count_reads(read_count_marker_tsv, read_count_marker_sqlite, marker_name, out_tsv)
-        #     # import pdb; pdb.set_trace()
-        # # import pdb; pdb.set_trace()
-        # with open(read_count_tsv, 'w') as fout_sortread_samplecount:
-        #     for marker_obj in session.query(marker_model).all():
-        #         marker_name = marker_obj.name
-        #         logger.debug(
-        #             "file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno,
-        #                                                         marker_name))
-        #         marker_id = marker_obj.id
-        #         read_count_marker_tsv = os.path.join(tempdir, marker_name, "read_count.tsv")
-        #         # import pdb; pdb.set_trace()
-        #         # sample_count_tsv = os.path.join(sort_reads_output_dir, marker_name + "_sample_count.tsv")
-        #         sample_count_tsv = "sample_count_tsv"
-        #         fout_sortread_samplecount.write(marker_name + "\t" + str(marker_id) + "\t" + sample_count_tsv + "\n")
-        #         count_reads_marker = read_count_marker_tsv.replace(".tsv", ".sqlite")
-        #         Logger.instance().info("Gathering all files from annotated files the same marker_id into one.")
-        #         ################################################################
-        #         # gather_files
-        #         ################################################################
-        #         # gather_files(marker_name, read_count_marker_tsv, tsv_file_list_with_read_annotations, run_list)
-        #         import pdb; pdb.set_trace()
-        #         read_count_marker_tsv = os.path.join(tempdir, marker_name + "_file_prerun.tsv")
-        #         # session.commit()
-        #         # read_count_per_marker_sqlite = conn_name = marker_obj.name + ".sqlite"
-        #         Logger.instance().info("Counting reads for each marker_id.")
-        #         ################################################################
-        #         # count_reads
-        #         ################################################################
-        #         count_reads(read_count_marker_tsv, count_reads_marker, marker_name, sample_count_tsv)
-        #         # session.commit()
-        #         Logger.instance().info("Inserting variant in the Variant table of the database.")
-        #         insert_variant(conn, count_reads_marker, variant_model)
-        #         session.commit()
+        ################################
+        # Remove singletons from DB, variants with absolute read_count = 1
+        ################################
+        logger.debug("file: {}; line: {};  Deleting singletons".format(__file__, inspect.currentframe().f_lineno))
+        with engine.connect() as conn:
+            stmt = select([variant_read_count_model.__table__.c.variant_id]).group_by(
+                variant_read_count_model.__table__.c.variant_id).having(
+                func.sum(variant_read_count_model.__table__.c.read_count) == 1)
+            singleton_list = [i[0] for i in conn.execute(stmt).fetchall()]
+        with engine.connect() as conn: # delete singletons from variant_read_count table
+            for variant_id in singleton_list:
+                stmt = variant_read_count_model.__table__.delete().where(variant_read_count_model.__table__.c.variant_id==variant_id)
+                conn.execute(stmt)
+        with engine.connect() as conn: # delete singletons from variant_read_count table
+            for variant_id in singleton_list:
+                stmt = variant_model.__table__.delete().where(variant_model.__table__.c.id==variant_id)
+                conn.execute(stmt)
