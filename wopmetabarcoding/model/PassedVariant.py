@@ -19,5 +19,6 @@ class PassedVariant(Base):
     f8_min_replp = Column(Boolean, default=False, nullable=False)
     f9_pcr_error = Column(Boolean, default=False, nullable=False)
     f10_chimera = Column(Boolean, default=False, nullable=False)
+    f10_chimera_borderline = Column(Boolean, default=False, nullable=False)
     f11_renkonen = Column(Boolean, default=False, nullable=False)
     f12_indel = Column(Boolean, default=False, nullable=False)
