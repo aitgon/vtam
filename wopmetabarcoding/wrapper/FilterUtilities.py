@@ -49,7 +49,7 @@ class FilterRunner:
             'f12_indel',
         ]
         # Default state: variant passed filters
-        self.passed_variant_df = pandas.DataFrame(dict(zip(filters, itertools.repeat(True))), index=self.variant_read_count_df.variant_id.tolist())
+        self.passed_variant_df = pandas.DataFrame(dict(zip(filters, itertools.repeat(True))), index=self.variant_df.id.unique().tolist())
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -75,9 +75,8 @@ class FilterRunner:
         # Selecting all the indexes where the ratio is below the ratio
         do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold,'variant_id'].tolist()
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -103,9 +102,8 @@ class FilterRunner:
         # Selecting all the indexes where the ratio is below the ratio
         do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].variant_id.tolist() # select rare reads to discard later
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -132,9 +130,8 @@ class FilterRunner:
         do_not_pass_variant_id_list = df2.loc[
                         df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].variant_id.tolist()  #  select rare reads to discard later
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -153,9 +150,8 @@ class FilterRunner:
         # Selecting all the indexes where the ratio is below the minimal readcount
         do_not_pass_variant_id_list = self.variant_read_count_df.loc[self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -199,9 +195,8 @@ class FilterRunner:
         df2 = df2.merge(cutoff_df, left_on='variant_id', right_on='variant_id')
         do_not_pass_variant_id_list = df2.ix[df2[this_filter_name] < df2.cutoff].variant_id.tolist()
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -230,9 +225,8 @@ class FilterRunner:
         df2 = df2.merge(cutoff_df, left_on='variant_sequence', right_on='variant_sequence')
         do_not_pass_variant_id_list = df2.ix[df2.low_frequence_noice_per_replicate_series < df2.cutoff].variant_id.tolist()
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, 'passed'] = False
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -260,9 +254,8 @@ class FilterRunner:
             do_not_pass_variant_id_list = df_biosample.loc[
                 df_biosample.variant_count < min_count].variant_id.unique().tolist()
             #
-            for variant_id in do_not_pass_variant_id_list:
-                self.passed_variant_df.loc[variant_id, 'passed'] = False
-                self.passed_variant_df.loc[variant_id, this_filter_name] = False
+            self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+            self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                            (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -286,9 +279,8 @@ class FilterRunner:
             # TODO Verify this calculation. Where does this 3 comes from?
             do_not_pass_variant_id_list = df_biosample.ix[df_biosample.variant_count < ((1 / 3) * replicate_count)].variant_id.unique().tolist()
             #
-            for variant_id in do_not_pass_variant_id_list:
-                self.passed_variant_df.loc[variant_id, 'passed'] = False
-                self.passed_variant_df.loc[variant_id, this_filter_name] = False
+            self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+            self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                            (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -371,11 +363,9 @@ class FilterRunner:
                 df3.index = df3['query']
                 df_biosample = df_biosample.merge(df3, left_on='variant_id', right_index=True)
                 do_not_pass_variant_id_list = list(df_biosample.ix[df_biosample.read_count_ratio < var_prop].variant_id.unique())
-
                 #
-                for variant_id in do_not_pass_variant_id_list:
-                    self.passed_variant_df.loc[variant_id, 'passed'] = False
-                    self.passed_variant_df.loc[variant_id, this_filter_name] = False
+                self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+                self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) ==
@@ -556,6 +546,7 @@ class FilterRunner:
                     index_to_drop = self.variant_read_count_df.loc[self.variant_read_count_df['sample_replicate'] == repl_i].index.tolist()
                     self.passsed_variant_ids = sorted(list(set(index_to_drop + self.passsed_variant_ids)))
 
+
     def f12_indel(self):
         """
 
@@ -571,8 +562,8 @@ class FilterRunner:
         df = df.loc[df['sequence_length_module_3'] != majority_sequence_length_module_3.values[0]]
         do_not_pass_variant_id_list = df.id.tolist()
         #
-        for variant_id in do_not_pass_variant_id_list:
-            self.passed_variant_df.loc[variant_id, this_filter_name] = False
+        # self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
