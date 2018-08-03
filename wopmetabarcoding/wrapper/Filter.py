@@ -15,19 +15,21 @@ class Filter(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.Filter"
     }
 
-    # Input tables:
-    __input_table_marker = "Marker"
-    __input_table_variant = "Variant"
-    __input_table_variant_read_count = "VariantReadCount"
-    __input_table_replicate = "Replicate"
-    __output_table_passed_variant = "PassedVariant"
     # Input file
-    __input_sortreads_samplecount_csv = "SortReads_sample_counts"
     __input_cutoff_file = "file_cutoff"
     __input_genetic_code_file = "genetic_code"
-    # Output file
-    __output_marker_variant_path = "marker_variant_path"
+    # Input table
+    __input_table_variant = "Variant"
+    __input_table_variant_read_count = "VariantReadCount"
+    # Output table
+    __output_table_passed_variant = "VariantSelected"
 
+
+    def specify_input_file(self):
+        return[
+            Filter.__input_cutoff_file,
+            Filter.__input_genetic_code_file
+        ]
 
     def specify_input_table(self):
         return [
@@ -35,22 +37,10 @@ class Filter(ToolWrapper):
             Filter.__input_table_variant_read_count,
         ]
 
-    def specify_input_file(self):
-        return[
-            # Filter.__input_sortreads_samplecount_csv,
-            Filter.__input_cutoff_file,
-            Filter.__input_genetic_code_file
-        ]
-
 
     def specify_output_table(self):
         return [
             Filter.__output_table_passed_variant,
-        ]
-
-    def specify_output_file(self):
-        return[
-            Filter.__output_marker_variant_path
         ]
 
     def specify_params(self):
@@ -68,7 +58,6 @@ class Filter(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        conn = engine.connect()
         #
         # # Input file path
         # # sortreads_samplecount = self.input_file(Filter.__input_sortreads_samplecount_csv)
@@ -80,9 +69,9 @@ class Filter(ToolWrapper):
         variant_read_count_model = self.input_table(Filter.__input_table_variant_read_count)
         #
         # Output table models
-        passed_variant_model = self.output_table(Filter.__output_table_passed_variant)
+        variant_selected_model = self.output_table(Filter.__output_table_passed_variant)
         with engine.connect() as conn:
-            conn.execute(passed_variant_model.__table__.delete())
+            conn.execute(variant_selected_model.__table__.delete())
         #
         # Create variant_read_count_df to run the filters with:
         # variant_id, biosample_id, replicate_id, read_count, variant_sequence
@@ -211,6 +200,6 @@ class Filter(ToolWrapper):
                 filter_runner.passed_variant_df['variant_id'] = filter_runner.passed_variant_df.index
                 records = list(filter_runner.passed_variant_df.T.to_dict().values())
                 with engine.connect() as conn:
-                    conn.execute(passed_variant_model.__table__.insert(), records)
+                    conn.execute(variant_selected_model.__table__.insert(), records)
 
 

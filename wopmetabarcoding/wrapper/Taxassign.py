@@ -1,267 +1,178 @@
-import pickle
-import sqlite3
+import multiprocessing
+from itertools import repeat
 
 import resource
+
+import numpy
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
     get_vsearch_output_for_variant_as_df, f_variant_vsearch_output_to_ltg, convert_fileinfo_to_otu_df, f_taxid2taxname
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.logger import logger, LOGGER_LEVEL
-from Bio import SeqIO
-import errno
-from itertools import repeat
-
-import multiprocessing
 
 import inspect
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from numpy import nan
 
-def f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pars_tsv):
-    marker_name = variant_class[variant_seq][0]
+from sqlalchemy import select
+
+def f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv):
+    # marker_name = variant_class[variant_seq][0]
     logger.debug(
-        "file: {}; line: {}; marker_name {} variant_seq {}...".format(__file__, inspect.currentframe().f_lineno,
-                                                                   marker_name, variant_seq[1:20]))
-    vsearch_per_variant_df_pkl = variant_class[variant_seq][1]
-    tax_id = f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_per_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv)
-    return (variant_seq, marker_name, tax_id)
+        "file: {}; line: {}; variant_id {}...".format(__file__, inspect.currentframe().f_lineno,
+                                                                   variant_id))
+    # vsearch_per_variant_df_pkl = variant_class[variant_seq][1]
+
+    vsearch_per_variant_df_pkl = os.path.join(tempdir, "TaxAssign",
+                                              "vsearch_df_for_variant_id_{}.pkl".format(variant_id))
+    tax_id = f_variant_vsearch_output_to_ltg(variant_id, vsearch_per_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv)
+    return (variant_id, tax_id)
 
 
 class Taxassign(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.Taxassign"
     }
+    # Input file
     __input_file_db_udb = "db_udb"
-    __marker_variant_path = "marker_variant_path"
-    __assignlvl2id = "assignlvl2id"
-    __tax_assign_db_sqlite = "tax_assign_db_sqlite"
-    __otu_table_tsv = 'otu_table_tsv'
+    __input_file_tax_assign_db_sqlite = "tax_assign_db_sqlite"
+    __input_tax_assign_pars_tsv = "tax_assign_pars_tsv"
+    # Input table
+    __input_table_variant = "Variant"
+    __input_table_variant_read_count = "VariantReadCount"
+    __input_table_variant_selected = "VariantSelected"
+    # Output table
+    __output_table_variant_taxa = 'VariantTaxa'
 
     def specify_input_file(self):
         return [
             Taxassign.__input_file_db_udb,
-            Taxassign.__marker_variant_path,
-            Taxassign.__assignlvl2id,
-            Taxassign.__tax_assign_db_sqlite,
+            Taxassign.__input_file_tax_assign_db_sqlite,
+            Taxassign.__input_tax_assign_pars_tsv,
         ]
 
-    def specify_output_file(self):
+    def specify_input_table(self):
         return [
-            Taxassign.__otu_table_tsv,
+            Taxassign.__input_table_variant,
+            Taxassign.__input_table_variant_read_count,
+            Taxassign.__input_table_variant_selected,
+        ]
+
+    def specify_output_table(self):
+        return [
+            Taxassign.__output_table_variant_taxa,
         ]
 
     def specify_params(self):
         return {
             "output_dir_taxassign": "str",
-            "udb_database": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # Input files
+        #
+        # Input file
         db_udb = self.input_file(Taxassign.__input_file_db_udb)
-        # Output files
-        otu_file = self.output_file(Taxassign.__otu_table_tsv)
-        # path to the tsv with filtered variants
-        marker_variant_path = self.input_file(Taxassign.__marker_variant_path)
-        tax_assign_pars_tsv = self.input_file(Taxassign.__assignlvl2id)
-        tax_assign_sqlite = self.input_file(Taxassign.__tax_assign_db_sqlite)
+        tax_assign_pars_tsv = self.input_file(Taxassign.__input_tax_assign_pars_tsv)
+        tax_assign_sqlite = self.input_file(Taxassign.__input_file_tax_assign_db_sqlite)
         #
-        # Parameters
-        output_dir_taxassign = self.option("output_dir_taxassign")
-        PathFinder.mkdir_p(output_dir_taxassign)
-        marker2filteranalysis2fasta_df = pandas.read_csv(marker_variant_path, sep="\t", names=['marker', 'variantinfo', 'fasta'], index_col=0)
-        ####################
-        marker_class = {}
-        ####################
-        for row in marker2filteranalysis2fasta_df.itertuples(index=True, name='Pandas'):
-            logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, row))
-            marker_name = row[0]
-            marker_class[marker_name] = {}
-            marker_filterinfo_tsv = row[1]
-            ####################
-            marker_class[marker_name]['marker_filterinfo_tsv'] = marker_filterinfo_tsv
-            ####################
-            marker_fasta = row[2]
-            #
-            # split fasta file for vsearch
-            fasta_subset_size = 10
-            sub_fasta_dir = os.path.join(tempdir, "TaxAssign", marker_name)
-            PathFinder.mkdir_p(sub_fasta_dir)
-            # sub_fasta_path_template = "marker_%s_i_{}.fasta"%marker_name
-            sub_fasta_path_list = sub_fasta_creator(marker_fasta, fasta_subset_size, sub_fasta_dir)
-            ####################
-            marker_class[marker_name]['sub_fasta_path_list'] = {}
-            for sub_fasta_path in sub_fasta_path_list:
-                marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path] = {}
-            ####################
+        # Input table models
+        variant_model = self.input_table(Taxassign.__input_table_variant)
+        variant_read_count_model = self.input_table(Taxassign.__input_table_variant_read_count)
+        variant_selected_model = self.input_table(Taxassign.__input_table_variant_selected)
+        #
+        # Output file
+        variant_taxa_model = self.output_table(Taxassign.__output_table_variant_taxa)
+        with engine.connect() as conn:
+            conn.execute(variant_taxa_model.__table__.delete())
+        #
+        ########################################
+        # Create variant selected df
+        ########################################
+        variant_model_table = variant_model.__table__
+        variant_read_count_model_table = variant_read_count_model.__table__
+        variant_selected_model_table = variant_selected_model.__table__
+        stmt = select([variant_read_count_model_table.c.marker_id, variant_selected_model_table.c.variant_id, variant_model_table.c.sequence])\
+            .distinct()\
+            .where(variant_selected_model_table.c.passed==1)\
+            .where(variant_model_table.c.id==variant_selected_model_table.c.variant_id)\
+            .where(variant_read_count_model_table.c.variant_id==variant_selected_model_table.c.variant_id)\
+            .order_by(variant_read_count_model_table.c.marker_id) \
+            .order_by(variant_selected_model_table.c.variant_id)
+        variant_selected_list = []
+        with engine.connect() as conn:
+            for row2 in conn.execute(stmt).fetchall():
+                variant_selected_list.append(row2)
+        variant_selected_df = pandas.DataFrame.from_records(variant_selected_list, columns=['marker_id', 'variant_id', 'variant_sequence'])
         #
         ################################################
-        # Run vsearch and and store it in sqlite DB
+        # for subsets of variants, create fasta files for vsearch
         ################################################
-        for marker_name in marker_class:
-            logger.debug("file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno, marker_name))
-            for sub_fasta_path_i,sub_fasta_path in enumerate(marker_class[marker_name]['sub_fasta_path_list']):
+        PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign"))
+        fasta_path = os.path.join(tempdir, "TaxAssign", "variants.fasta")
+        logger.debug("file: {}; line: {}; Write fasta to {}".format(__file__, inspect.currentframe().f_lineno, fasta_path))
+        variant_id_list = []
+        for row in variant_selected_df.itertuples(index=True):
+            variant_id_list.append(row.variant_id)
+            with open(fasta_path, 'a') as fout:
+                fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
+            #  every 10 sequences run and analyse variants or at the end
+            if ((row.Index+1)%10 == 0) or ((row.Index+1) == variant_selected_df.shape[0]):
                 #
-                # run vsearch
-                vsearch_output_tsv = os.path.join(tempdir, "TaxAssign", marker_name, "vsearch_i_{}.tsv".format(sub_fasta_path_i))
-                logger.debug("file: {}; line: {}; sub_fasta_path {}".format(__file__, inspect.currentframe().f_lineno, sub_fasta_path))
-                vsearch_command(sub_fasta_path, db_udb, vsearch_output_tsv)
-                marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_tsv'] = vsearch_output_tsv
+                #################################################
+                # Run vsearch to find COI targets in the Metazoa database
+                #################################################
+                vsearch_output_tsv = os.path.join(tempdir, "TaxAssign", "vsearch_variant_number_{}.tsv".format(row.Index))
+                logger.debug("file: {}; line: {}; Run vsearch and store here: {}".format(__file__, inspect.currentframe().f_lineno, fasta_path))
+                vsearch_command(fasta_path, db_udb, vsearch_output_tsv)
                 #
-                # store vsearch output in sqlite db
-                vsearch_output_sqlite = os.path.join(tempdir, "TaxAssign", marker_name, "vsearch_i_{}.sqlite".format(sub_fasta_path_i))
-                logger.debug("file: {}; line: {}; vsearch_output_sqlite {}".format(__file__, inspect.currentframe().f_lineno,
+                #################################################
+                # Save vsearch output in sqlite DB
+                #################################################
+                vsearch_output_sqlite = os.path.join(tempdir, "TaxAssign", "vsearch_variant_number_{}.sqlite".format(row.Index))
+                logger.debug("file: {}; line: {}; Convert vsearch TSV to SQLITE: {}".format(__file__, inspect.currentframe().f_lineno,
                                                                                                vsearch_output_sqlite))
                 vsearch_output_to_sqlite(vsearch_output_tsv, vsearch_output_sqlite)
-                marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_sqlite'] = vsearch_output_sqlite
-        #
-        ################################################
-        # for each variant retrieve vsearch output, and pickle it as df
-        ################################################
-        variant_class = {}
-        for marker_name in marker_class:
-            logger.debug("file: {}; line: {}; marker_name {}".format(__file__, inspect.currentframe().f_lineno, marker_name))
-            for sub_fasta_path in marker_class[marker_name]['sub_fasta_path_list']:
-                for fasta_entry in SeqIO.parse(sub_fasta_path, 'fasta'):
-                    variant_seq = fasta_entry.description
-                    vsearch_sqlite = marker_class[marker_name]['sub_fasta_path_list'][sub_fasta_path]['vsearch_output_sqlite']
-                    vsearch_per_variant_df = get_vsearch_output_for_variant_as_df(vsearch_sqlite, variant_seq)
-                    PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign", marker_name, variant_seq))
-                    vsearch_per_variant_df_pkl = os.path.join(tempdir, "TaxAssign", marker_name, variant_seq, "vsearch_per_variant_df.pkl")
+                #
+                #################################################
+                # Store pickle DF per variant
+                #################################################
+                logger.debug(
+                    "file: {}; line: {}; Store pickle DF per variant".format(__file__, inspect.currentframe().f_lineno))
+                for variant_id in variant_id_list:
+                    vsearch_per_variant_df = get_vsearch_output_for_variant_as_df(vsearch_output_sqlite, variant_id)
+                    vsearch_per_variant_df_pkl = os.path.join(tempdir, "TaxAssign",
+                                                         "vsearch_df_for_variant_id_{}.pkl".format(variant_id))
                     vsearch_per_variant_df.to_pickle(vsearch_per_variant_df_pkl, compression='gzip')
-                    variant_class[variant_seq] = (marker_name, vsearch_per_variant_df_pkl)
+                #
+                os.remove(fasta_path)
+                variant_id_list = [] # reset variant id list
         #
-        # For each variant, carry out parallel f_variant_vsearch_output_to_ltg
-        variant_seq_list = sorted(variant_class.keys())
-        if LOGGER_LEVEL == 10:
-            PathFinder.mkdir_p(os.path.join(tempdir, "TaxAssign", "129"))
-            variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "129", "variant_seq_list.pkl")
-            with open(variant_seq_list_pkl, 'wb') as f:
-                pickle.dump(variant_seq_list, f)
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_pkl))
-            variant_seq_list_txt = os.path.join(tempdir, "TaxAssign", "129", "variant_seq_list.txt")
-            with open(variant_seq_list_txt, 'w') as f:
-                for item in variant_seq_list:
-                    f.write("{}\n".format(item))
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_txt))
-        #
-        ################################################
-        # Start of Parallel Version: Comment out after debugging
-        ################################################
-        logger.debug(
-            "file: {}; line: {}; Parallel. Mem {}".format(__file__, inspect.currentframe().f_lineno, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-        with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
-            variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_seq_list, repeat(variant_class), repeat(tax_assign_sqlite), repeat(tax_assign_pars_tsv)), chunksize=1)
-        # End of Parallel Version: Comment out after debugging
+        # ################################################
+        # # Start of Parallel Version: Comment out after debugging
+        # ################################################
+        # variant_id_list = sorted(variant_selected_df.variant_id.unique().tolist())
+        # logger.debug(
+        #     "file: {}; line: {}; Parallel. Mem {}".format(__file__, inspect.currentframe().f_lineno, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        # with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
+        #     variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_id_list, repeat(tax_assign_sqlite),
+        #                                                                repeat(tax_assign_pars_tsv)), chunksize=1)
+        # # End of Parallel Version: Comment out after debugging
         #
         ################################################
         # Start of Non Parallel Version: Comment out after debugging
         ################################################
-        # variant2marker2taxid_list = []
-        # for variant_seq in variant_seq_list:
-        #     tax_id = f_variant2taxid(variant_seq, variant_class, tax_assign_sqlite, tax_assign_pars_tsv)
-        #     variant2marker2taxid_list.append(tax_id)
+        variant2taxid_list = []
+        for variant_id in variant_selected_df.variant_id.unique():
+            variant_id, tax_id = f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv)
+            if numpy.isnan():
+                tax_id = None
+            variant2taxid_list.append({'variant_id': variant_id, 'tax_id': tax_id})
+        #
+        ################################
+        # Insert into db
+        ################################
+        with engine.connect() as conn:
+            conn.execute(variant_taxa_model.__table__.insert(), variant2taxid_list)
         # End of Non Parallel Version: Comment out after debugging
-        if LOGGER_LEVEL == 10:
-            variant2marker2taxid_list_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list.pkl")
-            with open(variant2marker2taxid_list_pkl, 'wb') as f:
-                pickle.dump(variant2marker2taxid_list, f)
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_pkl))
-            variant2marker2taxid_list_txt = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list.txt")
-            with open(variant2marker2taxid_list_txt, 'w') as f:
-                for item in variant2marker2taxid_list:
-                    f.write("{}\n".format(item))
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_txt))
-        variant2marker2taxid_list_df = pandas.DataFrame.from_records(variant2marker2taxid_list, columns=['variant_seq', 'marker', 'tax_id'])
-        if LOGGER_LEVEL == 10:
-            variant2marker2taxid_list_df_pkl = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.pkl")
-            variant2marker2taxid_list_df.to_pickle(variant2marker2taxid_list_df_pkl)
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_pkl))
-            variant2marker2taxid_list_df_tsv = os.path.join(tempdir, "TaxAssign", "variant2marker2taxid_list_df.tsv")
-            variant2marker2taxid_list_df.to_csv(variant2marker2taxid_list_df_tsv, sep="\t")
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant2marker2taxid_list_df_tsv))
-        #
-        ################################################
-        # Prepare otu_marker table (Final output table)
-        ################################################
-        otu_df = pandas.DataFrame()
-        for marker_name in marker_class:
-            marker_filterinfo_tsv = marker_class[marker_name]['marker_filterinfo_tsv']
-            marker_filterinfo_df = pandas.read_csv(marker_filterinfo_tsv, sep="\t")
-            otu_marker_df = convert_fileinfo_to_otu_df(marker_filterinfo_df)
-            otu_df = pandas.concat([otu_df, otu_marker_df], axis=0, join='outer', sort=False)
-            otu_df.fillna(0, inplace=True) # fill sample_replicate nan with 0 counts
-        if LOGGER_LEVEL == 10:
-            otu_df_pkl = os.path.join(tempdir, "TaxAssign", "otu_df.pkl")
-            otu_df.to_pickle(otu_df_pkl)
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_df_pkl))
-            otu_df_tsv = os.path.join(tempdir, "TaxAssign", "otu_df.tsv")
-            otu_df.to_csv(otu_df_tsv, sep="\t")
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, otu_df_tsv))
-        #
-        ################################################
-        # create tax_id to tax_name dict
-        ################################################
-        tax_id_list = variant2marker2taxid_list_df.tax_id.tolist()
-        taxid2taxname_dic = f_taxid2taxname(tax_id_list, tax_assign_sqlite)
-        #
-        ################################################
-        # Add variant_seq and tax_id to output otu table
-        ################################################
-        if LOGGER_LEVEL == 10:
-            variant_seq_list_pkl = os.path.join(tempdir, "TaxAssign", "variant_seq_list.pkl")
-            with open(variant_seq_list_pkl, 'wb') as f:
-                pickle.dump(variant_seq_list, f)
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_pkl))
-            variant_seq_list_txt = os.path.join(tempdir, "TaxAssign", "variant_seq_list.txt")
-            with open(variant_seq_list_txt, 'w') as f:
-                for item in variant_seq_list:
-                    f.write("{}\n".format(item))
-            logger.debug(
-                "file: {}; line: {}; Written {}".format(__file__, inspect.currentframe().f_lineno, variant_seq_list_txt))
-        otu_df['marker'] = nan
-        otu_df['tax_id'] = nan
-        otu_df['tax_name'] = nan
-        for row in variant2marker2taxid_list_df.itertuples():
-            logger.debug("file: {}; line: {}; row {}".format(__file__, inspect.currentframe().f_lineno, row))
-            variant_seq = row.variant_seq
-            tax_id = row.tax_id
-            otu_df.loc[otu_df.variant_seq == variant_seq, 'marker'] = row.marker
-            try:
-                tax_name = taxid2taxname_dic[tax_id]
-            except KeyError:
-                tax_name = nan
-            otu_df.loc[otu_df.variant_seq == variant_seq, 'tax_id'] = tax_id
-            otu_df.loc[otu_df.variant_seq == variant_seq, 'tax_name'] = tax_name
-        #
-        ################################################
-        # move some otu_df columns to beginning and write
-        ################################################
-        cols = otu_df.columns.tolist()
-        cols.insert(0, cols.pop(cols.index('variant_seq')))
-        cols.insert(0, cols.pop(cols.index('read_average')))
-        cols.insert(0, cols.pop(cols.index('tax_name')))
-        cols.insert(0, cols.pop(cols.index('tax_id')))
-        cols.insert(0, cols.pop(cols.index('marker')))
-        otu_df = otu_df.reindex(columns=cols)
-        #
-        # format, sort and write
-        otu_df['tax_id'].fillna(str(nan), inplace=True) # if a tax_id was not found, replace it with string str(nan)='nan'
-        otu_df['tax_name'].fillna(str(nan), inplace=True) # if tax_name is nan, replace it with string str(nan)='nan'
-        otu_df = otu_df * 1 # convert boolean to integer
-        #otu_df = otu_df.apply(lambda col: pandas.to_numeric(col, errors='ignore', downcast='unsigned'))
-        otu_df.sort_values(by=otu_df.columns.tolist(), inplace=True)
-        otu_df.to_csv(otu_file, sep="\t", index=False, header=True, float_format='%.f')
-

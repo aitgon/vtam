@@ -289,7 +289,108 @@ def f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id):
     ltg_tax_id = tax_count_perc.tail(1)['tax_id'].values[0]
     return ltg_tax_id
 
-def f_variant_vsearch_output_to_ltg(variant_seq, marker_name, vsearch_output_for_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv):
+def f_variant_vsearch_output_to_ltg(variant_id, vsearch_output_for_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv):
+    ltg_tax_id = nan # default ltg_tax_id
+    vsearch_output_for_variant_df = pandas.read_pickle(vsearch_output_for_variant_df_pkl, compression='gzip')
+    vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
+    #
+    tax_seq_id_list = vsearch_output_for_variant_df.tax_seq_id.tolist()
+    #
+    seq2tax_df = seq2tax_db_sqlite_to_df(tax_assign_sqlite, tax_seq_id_list)
+    #
+    # tax_assign_pars df
+    #names = ["identity_threshold", "min_tax_level", "max_tax_resolution", "min_tax_n"]
+    # header is now provided in the pars tsv file
+    tax_assign_pars_df = pandas.read_csv(tax_assign_pars_tsv, sep="\t", header=0)
+    #
+    # Merge of the vsearch alignment, the sequence and taxa information
+    vsearch_output_for_variant_df[["tax_seq_id"]] = vsearch_output_for_variant_df[["tax_seq_id"]].astype('int64')
+    seq2tax_df[["tax_seq_id"]] = seq2tax_df[["tax_seq_id"]].astype('int64')
+    vsearch_output_for_variant_df = pandas.merge(vsearch_output_for_variant_df, seq2tax_df, left_on="tax_seq_id", right_on="tax_seq_id")
+    vsearch_output_for_variant_df = vsearch_output_for_variant_df.assign(
+        rank_id=vsearch_output_for_variant_df.rank_name.apply(lambda x: rank_hierarchy.index(x)))
+    #
+    # Loop over each identity threshold
+    for tax_assign_pars_df_row_i, tax_assign_pars_df_row in tax_assign_pars_df.iterrows():
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 100, "species", "subspecies", 1
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 97, "genus", "species", 1
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 95, "family", "species", 3
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 90, "order", "family", 3
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 85, "order", "order", 3
+        # identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = 80, "class", "order", 5
+        identity_threshold, min_tax_level, max_tax_resolution, min_tax_n = tax_assign_pars_df_row.tolist()
+        min_tax_level_id = rank_hierarchy.index(min_tax_level) # id of tax_level
+        max_tax_resolution_id = rank_hierarchy.index(max_tax_resolution)
+        #
+        ########################
+        # Aucun hit a 100 => on passe au niveau de similarite suivant
+        # At given threshold, assignation fails if no hits
+        ########################
+        vsearch2seq2tax_df_selected = vsearch_output_for_variant_df.loc[
+            vsearch_output_for_variant_df.alignment_identity >= identity_threshold]
+        logger.debug(
+            "file: {}; line: {}; variant_id {}... identity_threshold {} vsearch2seq2tax_df_selected shape {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                                                                                     variant_id, identity_threshold, vsearch2seq2tax_df_selected.shape))
+        if vsearch2seq2tax_df_selected.empty:  # no lines selected at this alignment identity threshold
+            continue  # next identity threshold
+        logger.debug(
+            "file: {}; line: {}; variant_id {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                                                       variant_id, identity_threshold))
+        #
+        ########################################################################
+        # A ce pourcentage on accepte que des hits qui sont annotes au niveau famille (min_tax_level_id) ou plus precise (rank_id plus eleve) (genus, espece) => On garde les 6 hits
+        # At given threshold, discard hits that are annotated with tax_id less detailed than min_tax_level_id
+        # Assignation fails if no hits after selection
+        ########################################################################
+        vsearch2seq2tax_df_selected = vsearch2seq2tax_df_selected.loc[vsearch2seq2tax_df_selected.rank_id >= min_tax_level_id]
+        if vsearch2seq2tax_df_selected.empty:  # no lines selected at this alignment identity threshold
+            # )
+            continue  # next identity threshold
+        logger.debug(
+            "file: {}; line: {}; variant_id {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                                                       variant_id, identity_threshold))
+        #
+        ########################################################################
+        # Il faut au moins 3 (min_tax_n) taxa parmi les hits => on a 3 (86610, 6115, 6116), donc c'est bon (si non, on passe au niveau de pourcentage superieure)
+        # At given threshold, assignation fails if the number of different taxa is strictly lower than min_tax_n
+        ########################################################################
+        if vsearch2seq2tax_df_selected.shape[0] < min_tax_n:
+            continue  # next identity threshold
+        logger.debug(
+            "file: {}; line: {}; variant_id {}... identity_threshold {} passed".format(__file__, inspect.currentframe().f_lineno,
+                                                                                                       variant_id, identity_threshold))
+        # continue only if selected lines
+        tax_seq_id_list = vsearch2seq2tax_df_selected.tax_seq_id.tolist()
+        #
+        ########################################################################
+        # On prend le plus petit groupe taxonomique qui contient au moins 90% des hits
+        # We have to
+        # 1. Create tax_lineage_df
+        # 2. Select majority taxon_id at each level
+        # 3. Compute percentage of majority taxon_id at each level
+        # 4. Select majority taxon_id with more 90% presence at a given level
+        # 5. Select tax_id's with rank level be less detailed than max_tax_resolution
+        # 6. The LTG is the most detailed tax_id among the remaining tax_id
+        ########################################################################
+        #
+        # Create lineage df
+        logger.debug(
+            "file: {}; line: {}; create_phylogenetic_line_df".format(__file__, inspect.currentframe().f_lineno))
+        # 1. Create tax_lineage_df
+        tax_lineage_df = create_phylogenetic_line_df(tax_seq_id_list, tax_assign_sqlite)
+        # 2. Select majority taxon_id at each level
+        # 3. Compute percentage of majority taxon_id at each level
+        # 4. Select majority taxon_id with more 90% presence at a given level
+        # 5. Select tax_id's with rank level be less detailed than max_tax_resolution
+        # 6. The LTG is the most detailed tax_id among the remaining tax_id
+        ltg_tax_id = f_taxlineage_to_ltg(tax_lineage_df, max_tax_resolution_id)
+        if ltg_tax_id is None:
+            continue  # next identity threshold
+        else:
+            return ltg_tax_id
+    return nan
+
+def f_variant_vsearch_output_to_ltg_bak(variant_seq, marker_name, vsearch_output_for_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv):
     ltg_tax_id = nan # default ltg_tax_id
     vsearch_output_for_variant_df = pandas.read_pickle(vsearch_output_for_variant_df_pkl, compression='gzip')
     vsearch_output_for_variant_df.columns = ["tax_seq_id", "alignment_identity"]
