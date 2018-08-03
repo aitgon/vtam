@@ -16,11 +16,15 @@ from wopmetabarcoding.utils.logger import logger
 
 class FilterRunner:
 
-    def __init__(self, variant_df, variant_read_count_df):
+    def __init__(self, variant_df, variant_read_count_df, marker_id):
         logger.debug(
             "file: {}; line: {}; FilterRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df
+        self.marker_id = marker_id
+        #
+        self.tempdir = os.path.join(tempdir, "FilterUtilities", "marker_id_{}".format(marker_id), "FilterUtilities", self.__class__.__name__)
+        PathFinder.mkdir_p(self.tempdir)
         #
         if self.variant_read_count_df.shape[1] != 4:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
@@ -29,6 +33,7 @@ class FilterRunner:
         #
         # passed_variant_df
         filters = [
+            'passed',
             'f1_lfn1_per_replicate',
             'f2_lfn2_per_variant',
             'f3_lfn2_per_replicate_series',
@@ -43,6 +48,7 @@ class FilterRunner:
             'f11_renkonen',
             'f12_indel',
         ]
+        # Default state: variant passed filters
         self.passed_variant_df = pandas.DataFrame(dict(zip(filters, itertools.repeat(True))), index=self.variant_read_count_df.variant_id.tolist())
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
@@ -70,6 +76,7 @@ class FilterRunner:
         do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold,'variant_id'].tolist()
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
@@ -97,6 +104,7 @@ class FilterRunner:
         do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].variant_id.tolist() # select rare reads to discard later
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
@@ -125,6 +133,7 @@ class FilterRunner:
                         df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].variant_id.tolist()  #  select rare reads to discard later
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
@@ -133,6 +142,7 @@ class FilterRunner:
     def f4_lfn3_read_count(self, lfn_read_count_threshold):
         """
         Function calculating the Low Frequency Noise per users defined minimal readcount
+        
         :param variant_read_count_df: dataframe containing the information
         :param lfn_read_count_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
@@ -144,19 +154,23 @@ class FilterRunner:
         do_not_pass_variant_id_list = self.variant_read_count_df.loc[self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
-    def f5_lfn4_per_variant_with_cutoff(self, cutoff_tsv, engine, variant_model):
+    def f5_lfn4_per_variant_with_cutoff(self, cutoff_tsv):
         """
         Function calculating the Low Frequency Noise per variant against cutoff
+
         :param variant_read_count_df: dataframe containing the information
         :param cutoff_tsv: file containing the cutoffs for each variant
         :return: List of the index which don't pass the filter
         """
-        # TODO must be done
+        # TODO: Must be updated for new FilterRunner class
+        # TODO: Variant sequence must be taken from variant_df
+        raise NotImplementedError("Must be updated for new FilterRunner class")
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
@@ -186,6 +200,7 @@ class FilterRunner:
         do_not_pass_variant_id_list = df2.ix[df2[this_filter_name] < df2.cutoff].variant_id.tolist()
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
@@ -194,28 +209,29 @@ class FilterRunner:
     def f6_lfn4_per_replicate_series_with_cutoff(self, cutoff_tsv):
         """
             Function calculating the Low Frequency Noise per replicate series against cutoff
-            :param variant_read_count_df: dataframe containing the information
+
             :param cutoff_tsv: file containing the cutoffs for each variant
-            :return: List of the index which don't pass the filter
+            :return: None
             """
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
         cutoff_df = pandas.read_csv(cutoff_tsv, sep="\t", header=0)
-        cutoff_df.columns = ['variant_seq', 'cutoff']
+        cutoff_df.columns = ['variant_sequence', 'cutoff']
         #
         df2 = self.variant_read_count_df.groupby(by=['replicate']).sum()
         df2 = self.variant_read_count_df.merge(df2, left_on='replicate', right_index=True)
-        df2.columns = ['variant_seq', 'replicate', 'biosample', 'sample_replicate',
+        df2.columns = ['variant_sequence', 'replicate', 'biosample', 'sample_replicate',
                        'read_count_per_variant_per_biosample_replicate', 'read_count_per_replicate_series']
         df2[
             'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_biosample_replicate / df2.read_count_per_replicate_series
         #
         # merge with cutoff
-        df2 = df2.merge(cutoff_df, left_on='variant_seq', right_on='variant_seq')
+        df2 = df2.merge(cutoff_df, left_on='variant_sequence', right_on='variant_sequence')
         do_not_pass_variant_id_list = df2.ix[df2.low_frequence_noice_per_replicate_series < df2.cutoff].variant_id.tolist()
         #
         for variant_id in do_not_pass_variant_id_list:
+            self.passed_variant_df.loc[variant_id, 'passed'] = False
             self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
@@ -230,10 +246,6 @@ class FilterRunner:
         """
         Filter watching if a variant is present the minimal number of sample replicates of a sample
 
-        :param engine: engine of the database
-        :param replicate_model: model of the replicate table
-        :param marker_id: id of the marker
-        :param variant_read_count_df: dataframe containing the information
         :param min_count: minimal number of replicates in which the variant must be present
         :return: None
         """
@@ -249,21 +261,17 @@ class FilterRunner:
                 df_biosample.variant_count < min_count].variant_id.unique().tolist()
             #
             for variant_id in do_not_pass_variant_id_list:
+                self.passed_variant_df.loc[variant_id, 'passed'] = False
                 self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                            (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
 
-    def f8_min_replp(self, replicate_count):
+    def f8_min_replp(self):
         """
         Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
 
-        :param engine: engine of the database
-        :param replicate_model: model of the replicate table
-        :param marker_id: id of the marker
-        :param variant_read_count_df: data frame containing the information
-        :param replicate_count: number of sample_replicate in each
         :return: None
         """
         this_filter_name = inspect.stack()[0][3]
@@ -271,38 +279,39 @@ class FilterRunner:
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
         for biosample_id in self.variant_read_count_df.biosample_id.unique():
             df_biosample = self.variant_read_count_df.loc[self.variant_read_count_df['biosample_id'] == biosample_id]
+            replicate_count = len(df_biosample.replicate_id.unique().tolist())
             df3 = df_biosample['variant_id'].value_counts().to_frame()
             df3.columns = ['variant_count']
             df_biosample = df_biosample.merge(df3, left_on='variant_id', right_index=True)
-            do_not_pass_variant_id_list = df_biosample.ix[df_biosample.sequence_count < ((1 / 3) * replicate_count)].variant_id.unique().tolist()
+            # TODO Verify this calculation. Where does this 3 comes from?
+            do_not_pass_variant_id_list = df_biosample.ix[df_biosample.variant_count < ((1 / 3) * replicate_count)].variant_id.unique().tolist()
             #
             for variant_id in do_not_pass_variant_id_list:
+                self.passed_variant_df.loc[variant_id, 'passed'] = False
                 self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                            (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
 
-    def f9_pcr_error(self, var_prop, pcr_error_by_sample, fasta_dir):
+    def f9_pcr_error(self, var_prop, pcr_error_by_sample):
         """
         Function used to eliminate variants from the data frame in which a pcr error is spotted
 
-        :param engine: engine of the database
-        :param replicate_model: model of the replicate table
-        :param variant_model: model of the variants table
-        :param variant_read_count_df: data frame containing the information
-        :param marker_id: id of the marker: already in variant_read_count_df
-        :param var_prop: threshold choose by the user
-        :param pcr_error_by_sample: boolean used to choose if the analysis is made by sample or sample_replicate
+        :param var_prop: float, in the [0, 1] interval. It is the threshold chosen by the user
+        :param pcr_error_by_sample: boolean, default True. It is used to choose if the analysis is made by sample or sample_replicate
         :return: None
         """
+        if not pcr_error_by_sample:
+            # TODO: Must be updated for new FilterRunner class
+            return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
         if pcr_error_by_sample:
             sample_list = self.variant_read_count_df.biosample_id.unique().tolist()
         else:
-            sample_list = None # TODO sample_replicate_list
+            sample_list = None
 
         for element in sample_list:
             if pcr_error_by_sample:
@@ -310,16 +319,15 @@ class FilterRunner:
                 variant_df_by_biosample = df_biosample.merge(self.variant_df, left_on='variant_id', right_on='id')[
                     ['id', 'sequence']].drop_duplicates()
             else:
-                # TODO
                 df_biosample = self.variant_read_count_df.loc[self.variant_read_count_df['sample_replicate'] == element]
-                subset_fasta = os.path.join(tempdir, ('{}_{}.fasta'.format(element)))
-                variant_id_to_sequence_df = None # TODO
+                subset_fasta = os.path.join(self.tempdir, ('{}_{}.fasta'.format(element)))
+                variant_id_to_sequence_df = None
             if variant_df_by_biosample.shape[0] > 0:
                 ###################################################################
                 # 1. Make a fasta file with all variants of the sample or replicate
                 ###################################################################
-                PathFinder.mkdir_p(os.path.join(fasta_dir, this_filter_name))
-                subset_fasta = os.path.join(fasta_dir, this_filter_name, '{}.fasta'.format(element))
+                PathFinder.mkdir_p(os.path.join(self.tempdir, this_filter_name))
+                subset_fasta = os.path.join(self.tempdir, this_filter_name, '{}.fasta'.format(element))
                 with open(subset_fasta, 'w') as fout:
                     for row in variant_df_by_biosample.itertuples():
                         variant_id = row[0]
@@ -335,7 +343,7 @@ class FilterRunner:
                 # 3.1 vsearch
                 ###################################################################
                 # import pdb; pdb.set_trace()
-                sample_tsv = os.path.join(fasta_dir, '{}.tsv'.format(element))
+                sample_tsv = os.path.join(self.tempdir, '{}.tsv'.format(element))
                 vsearch_usearch_global_args = {'db': subset_fasta,
                                                'usearch_global': subset_fasta,
                                                'id': str(id),
@@ -366,22 +374,23 @@ class FilterRunner:
 
                 #
                 for variant_id in do_not_pass_variant_id_list:
+                    self.passed_variant_df.loc[variant_id, 'passed'] = False
                     self.passed_variant_df.loc[variant_id, this_filter_name] = False
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) ==
                                                                 self.passed_variant_df.shape[1]).sum()))
 
-    def f10_pass_chimera(self, chimera_by_sample_replicate, engine, variant_model, fasta_dir):
+    def f10_chimera(self, chimera_by_sample_replicate, engine, variant_model):
         """
-        Function using Vsearch to identify f10_pass_chimera or borderline variant
+        Function using Vsearch to identify f10_chimera or borderline variant
 
         :param replicate_obj_list: list of the sample and the corresponding sample replicate
         :param variant_read_count_df: data frame containing the information
-        :param marker_id: id of the marker
         :param chimera_by_sample_replicate: parameter to choose between sample, sample replicate or all
         :return: None
         """
+        # TODO: Variant sequence must be taken from variant_df instead of from engine and variant_model
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
@@ -404,9 +413,9 @@ class FilterRunner:
                 ###################################################################
                 # 1. Make a fasta file with all variants of the sample or replicate
                 ###################################################################
-                PathFinder.mkdir_p(os.path.join(fasta_dir, this_filter_name))
-                subset_fasta = os.path.join(fasta_dir, this_filter_name, '{}.fasta'.format(subset_name))
-                subset_sortbysize_fasta = os.path.join(fasta_dir, this_filter_name, '{}_sortbysize.fasta'.format(subset_name))
+                PathFinder.mkdir_p(os.path.join(self.tempdir, this_filter_name))
+                subset_fasta = os.path.join(self.tempdir, this_filter_name, '{}.fasta'.format(subset_name))
+                subset_sortbysize_fasta = os.path.join(self.tempdir, this_filter_name, '{}_sortbysize.fasta'.format(subset_name))
                 ###################################################################
                 # 2. Sort variants by abundance
                 ###################################################################
@@ -425,11 +434,11 @@ class FilterRunner:
                 ###################################################################
                 # 3. Run uchime_denovo
                 ###################################################################
-                subset_borderline_fasta = os.path.join(fasta_dir, this_filter_name,
+                subset_borderline_fasta = os.path.join(self.tempdir, this_filter_name,
                                                        '{}_borderline.fasta'.format(subset_name))
-                subset_nonchimeras_fasta = os.path.join(fasta_dir, this_filter_name,
+                subset_nonchimeras_fasta = os.path.join(self.tempdir, this_filter_name,
                                                        '{}_nonchimeras.fasta'.format(subset_name))
-                subset_chimeras_fasta = os.path.join(fasta_dir, this_filter_name,
+                subset_chimeras_fasta = os.path.join(self.tempdir, this_filter_name,
                                                        '{}_chimeras.fasta'.format(subset_name))
                 vsearch_chimera_args = {
                     "uchime_denovo": subset_sortbysize_fasta,
@@ -444,7 +453,8 @@ class FilterRunner:
                 ###################################################################
                 subset_chimera_seqio = SeqIO.parse(open(subset_chimeras_fasta), 'fasta')
                 for subset_chimera in subset_chimera_seqio:
-                    self.passed_variant_df.loc[subset_chimera.id, 'f10_pass_chimera'] = False # does not pass
+                    self.passed_variant_df.loc[variant_id, 'passed'] = False
+                    self.passed_variant_df.loc[subset_chimera.id, 'f10_chimera'] = False # does not pass
                 ###################################################################
                 # 5. Flag borderline sequences as possible chimera
                 ###################################################################
@@ -457,21 +467,21 @@ class FilterRunner:
                                                                 self.passed_variant_df.shape[1]).sum()))
 
 
-    def f11_pass_renkonen(self, number_of_replicate, renkonen_tail):
+    def f11_renkonen(self, number_of_replicate, renkonen_tail):
         """
         Function calculating distance between sample replicate of the sample to determine if the sample replicate
         must be deleted or not
         :param engine: engine of the database
         :param replicate_model: model of the replicate table
         :param variant_read_count_df: data frame containing the information
-        :param marker_id: id of the marker
         :param number_of_replicate: Number of replicate by sample
         :return: None
         """
+        # TODO: Must be updated for new FilterRunner class
+        return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        # TODO
         ########################################################
         # proportion of the reads of variant i per replicate j (Ni,j=1/Nj=1)
         ########################################################
@@ -509,8 +519,6 @@ class FilterRunner:
         variant_read_proportion_per_replicate_1_2['min_read_proportion'] = variant_read_proportion_per_replicate_1_2[
             ['read_proportion_of_variant_in_replicate1', 'read_proportion_of_variant_in_replicate2']].apply(
             lambda row: row.min(), axis=1)
-        # TODO
-        import pdb; pdb.set_trace()
         #
         columns_name = ['repl_i', 'repl_j', 'distance']
         df_read_count_per_sample_replicate = self.variant_read_count_df.groupby(by=['sample_replicate'])['count'].sum()
@@ -579,6 +587,8 @@ class FilterRunner:
         :param delete_var: option which define if the variants must be deleted or tagged
         :return: void
         """
+        # TODO: Must be reviewed for new object
+        return
         sequences = self.variant_read_count_df['variant_seq'].tolist()
         # Get the list of codon stop according to the genetic code given by the user
         df2 = df_codon_stop_per_genetic_code.loc[df_codon_stop_per_genetic_code['genetic_code'] == genetic_code]
@@ -628,6 +638,7 @@ class FilterRunner:
         Function used to display the read average of the remaining variant
         :return:
         """
+        # TODO: Must be reviewed for new object
         variants_sequences = self.variant_read_count_df['variant_seq']
         variants_sequences =list(set(variants_sequences))
         read_average_columns = ['variant', 'read_average']

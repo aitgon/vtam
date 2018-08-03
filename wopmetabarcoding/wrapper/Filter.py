@@ -95,8 +95,8 @@ class Filter(ToolWrapper):
                 marker_id = row[0]
                 #
                 # Create wrapper outdir in a per marker basis
-                tempdir_marker = os.path.join(tempdir, "FilterUtilities", "marker_id_{}".format(marker_id))
-                PathFinder.mkdir_p(tempdir_marker)
+                # tempdir_marker = os.path.join(tempdir, "FilterUtilities", "marker_id_{}".format(marker_id))
+                # PathFinder.mkdir_p(tempdir_marker)
                 #
                 # Create variant_read_count DF for given marker
                 stmt_variant_read_count = select([variant_read_count_model_table.c.variant_id,
@@ -118,7 +118,7 @@ class Filter(ToolWrapper):
                     variant_list.append(row2)
                 variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
                 #
-                filter_obj = FilterRunner(variant_df, variant_read_count_df)
+                filter_runner = FilterRunner(variant_df, variant_read_count_df, marker_id)
                 #
                 # Filter parameters
                 lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
@@ -131,80 +131,85 @@ class Filter(ToolWrapper):
                 ############################################
                 # Filter 1: f1_lfn1_per_replicate
                 ############################################
-                filter_obj.f1_lfn1_per_replicate(lfn_per_replicate_threshold)
+                filter_runner.f1_lfn1_per_replicate(lfn_per_replicate_threshold)
                 #
                 ############################################
                 # Filter 2: f2_lfn2_per_variant
                 # Filter 3: f3_lfn2_per_replicate_series
                 ############################################
-                f2_lfn2_per_variant = True
-                if f2_lfn2_per_variant:
-                    filter_obj.f2_lfn2_per_variant(lfn_per_variant_threshold)
+                # TODO Take replicate_series parameter to the wopfile
+                replicate_series = False
+                if not replicate_series:
+                    filter_runner.f2_lfn2_per_variant(lfn_per_variant_threshold)
                 else:
-                    filter_obj.f3_lfn2_per_replicate_series(lfn_per_replicate_series_threshold)
+                    filter_runner.f3_lfn2_per_replicate_series(lfn_per_replicate_series_threshold)
                 #
                 ############################################
                 # Filter 4: f4_lfn3_read_count
                 ############################################
-                filter_obj.f4_lfn3_read_count(lfn_read_count_threshold)
+                filter_runner.f4_lfn3_read_count(lfn_read_count_threshold)
                 #
                 ############################################
                 # Filter 5: f5_lfn4_per_variant_with_cutoff
                 # Filter 6: f6_lfn4_per_replicate_series_with_cutoff
                 ############################################
-                f5_lfn4_per_variant_with_cutoff = True
-                if f5_lfn4_per_variant_with_cutoff:
-                    # TODO: Default cutoff must be chosen
-                    filter_obj.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv, engine, variant_model)
+                replicate_series = False
+                if not replicate_series:
+                    # TODO: @EM Which is the default cutoff
+                    pass
+                    # filter_runner.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv)
                 else:
-                    # TODO: Default cutoff must be chosen
-                    filter_obj.f6_lfn4_per_replicate_series_with_cutoff(cutoff_file_tsv)
+                    # TODO: @EM Which is the default cutoff?
+                    filter_runner.f6_lfn4_per_replicate_series_with_cutoff(cutoff_file_tsv)
                 #
                 ############################################
                 # Filter 7: Repeatability: f7_min_repln
                 # Filter 8: Repeatability: f8_min_replp
                 ############################################
-                repln = True
-                if repln:
-                    filter_obj.f7_min_repln(2)
+                # TODO Take replp parameter to the wopfile
+                replp = True
+                if not replp:
+                    filter_runner.f7_min_repln(2)
                 else:
-                    filter_obj.f8_min_replp(3)
+                    # TODO @EM Confirm that this function does not take parameters
+                    filter_runner.f8_min_replp()
                 #
                 ###########################################
                 # Filter 9: PCR error
                 ###########################################
-                # filter_obj.f9_pcr_error(self.option("pcr_error_var_prop"), pcr_error_by_sample=True,
-                #                                                      fasta_dir = tempdir_marker)
+                filter_runner.f9_pcr_error(self.option("pcr_error_var_prop"), pcr_error_by_sample=True)
                 #
                 ############################################
                 # Filter 10: Chimera
                 ############################################
-                # filter_obj.f10_pass_chimera(chimera_by_sample_replicate=True, engine=engine, variant_model=variant_model, fasta_dir=tempdir_marker)
+                # TODO: Variant sequence must be taken from variant_df instead of from engine and variant_model
+                filter_runner.f10_chimera(chimera_by_sample_replicate=True, engine=engine, variant_model=variant_model)
                 #
                 ############################################
                 # Filter 11: Renkonen
                 ############################################
-                # filter_obj.f11_pass_renkonen(self.option("renkonen_number_of_replicate"), self.option("renkonen_renkonen_tail"))
+                filter_runner.f11_renkonen(self.option("renkonen_number_of_replicate"), self.option("renkonen_renkonen_tail"))
                 #
                 ############################################
                 # Filter 12: Indel
                 ############################################
-                filter_obj.f12_indel()
+                filter_runner.f12_indel()
                 #
                 ############################################
                 # Filter: Stop codon
                 ############################################
+                # TODO: Must be updated for new FilterRunner class
                 #     df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
                 #     Logger.instance().info("Launching pseudogene detection with codon stop filter:")
-                #     filter_obj.codon_stop(df_codon_stop_per_genetic_code, 2, False)
-                #     filter_obj.consensus()
-                #     variant2sample2replicate2count_df = filter_obj.filtered_variants()
+                #     filter_runner.codon_stop(df_codon_stop_per_genetic_code, 2, False)
+                #     filter_runner.consensus()
+                #     variant2sample2replicate2count_df = filter_runner.filtered_variants()
                 #
                 ################################
                 # Insert into db
                 ################################
-                filter_obj.passed_variant_df['variant_id'] = filter_obj.passed_variant_df.index
-                records = list(filter_obj.passed_variant_df.T.to_dict().values())
+                filter_runner.passed_variant_df['variant_id'] = filter_runner.passed_variant_df.index
+                records = list(filter_runner.passed_variant_df.T.to_dict().values())
                 with engine.connect() as conn:
                     conn.execute(passed_variant_model.__table__.insert(), records)
 
