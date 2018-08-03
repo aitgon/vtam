@@ -387,7 +387,7 @@ def f_variant_vsearch_output_to_ltg(variant_id, vsearch_output_for_variant_df_pk
         if ltg_tax_id is None:
             continue  # next identity threshold
         else:
-            return ltg_tax_id
+            return int(ltg_tax_id)
     return nan
 
 def f_variant_vsearch_output_to_ltg_bak(variant_seq, marker_name, vsearch_output_for_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv):

@@ -1,5 +1,5 @@
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.wrapper.TaxassignUtilities import indexed_db_creation
+from wopmetabarcoding.wrapper.TaxAssignUtilities import indexed_db_creation
 
 class DbFasta2Udb(ToolWrapper):
     __mapper_args__ = {

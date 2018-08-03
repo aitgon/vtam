@@ -14,7 +14,7 @@ from wopmars.framework.parsing.Parser import ToolWrapper
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
 #from wopmetabarcoding.utils.constants import wopmetabarcoding_filter_test_data
-from wopmetabarcoding.wrapper.TaxassignUtilities import create_phylogenetic_line_df
+from wopmetabarcoding.wrapper.TaxAssignUtilities import create_phylogenetic_line_df
 
 
 class TestWopMetabarcoding(TestCase):

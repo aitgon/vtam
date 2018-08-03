@@ -5,7 +5,7 @@ import resource
 
 import numpy
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.wrapper.TaxassignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
+from wopmetabarcoding.wrapper.TaxAssignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
     get_vsearch_output_for_variant_as_df, f_variant_vsearch_output_to_ltg, convert_fileinfo_to_otu_df, f_taxid2taxname
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
@@ -29,9 +29,9 @@ def f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv):
     return (variant_id, tax_id)
 
 
-class Taxassign(ToolWrapper):
+class TaxAssign(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.Taxassign"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"
     }
     # Input file
     __input_file_db_udb = "db_udb"
@@ -46,21 +46,21 @@ class Taxassign(ToolWrapper):
 
     def specify_input_file(self):
         return [
-            Taxassign.__input_file_db_udb,
-            Taxassign.__input_file_tax_assign_db_sqlite,
-            Taxassign.__input_tax_assign_pars_tsv,
+            TaxAssign.__input_file_db_udb,
+            TaxAssign.__input_file_tax_assign_db_sqlite,
+            TaxAssign.__input_tax_assign_pars_tsv,
         ]
 
     def specify_input_table(self):
         return [
-            Taxassign.__input_table_variant,
-            Taxassign.__input_table_variant_read_count,
-            Taxassign.__input_table_variant_selected,
+            TaxAssign.__input_table_variant,
+            TaxAssign.__input_table_variant_read_count,
+            TaxAssign.__input_table_variant_selected,
         ]
 
     def specify_output_table(self):
         return [
-            Taxassign.__output_table_variant_taxa,
+            TaxAssign.__output_table_variant_taxa,
         ]
 
     def specify_params(self):
@@ -73,17 +73,17 @@ class Taxassign(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         #
         # Input file
-        db_udb = self.input_file(Taxassign.__input_file_db_udb)
-        tax_assign_pars_tsv = self.input_file(Taxassign.__input_tax_assign_pars_tsv)
-        tax_assign_sqlite = self.input_file(Taxassign.__input_file_tax_assign_db_sqlite)
+        db_udb = self.input_file(TaxAssign.__input_file_db_udb)
+        tax_assign_pars_tsv = self.input_file(TaxAssign.__input_tax_assign_pars_tsv)
+        tax_assign_sqlite = self.input_file(TaxAssign.__input_file_tax_assign_db_sqlite)
         #
         # Input table models
-        variant_model = self.input_table(Taxassign.__input_table_variant)
-        variant_read_count_model = self.input_table(Taxassign.__input_table_variant_read_count)
-        variant_selected_model = self.input_table(Taxassign.__input_table_variant_selected)
+        variant_model = self.input_table(TaxAssign.__input_table_variant)
+        variant_read_count_model = self.input_table(TaxAssign.__input_table_variant_read_count)
+        variant_selected_model = self.input_table(TaxAssign.__input_table_variant_selected)
         #
         # Output file
-        variant_taxa_model = self.output_table(Taxassign.__output_table_variant_taxa)
+        variant_taxa_model = self.output_table(TaxAssign.__output_table_variant_taxa)
         with engine.connect() as conn:
             conn.execute(variant_taxa_model.__table__.delete())
         #
@@ -166,8 +166,11 @@ class Taxassign(ToolWrapper):
         variant2taxid_list = []
         for variant_id in variant_selected_df.variant_id.unique():
             variant_id, tax_id = f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv)
-            if numpy.isnan():
+            variant_id = int(variant_id)
+            if numpy.isnan(tax_id):
                 tax_id = None
+            else:
+                tax_id = int(tax_id)
             variant2taxid_list.append({'variant_id': variant_id, 'tax_id': tax_id})
         #
         ################################
