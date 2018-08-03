@@ -26,7 +26,11 @@ def f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv):
     vsearch_per_variant_df_pkl = os.path.join(tempdir, "TaxAssign",
                                               "vsearch_df_for_variant_id_{}.pkl".format(variant_id))
     tax_id = f_variant_vsearch_output_to_ltg(variant_id, vsearch_per_variant_df_pkl, tax_assign_sqlite, tax_assign_pars_tsv)
-    return (variant_id, tax_id)
+    if numpy.isnan(tax_id):
+        tax_id = None
+    else:
+        tax_id = int(tax_id)
+    return {'variant_id':  int(variant_id), 'tax_id' : tax_id}
 
 
 class TaxAssign(ToolWrapper):
@@ -149,29 +153,29 @@ class TaxAssign(ToolWrapper):
                 os.remove(fasta_path)
                 variant_id_list = [] # reset variant id list
         #
-        # ################################################
-        # # Start of Parallel Version: Comment out after debugging
-        # ################################################
-        # variant_id_list = sorted(variant_selected_df.variant_id.unique().tolist())
-        # logger.debug(
-        #     "file: {}; line: {}; Parallel. Mem {}".format(__file__, inspect.currentframe().f_lineno, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
-        # with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
-        #     variant2marker2taxid_list = p.starmap(f_variant2taxid, zip(variant_id_list, repeat(tax_assign_sqlite),
-        #                                                                repeat(tax_assign_pars_tsv)), chunksize=1)
-        # # End of Parallel Version: Comment out after debugging
+        ################################################
+        # Start of Parallel Version: Comment out after debugging
+        ################################################
+        variant_id_list = sorted(variant_selected_df.variant_id.unique().tolist())
+        logger.debug(
+            "file: {}; line: {}; Parallel. Mem {}".format(__file__, inspect.currentframe().f_lineno, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        with multiprocessing.Pool(multiprocessing.cpu_count(), maxtasksperchild=1) as p:
+            variant2taxid_list = p.starmap(f_variant2taxid, zip(variant_id_list, repeat(tax_assign_sqlite),
+                                                                       repeat(tax_assign_pars_tsv)), chunksize=1)
+        # End of Parallel Version
         #
         ################################################
         # Start of Non Parallel Version: Comment out after debugging
         ################################################
-        variant2taxid_list = []
-        for variant_id in variant_selected_df.variant_id.unique():
-            variant_id, tax_id = f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv)
-            variant_id = int(variant_id)
-            if numpy.isnan(tax_id):
-                tax_id = None
-            else:
-                tax_id = int(tax_id)
-            variant2taxid_list.append({'variant_id': variant_id, 'tax_id': tax_id})
+        # variant2taxid_list = []
+        # for variant_id in variant_selected_df.variant_id.unique():
+        #     variant2taxid = f_variant2taxid(variant_id, tax_assign_sqlite, tax_assign_pars_tsv)
+        #     # variant_id = int(variant_id)
+        #     # if numpy.isnan(tax_id):
+        #     #     tax_id = None
+        #     # else:
+        #     #     tax_id = int(tax_id)
+        #     variant2taxid_list.append(variant2taxid)
         #
         ################################
         # Insert into db
