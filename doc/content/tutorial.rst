@@ -159,14 +159,14 @@ This rule fills in the *Variant* table with the number of reads per variant and 
 You can have more count detail in each category in the tmp files listed in the *sortreads_samplecount.tsv* file
 
 
-Run the *Taxassign* rule
+Run the *TaxAssign* rule
 -------------------------------------------------------------------------
 
-We can continue with the *Taxassign* rule. This rule is long, so be patient or test it with smaller datasets.
+We can continue with the *TaxAssign* rule. This rule is long, so be patient or test it with smaller datasets.
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Taxassign
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t TaxAssign
 
 This rule determine the LTG (Lower taxonomic group) for each variant
 

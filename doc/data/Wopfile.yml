@@ -83,8 +83,8 @@ rule Filter:
 
 
 
-rule Taxassign:
-    tool: wopmetabarcoding.wrapper.Taxassign
+rule TaxAssign:
+    tool: wopmetabarcoding.wrapper.TaxAssign
     input:
         file:
             taxassign_db_fasta: data/input/Metazoa_BOLD_non_nt_2016_06_23.fas

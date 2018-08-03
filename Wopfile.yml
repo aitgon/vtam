@@ -90,8 +90,8 @@ rule db_fasta2udb:
         file:
             db_udb: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
 
-rule Taxassign:
-    tool: wopmetabarcoding.wrapper.Taxassign
+rule TaxAssign:
+    tool: wopmetabarcoding.wrapper.TaxAssign
     input:
         file:
             db_udb: data/input/Metazoa_BOLD_non_nt_2016_06_23.udb
