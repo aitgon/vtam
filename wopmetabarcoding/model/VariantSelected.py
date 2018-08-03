@@ -5,8 +5,8 @@ from wopmars.framework.database.Base import Base
 from sqlalchemy import Column, String, Integer, ForeignKey
 
 
-class PassedVariant(Base):
-    __tablename__ = "PassedVariant"
+class VariantSelected(Base):
+    __tablename__ = "VariantSelected"
 
     variant_id = Column(Integer, ForeignKey("Variant.id"), primary_key=True)
     passed = Column(Boolean, default=True, nullable=False)
