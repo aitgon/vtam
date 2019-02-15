@@ -121,13 +121,13 @@ class FilterRunner:
         #
         self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
         self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
 
-    def f2_lfn2_per_variant_mekdad(self, lfn_per_variant_threshold):
+    def f2_lfn2_per_variant_mekdad(self, lfn_per_variant_threshold, lfn_per_variant_threshold_i=None):
         """
         This filter corresponds to LFN_var example of Emese
 

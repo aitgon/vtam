@@ -29,5 +29,17 @@ class TestFilter(TestCase):
     def test_02_f2_lfn2_per_variant_mekdad(self):
         lfn_var_threshold = 0.001
         self.filter_runner.f2_lfn2_per_variant_mekdad(lfn_var_threshold)
-        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.f2_lfn2_per_variant_mekdad.values.tolist() == [True, True, False, True, True, True, False, True, False, True, True, True])
-        self.assertFalse(self.filter_runner.passed_variant_mekdad_df.f2_lfn2_per_variant_mekdad.values.tolist() == [True, True, False, True, True, True, False, True, False, True, True, False])
+        # import pdb; pdb.set_trace()
+        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==1),
+                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==False)
+        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==2),
+                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==True)
+        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==3),
+                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==False)
+
