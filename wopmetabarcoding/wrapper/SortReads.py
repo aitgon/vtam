@@ -96,6 +96,8 @@ class SortReads(ToolWrapper):
         # For each fasta file path in the DB (Table Fasta)
         #
         # 1. Trimming (Forward and reverse): Remove primer and tag sequence from each read sequence (Each sequence in Fasta)
+        # 2. Store read count of each variant in table 'VariantReadCount'
+        # 3. Eliminate singleton: Variants found one time throughout all biosample-replicates
         ############################################
         for fasta_obj in session.query(fasta_model).order_by('name').all():
             fasta_id = fasta_obj.id
@@ -278,7 +280,8 @@ class SortReads(ToolWrapper):
             logger.debug(
                 "file: {}; line: {}; trimmed_tsv {}".format(__file__, inspect.currentframe().f_lineno, trimmed_tsv))
             ################################################################
-            # Annotated reads
+            # Count number of times a given variant (Sequence unique) is observed in fasta file
+            # In other words, store in 'VariantReadCount' for each 'variant_id' -> 'read count'
             ################################################################
             marker2fasta2readannotationtsv_dict[marker_name] = {}
             marker2fasta2readannotationtsv_dict[marker_name][fasta_name] = read_annotation_tsv
@@ -293,7 +296,7 @@ class SortReads(ToolWrapper):
                 "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
             #
             ################################
-            # Insert into db
+            # Insert into final db, table 'VariantReadCount'
             ################################
             for row in fasta_variant_count_df.itertuples():
                 biosample_id = row[2]
