@@ -48,8 +48,24 @@ class FilterRunner:
             'f11_renkonen',
             'f12_indel',
         ]
+        #
+        ############################################
+        # DF with results of filters. This DF is composed of
+        #
+        # Col 1: 'variant_id' (integer, index, unique and primary key)
+        # Col 2: 'passed'. Did this variant_id passed all the filters (Boolean, default True)
+        # Col 3: 'f1_lfn1_per_replicate'. Did this variant_id passed filter 'f1_lfn1_per_replicate' (Boolean, default True)
+        # Col 4: ...
+        # Col 15: 'indel'. Did this variant_id passed filter 'indel' (Boolean, default True)
+        ############################################
+        # 
+        # Create
         # Default state: variant passed filters
         self.passed_variant_df = pandas.DataFrame(dict(zip(filters, itertools.repeat(True))), index=self.variant_df.id.unique().tolist())
+        ################################
+        # Fix output avec Reda Mekdad:
+        ################################
+        self.passed_variant_mekdad_df = self.variant_read_count_df.copy()
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -84,7 +100,8 @@ class FilterRunner:
 
     def f2_lfn2_per_variant(self, lfn_per_variant_threshold):
         """
-        Function returning indices passing this filter.
+        This filter corresponds to LFN_var example of Emese
+
         :param variant_read_count_df: dataframe containing the information
         :param lfn_per_variant_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
@@ -104,9 +121,36 @@ class FilterRunner:
         #
         self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
         self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
+        import pdb; pdb.set_trace()
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
+
+
+    def f2_lfn2_per_variant_mekdad(self, lfn_per_variant_threshold):
+        """
+        This filter corresponds to LFN_var example of Emese
+
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_per_variant_threshold: threshold defined by the user
+        :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
+        the filter or False otherwise
+        """
+        this_filter_name = inspect.stack()[0][3]
+        logger.debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        # Calculating the total of reads by variant
+        df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
+        # Merge the column with the total reads by variant for calculate the ratio
+        df2 = self.variant_read_count_df.merge(df2, left_on='variant_id', right_on='variant_id')
+        df2.columns = ['variant_id', 'biosample_id', 'replicate_id', 'read_count_per_variant_per_biosample_per_replicate', 'read_count_per_variant']
+        # Calculate the ratio
+        df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
+        #
+        # Output
+        self.passed_variant_mekdad_df[this_filter_name] = True
+        self.passed_variant_mekdad_df.loc[
+            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, this_filter_name] = False
 
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
