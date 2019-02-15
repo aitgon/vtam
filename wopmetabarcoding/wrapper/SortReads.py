@@ -91,6 +91,12 @@ class SortReads(ToolWrapper):
         checked_vsearch_output_tsv = os.path.join(tempdir, 'checked_vsearch_output.tsv')
         #
         marker2fasta2readannotationtsv_dict = {} # Dict of dicts, where for each marker, there are fasta and readannotationtsv
+        ############################################
+        #
+        # For each fasta file path in the DB (Table Fasta)
+        #
+        # 1. Trimming (Forward and reverse): Remove primer and tag sequence from each read sequence (Each sequence in Fasta)
+        ############################################
         for fasta_obj in session.query(fasta_model).order_by('name').all():
             fasta_id = fasta_obj.id
             fasta_name = fasta_obj.name
@@ -104,9 +110,12 @@ class SortReads(ToolWrapper):
             # file_id = fasta_obj.id
             sample_information_obj = session.query(sample_information_model).filter(sample_information_model.fasta_id==fasta_id).all()
             PathFinder.mkdir_p(os.path.join(tempdir, "SortReads", os.path.basename(fasta_name)))
-            # 
             ############################################
-            # First (reverse) trim
+            #
+            # First (forward) trim: create_primer_tag_fasta_for_vsearch
+            #
+            # 1. Create fasta file for primer-tag sequences
+            # 2. Run vsearch with 'db' parameter: primer_tag_fasta and 'usearch_global' parameter: fasta with the reads
             ############################################
             is_forward_strand = True
             #
@@ -115,19 +124,23 @@ class SortReads(ToolWrapper):
             ############################################
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
-            # Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for forward trimming.")
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; FASTA for forward trimming: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, primer_tag_fasta))
+            #
+            # This create the primer + tag fasta file
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
-            # Logger.instance().info("Processing Vsearch for forward trimming.")
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; VSearch forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
-            #
-            # self.vsearch_subprocess(merged_fasta, is_forward_strand, primer_tag_fasta, vsearch_output_tsv)
             vsearch_output_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), "vsearch_output_tsv")
-
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; vsearch_output_tsv".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
+            #
+            ############################################
+            # Run vsearch (Trim)
+            # 
+            # 1. Define vsearch parameters
+            # 2. Run vsearch: output written to 'vsearch_output_tsv'
+            ############################################
             vsearch_params = {'db': primer_tag_fasta,
                               'usearch_global': fasta_name,
                               'id': str(self.option("min_id")),
@@ -236,9 +249,8 @@ class SortReads(ToolWrapper):
                                                                    self.option("overhang"))
             #
             ############################################
-            # Trim reads and write to sqlite
+            # Trim reads in reverse strand and write to sqlite
             ############################################
-            # Logger.instance().info("Trimming reads for forward trimming.")
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for reverse trimming".format(__file__,
                                                                                                        inspect.currentframe().f_lineno,
@@ -256,14 +268,9 @@ class SortReads(ToolWrapper):
                                                                                                               fasta_name,
                                                                                                            is_forward_strand,
                                                                                                            temp_db_sqlite))
-            # trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, tempdir)
             trim_reads(checked_vsearch_output_tsv, trimmed_fasta, trimmed_tsv, temp_db_sqlite)
             #
-            # trimmed_fasta = trimmed_tsv.replace('.tsv', '.fasta')
-            # for file_obj in session.query(file_model).all():
             Logger.instance().info("Annotating reads with Sample Information.")
-            # read_annotation_tsv = (merged_fasta).replace(".fasta", "_annotated_reads.tsv")
-            # read_annotation_tsv = os.path.join(tempdir, os.path.basename(merged_fasta).replace('.fasta', '_annotated_reads.tsv'))
             # One TSV file with read annotation per merged FASTA Fasta
             read_annotation_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'read_annotation.tsv')
             tsv_file_list_with_read_annotations.append(read_annotation_tsv)
