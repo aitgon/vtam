@@ -271,6 +271,8 @@ class FilterRunner:
 
         df2.loc[
             df2.read_count < lfn_read_count_threshold, 'filter_passed'] = False
+        #df2.loc[
+        #   df2.read_count == 0, 'filter_passed'] = False
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
                    'filter_name', 'filter_passed']]
         #import pdb;pdb.set_trace()
@@ -281,6 +283,7 @@ class FilterRunner:
         self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
         #import pdb; pdb.set_trace()
 
+
         #
         #self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
         #self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
@@ -289,6 +292,63 @@ class FilterRunner:
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) ==
                                                                 self.passed_variant_df.shape[1]).sum()))
+    def f5_lfn2_var_dep_mekdad(self, lfn_per_var):
+        """
+        This filter corresponds to LFN_var example of Emese
+
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_per_variant_threshold: threshold defined by the user
+        :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
+        the filter or False otherwise
+        """
+        this_filter_name = inspect.stack()[0][3] # Get function
+
+        # Write log
+        logger.debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        ######################
+        #
+        df2 = self.variant_read_count_df
+
+        df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
+
+        # Merge the column with the total reads by variant for calculate the ratio
+        df2 = self.variant_read_count_df.merge(df2, left_on='variant_id', right_on='variant_id')
+
+        df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_per_replicate'})
+        df2 = df2.rename(columns={'read_count_y': 'read_count_per_variant'})
+
+        # Calculate the ratio
+        df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
+
+        #
+        df2['filter_name'] = this_filter_name
+        df2['filter_passed'] = True
+
+        # df2[this_filter_name] = True
+        #import pdb;
+        #pdb.set_trace()
+        ## utiliser la variable lfn_per_var de type dictionnaire
+
+        df2.loc[
+                  (df2['variant_id'] == --cle ) & df2.low_frequence_noice_per_variant < --valeur, 'filter_passed'] = False
+
+        import pdb;
+        pdb.set_trace()
+
+        #df2.loc[
+         #  (df2['variant_id'] == 22) & df2.low_frequence_noice_per_variant < lfn_pvar[22], 'filter_passed'] = False
+
+
+        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+                   'filter_name', 'filter_passed']]
+
+        # Concatenate vertically output df
+        # Prepare output df and concatenate to self.passed_variant_mekdad_df
+        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
+
+
+
 
     def f5_lfn4_per_variant_with_cutoff(self, cutoff_tsv):
         """

@@ -9,12 +9,13 @@ class TestFilter(TestCase):
             'sequence_':["tata", "tgtg"],
         })
         self.variant_read_count_df = pandas.DataFrame({
-            'variant_id': [1]*6 + [12]*6 + [22]*6,
-            'biosample_id':[1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2],
-            'replicate_id':[1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3],
+            'variant_id': [1]*6 + [12]*6 + [9]*6 +[22]*6 ,
+            'biosample_id':[1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2,1,1,1,2,2,2],
+            'replicate_id':[1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3],
             'read_count':[
                 10,5,0,249,58,185,
                 0,0,2,598,50,875,
+                125,214,20,1284,1798,1913,
                 25,58,23,10980,8999,13814,
             ],
         })
@@ -80,3 +81,28 @@ class TestFilter(TestCase):
                             & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 3)
                             & ( self.filter_runner.passed_variant_mekdad_df.filter_name == 'f4_lfn3_read_count_mekdad'),
                             'filter_passed'].values[0])
+        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[
+                            (self.filter_runner.passed_variant_mekdad_df.variant_id == 1)
+                            & (self.filter_runner.passed_variant_mekdad_df.biosample_id == 1)
+                            & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 2)
+                            & (self.filter_runner.passed_variant_mekdad_df.filter_name == 'f4_lfn3_read_count_mekdad'),
+                            'filter_passed'].values[0] == False)
+
+    def test_05_f5_lfn2_var_dep_mekdad(self):
+        lfn_per_var = {9: 0.05, 22: 0.01, 0: 0}
+
+
+        self.filter_runner.f5_lfn2_var_dep_mekdad(self)(lfn_per_var)
+
+        self.assertTrue(not self.filter_runner.passed_variant_mekdad_df.loc[
+                            (self.filter_runner.passed_variant_mekdad_df.variant_id == 9)
+                            & (self.filter_runner.passed_variant_mekdad_df.biosample_id == 1)
+                            & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 2)
+                            & (self.filter_runner.passed_variant_mekdad_df.filter_name == 'f5_lfn2_var_dep_mekdad'),
+                            'filter_passed'].values[0])
+        self.assertTrue(not self.filter_runner.passed_variant_mekdad_df.loc[
+                            (self.filter_runner.passed_variant_mekdad_df.variant_id == 22)
+                            & (self.filter_runner.passed_variant_mekdad_df.biosample_id == 1)
+                            & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 2)
+                            & (self.filter_runner.passed_variant_mekdad_df.filter_name == 'f5_lfn2_var_dep_mekdad'),
+                            'filter_passed'].values[0] == False)
