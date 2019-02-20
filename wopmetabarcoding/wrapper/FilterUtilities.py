@@ -65,7 +65,7 @@ class FilterRunner:
         ################################
         # Fix output avec Reda Mekdad:
         ################################
-        self.passed_variant_mekdad_df = self.variant_read_count_df.copy()
+        self.passed_variant_mekdad_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_passed':[]})
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
@@ -109,6 +109,7 @@ class FilterRunner:
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        #########################
         # Calculating the total of reads by variant
         df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
@@ -136,9 +137,11 @@ class FilterRunner:
         :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
         the filter or False otherwise
         """
-        this_filter_name = inspect.stack()[0][3]
+        this_filter_name = inspect.stack()[0][3] # Get function
+        # Write log
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        ######################
         # Calculating the total of reads by variant
         df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
@@ -148,10 +151,46 @@ class FilterRunner:
         # Calculate the ratio
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
         #
+        df2['filter_name'] = this_filter_name
+        df2['filter_passed'] = True
+        # df2[this_filter_name] = True
+        df2.loc[
+            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, 'filter_passed'] = False
+        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+                   'filter_name', 'filter_passed']]
+        #
+        # Concatenate vertically output df
+        # Prepare output df and concatenate to self.passed_variant_mekdad_df
+        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
+
+
+    def f3_lfn2_per_replicate_series_mekdad(self, lfn_per_replicate_series_threshold, lfn_per_variant_threshold_i=None):
+        """
+        This filter corresponds to LFN_var example of Emese
+
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_per_variant_threshold: threshold defined by the user
+        :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
+        the filter or False otherwise
+        """
+        this_filter_name = inspect.stack()[0][3] # Get function
+        # Write log
+        logger.debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        ######################
+        # Calculating the total of reads by variant
+        df2 = self.variant_read_count_df[['replicate_id', 'read_count']].groupby(by=['replicate_id']).sum().reset_index()
+        # Merge the column with the total reads by replicate for calculate the ratio
+        df2 = self.variant_read_count_df.merge(df2, left_on='replicate_id', right_on='replicate_id')
+        df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_replicate'})
+        df2 = df2.rename(columns={'read_count_y': 'read_count_per_replicate_series'})
+        # Calculate the ratio
+        df2['low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_biosample_replicate / df2.read_count_per_replicate_series
+        # ####################
         # Output
         self.passed_variant_mekdad_df[this_filter_name] = True
         self.passed_variant_mekdad_df.loc[
-            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, this_filter_name] = False
+            df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold, this_filter_name] = False
 
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """

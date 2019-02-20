@@ -29,17 +29,18 @@ class TestFilter(TestCase):
     def test_02_f2_lfn2_per_variant_mekdad(self):
         lfn_var_threshold = 0.001
         self.filter_runner.f2_lfn2_per_variant_mekdad(lfn_var_threshold)
-        # import pdb; pdb.set_trace()
         self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
                                                                         & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
-                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==1),
-                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==False)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==1)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.filter_name=='f2_lfn2_per_variant_mekdad'),
+                                                                        'filter_passed'].values[0]==False)
         self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
                                                                         & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
-                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==2),
-                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==True)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==2)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.filter_name=='f2_lfn2_per_variant_mekdad'),
+                                                                        'filter_passed'].values[0]==True)
         self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[(self.filter_runner.passed_variant_mekdad_df.variant_id==22)
                                                                         & (self.filter_runner.passed_variant_mekdad_df.biosample_id==1)
-                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==3),
-                                                                        'f2_lfn2_per_variant_mekdad'].values[0]==False)
-
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.replicate_id==3)
+                                                                        & (self.filter_runner.passed_variant_mekdad_df.filter_name=='f2_lfn2_per_variant_mekdad'),
+                                                                        'filter_passed'].values[0]==False)
