@@ -245,6 +245,51 @@ class FilterRunner:
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
+    def f4_lfn3_read_count_mekdad(self, lfn_read_count_threshold):
+        """
+        Function calculating the Low Frequency Noise per users defined minimal readcount
+
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_read_count_threshold: threshold defined by the user
+        :return: List of the index which don't pass the filter
+        """
+        this_filter_name = inspect.stack()[0][3]
+        logger.debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        # Selecting all the indexes where the ratio is below the minimal readcount
+        df2 = self.variant_read_count_df
+        do_not_pass_variant_id_list = self.variant_read_count_df.loc[
+            self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
+        do_not_pass_replicate_id_list = self.variant_read_count_df.loc[
+            self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate_id.tolist()
+
+
+        ######################
+        # test
+        df2['filter_name'] = this_filter_name  #  set this filter
+        df2['filter_passed'] = True  #  default status to passed
+
+        df2.loc[
+            df2.read_count < lfn_read_count_threshold, 'filter_passed'] = False
+        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+                   'filter_name', 'filter_passed']]
+        #import pdb;pdb.set_trace()
+
+        #
+        # Concatenate vertically output df
+        #  Prepare output df and concatenate to self.passed_variant_mekdad_df
+        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
+        #import pdb; pdb.set_trace()
+
+        #
+        #self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+        #self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
+
+        logger.debug(
+            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
+                                                               (self.passed_variant_df.sum(axis=1) ==
+                                                                self.passed_variant_df.shape[1]).sum()))
+
     def f5_lfn4_per_variant_with_cutoff(self, cutoff_tsv):
         """
         Function calculating the Low Frequency Noise per variant against cutoff

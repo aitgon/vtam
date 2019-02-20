@@ -59,3 +59,24 @@ class TestFilter(TestCase):
                             & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 3)
                             & (self.filter_runner.passed_variant_mekdad_df.filter_name == 'f3_lfn2_per_replicate_series_mekdad'),
                             'filter_passed'].values[0])
+
+
+    def test_04_f4_lfn3_read_count_mekdad(self):
+        lfn_read_count_threshold = 10
+
+        self.filter_runner.f4_lfn3_read_count_mekdad(lfn_read_count_threshold)
+        #import pdb;
+        #pdb.set_trace()
+
+        self.assertTrue(not self.filter_runner.passed_variant_mekdad_df.loc[
+            (self.filter_runner.passed_variant_mekdad_df.variant_id == 12)
+            & (self.filter_runner.passed_variant_mekdad_df.biosample_id == 1)
+            & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 1)
+            & (self.filter_runner.passed_variant_mekdad_df.filter_name == 'f4_lfn3_read_count_mekdad'),
+            'filter_passed'].values[0])
+        self.assertTrue(self.filter_runner.passed_variant_mekdad_df.loc[
+                            (self.filter_runner.passed_variant_mekdad_df.variant_id == 12)
+                            & (self.filter_runner.passed_variant_mekdad_df.biosample_id == 2)
+                            & (self.filter_runner.passed_variant_mekdad_df.replicate_id == 3)
+                            & ( self.filter_runner.passed_variant_mekdad_df.filter_name == 'f4_lfn3_read_count_mekdad'),
+                            'filter_passed'].values[0])
