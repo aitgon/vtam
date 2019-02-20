@@ -145,7 +145,6 @@ class FilterRunner:
         df2 = self.variant_read_count_df.merge(df2, left_on='variant_id', right_on='variant_id')
         df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_per_replicate'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_variant'})
-        df2.columns = ['variant_id', 'biosample_id', 'replicate_id', 'read_count_per_variant_per_biosample_per_replicate', 'read_count_per_variant']
         # Calculate the ratio
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
         #
