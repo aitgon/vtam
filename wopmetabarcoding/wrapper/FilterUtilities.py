@@ -198,6 +198,63 @@ class FilterRunner:
             #  Prepare output df and concatenate to self.delete_variant_df
             self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
+    def f1_lfn1_per_replicate_new(self, lfn_per_replicate_threshold):
+        """
+        Function returning indices passing this filter.
+        It calculates the Low Frequency Noise per sample replicate
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_per_replicate_threshold: threshold defined by the user
+        :return: List of the index which don't pass the filter
+        """
+        this_filter_name = inspect.stack()[0][3]
+        logger.debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+        # Calculating the total number of reads by sample replicates
+
+        df2 = self.variant_read_count_df[['biosample_id', 'replicate_id', 'read_count']].groupby(
+            by=['biosample_id', 'replicate_id']).sum().reset_index()
+
+
+        # Merge the column with the total reads by sample replicates for calculate the ratio
+        df2 = self.variant_read_count_df.merge(df2, left_on=['biosample_id', 'replicate_id'],
+                                               right_on=['biosample_id', 'replicate_id'])
+
+        df2.columns = ['biosample_id','read_count_per_variant_per_biosample_per_replicate', 'replicate_id',
+                       'variant_id', 'read_count_per_biosample_replicate']
+
+
+        #
+        # Initialize
+        this_filter_name = 'f1_lfn1_per_replicate_new_07'
+        df2['filter_name'] = this_filter_name
+        df2['filter_delete'] = False
+
+
+        #
+        # Calculate the ratio
+        df2[
+            'low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_biosample_replicate
+        # Selecting all the indexes where the ratio is below the ratio
+
+        df2.loc[
+            df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold , 'filter_delete'] = True
+        #Let only interest columns
+        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+                       'filter_name', 'filter_delete']]
+
+        #import pdb;
+        #pdb.set_trace()
+
+
+        #
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
+
+
+
+
+
+
+
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
         This function implements filter f3 (LFN var replicate series) and filter f6 (LFN vardep_replicate series)
