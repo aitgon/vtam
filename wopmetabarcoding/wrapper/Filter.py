@@ -123,13 +123,13 @@ class Filter(ToolWrapper):
                 filter_runner.f1_lfn1_per_replicate(lfn_per_replicate_threshold)
                 #
                 ############################################
-                # Filter 2: f2_lfn2_per_variant
+                # Filter 2: f2_lfn2_per_variant_delete
                 # Filter 3: f3_lfn2_per_replicate_series
                 ############################################
                 # TODO Take replicate_series parameter to the wopfile
                 replicate_series = False
                 if not replicate_series:
-                    filter_runner.f2_lfn2_per_variant(lfn_per_variant_threshold)
+                    filter_runner.f2_lfn2_per_variant_delete(lfn_per_variant_threshold)
                 else:
                     filter_runner.f3_lfn2_per_replicate_series(lfn_per_replicate_series_threshold)
                 #

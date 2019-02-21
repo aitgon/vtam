@@ -35,7 +35,7 @@ class FilterRunner:
         filters = [
             'passed',
             'f1_lfn1_per_replicate',
-            'f2_lfn2_per_variant',
+            'f2_lfn2_per_variant_delete',
             'f3_lfn2_per_replicate_series',
             'f4_lfn3_read_count',
             'f5_lfn4_per_variant_with_cutoff',
@@ -49,38 +49,25 @@ class FilterRunner:
             'f12_indel',
         ]
         #
-        ############################################
-        # DF with results of filters. This DF is composed of
-        #
-        # Col 1: 'variant_id' (integer, index, unique and primary key)
-        # Col 2: 'passed'. Did this variant_id passed all the filters (Boolean, default True)
-        # Col 3: 'f1_lfn1_per_replicate'. Did this variant_id passed filter 'f1_lfn1_per_replicate' (Boolean, default True)
-        # Col 4: ...
-        # Col 15: 'indel'. Did this variant_id passed filter 'indel' (Boolean, default True)
-        ############################################
-        # 
-        # Create
-        # Default state: variant passed filters
-        self.passed_variant_df = pandas.DataFrame(dict(zip(filters, itertools.repeat(True))), index=self.variant_df.id.unique().tolist())
         ################################
-        # Fix output avec Reda Mekdad:
+        # Output df with deleted variants
         ################################
-        self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_passed':[]})
+        self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_delete':[]})
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
+                                                               (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
 
 
-    def f2_lfn2_per_variant(self, lfn_per_variant_threshold, lfn_per_variant_threshold_i=None):
+    def f2_lfn2_per_variant_delete(self, lfn_per_variant_threshold, lfn_var_threshold_specific=None):
         """
-        This filter corresponds to LFN_var example of Emese
+        This function implements filter f2 (LFN_var) and filter f5 (LFN_var_dep)
 
         :param variant_read_count_df: dataframe containing the information
         :param lfn_per_variant_threshold: threshold defined by the user
         :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
         the filter or False otherwise
         """
-        this_filter_name = inspect.stack()[0][3] # Get function
+        this_filter_name = "f2_lfn_var"
         # Write log
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
@@ -94,10 +81,44 @@ class FilterRunner:
         # Calculate the ratio
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
         #
+        # Initialize filter: Keep everything
         df2['filter_name'] = this_filter_name
         df2['filter_delete'] = False
+        #
+        # Mark for deletion all filters with read_count_per_variant_per_biosample_per_replicate=0
+        df2.loc[
+            df2.read_count_per_variant_per_biosample_per_replicate == 0, 'filter_delete'] = True
+        #
+        # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
         df2.loc[
             df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, 'filter_delete'] = True
+        ####################################################
+        # LFN_var_dep if there are variant specific thresholds: lfn_var_threshold_specific not None
+        ####################################################
+        if not lfn_var_threshold_specific is None:
+            this_filter_name = "f5_lfn_var_dep"
+            for variant_id in lfn_var_threshold_specific:
+                variant_id_threshold = lfn_var_threshold_specific[variant_id]
+                #
+                df2_f5_variant_id = df2.loc[(df2.variant_id == variant_id)]
+                #
+                # Initialize filter: Keep everything
+                df2_f5_variant_id.loc[df2_f5_variant_id.variant_id == variant_id, 'filter_name'] = this_filter_name
+                df2_f5_variant_id.loc[df2_f5_variant_id.variant_id == variant_id, 'filter_delete'] = False
+                #
+                # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
+                df2_f5_variant_id.loc[
+                    df2_f5_variant_id.low_frequence_noice_per_variant < variant_id_threshold, 'filter_delete'] = True
+                #
+                # Keep important columns
+                df2_f5_variant_id = df2_f5_variant_id[['variant_id', 'biosample_id', 'replicate_id',
+                           'filter_name', 'filter_delete']]
+                #
+                # Concatenate vertically output df
+                # Prepare output df and concatenate to self.delete_variant_df
+                self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f5_variant_id], sort=False)
+        #
+        # Keep important columns
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
                    'filter_name', 'filter_delete']]
         #
@@ -108,7 +129,9 @@ class FilterRunner:
 
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
-        Function calculating the Low Frequency Noise per replicate series
+        This function implements filter f3 (LFN var replicate series) and filter f6 (LFN vardep_replicate series)
+)
+
         :param variant_read_count_df: dataframe containing the information
         :param lfn_per_replicate_series_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
@@ -168,8 +191,8 @@ class FilterRunner:
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) ==
-                                                                self.passed_variant_df.shape[1]).sum()))
+                                                               (self.delete_variant_df.sum(axis=1) ==
+                                                                self.delete_variant_df.shape[1]).sum()))
     def f5_lfn2_var_dep_mekdad(self, lfn_per_var):
         """
         This filter corresponds to LFN_var example of Emese
