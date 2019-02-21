@@ -191,17 +191,13 @@ class FilterRunner:
                     self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f6_variant_id], sort=False)
 
             #
-
             df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
                        'filter_name', 'filter_delete']]
-            #
 
             # Concatenate vertically output df
             #  Prepare output df and concatenate to self.delete_variant_df
             self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
-            #import pdb;
-            #pdb.set_trace()
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
         This function implements filter f3 (LFN var replicate series) and filter f6 (LFN vardep_replicate series)

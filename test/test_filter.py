@@ -137,6 +137,8 @@ class TestFilter(TestCase):
                                                                  & (self.filter_runner.delete_variant_df.filter_name == 'f6_vardep_replicate_series'),
                                                                         'filter_delete'].values[0])
 
+        
+
     # def test_05_f5_lfn2_var_dep_mekdad(self):
     #     lfn_per_var = {9: 0.05, 22: 0.01, 0: 0}
     #
