@@ -65,70 +65,13 @@ class FilterRunner:
         ################################
         # Fix output avec Reda Mekdad:
         ################################
-        self.passed_variant_mekdad_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_passed':[]})
+        self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_passed':[]})
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
-    def f1_lfn1_per_replicate(self, lfn_per_replicate_threshold):
-        """
-        Function returning indices passing this filter.
-        It calculates the Low Frequency Noise per sample replicate
-        :param variant_read_count_df: dataframe containing the information
-        :param lfn_per_replicate_threshold: threshold defined by the user
-        :return: List of the index which don't pass the filter
-        """
-        this_filter_name = inspect.stack()[0][3]
-        logger.debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        # Calculating the total number of reads by sample replicates
-        df2 = self.variant_read_count_df[['biosample_id', 'replicate_id', 'read_count']].groupby(by=['biosample_id', 'replicate_id']).sum().reset_index()
-        # Merge the column with the total reads by sample replicates for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on=['biosample_id', 'replicate_id'], right_on=['biosample_id', 'replicate_id'])
-        df2.columns = ['variant_id', 'biosample_id', 'replicate_id', 'read_count_per_variant_per_biosample_per_replicate', 'read_count_per_biosample_replicate']
-        # Calculate the ratio
-        df2['low_frequence_noice_per_replicate'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_biosample_replicate
-        # Selecting all the indexes where the ratio is below the ratio
-        do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_replicate < lfn_per_replicate_threshold,'variant_id'].tolist()
-        #
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        logger.debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
-
-    def f2_lfn2_per_variant(self, lfn_per_variant_threshold):
-        """
-        This filter corresponds to LFN_var example of Emese
-
-        :param variant_read_count_df: dataframe containing the information
-        :param lfn_per_variant_threshold: threshold defined by the user
-        :return: List of the index which don't pass the filter
-        """
-        this_filter_name = inspect.stack()[0][3]
-        logger.debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        #########################
-        # Calculating the total of reads by variant
-        df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
-        # Merge the column with the total reads by variant for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on='variant_id', right_on='variant_id')
-        df2.columns = ['variant_id', 'biosample_id', 'replicate_id', 'read_count_per_variant_per_biosample_per_replicate', 'read_count_per_variant']
-        # Calculate the ratio
-        df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
-        # Selecting all the indexes where the ratio is below the ratio
-        do_not_pass_variant_id_list = df2.loc[df2.low_frequence_noice_per_variant < lfn_per_variant_threshold].variant_id.tolist() # select rare reads to discard later
-        #
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        # import pdb; pdb.set_trace()
-        logger.debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
-
-
-    def f2_lfn2_per_variant_mekdad(self, lfn_per_variant_threshold, lfn_per_variant_threshold_i=None):
+    def f2_lfn2_per_variant(self, lfn_per_variant_threshold, lfn_per_variant_threshold_i=None):
         """
         This filter corresponds to LFN_var example of Emese
 
@@ -152,19 +95,18 @@ class FilterRunner:
         df2['low_frequence_noice_per_variant'] = df2.read_count_per_variant_per_biosample_per_replicate / df2.read_count_per_variant
         #
         df2['filter_name'] = this_filter_name
-        df2['filter_passed'] = True
-        # df2[this_filter_name] = True
+        df2['filter_delete'] = False
         df2.loc[
-            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, 'filter_passed'] = False
+            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, 'filter_delete'] = True
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
-                   'filter_name', 'filter_passed']]
+                   'filter_name', 'filter_delete']]
         #
         # Concatenate vertically output df
-        # Prepare output df and concatenate to self.passed_variant_mekdad_df
-        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
+        # Prepare output df and concatenate to self.delete_variant_df
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
 
-    def f3_lfn2_per_replicate_series_mekdad(self, lfn_per_replicate_series_threshold):
+    def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
         Function calculating the Low Frequency Noise per replicate series
         :param variant_read_count_df: dataframe containing the information
@@ -186,66 +128,17 @@ class FilterRunner:
         df2['low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_biosample_replicate / df2.read_count_per_replicate_series
         #
         df2['filter_name'] = this_filter_name # set this filter
-        df2['filter_passed'] = True # default status to passed
+        df2['filter_delete'] = False
         df2.loc[
-            df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold, 'filter_passed'] = False
+            df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold, 'filter_delete'] = True
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
-                   'filter_name', 'filter_passed']]
+                   'filter_name', 'filter_delete']]
         #
         # Concatenate vertically output df
-        # Prepare output df and concatenate to self.passed_variant_mekdad_df
-        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
-        # import pdb; pdb.set_trace()
-
-    def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
-        """
-        Function calculating the Low Frequency Noise per replicate series
-        :param variant_read_count_df: dataframe containing the information
-        :param lfn_per_replicate_series_threshold: threshold defined by the user
-        :return: List of the index which don't pass the filter
-        """
-        this_filter_name = inspect.stack()[0][3]
-        logger.debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        # Calculating the total of reads by replicate series
-        df2 = self.variant_read_count_df[['replicate_id', 'read_count']].groupby(by=['replicate_id']).sum().reset_index()
-        # Merge the column with the total reads by replicate series for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on='replicate_id', right_on='replicate_id')
-        df2.columns = ['variant_id', 'biosample_id', 'replicate_id',
-                       'read_count_per_variant_per_biosample_replicate', 'read_count_per_replicate_series']
-        df2[
-            'low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_biosample_replicate / df2.read_count_per_replicate_series
-        # Selecting all the indexes where the ratio is below the ratio
-        do_not_pass_variant_id_list = df2.loc[
-                        df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold].variant_id.tolist()  #  select rare reads to discard later
-        #
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        logger.debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
+        # Prepare output df and concatenate to self.delete_variant_df
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
     def f4_lfn3_read_count(self, lfn_read_count_threshold):
-        """
-        Function calculating the Low Frequency Noise per users defined minimal readcount
-        
-        :param variant_read_count_df: dataframe containing the information
-        :param lfn_read_count_threshold: threshold defined by the user
-        :return: List of the index which don't pass the filter
-        """
-        this_filter_name = inspect.stack()[0][3]
-        logger.debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        # Selecting all the indexes where the ratio is below the minimal readcount
-        do_not_pass_variant_id_list = self.variant_read_count_df.loc[self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
-        #
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-        self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        logger.debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
-
-    def f4_lfn3_read_count_mekdad(self, lfn_read_count_threshold):
         """
         Function calculating the Low Frequency Noise per users defined minimal readcount
 
@@ -262,32 +155,17 @@ class FilterRunner:
             self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
         do_not_pass_replicate_id_list = self.variant_read_count_df.loc[
             self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate_id.tolist()
-
-
-        ######################
-        # test
         df2['filter_name'] = this_filter_name  #  set this filter
-        df2['filter_passed'] = True  #  default status to passed
+        df2['filter_delete'] = False
 
         df2.loc[
-            df2.read_count < lfn_read_count_threshold, 'filter_passed'] = False
-        #df2.loc[
-        #   df2.read_count == 0, 'filter_passed'] = False
+            df2.read_count < lfn_read_count_threshold, 'filter_delete'] = True
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
-                   'filter_name', 'filter_passed']]
-        #import pdb;pdb.set_trace()
-
+                   'filter_name', 'filter_delete']]
         #
         # Concatenate vertically output df
-        #  Prepare output df and concatenate to self.passed_variant_mekdad_df
-        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
-        #import pdb; pdb.set_trace()
-
-
-        #
-        #self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-        #self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-
+        #  Prepare output df and concatenate to self.delete_variant_df
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.passed_variant_df.sum(axis=1) ==
@@ -344,8 +222,8 @@ class FilterRunner:
                    'filter_name', 'filter_passed']]
 
         # Concatenate vertically output df
-        # Prepare output df and concatenate to self.passed_variant_mekdad_df
-        self.passed_variant_mekdad_df = pandas.concat([self.passed_variant_mekdad_df, df2], sort=False)
+        # Prepare output df and concatenate to self.delete_variant_df
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
 
 
