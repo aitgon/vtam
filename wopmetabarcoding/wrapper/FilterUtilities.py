@@ -60,12 +60,34 @@ class FilterRunner:
 
     def f2_lfn2_per_variant_delete(self, lfn_per_variant_threshold, lfn_var_threshold_specific=None):
         """
-        This function implements filter f2 (LFN_var) and filter f5 (LFN_var_dep)
+        FebLow frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
+        thresholds.
 
-        :param variant_read_count_df: dataframe containing the information
-        :param lfn_per_variant_threshold: threshold defined by the user
-        :return: None. Result is in 'f2_lfn2_per_variant_mekda' column. True if variant-biosample-replicated passed
-        the filter or False otherwise
+        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
+        and replicate k to the total read_count N_i of variant i is below threshold lfn_per_variant_threshold.
+        The deletion condition is: N_ijk / N_i < lfn_per_variant_threshold.
+
+        The argument lfn_var_threshold_specific allows a dictionary like {9: 0.05, 22: 0.01} with a variant-specific
+        threshold.
+
+        Pseudo-algorithm of this function:
+
+        1. Compute ratio N_ijk / N_i
+        2. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
+        3. Set variant/biosample/replicate for deletion if ratio N_ijk / N_i < lfn_per_variant_threshold
+        4. If variant specific thresholds, copy these variant/biosample/replicate rows
+          4.1 Set variant/biosample/replicate for deletion if N_ijk / N_i < lfn_var_threshold_specific_i
+
+        Updated:
+        February 22, 2019
+
+        Args:
+            lfn_per_variant_threshold (float): Default deletion threshold
+            lfn_var_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_name='f2_lfn_var' and 'filter_delete'=1 or 0
         """
         this_filter_name = "f2_lfn_var"
         # Write log

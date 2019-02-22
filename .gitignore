@@ -8,4 +8,8 @@ _build
 data0
 *.log
 wopmetabarcoding/bin
-
+doc/modules.rst
+doc/wopmetabarcoding.model.rst
+doc/wopmetabarcoding.rst
+doc/wopmetabarcoding.utils.rst
+doc/wopmetabarcoding.wrapper.rst
