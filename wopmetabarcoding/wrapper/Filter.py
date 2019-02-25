@@ -124,19 +124,19 @@ class Filter(ToolWrapper):
                 #
                 ############################################
                 # Filter 2: f2_lfn2_per_variant_delete
-                # Filter 3: f3_lfn2_per_replicate_series
+                # Filter 3: f3_f5_lfn_delete_per_sum_variant_replicate
                 ############################################
                 # TODO Take replicate_series parameter to the wopfile
                 replicate_series = False
                 if not replicate_series:
                     lfn_filter_runner.f2_lfn2_per_variant_delete(lfn_per_variant_threshold)
                 else:
-                    lfn_filter_runner.f3_lfn2_per_replicate_series(lfn_per_replicate_series_threshold)
+                    lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_series_threshold)
                 #
                 ############################################
-                # Filter 4: f4_lfn3_read_count
+                # Filter 4: f7_lfn_delete_absolute_read_count
                 ############################################
-                lfn_filter_runner.f4_lfn3_read_count(lfn_read_count_threshold)
+                lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
                 #
                 ############################################
                 # Filter 5: f5_lfn4_per_variant_with_cutoff
