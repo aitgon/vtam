@@ -88,6 +88,9 @@ class FilterRunner:
         Returns:
             None: The output of this filter is added to the 'self.delete_variant_df'
             with filter_name='f2_lfn_var' and 'filter_delete'=1 or 0
+            with filter_name='f5_lfn_var_dep' and 'filter_delete'=1 or 0
+
+
         """
         this_filter_name = "f2_lfn_var"
         # Write log
@@ -153,12 +156,47 @@ class FilterRunner:
 
     def f3_lfn2_vardep_per_replicate_series_new(self, lfn_per_replicate_series_threshold, lfn_var_threshold_specific=None):
             """
+
+
+
             This function implements filter f3 (LFN var replicate series) and filter f6 (LFN vardep_replicate series)
-    )
+
 
             :param variant_read_count_df: dataframe containing the information
             :param lfn_per_replicate_series_threshold: threshold defined by the user
             :return: List of the index which don't pass the filter
+
+
+             FebLow frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
+        thresholds.
+
+        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
+        and replicate k to the total read_count N_i of variant per replicant i is below threshold lfn_per_replicate_series_threshold.
+        The deletion condition is: N_ijk / N_i < lfn_per_replicate_series_threshold.
+
+        The argument lfn_var_threshold_specific allows a dictionary like {9: 0.02, 22: 0.005} with a variant-specific
+        threshold, lfn_per_replicate_series_threshold=0.0005.
+
+        Pseudo-algorithm of this function:
+
+        1. Compute ratio N_ijk / N_i
+        2. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
+        3. Set variant/biosample/replicate for deletion if ratio N_ijk / N_i < lfn_per_replicate_series_threshold
+        4. If variant specific thresholds, copy these variant/biosample/replicate rows
+          4.1 Set variant/biosample/replicate for deletion if N_ijk / N_i < lfn_var_threshold_specific_i
+
+        Updated:
+        February 24, 2019
+
+        Args:
+            lfn_per_replicate_series_threshold (float): Default deletion threshold
+            lfn_var_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_name='f6_vardep_replicate_series' and 'filter_delete'=1 or 0
+
+
             """
             this_filter_name = inspect.stack()[0][3]  # Get function
             # Write log
@@ -213,6 +251,7 @@ class FilterRunner:
                     self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f6_variant_id], sort=False)
 
             #
+
             df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
                        'filter_name', 'filter_delete']]
 
@@ -227,7 +266,34 @@ class FilterRunner:
         :param variant_read_count_df: dataframe containing the information
         :param lfn_per_replicate_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
+
+         read_count_per_biosample_replicate
+        FebLow frequency noise filter per biosample_replicate (LFN_repl) with a single threshold(lfn_per_replicate_threshold=0.001).
+
+        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
+        and replicate k to the total read_count N_j of biosample per each replicate i is below threshold lfn_per_replicate_threshold.
+        The deletion condition is: N_ijk / N_j < lfn_per_replicate_threshold.
+
+
+        Pseudo-algorithm of this function:
+
+        1. Compute ratio N_ijk / N_j
+        2. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
+        3. Set variant/biosample/replicate for deletion if ratio N_ijk / N_j < lfn_per_variant_threshold
+
+
+        Updated:
+        February 22, 2019
+
+        Args:
+            lfn_per_replicate_threshold (float): Default deletion threshold
+
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_name='f2_lfn_var' and 'f1_lfn1_per_replicate_new_07'=1 or 0
         """
+
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
@@ -279,13 +345,45 @@ class FilterRunner:
 
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
         """
-        This function implements filter f3 (LFN var replicate series) and filter f6 (LFN vardep_replicate series)
-)
+        This function implements filter f3 (LFN var replicate series)
+         (and filter f6 (LFN vardep_replicate series))
+         lfn_per_replicate_series_threshold = 0.005
 
         :param variant_read_count_df: dataframe containing the information
         :param lfn_per_replicate_series_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
+
+         FebLow frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
+        thresholds.
+
+        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
+        and replicate k to the total read_count N_ik per replicate k i is below threshold lfn_per_replicate_series_threshold .
+        The deletion condition is: N_ijk / N_ik < lfn_per_replicate_series_threshold .
+
+
+        Pseudo-algorithm of this function:
+
+         1. Compute ratio N_ijk / N_ik
+         2. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
+         3. Set variant/biosample/replicate for deletion if ratio N_ijk / N_ik < lfn_per_replicate_series_threshold
+
+
+
+         Updated:
+        February 24, 2019
+
+        Args:
+            lfn_per_replicate_series_threshold (float): Default deletion threshold
+
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_name='f3_lfn2_per_replicate_series' and 'filter_delete'=1 or 0
+
         """
+
+
+
         this_filter_name = inspect.stack()[0][3] # Get function
         # Write log
         logger.debug(
@@ -294,11 +392,14 @@ class FilterRunner:
         # Calculating the total of reads by replicate series
         df2 = self.variant_read_count_df[['variant_id', 'replicate_id', 'read_count']].groupby(by=['variant_id', 'replicate_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
+
         df2 = self.variant_read_count_df.merge(df2, left_on=['variant_id', 'replicate_id'], right_on=['variant_id', 'replicate_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_replicate'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_replicate_series'})
+
         # Calculate the ratio
         df2['low_frequence_noice_per_replicate_series'] = df2.read_count_per_variant_per_biosample_replicate / df2.read_count_per_replicate_series
+
         #
         df2['filter_name'] = this_filter_name # set this filter
         df2['filter_delete'] = False
@@ -306,6 +407,8 @@ class FilterRunner:
             df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_series_threshold, 'filter_delete'] = True
         df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
                    'filter_name', 'filter_delete']]
+         #import pdb;
+        #pdb.set_trace()
         #
         # Concatenate vertically output df
         # Prepare output df and concatenate to self.delete_variant_df
@@ -318,6 +421,39 @@ class FilterRunner:
         :param variant_read_count_df: dataframe containing the information
         :param lfn_read_count_threshold: threshold defined by the user
         :return: List of the index which don't pass the filter
+
+        This function implements filter f4 (LFN_readcount)
+         lfn_read_count_threshold = 10
+
+        :param variant_read_count_df: dataframe containing the information
+        :param lfn_per_replicate_series_threshold: threshold defined by the user
+        :return: List of the index which don't pass the filter
+
+         FebLow frequency noise filter (LFN_readcount) with a single threshold lfn_read_count_threshold.
+
+        This filters deletes the variant if the read count N_ijk of variant i in biosample j
+        and replicate k is below threshold lfn_read_count_threshold.
+        The deletion condition is: N_ijk < lfn_read_count_threshold .
+
+
+        Pseudo-algorithm of this function:
+
+         1. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
+         2. Set variant/biosample/replicate for deletion if N_ijk < lfn_read_count_threshold
+
+
+
+         Updated:
+        February 24, 2019
+
+        Args:
+            lfn_read_count_threshold (float): Default deletion threshold
+
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_name='f4_lfn3_read_count' and 'filter_delete'=1 or 0
+
         """
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
@@ -328,6 +464,7 @@ class FilterRunner:
             self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
         do_not_pass_replicate_id_list = self.variant_read_count_df.loc[
             self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate_id.tolist()
+
         df2['filter_name'] = this_filter_name  #  set this filter
         df2['filter_delete'] = False
 
@@ -497,7 +634,7 @@ class FilterRunner:
             df3.columns = ['variant_count']
             df_biosample = df_biosample.merge(df3, left_on='variant_id', right_index=True)
             do_not_pass_variant_id_list = df_biosample.loc[
-                df_biosample.variant_count < min_count].variant_id.unique().tolist()
+                  df_biosample.variant_count < min_count].variant_id.unique().tolist()
             #
             self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
             self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
