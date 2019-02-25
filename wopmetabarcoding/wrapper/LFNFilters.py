@@ -1,3 +1,21 @@
+# -*- coding: utf-8 -*-
+"""LFN Filters
+
+This module will store and run these LFNFilters:
+
+- LFN_var, 2, f2_f4_lfn_delete_per_sum_variant
+- LFN var replicate series, 3, f3_f5_lfn_delete_per_sum_variant_replicate
+- LFN_var_dep , 4, f2_f4_lfn_delete_delete_per_sum_variant
+- LFN vardep_replicate series, 5, f3_f5_lfn_delete_per_sum_variant_replicate
+- LFN_repl, 6, f6_lfn_delete_per_sum_biosample_replicate_delete
+- LFN_readcount, 7, f7_lfn_delete_absolute_read_count
+- LFN_all, 8, f8_lfn_delete_do_not_pass_all_filters
+
+Expected results and descriptions are given in the docstrings and in this file:
+vtam/discussion_reda_aitor/example_filter.ods
+
+"""
+
 import inspect
 
 from sqlalchemy import select
@@ -14,11 +32,12 @@ from math import floor
 from wopmetabarcoding.utils.logger import logger
 
 
-class FilterRunner:
+class LFNFilterRunner:
+
 
     def __init__(self, variant_df, variant_read_count_df, marker_id):
         logger.debug(
-            "file: {}; line: {}; FilterRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; LFNFilterRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df
         self.marker_id = marker_id
@@ -29,39 +48,20 @@ class FilterRunner:
         if self.variant_read_count_df.shape[1] != 4:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         #
-        # Empty table: first time of executing this code
-        #
-        # passed_variant_df
-        filters = [
-            'passed',
-            'f1_lfn1_per_replicate',
-            'f2_lfn2_per_variant_delete',
-            'f3_lfn2_per_replicate_series',
-            'f4_lfn3_read_count',
-            'f5_lfn4_per_variant_with_cutoff',
-            'f6_lfn4_per_replicate_series_with_cutoff',
-            'f7_min_repln',
-            'f8_min_replp',
-            'f9_pcr_error',
-            'f10_chimera',
-            'f10_chimera_borderline',
-            'f11_renkonen',
-            'f12_indel',
-        ]
-        #
         ################################
         # Output df with deleted variants
         ################################
+        # TODO When using function integer ID, we can set here dtype='int'
         self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'filter_name':[], 'filter_delete':[]})
         logger.debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
 
 
-    def f2_lfn2_per_variant_delete(self, lfn_per_variant_threshold, lfn_var_threshold_specific=None):
+    def f2_f4_lfn2_per_variant_delete(self, lfn_per_variant_threshold, lfn_var_threshold_specific=None):
         """
-        FebLow frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
-        thresholds.
+        Low frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
+        thresholds. Function IDs: 2 (lfn_var_threshold_specific is None) ou 4 (lfn_var_threshold_specific is not None)
 
         This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
         and replicate k to the total read_count N_i of variant i is below threshold lfn_per_variant_threshold.
@@ -126,24 +126,25 @@ class FilterRunner:
             for variant_id in lfn_var_threshold_specific:
                 variant_id_threshold = lfn_var_threshold_specific[variant_id]
                 #
-                df2_f5_variant_id = df2.loc[(df2.variant_id == variant_id)]
+                df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)]
                 #
                 # Initialize filter: Keep everything
-                df2_f5_variant_id.loc[df2_f5_variant_id.variant_id == variant_id, 'filter_name'] = this_filter_name
-                df2_f5_variant_id.loc[df2_f5_variant_id.variant_id == variant_id, 'filter_delete'] = False
+                # TODO Use filter ID instead of filter name
+                df2_f4_variant_id.loc[df2_f4_variant_id.variant_id == variant_id, 'filter_name'] = this_filter_name
+                df2_f4_variant_id.loc[df2_f4_variant_id.variant_id == variant_id, 'filter_delete'] = False
                 #
                 # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
-                df2_f5_variant_id.loc[
-                    df2_f5_variant_id.low_frequence_noice_per_variant < variant_id_threshold, 'filter_delete'] = True
+                df2_f4_variant_id.loc[
+                    df2_f4_variant_id.low_frequence_noice_per_variant < variant_id_threshold, 'filter_delete'] = True
 
                 #
                 # Keep important columns
-                df2_f5_variant_id = df2_f5_variant_id[['variant_id', 'biosample_id', 'replicate_id',
+                df2_f4_variant_id = df2_f4_variant_id[['variant_id', 'biosample_id', 'replicate_id',
                            'filter_name', 'filter_delete']]
                 #
                 # Concatenate vertically output df
                 # Prepare output df and concatenate to self.delete_variant_df
-                self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f5_variant_id], sort=False)
+                self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f4_variant_id], sort=False)
 
         #
         # Keep important columns
@@ -154,7 +155,7 @@ class FilterRunner:
         # Prepare output df and concatenate to self.delete_variant_df
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
-    def f3_lfn2_vardep_per_replicate_series_new(self, lfn_per_replicate_series_threshold, lfn_var_threshold_specific=None):
+    def f3_f5_lfn2_vardep_per_replicate_series_new(self, lfn_per_replicate_series_threshold, lfn_var_threshold_specific=None):
             """
 
 
@@ -337,13 +338,8 @@ class FilterRunner:
         #
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
-
-
-
-
-
-
     def f3_lfn2_per_replicate_series(self, lfn_per_replicate_series_threshold):
+        # TODO Change sphinx style of docstring to google style of docstring: https://www.sphinx-doc.org/en/1.7/ext/example_google.html
         """
         This function implements filter f3 (LFN var replicate series)
          (and filter f6 (LFN vardep_replicate series))
@@ -546,9 +542,9 @@ class FilterRunner:
         :param cutoff_tsv: file containing the cutoffs for each variant
         :return: List of the index which don't pass the filter
         """
-        # TODO: Must be updated for new FilterRunner class
+        # TODO: Must be updated for new LFNFilterRunner class
         # TODO: Variant sequence must be taken from variant_df
-        raise NotImplementedError("Must be updated for new FilterRunner class")
+        raise NotImplementedError("Must be updated for new LFNFilterRunner class")
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
@@ -677,7 +673,7 @@ class FilterRunner:
         :return: None
         """
         if not pcr_error_by_sample:
-            # TODO: Must be updated for new FilterRunner class
+            # TODO: Must be updated for new LFNFilterRunner class
             return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
@@ -849,7 +845,7 @@ class FilterRunner:
         :param number_of_replicate: Number of replicate by sample
         :return: None
         """
-        # TODO: Must be updated for new FilterRunner class
+        # TODO: Must be updated for new LFNFilterRunner class
         return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
