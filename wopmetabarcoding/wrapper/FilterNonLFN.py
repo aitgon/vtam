@@ -69,8 +69,35 @@ class FilterNonLFNRunner:
         logger.debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         #
+        df=self.variant_biosample_replicate_df
+
         df_grouped = self.variant_biosample_replicate_df.groupby(by=['variant_id', 'biosample_id']).count().reset_index()
-        import pdb; pdb.set_trace()
+        df_grouped2 = self.variant_biosample_replicate_df[['variant_id', 'biosample_id','replicate_id']].groupby(by=['variant_id', 'biosample_id']).size().to_frame('count').reset_index()
+        df_grouped2.insert(2, 'replicate_id',df_grouped['replicate_id'])
+        df_grouped2['filter_id'] = this_filter_id
+        df_grouped2['filter_delete'] = False
+
+        df_grouped2.loc[
+               df_grouped2['count']< min_repln, 'filter_delete'] = True
+        df_test = df_grouped2.groupby(by=['filter_delete']).count().reset_index()
+
+        #df['filter_id'] = this_filter_id
+        #df['filter_delete'] = False
+        #df_grouped2=df_grouped2[df_grouped2.filter_delete != False]
+
+        #df_passed_f9 = df.drop((df.variant_id == df_grouped2.variant_id) & (df_grouped2.replicate_id == df.replicate_id) & (df.biosample_id == df_grouped.biosample_id).index)
+
+        pandas.merge(df, df_grouped2, on='variant_id', how='inner')
+        #df = df['variant_id','biosample_id','replicate_id', 'filter_id', 'delete_filter']
+        import pdb;
+        pdb.set_trace();
+
+
+        self.delete_variant_df = pandas.concat([self.delete_variant_df, df], sort=False)
+
+
+
+
         #
         for biosample_id in self.variant_biosample_replicate_df.biosample_id.unique():
             df_biosample = self.variant_biosample_replicate_df.loc[self.variant_biosample_replicate_df['biosample_id'] == biosample_id]

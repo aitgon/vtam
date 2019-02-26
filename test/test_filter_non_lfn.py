@@ -36,7 +36,7 @@ class TestFilterNonLFN(TestCase):
         filter_non_lfn_runner = FilterNonLFNRunner(self.variant_df, self.MFZR_prerun_COI_corr_all_filters_6, self.marker_id)
         min_repln = 2
         filter_non_lfn_runner.f9_delete_min_repln(min_repln=min_repln)
-        import pdb; pdb.set_trace()
+
 
     # def test_02_f2_f4_lfn_delete_per_sum_variant(self):
     #     lfn_var_threshold = 0.001
