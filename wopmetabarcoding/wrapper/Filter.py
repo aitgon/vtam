@@ -5,7 +5,7 @@ from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
 from wopmetabarcoding.utils.constants import tempdir
-from wopmetabarcoding.wrapper.LFNFilters import LFNFilterRunner
+from wopmetabarcoding.wrapper.FilterLFN import FilterLFNRunner
 from sqlalchemy import select
 import pandas, os, pickle
 
@@ -107,7 +107,7 @@ class Filter(ToolWrapper):
                     variant_list.append(row2)
                 variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
                 #
-                lfn_filter_runner = LFNFilterRunner(variant_df, variant_read_count_df, marker_id)
+                lfn_filter_runner = FilterLFNRunner(variant_df, variant_read_count_df, marker_id)
                 #
                 # Filter parameters
                 lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
@@ -187,7 +187,7 @@ class Filter(ToolWrapper):
                 ############################################
                 # Filter: Stop codon
                 ############################################
-                # TODO: Must be updated for new LFNFilterRunner class
+                # TODO: Must be updated for new FilterLFNRunner class
                 #     df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
                 #     Logger.instance().info("Launching pseudogene detection with codon stop filter:")
                 #     filter_runner.codon_stop(df_codon_stop_per_genetic_code, 2, False)

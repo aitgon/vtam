@@ -1,21 +1,7 @@
-import filecmp
 import os
-import pickle
-import shutil
-import sqlite3
 from unittest import TestCase
-import subprocess
-
-import pandas
-from jinja2 import Template
-from wopmars import WopMars
-from wopmars.framework.parsing.Parser import ToolWrapper
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-# from wopmetabarcoding.wrapper.FilterUtilities import Variant2Sample2Replicate2Count
-#from wopmetabarcoding.utils.constants import wopmetabarcoding_filter_test_data
-from wopmetabarcoding.wrapper.TaxAssignUtilities import create_phylogenetic_line_df
-
 
 class TestWopMetabarcoding(TestCase):
     def setUp(self):
@@ -124,7 +110,6 @@ class TestWopMetabarcoding(TestCase):
     #     cur.close()
     #     #
     #     # # Assert variant_count_detail.tsv
-    #     # Todo: will work after avoiding tempdir
     #     # variant_count_detail_tsv = os.path.join(self.__testdir_path, "output", "03sort_reads", "variant_count_detail.tsv")
     #     # variant_count_detail_bak_tsv = os.path.join(self.__testdir_path, "output_bak", "03sort_reads", "variant_count_detail.tsv")
     #     # assert filecmp.cmp(variant_count_detail_tsv, variant_count_detail_bak_tsv)

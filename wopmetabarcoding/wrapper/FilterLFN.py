@@ -32,12 +32,12 @@ from math import floor
 from wopmetabarcoding.utils.logger import logger
 
 
-class LFNFilterRunner:
+class FilterLFNRunner:
 
 
     def __init__(self, variant_df, variant_read_count_df, marker_id):
         logger.debug(
-            "file: {}; line: {}; LFNFilterRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; FilterLFNRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df
         self.marker_id = marker_id
@@ -156,7 +156,6 @@ class LFNFilterRunner:
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
     def f3_f5_lfn_delete_per_sum_variant_replicate(self, lfn_per_replicate_series_threshold, lfn_per_replicate_series_threshold_specific=None):
-        # TODO Change sphinx style of docstring to google style of docstring: https://www.sphinx-doc.org/en/1.7/ext/example_google.html
         """
         Low frequency noise filter per variant (LFN var replicate series) with a single threshold or several variant
         specific thresholds (LFN vardep_replicate series).
@@ -571,7 +570,7 @@ class LFNFilterRunner:
         :return: None
         """
         if not pcr_error_by_sample:
-            # TODO: Must be updated for new LFNFilterRunner class
+            # TODO: Must be updated for new FilterLFNRunner class
             return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
@@ -743,7 +742,7 @@ class LFNFilterRunner:
         :param number_of_replicate: Number of replicate by sample
         :return: None
         """
-        # TODO: Must be updated for new LFNFilterRunner class
+        # TODO: Must be updated for new FilterLFNRunner class
         return
         this_filter_name = inspect.stack()[0][3]
         logger.debug(
