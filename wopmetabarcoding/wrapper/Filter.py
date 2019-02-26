@@ -73,7 +73,7 @@ class Filter(ToolWrapper):
         with engine.connect() as conn:
             conn.execute(variant_selected_model.__table__.delete())
         #
-        # Create variant_read_count_df to run the filters with:
+        # Create variant_biosample_replicate_df to run the filters with:
         # variant_id, biosample_id, replicate_id, read_count, variant_sequence
         variant_model_table = variant_model.__table__
         variant_read_count_model_table = variant_read_count_model.__table__
@@ -146,19 +146,19 @@ class Filter(ToolWrapper):
                 if not replicate_series:
                     # TODO: @EM Which is the default cutoff
                     pass
-                    # filter_runner.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv)
+                    # filter_lfn_runner.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv)
                 else:
                     # TODO: @EM Which is the default cutoff?
                     lfn_filter_runner.f6_lfn4_per_replicate_series_with_cutoff(cutoff_file_tsv)
                 #
                 ############################################
-                # Filter 7: Repeatability: f7_min_repln
+                # Filter 7: Repeatability: f9_delete_min_repln
                 # Filter 8: Repeatability: f8_min_replp
                 ############################################
                 # TODO Take replp parameter to the wopfile
                 replp = True
                 if not replp:
-                    lfn_filter_runner.f7_min_repln(2)
+                    lfn_filter_runner.f9_delete_min_repln(2)
                 else:
                     # TODO @EM Confirm that this function does not take parameters
                     lfn_filter_runner.f8_min_replp()
@@ -187,12 +187,12 @@ class Filter(ToolWrapper):
                 ############################################
                 # Filter: Stop codon
                 ############################################
-                # TODO: Must be updated for new FilterLFNRunner class
+                # TODO: Must be updated for new FilterNonLFNRunner class
                 #     df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
                 #     Logger.instance().info("Launching pseudogene detection with codon stop filter:")
-                #     filter_runner.codon_stop(df_codon_stop_per_genetic_code, 2, False)
-                #     filter_runner.consensus()
-                #     variant2sample2replicate2count_df = filter_runner.filtered_variants()
+                #     filter_lfn_runner.codon_stop(df_codon_stop_per_genetic_code, 2, False)
+                #     filter_lfn_runner.consensus()
+                #     variant2sample2replicate2count_df = filter_lfn_runner.filtered_variants()
                 #
                 ################################
                 # Insert into db
