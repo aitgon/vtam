@@ -126,7 +126,7 @@ class LFNFilterRunner:
             for variant_id in lfn_var_threshold_specific:
                 variant_id_threshold = lfn_var_threshold_specific[variant_id]
                 #
-                df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)]
+                df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
                 #
                 # Initialize filter: Keep everything
                 # TODO Use filter ID instead of filter name
@@ -215,7 +215,7 @@ class LFNFilterRunner:
             this_filter_name = "lfn_delete_per_sum_variant_replicate_variant_specific"
             for variant_id in lfn_per_replicate_series_threshold_specific:
                 variant_id_threshold = lfn_per_replicate_series_threshold_specific[variant_id]
-                df2_f6_variant_id = df2.loc[(df2.variant_id == variant_id)]
+                df2_f6_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
 
                 # Initialize filter: Keep everything
                 df2_f6_variant_id.loc[df2_f6_variant_id.variant_id == variant_id, 'filter_name'] = this_filter_name
@@ -395,9 +395,8 @@ class LFNFilterRunner:
         # Merge the column with the total reads by sample replicates for calculate the ratio
         df2 = self.variant_read_count_df.merge(df2, left_on=['biosample_id', 'replicate_id'],
                                                right_on=['biosample_id', 'replicate_id'])
-
-        df2.columns = ['biosample_id','read_count_per_variant_per_biosample_per_replicate', 'replicate_id',
-                       'variant_id', 'read_count_per_biosample_replicate']
+        df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_per_replicate'})
+        df2 = df2.rename(columns={'read_count_y': 'read_count_per_biosample_replicate'})
         #
         # Initialize
         this_filter_name = 'f6_lfn_delete_per_sum_biosample_replicate'
