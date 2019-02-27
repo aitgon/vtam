@@ -187,14 +187,14 @@ class TestFilterLFN(TestCase):
                                                                          & (self.filter_lfn_runner.delete_variant_df.filter_name == 'f6_lfn_delete_per_sum_biosample_replicate'),
                                                                         'filter_delete'].values[0])
 
-        # this cas is false here because we divid 1 by only 46 wich give 0.02>0.001 but in the excel file we divid 1 by  1186
-        self.assertTrue(not self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
+
+        self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
                                                                          & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
                                                                          & (self.filter_lfn_runner.delete_variant_df.replicate_id == 3)
                                                                          & (self.filter_lfn_runner.delete_variant_df.filter_name == 'f6_lfn_delete_per_sum_biosample_replicate'),
                                                                 'filter_delete'].values[0])
-          #this cas is false here because we divid 1 by only 161 wich give 0.006>0.001 but in the excel file we divid 1 by  1894
-        self.assertTrue(not self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
+
+        self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
                                                                          & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
                                                                          & (self.filter_lfn_runner.delete_variant_df.replicate_id == 1)
                                                                          & (self.filter_lfn_runner.delete_variant_df.filter_name == 'f6_lfn_delete_per_sum_biosample_replicate'),
