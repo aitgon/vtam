@@ -18,7 +18,6 @@ vtam/discussion_reda_aitor/example_filter.ods
 
 import inspect
 
-
 from sqlalchemy import select
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
