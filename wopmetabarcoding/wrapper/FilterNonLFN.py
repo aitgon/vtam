@@ -110,29 +110,29 @@ class FilterNonLFNRunner:
 
 
 
-    def f8_min_replp(self):
-        """
-        Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
-
-        :return: None
-        """
-        this_filter_name = inspect.stack()[0][3]
-        logger.debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
-        for biosample_id in self.variant_biosample_replicate_df.biosample_id.unique():
-            df_biosample = self.variant_biosample_replicate_df.loc[self.variant_biosample_replicate_df['biosample_id'] == biosample_id]
-            replicate_count = len(df_biosample.replicate_id.unique().tolist())
-            df3 = df_biosample['variant_id'].value_counts().to_frame()
-            df3.columns = ['variant_count']
-            df_biosample = df_biosample.merge(df3, left_on='variant_id', right_index=True)
-            # TODO Verify this calculation. Where does this 3 comes from?
-            do_not_pass_variant_id_list = df_biosample.ix[df_biosample.variant_count < ((1 / 3) * replicate_count)].variant_id.unique().tolist()
-            #
-            self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
-            self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
-        logger.debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                           (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
+    # def f8_min_replp(self):
+    #     """
+    #     Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
+    #
+    #     :return: None
+    #     """
+    #     this_filter_name = inspect.stack()[0][3]
+    #     logger.debug(
+    #         "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_name))
+    #     for biosample_id in self.variant_biosample_replicate_df.biosample_id.unique():
+    #         df_biosample = self.variant_biosample_replicate_df.loc[self.variant_biosample_replicate_df['biosample_id'] == biosample_id]
+    #         replicate_count = len(df_biosample.replicate_id.unique().tolist())
+    #         df3 = df_biosample['variant_id'].value_counts().to_frame()
+    #         df3.columns = ['variant_count']
+    #         df_biosample = df_biosample.merge(df3, left_on='variant_id', right_index=True)
+    #         # TODO Verify this calculation. Where does this 3 comes from?
+    #         do_not_pass_variant_id_list = df_biosample.ix[df_biosample.variant_count < ((1 / 3) * replicate_count)].variant_id.unique().tolist()
+    #         #
+    #         self.passed_variant_df.loc[do_not_pass_variant_id_list, 'passed'] = False
+    #         self.passed_variant_df.loc[do_not_pass_variant_id_list, this_filter_name] = False
+    #     logger.debug(
+    #         "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
+    #                                                        (self.passed_variant_df.sum(axis=1) == self.passed_variant_df.shape[1]).sum()))
 
 
     def f9_pcr_error(self, var_prop, pcr_error_by_sample):

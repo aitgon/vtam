@@ -27,7 +27,7 @@ class TestFilterNonLFN(TestCase):
         # df_raw[['Biosample2', 'Replicate']] = (df_raw["Replicate"].str.split("-R", n=1, expand=True))
         df_raw['Variant'] = df_raw['Variant'].astype('category')
         df_raw['Biosample'] = df_raw['Biosample'].astype('category')
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         df_raw = df_raw[['Variant', 'Biosample', 'Replicate']]
         # df_raw['Replicate'] = df_raw['Replicate'].astype('int')
         self.MFZR_prerun_COI_corr_all_filters_6 = pandas.DataFrame({'variant_id': df_raw['Variant'].cat.codes, 'biosample_id': df_raw['Biosample'].cat.codes,
@@ -41,7 +41,7 @@ class TestFilterNonLFN(TestCase):
         min_repln = 2
         var_prop = 0
         pcr_error_by_sample = True
-        f9_pcr_error(var_prop=var_prop, pcr_error_by_sample=pcr_error_by_sample)
+        # f9_pcr_error(var_prop=var_prop, pcr_error_by_sample=pcr_error_by_sample)
         filter_non_lfn_runner.f9_delete_min_repln(min_repln=min_repln)
         #
         filter_non_lfn_runner.delete_variant_df.loc[filter_non_lfn_runner.delete_variant_df.filter_delete == 0].shape
