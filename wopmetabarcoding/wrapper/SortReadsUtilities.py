@@ -253,7 +253,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
                         # Write a new tsv with these informations
                         out_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(read_id,
                             sampleinformation_instance.marker_id,
-                            sampleinformation_instance.run_name,
+                            sampleinformation_instance.run_id,
                             sampleinformation_instance.tag_forward,
                             sampleinformation_instance.tag_reverse,
                             sampleinformation_instance.biosample_id,
@@ -263,7 +263,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
                         # fout.write(
                         #     str(read_id) + "\t"
                         #     + sampleinformation_instance.marker_id + "\t"
-                        #     + sampleinformation_instance.run_name +"\t"
+                        #     + sampleinformation_instance.run_id +"\t"
                         #     + sampleinformation_instance.tag_forward + "\t"
                         #     + sampleinformation_instance.tag_reverse + "\t"
                         #     + sampleinformation_instance.biosample_id + "\t"
