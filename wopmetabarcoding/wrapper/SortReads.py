@@ -123,6 +123,7 @@ class SortReads(ToolWrapper):
             #
             ############################################
             # Vsearch --db primer_tag_fasta --usearch_global merged_fasta
+            # Vsearch --db primer_tag_fasta --usearch_global merged_fasta
             ############################################
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
@@ -292,6 +293,8 @@ class SortReads(ToolWrapper):
                                  names=['read_id', 'marker_id', 'run_id', 'tag_forward', 'tag_reverse', 'biosample_id',
                                         'replicate_id', 'variant_sequence'])
             fasta_variant_read_count_df = read_annotation_df.groupby(['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+
+
             #
             ################################################################
             # Delete singletons

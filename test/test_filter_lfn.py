@@ -2,7 +2,112 @@ import pandas
 from unittest import TestCase
 from wopmetabarcoding.wrapper.FilterLFN import FilterLFNRunner
 
+
+
+
+
+
+
+    #
+    #
+
+
+
+class TestSingleton(TestCase):
+    def setUp(self1):
+        self1.variant_df = pandas.DataFrame({
+            'id': [1, 22],
+            'sequence_': ["tata", "tgtg"],
+        })
+        self1.variant_read_count_df = pandas.DataFrame({
+            'run_id': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                       1,
+                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                       1,
+                       1, 1, 1, 1,
+                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                       1,
+                       1, 1, 1, 1, 1, 1,
+                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'variant_sequence': [1] * 6 + [2] * 6 + [3] * 6 + [4] * 6 + [5] * 6 + [6] * 6 + [7] * 6 + [8] * 6 + [
+                9] * 6 + [
+                                    10] * 6 + [11] * 6 + [12] * 6 + [13] * 6 +
+                                [14] * 6 + [15] * 6 + [16] * 6 + [17] * 6 + [18] * 6 + [19] * 6 + [20] * 6 + [
+                                    21] * 6 + [
+                                    22] * 6 + [23] * 6 + [24] * 6 + [25] * 6,
+            'biosample_id': [1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2,
+                             1,
+                             1,
+                             1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2,
+                             1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2,
+                             1,
+                             1,
+                             1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2,
+                             1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2],
+            'replicate_id': [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3,
+                             1,
+                             2,
+                             3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3,
+                             1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3,
+                             1,
+                             2,
+                             3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3,
+                             1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3],
+            'read_count': [
+                10, 5, 0, 249, 58, 185,
+                68, 54, 100, 0, 0, 0,
+                0, 0, 0, 258, 126, 500,
+                0, 0, 0, 0, 1, 0,
+                0, 0, 1, 0, 0, 0,
+                1524, 1815, 789, 118, 98, 50,
+                1, 0, 0, 0, 0, 0,
+                0, 1, 0, 0, 0, 0,
+                125, 214, 20, 1284, 1789, 1913,
+                0, 1, 0, 0, 1, 0,
+                15, 0, 1, 0, 0, 25,
+                0, 0, 2, 598, 50, 875,
+                2, 60, 12, 1, 0, 0,
+                1, 0, 0, 0, 0, 2,
+                0, 3, 0, 0, 5, 0,
+                65, 98, 152, 2, 0, 1,
+                52, 74, 85, 0, 0, 0,
+                1, 0, 0, 5, 0, 8,
+                5, 0, 1, 0, 0, 21,
+                0, 0, 0, 524, 658, 125,
+                0, 0, 0, 2, 0, 10,
+                25, 58, 23, 10980, 8999, 13814,
+                0, 5, 0, 0, 2, 0,
+                1, 0, 1, 1, 0, 284,
+                0, 2, 0, 0, 5, 0,
+            ],
+        })
+
+
+    def test01_lfn_delete_singleton(self1):
+
+
+
+        df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(
+             by=['variant_sequence']).sum().reset_index()
+        # df = self1.variant_read_count_df.groupby(
+        #   ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+
+        # Get names of indexes for which variant_sequence has the read_count equal 1
+        indexNames = df[df['read_count'] == 1].index
+
+        # Delete these row indexes from dataFrame
+        self1.variant_read_count_df.drop(indexNames, inplace=True)
+        df1 = self1.variant_read_count_df
+        import pdb;
+        pdb.set_trace()
+
+        return df1
+
+
+
 class TestFilterLFN(TestCase):
+
 
     def setUp(self):
         self.variant_df = pandas.DataFrame({
