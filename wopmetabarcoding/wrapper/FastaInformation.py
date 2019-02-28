@@ -10,26 +10,28 @@ class FastaInformation(ToolWrapper):
     }
     __input_file_csv = "sample2fasta"
     #
+    __output_table_biosample = "Biosample"
     __output_table_fasta = "Fasta"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
-    __output_table_biosample = "Biosample"
-    __output_table_tagpair = "TagPair"
     __output_table_replicate = "Replicate"
+    __output_table_run = "Run"
     __output_table_sample_information = "SampleInformation"
+    __output_table_tagpair = "TagPair"
 
     def specify_input_file(self):
         return [FastaInformation.__input_file_csv]
 
     def specify_output_table(self):
         return [
-            FastaInformation.__output_table_sample_information,
+            FastaInformation.__output_table_biosample,
             FastaInformation.__output_table_fasta,
             FastaInformation.__output_table_marker,
             FastaInformation.__output_table_primerpair,
-            FastaInformation.__output_table_biosample,
+            FastaInformation.__output_table_replicate,
+            FastaInformation.__output_table_run,
+            FastaInformation.__output_table_sample_information,
             FastaInformation.__output_table_tagpair,
-            FastaInformation.__output_table_replicate
         ]
 
     def specify_params(self):
@@ -45,13 +47,14 @@ class FastaInformation(ToolWrapper):
         # input file paths
         csv_path = self.input_file(FastaInformation.__input_file_csv)
         #
-        # Input models
-        marker_model = self.output_table(FastaInformation.__output_table_marker)
-        fasta_model = self.output_table(FastaInformation.__output_table_fasta)
-        sampleinformation_model = self.output_table(FastaInformation.__output_table_sample_information)
-        replicate_model = self.output_table(FastaInformation.__output_table_replicate)
+        # Models
         biosample_model = self.output_table(FastaInformation.__output_table_biosample)
+        fasta_model = self.output_table(FastaInformation.__output_table_fasta)
+        marker_model = self.output_table(FastaInformation.__output_table_marker)
         primerpair_model = self.output_table(FastaInformation.__output_table_primerpair)
+        replicate_model = self.output_table(FastaInformation.__output_table_replicate)
+        run_model = self.output_table(FastaInformation.__output_table_run)
+        sampleinformation_model = self.output_table(FastaInformation.__output_table_sample_information)
         tagpair_model = self.output_table(FastaInformation.__output_table_tagpair)
 
         with open(csv_path, 'r') as fin:
@@ -70,9 +73,13 @@ class FastaInformation(ToolWrapper):
                 else:
                     raise IndexError("{} error. Verify nb of columns in this input file: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), csv_path)))
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
-                    # TODO: Add it to a exception logger
                     raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
                 run_name = line.strip().split('\t')[7]
+                #
+                # Insert run
+                run_obj = {'name': run_name}
+                run_instance = get_or_create(session, run_model, **run_obj)
+                run_id = run_instance.id
                 #
                 # Insert marker_id
                 marker_obj = {'name': marker_name}
@@ -83,7 +90,6 @@ class FastaInformation(ToolWrapper):
                 biosample_obj = {'name': biosample_name}
                 biosample_instance = get_or_create(session, biosample_model, **biosample_obj)
                 biosample_id = biosample_instance.id
-                biosample_name = biosample_instance.name
                 #
                 # Insert replicate
                 replicate_obj = {'name': replicate_name}
@@ -92,12 +98,12 @@ class FastaInformation(ToolWrapper):
                 #
                 # Insert file path
                 is_trimmed = False # Default
-                fasta_obj = {'name': file_name, 'run_name': run_name, 'is_trimmed': is_trimmed}
+                fasta_obj = {'name': file_name, 'run_id': run_id, 'is_trimmed': is_trimmed}
                 fasta_instance = get_or_create(session, fasta_model, **fasta_obj)
                 fasta_id = fasta_instance.id
 
                 # Insert sample_information
-                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'biosample_id': biosample_id, 'replicate_id': replicate_id, 'run_name': run_name}
+                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'biosample_id': biosample_id, 'replicate_id': replicate_id, 'run_id': run_id}
                 sample_information_obj['fasta_id'] = fasta_id
                 sample_information_obj['marker_id'] = marker_id
                 get_or_create(session, sampleinformation_model, **sample_information_obj)

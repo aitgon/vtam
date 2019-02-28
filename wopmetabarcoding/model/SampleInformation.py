@@ -19,10 +19,10 @@ class SampleInformation(Base):
     marker_id = Column(Integer, ForeignKey("Marker.id"), nullable=False)
     primer_forward = Column(String(100), nullable=False)
     primer_reverse = Column(String(100), nullable=False)
-    tag_forward = Column(String(100), nullable=False) # Todo: Create Tag model
+    tag_forward = Column(String(100), nullable=False)
     tag_reverse = Column(String(100), nullable=False)
-    fasta_id = Column(Integer, ForeignKey("Fasta.id"), nullable=False) # Todo: should be foreign key to Fasta model ID
-    run_name = Column(String(20), nullable=False)
+    fasta_id = Column(Integer, ForeignKey("Fasta.id"), nullable=False)
+    run_id = Column(Integer, ForeignKey("Run.id"), nullable=False)
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
 

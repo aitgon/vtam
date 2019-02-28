@@ -276,7 +276,7 @@ class SortReads(ToolWrapper):
             # One TSV file with read annotation per merged FASTA Fasta
             read_annotation_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'read_annotation.tsv')
             tsv_file_list_with_read_annotations.append(read_annotation_tsv)
-            run_list[read_annotation_tsv] = fasta_obj.run_name
+            run_list[read_annotation_tsv] = fasta_obj.run_id
             logger.debug(
                 "file: {}; line: {}; trimmed_tsv {}".format(__file__, inspect.currentframe().f_lineno, trimmed_tsv))
             ################################################################
@@ -289,16 +289,25 @@ class SortReads(ToolWrapper):
                            fasta_id=fasta_id, out_tsv=read_annotation_tsv)
             read_annotation_df = pandas.read_csv(read_annotation_tsv, sep='\t',
                                  header=None,
-                                 names=['read_id', 'marker_id', 'run', 'tag_forward', 'tag_reverse', 'biosample_id',
+                                 names=['read_id', 'marker_id', 'run_id', 'tag_forward', 'tag_reverse', 'biosample_id',
                                         'replicate_id', 'variant_sequence'])
-            fasta_variant_count_df = read_annotation_df.groupby(['run', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='count')
+            fasta_variant_read_count_df = read_annotation_df.groupby(['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+            #
+            ################################################################
+            # Delete singletons
+            ################################################################
+            #  TODO RED: FUNCTION DELETE SINGLETON IN SORTREADUTILIITIES
+            # todo takes as input fasta_variant_read_count_df and outputs df where read_count>1
+            import pdb; pdb.set_trace()
+            fasta_variant_read_count_df = read_annotation_df.groupby(
+                ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
             logger.debug(
                 "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
-            #
+            # import pdb; pdb.set_trace()
             ################################
             # Insert into final db, table 'VariantReadCount'
             ################################
-            for row in fasta_variant_count_df.itertuples():
+            for row in fasta_variant_read_count_df.itertuples():
                 biosample_id = row[2]
                 replicate_id = row[3]
                 variant_sequence = row[4]
