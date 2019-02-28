@@ -64,6 +64,32 @@ class FilterNonLFNRunner:
 
         :param min_repln: minimal number of replicates in which the variant must be present
         :return: None
+        Non Low frequency noise filter minimum remplicant  (min_repln) with a single threshold or several.
+        Function IDs: 9 (min_repln is 2)
+
+        This filters deletes the variant if the count of the combinaison variant i and biosample j
+        is low then the min_repln.
+        The deletion condition is: count(comb (N_ij) < min_repln.
+
+
+        Pseudo-algorithm of this function:
+
+        1. Compute count(comb (N_ij)
+        2. Set variant/biosample/replicate for deletion if count  column is low the min_repln
+
+
+        Updated:
+        February 28, 2019
+
+        Args:
+           min_repln(float): Default deletion threshold
+
+
+        Returns:
+            None: The output of this filter is added to the 'self.delete_variant_df'
+            with filter_id='9' and 'filter_delete'=1 or 0
+
+
         """
         this_filter_id = 9
         logger.debug(
