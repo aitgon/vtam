@@ -51,7 +51,22 @@ from wopmetabarcoding.utils.logger import logger
 #     pdb.set_trace()
 #
 #     return df1
+def test01_lfn_delete_singleton(self1):
+    df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(
+        by=['variant_sequence']).sum().reset_index()
+    # df = self1.variant_read_count_df.groupby(
+    #   ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
 
+    # Get names of indexes for which variant_sequence has the read_count equal 1
+    indexNames = df[df['read_count'] == 1].index
+
+    # Delete these row indexes from dataFrame
+    self1.variant_read_count_df.drop(indexNames, inplace=True)
+    df1 = self1.variant_read_count_df
+    import pdb;
+    pdb.set_trace()
+
+    return df1
 
 
 class FilterLFNRunner:

@@ -48,6 +48,6 @@ class TestFilterNonLFN(TestCase):
         #
         # Nb of rows in wopmetabarcodin/test/test_files/7_MFZR_prerun_COI_corr_WO_incoherent_var.csv
         # 836
-        nb_variant_biosample_replicates_that_passed_the_filter \
+        nb_variant_biosample_replicates_that_passed_the_filter\
             = filter_non_lfn_runner.delete_variant_df.loc[filter_non_lfn_runner.delete_variant_df.filter_delete==0].shape[0]
         self.assertTrue(nb_variant_biosample_replicates_that_passed_the_filter==836)

@@ -88,8 +88,8 @@ class TestSingleton(TestCase):
 
 
 
-        df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(
-             by=['variant_sequence']).sum().reset_index()
+        df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(by=['variant_sequence']).sum().reset_index()
+        df_final = pandas.DataFrame(columns = ['run_id', 'biosample_id', 'replicate_id', 'read_count'])
         # df = self1.variant_read_count_df.groupby(
         #   ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
 
@@ -97,13 +97,17 @@ class TestSingleton(TestCase):
         indexNames = df[df['read_count'] == 1].index
 
         # Delete these row indexes from dataFrame
-        self1.variant_read_count_df.drop(indexNames, inplace=True)
-        df1 = self1.variant_read_count_df
-        import pdb;
-        pdb.set_trace()
+        #self1.variant_read_count_df.drop(indexNames, inplace=True)
+        for x in indexNames:
+            self1.variant_read_count_df=self1.variant_read_count_df.drop(self1.variant_read_count_df[self1.variant_read_count_df.variant_sequence == x].index)
 
-        return df1
 
+
+        #return self1.variant_read_count_df
+
+        #test
+        nb_variant_that_passed_the_filter= self1.variant_read_count_df.shape[0]
+        self1.assertTrue(nb_variant_that_passed_the_filter == 126)
 
 
 class TestFilterLFN(TestCase):
