@@ -11,7 +11,7 @@ install_requires = [
 
 setup(
     name='wopmetabarcoding',
-    version='0.1.2',
+    version='0.2.0',
     license='MIT',
     author='Thomas Dechatre, Aitor Gonzalez',
     author_email='aitor.gonzalez@univ-amu.fr',
