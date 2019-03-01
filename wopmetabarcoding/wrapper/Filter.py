@@ -59,10 +59,8 @@ class Filter(ToolWrapper):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         #
-        # # Input file path
-        # # sortreads_samplecount = self.input_file(Filter.__input_sortreads_samplecount_csv)
+        # Input file path
         cutoff_file_tsv = self.input_file(Filter.__input_cutoff_file)
-        genetic_code_tsv = self.input_file(Filter.__input_genetic_code_file)
         #
         # Input table models
         variant_model = self.input_table(Filter.__input_table_variant)
