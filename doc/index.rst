@@ -19,9 +19,9 @@ Table of Contents
     content/developer_filter
     content/developer_tax_assign
 
-.. Indices and tables
-.. ==================
+Indices and tables
+==================
 
-.. :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
