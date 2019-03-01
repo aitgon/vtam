@@ -32,41 +32,28 @@ from math import floor
 from wopmetabarcoding.utils.logger import logger
 
 
-# def lfn_delete_singleton(self1,data_frame):
-#     self1.delete_variant_df = pandas.DataFrame(
-#         data={'variant_id': [], 'biosample_id': [], 'replicate_id': [], 'filter_name': [], 'filter_delete': []})
-#
-#     df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(
-#         by=['variant_sequence']).sum().reset_index()
-#     # df = self1.variant_read_count_df.groupby(
-#     #   ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
-#
-#     # Get names of indexes for which variant_sequence has the read_count equal 1
-#     indexNames = df[df['read_count'] == 1].index
-#
-#     # Delete these row indexes from dataFrame
-#     self1.variant_read_count_df.drop(indexNames, inplace=True)
-#     df1 = self1.variant_read_count_df
-#     import pdb;
-#     pdb.set_trace()
-#
-#     return df1
-def test01_lfn_delete_singleton(self1):
-    df = self1.variant_read_count_df[['variant_sequence', 'read_count']].groupby(
+
+def f1_lfn_delete_singleton(run_biosample_replicate_variant_read_count_df):
+    """
+    This function removes variants that appear just once over all sample/replicates
+
+
+    Args:
+        run_biosample_replicate_variant_read_count_df (Pandas Dataframe): Dataframe with this columns: run_id, variant_sequence, biosample_id, replicate_id, read_count
+
+    Returns: Pandas DataFrame with same columns as input, but without singletons (Variant with just one read)
+
+    """
+    df = run_biosample_replicate_variant_read_count_df[['variant_sequence', 'read_count']].groupby(
         by=['variant_sequence']).sum().reset_index()
-    # df = self1.variant_read_count_df.groupby(
-    #   ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
 
     # Get names of indexes for which variant_sequence has the read_count equal 1
-    indexNames = df[df['read_count'] == 1].index
+    singleton_sequence_list = df[df['read_count'] == 1].variant_sequence.tolist()
 
     # Delete these row indexes from dataFrame
-    self1.variant_read_count_df.drop(indexNames, inplace=True)
-    df1 = self1.variant_read_count_df
-    import pdb;
-    pdb.set_trace()
-
-    return df1
+    passed_lfn_delete_singleton_df = run_biosample_replicate_variant_read_count_df.loc[
+        ~run_biosample_replicate_variant_read_count_df.variant_sequence.isin(singleton_sequence_list),]
+    return passed_lfn_delete_singleton_df
 
 
 class FilterLFNRunner:
