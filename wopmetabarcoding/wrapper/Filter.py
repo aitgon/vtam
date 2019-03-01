@@ -120,9 +120,15 @@ class Filter(ToolWrapper):
                 # Filter 2: f2_f4_lfn_delete_per_sum_variant
                 ############################################
                 lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
+                #
+                ############################################
+                # Write all LFN Filters
+                ############################################
                 records = list(lfn_filter_runner.delete_variant_df.T.to_dict().values())
+                import pdb; pdb.set_trace()
                 with engine.connect() as conn:
                     conn.execute(variant_selected_model.__table__.insert(), records)
+                import pdb; pdb.set_trace()
                 #
                 ############################################
                 # Filter 2: f2_lfn2_per_variant_delete
