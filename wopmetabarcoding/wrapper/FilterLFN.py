@@ -69,7 +69,7 @@ class FilterLFNRunner:
         self.tempdir = os.path.join(tempdir, "FilterUtilities", "marker_id_{}".format(marker_id), "FilterUtilities", self.__class__.__name__)
         PathFinder.mkdir_p(self.tempdir)
         #
-        if self.variant_read_count_df.shape[1] != 4:
+        if self.variant_read_count_df.shape[1] != 5:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         #
         ################################
@@ -122,9 +122,9 @@ class FilterLFNRunner:
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         ######################
         # Calculating the total of reads by variant
-        df2 = self.variant_read_count_df[['variant_id', 'read_count']].groupby(by=['variant_id']).sum().reset_index()
+        df2 = self.variant_read_count_df[['run_id', 'variant_id', 'read_count']].groupby(by=['run_id', 'variant_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on='variant_id', right_on='variant_id')
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'variant_id'], right_on=['run_id', 'variant_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_per_replicate'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_variant'})
         # Calculate the ratio
@@ -163,7 +163,7 @@ class FilterLFNRunner:
 
                 #
                 # Keep important columns
-                df2_f4_variant_id = df2_f4_variant_id[['variant_id', 'biosample_id', 'replicate_id',
+                df2_f4_variant_id = df2_f4_variant_id[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                            'filter_id', 'filter_delete']]
                 #
                 # Concatenate vertically output df
@@ -172,7 +172,7 @@ class FilterLFNRunner:
 
         #
         # Keep important columns
-        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+        df2 = df2[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                    'filter_id', 'filter_delete']]
 
         # Concatenate vertically output df
@@ -219,10 +219,10 @@ class FilterLFNRunner:
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         ######################
         # Calculating the total of reads by replicate series
-        df2 = self.variant_read_count_df[['variant_id', 'replicate_id', 'read_count']].groupby(by=['variant_id', 'replicate_id']).sum().reset_index()
+        df2 = self.variant_read_count_df[['run_id', 'variant_id', 'replicate_id', 'read_count']].groupby(by=['run_id', 'variant_id', 'replicate_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
 
-        df2 = self.variant_read_count_df.merge(df2, left_on=['variant_id', 'replicate_id'], right_on=['variant_id', 'replicate_id'])
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'variant_id', 'replicate_id'], right_on=['run_id', 'variant_id', 'replicate_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_replicate'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_replicate_series'})
 
@@ -249,13 +249,13 @@ class FilterLFNRunner:
                     df2_f6_variant_id.low_frequence_noice_per_replicate_series < variant_id_threshold, 'filter_delete'] = True
 
                 #  Keep important columns
-                df2_f6_variant_id = df2_f6_variant_id[['variant_id', 'biosample_id', 'replicate_id',
+                df2_f6_variant_id = df2_f6_variant_id[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                                                        'filter_id', 'filter_delete']]
 
                 # Concatenate vertically output df
                 #  Prepare output df and concatenate to self.delete_variant_df
                 self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f6_variant_id], sort=False)
-        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+        df2 = df2[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                    'filter_id', 'filter_delete']]
 
       # Concatenate vertically output df
@@ -297,13 +297,13 @@ class FilterLFNRunner:
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         # Calculating the total number of reads by sample replicates
 
-        df2 = self.variant_read_count_df[['biosample_id', 'replicate_id', 'read_count']].groupby(
-            by=['biosample_id', 'replicate_id']).sum().reset_index()
+        df2 = self.variant_read_count_df[['run_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
+            by=['run_id', 'biosample_id', 'replicate_id']).sum().reset_index()
 
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on=['biosample_id', 'replicate_id'],
-                                               right_on=['biosample_id', 'replicate_id'])
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'biosample_id', 'replicate_id'],
+                                               right_on=['run_id', 'biosample_id', 'replicate_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count_per_variant_per_biosample_per_replicate'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_biosample_replicate'})
         #
@@ -321,7 +321,7 @@ class FilterLFNRunner:
             df2.low_frequence_noice_per_replicate < lfn_per_biosample_per_replicate_threshold , 'filter_delete'] = True
         #
         #Let only interest columns
-        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+        df2 = df2[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                        'filter_id', 'filter_delete']]
         #
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
@@ -375,7 +375,7 @@ class FilterLFNRunner:
 
         df2.loc[
             df2.read_count < lfn_read_count_threshold, 'filter_delete'] = True
-        df2 = df2[['variant_id', 'biosample_id', 'replicate_id',
+        df2 = df2[['run_id', 'variant_id', 'biosample_id', 'replicate_id',
                    'filter_id', 'filter_delete']]
         #
         # Concatenate vertically output df

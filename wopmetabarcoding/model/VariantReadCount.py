@@ -7,7 +7,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 class VariantReadCount(Base):
     __tablename__ = "VariantReadCount"
     __table_args__ = (
-        UniqueConstraint('variant_id', 'marker_id', 'biosample_id', 'replicate_id'),
+        UniqueConstraint('run_id', 'variant_id', 'marker_id', 'biosample_id', 'replicate_id'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)

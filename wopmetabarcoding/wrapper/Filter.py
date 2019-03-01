@@ -108,17 +108,17 @@ class Filter(ToolWrapper):
                 lfn_filter_runner = FilterLFNRunner(variant_df, variant_read_count_df, marker_id)
                 #
                 # Filter parameters
-                lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
                 lfn_per_variant_threshold = self.option("lfn_per_variant_threshold")
+                lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
                 lfn_per_replicate_series_threshold = self.option("lfn_per_replicate_series_threshold")
                 lfn_read_count_threshold = self.option("lfn_read_count_threshold")
                 #
                 Logger.instance().info("Launching LFN filter:")
                 #
                 ############################################
-                # Filter 1: f1_lfn1_per_replicate
+                # Filter 2: f1_lfn1_per_replicate
                 ############################################
-                lfn_filter_runner.f1_lfn1_per_replicate(lfn_per_replicate_threshold)
+                lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
                 #
                 ############################################
                 # Filter 2: f2_lfn2_per_variant_delete
