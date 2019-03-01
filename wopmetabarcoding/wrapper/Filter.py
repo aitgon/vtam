@@ -22,7 +22,7 @@ class Filter(ToolWrapper):
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
-    __output_table_passed_variant = "VariantSelected"
+    __output_table_filter_lfn = "VariantFilterLFN"
 
 
     def specify_input_file(self):
@@ -40,7 +40,7 @@ class Filter(ToolWrapper):
 
     def specify_output_table(self):
         return [
-            Filter.__output_table_passed_variant,
+            Filter.__output_table_filter_lfn,
         ]
 
     def specify_params(self):
@@ -67,7 +67,7 @@ class Filter(ToolWrapper):
         variant_read_count_model = self.input_table(Filter.__input_table_variant_read_count)
         #
         # Output table models
-        variant_selected_model = self.output_table(Filter.__output_table_passed_variant)
+        variant_selected_model = self.output_table(Filter.__output_table_filter_lfn)
         with engine.connect() as conn:
             conn.execute(variant_selected_model.__table__.delete())
         #
@@ -87,6 +87,7 @@ class Filter(ToolWrapper):
                 #
                 # Create variant_read_count DF for given marker
                 stmt_variant_read_count = select([variant_read_count_model_table.c.variant_id,
+                                                               variant_read_count_model_table.c.run_id,
                                                                variant_read_count_model_table.c.biosample_id,
                                                                variant_read_count_model_table.c.replicate_id,
                                                                variant_read_count_model_table.c.read_count])\
@@ -94,7 +95,7 @@ class Filter(ToolWrapper):
                 variant_read_count_list = []
                 for row2 in conn.execute(stmt_variant_read_count).fetchall():
                     variant_read_count_list.append(row2)
-                variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list, columns=['variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+                variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list, columns=['variant_id', 'run_id', 'biosample_id', 'replicate_id', 'read_count'])
                 #
                 # Create variant DF for given marker
                 stmt_variant_read_count = select([variant_model_table.c.id, variant_model_table.c.sequence])\
@@ -116,9 +117,12 @@ class Filter(ToolWrapper):
                 Logger.instance().info("Launching LFN filter:")
                 #
                 ############################################
-                # Filter 2: f1_lfn1_per_replicate
+                # Filter 2: f2_f4_lfn_delete_per_sum_variant
                 ############################################
                 lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
+                records = list(lfn_filter_runner.delete_variant_df.T.to_dict().values())
+                with engine.connect() as conn:
+                    conn.execute(variant_selected_model.__table__.insert(), records)
                 #
                 ############################################
                 # Filter 2: f2_lfn2_per_variant_delete
