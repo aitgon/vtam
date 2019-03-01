@@ -13,6 +13,7 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.wrapper.FilterLFN import f1_lfn_delete_singleton
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
@@ -293,24 +294,19 @@ class SortReads(ToolWrapper):
                                  names=['read_id', 'marker_id', 'run_id', 'tag_forward', 'tag_reverse', 'biosample_id',
                                         'replicate_id', 'variant_sequence'])
             fasta_variant_read_count_df = read_annotation_df.groupby(['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
-
-
             #
             ################################################################
-            # Delete singletons
+            # Remove singletons
             ################################################################
-            #  TODO RED: FUNCTION DELETE SINGLETON IN SORTREADUTILIITIES
-            # todo takes as input fasta_variant_read_count_df and outputs df where read_count>1
-            import pdb; pdb.set_trace()
-            fasta_variant_read_count_df = read_annotation_df.groupby(
-                ['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
-            logger.debug(
-                "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
-            # import pdb; pdb.set_trace()
+            logger.debug("file: {}; line: {};  Removing singletons".format(__file__, inspect.currentframe().f_lineno))
+            fasta_variant_read_count_df = f1_lfn_delete_singleton(fasta_variant_read_count_df)
             ################################
             # Insert into final db, table 'VariantReadCount'
             ################################
+            logger.debug(
+                "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
             for row in fasta_variant_read_count_df.itertuples():
+                run_id = row[1]
                 biosample_id = row[2]
                 replicate_id = row[3]
                 variant_sequence = row[4]
@@ -328,11 +324,13 @@ class SortReads(ToolWrapper):
                 #
                 try:
                     #
-                    stmt_ins_read_count = variant_read_count_model.__table__.insert().values(variant_id=variant_id, marker_id=marker_id, biosample_id=biosample_id, replicate_id=replicate_id, read_count=read_count)
+                    stmt_ins_read_count = variant_read_count_model.__table__.insert().values(run_id=run_id, variant_id=variant_id,
+                        marker_id=marker_id, biosample_id=biosample_id, replicate_id=replicate_id, read_count=read_count)
                     with engine.connect() as conn:
                         conn.execute(stmt_ins_read_count)
                 except sqlalchemy.exc.IntegrityError:
                     stmt_upd = variant_read_count_model.__table__.update()\
+                        .where(variant_read_count_model.__table__.c.run_id==run_id)\
                         .where(variant_read_count_model.__table__.c.variant_id==variant_id)\
                         .where(variant_read_count_model.__table__.c.marker_id==marker_id)\
                         .where(variant_read_count_model.__table__.c.biosample_id==biosample_id)\
@@ -341,20 +339,3 @@ class SortReads(ToolWrapper):
                     with engine.connect() as conn:
                         conn.execute(stmt_upd)
             logger.debug("file: {}; line: {};  Insert variants: Finished".format(__file__, inspect.currentframe().f_lineno))
-        ################################
-        # Remove singletons from DB, variants with absolute read_count = 1
-        ################################
-        logger.debug("file: {}; line: {};  Deleting singletons".format(__file__, inspect.currentframe().f_lineno))
-        with engine.connect() as conn:
-            stmt = select([variant_read_count_model.__table__.c.variant_id]).group_by(
-                variant_read_count_model.__table__.c.variant_id).having(
-                func.sum(variant_read_count_model.__table__.c.read_count) == 1)
-            singleton_list = [i[0] for i in conn.execute(stmt).fetchall()]
-        with engine.connect() as conn: # delete singletons from variant_read_count table
-            for variant_id in singleton_list:
-                stmt = variant_read_count_model.__table__.delete().where(variant_read_count_model.__table__.c.variant_id==variant_id)
-                conn.execute(stmt)
-        with engine.connect() as conn: # delete singletons from variant_read_count table
-            for variant_id in singleton_list:
-                stmt = variant_model.__table__.delete().where(variant_model.__table__.c.id==variant_id)
-                conn.execute(stmt)
