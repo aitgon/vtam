@@ -41,6 +41,7 @@ class Filter(ToolWrapper):
     def specify_output_table(self):
         return [
             Filter.__output_table_variant_filter_lfn,
+            Filter.__output_table_variant_filter_non_lfn,
         ]
 
     def specify_params(self):
@@ -68,6 +69,7 @@ class Filter(ToolWrapper):
         #
         # Output table models
         variant_filter_lfn_model = self.output_table(Filter.__output_table_variant_filter_lfn)
+        variant_filter_non_lfn_model = self.output_table(Filter.__output_table_variant_filter_non_lfn)
         # with engine.connect() as conn:
         #     conn.execute(variant_filter_lfn_model.__table__.delete())
         #
@@ -156,15 +158,29 @@ class Filter(ToolWrapper):
                 # NON LFN FILTERS
                 #
                 ############################################
-                # todo create object filter non lfn
-                #
-                # #
-                # TODO Add this filter
+
+                variants_passed_filters_lfn_df = lfn_filter_runner.delete_variant_df.copy()
+
+                df2=variants_passed_filters_lfn_df.loc[(variants_passed_filters_lfn_df['filter_id'] == 8) & (variants_passed_filters_lfn_df['filter_delete'] == 0)]
+
+                variants_passed_filters_lfn_df=df2
+                non_lfn_filter_runner = FilterLFNRunner(variant_df, variants_passed_filters_lfn_df, marker_id)
+
+
                 # ############################################
                 # # Filter 7: Repeatability: f9_delete_min_replicate_number
                 # ############################################
-                # lfn_filter_runner.f9_delete_min_replicate_number
-                # #
+                min_replicate_number = 2
+                non_lfn_filter_runner.f9_delete_min_replicate_number(min_replicate_number)
+                #
+                # Write Non LFN Filters
+                records = non_lfn_filter_runner.delete_variant_df.to_dict('records')
+                with engine.connect() as conn:
+                    conn.execute(variant_filter_non_lfn_model.__table__.insert(), records)
+
+
+
+
                 # ###########################################
                 # # Filter 9: PCR error
                 # ###########################################
