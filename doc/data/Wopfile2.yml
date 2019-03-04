@@ -1,0 +1,84 @@
+rule FastaInformation:
+    tool: wopmetabarcoding.wrapper.FastaInformation
+    input:
+        file:
+            sample2fasta: ${SAMPLE2FASTA}
+    output:
+        table:
+            Biosample: wopmetabarcoding.model.Biosample
+            Fasta: wopmetabarcoding.model.Fasta
+            Marker: wopmetabarcoding.model.Marker
+            PrimerPair: wopmetabarcoding.model.PrimerPair
+            Replicate: wopmetabarcoding.model.Replicate
+            Run: wopmetabarcoding.model.Run
+            SampleInformation: wopmetabarcoding.model.SampleInformation
+            TagPair: wopmetabarcoding.model.TagPair
+    params:
+        fasta_dir: ${DIR_FASTA}
+
+rule SortReads:
+    tool: wopmetabarcoding.wrapper.SortReads
+    input:
+        table:
+            Fasta: wopmetabarcoding.model.Fasta
+            SampleInformation: wopmetabarcoding.model.SampleInformation
+            Marker: wopmetabarcoding.model.Marker
+    output:
+        table:
+            Variant: wopmetabarcoding.model.Variant
+            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+    params:
+        min_id: 0.8
+        minseqlength: 32
+        overhang: 0
+
+
+rule Filter:
+    tool: wopmetabarcoding.wrapper.Filter
+    input:
+        table:
+            Variant: wopmetabarcoding.model.Variant
+            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+        file:
+            file_cutoff: data/cutoff_variant.tsv
+            genetic_code: data/genetic_codes.csv
+    output:
+        table:
+            VariantFilterLFN: wopmetabarcoding.model.VariantFilterLFN
+    params:
+        lfn_per_replicate_threshold: 0.001
+        lfn_per_variant_threshold: 0.001
+        lfn_per_replicate_series_threshold: 0.001
+        lfn_read_count_threshold: 1
+        repeatability_threshold: 2
+        pcr_error_var_prop: 0.1
+        renkonen_number_of_replicate: 3
+        renkonen_renkonen_tail: 0.5
+
+
+rule DbFasta2UDB:
+    tool: wopmetabarcoding.wrapper.DbFasta2Udb
+    input:
+        file:
+            db_fasta: ${METAZOAN_FAS}
+    output:
+        file:
+            db_udb: ${DIR_OUT}/Metazoa_BOLD_non_nt_2016_06_23.udb
+
+rule TaxAssign:
+    tool: wopmetabarcoding.wrapper.TaxAssign
+    input:
+        table:
+            Variant: wopmetabarcoding.model.Variant
+            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            VariantSelected: wopmetabarcoding.model.VariantSelected
+        file:
+            db_udb: ${DIR_OUT}/Metazoa_BOLD_non_nt_2016_06_23.udb
+            tax_assign_pars_tsv: data/tax_assign_pars.tsv
+            tax_assign_db_sqlite: ${TAX_ASSIGN_SQLITE}
+    output:
+        table:
+            VariantTaxa: wopmetabarcoding.model.VariantTaxa
+    params:
+        output_dir_taxassign: ${DIR_OUT}/TaxAssign
+

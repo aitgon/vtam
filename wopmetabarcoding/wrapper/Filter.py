@@ -22,7 +22,7 @@ class Filter(ToolWrapper):
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
-    __output_table_filter_lfn = "VariantFilterLFN"
+    __output_table_variant_filter_lfn = "VariantFilterLFN"
 
 
     def specify_input_file(self):
@@ -40,16 +40,16 @@ class Filter(ToolWrapper):
 
     def specify_output_table(self):
         return [
-            Filter.__output_table_filter_lfn,
+            Filter.__output_table_variant_filter_lfn,
         ]
 
     def specify_params(self):
         return {
-            "lfn_per_replicate_threshold": "float",
             "lfn_per_variant_threshold": "float",
-            "lfn_per_replicate_series_threshold": "float",
+            "lfn_per_replicate_threshold": "float",
+            "lfn_per_biosample_per_replicate_threshold": "float",
             "lfn_read_count_threshold": "float",
-            "repeatability_threshold": "int",
+            "min_replicate_number": "int",
             "pcr_error_var_prop": "float",
             "renkonen_number_of_replicate": "int",
             "renkonen_renkonen_tail": "float"
@@ -67,9 +67,9 @@ class Filter(ToolWrapper):
         variant_read_count_model = self.input_table(Filter.__input_table_variant_read_count)
         #
         # Output table models
-        variant_selected_model = self.output_table(Filter.__output_table_filter_lfn)
-        with engine.connect() as conn:
-            conn.execute(variant_selected_model.__table__.delete())
+        variant_filter_lfn_model = self.output_table(Filter.__output_table_variant_filter_lfn)
+        # with engine.connect() as conn:
+        #     conn.execute(variant_filter_lfn_model.__table__.delete())
         #
         # Create variant_biosample_replicate_df to run the filters with:
         # variant_id, biosample_id, replicate_id, read_count, variant_sequence
@@ -113,6 +113,7 @@ class Filter(ToolWrapper):
                 lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
                 lfn_per_replicate_series_threshold = self.option("lfn_per_replicate_series_threshold")
                 lfn_read_count_threshold = self.option("lfn_read_count_threshold")
+                lfn_per_biosample_per_replicate_threshold = self.option("lfn_per_biosample_per_replicate_threshold")
                 #
                 Logger.instance().info("Launching LFN filter:")
                 #
@@ -122,18 +123,38 @@ class Filter(ToolWrapper):
                 lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
                 #
                 ############################################
+                # Filter  3: f3_f5_lfn_delete_per_sum_variant_replicate
+                ############################################
+                lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_threshold)
+
+                ############################################
+                # Filter 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
+                ############################################
+
+                lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(
+                    lfn_per_biosample_per_replicate_threshold)
+
+                ############################################
+                # Filter  7:f7_lfn_delete_absolute_read_count
+                ############################################
+                lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
+
+                ############################################
+                # Filter 8:f8_lfn_delete_do_not_pass_all_filters
+                ############################################
+                lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
+
+                ############################################
                 # Write all LFN Filters
                 ############################################
-                records = list(lfn_filter_runner.delete_variant_df.T.to_dict().values())
+                records = lfn_filter_runner.delete_variant_df.to_dict('records')
                 with engine.connect() as conn:
-                    conn.execute(variant_selected_model.__table__.insert(), records)
-                import pdb; pdb.set_trace()
+                    conn.execute(variant_filter_lfn_model.__table__.insert(), records)
                 # #
                 # ############################################
                 # # Filter 2: f2_lfn2_per_variant_delete
                 # # Filter 3: f3_f5_lfn_delete_per_sum_variant_replicate
                 # ############################################
-                # # TODO Take replicate_series parameter to the wopfile
                 # replicate_series = False
                 # if not replicate_series:
                 #     lfn_filter_runner.f2_lfn2_per_variant_delete(lfn_per_variant_threshold)
@@ -151,23 +172,19 @@ class Filter(ToolWrapper):
                 # ############################################
                 # replicate_series = False
                 # if not replicate_series:
-                #     # TODO: @EM Which is the default cutoff
                 #     pass
                 #     # filter_lfn_runner.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv)
                 # else:
-                #     # TODO: @EM Which is the default cutoff?
                 #     lfn_filter_runner.f6_lfn4_per_replicate_series_with_cutoff(cutoff_file_tsv)
                 # #
                 # ############################################
-                # # Filter 7: Repeatability: f9_delete_min_repln
+                # # Filter 7: Repeatability: f9_delete_min_replicate_number
                 # # Filter 8: Repeatability: f8_min_replp
                 # ############################################
-                # # TODO Take replp parameter to the wopfile
                 # replp = True
                 # if not replp:
-                #     lfn_filter_runner.f9_delete_min_repln(2)
+                #     lfn_filter_runner.f9_delete_min_replicate_number(2)
                 # else:
-                #     # TODO @EM Confirm that this function does not take parameters
                 #     lfn_filter_runner.f8_min_replp()
                 # #
                 # ###########################################
@@ -178,7 +195,6 @@ class Filter(ToolWrapper):
                 # ############################################
                 # # Filter 10: Chimera
                 # ############################################
-                # # TODO: Variant sequence must be taken from variant_df instead of from engine and variant_model
                 # lfn_filter_runner.f10_chimera(chimera_by_sample_replicate=True, engine=engine, variant_model=variant_model)
                 # #
                 # ############################################
@@ -194,7 +210,6 @@ class Filter(ToolWrapper):
                 # ############################################
                 # # Filter: Stop codon
                 # ############################################
-                # # TODO: Must be updated for new FilterNonLFNRunner class
                 # #     df_codon_stop_per_genetic_code = self.codon_stop_dataframe(genetic_code_tsv)
                 # #     Logger.instance().info("Launching pseudogene detection with codon stop filter:")
                 # #     filter_lfn_runner.codon_stop(df_codon_stop_per_genetic_code, 2, False)

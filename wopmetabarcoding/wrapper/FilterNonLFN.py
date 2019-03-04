@@ -58,11 +58,11 @@ class FilterNonLFNRunner:
 
 
 
-    def f9_delete_min_repln(self, min_repln):
+    def f9_delete_min_replicate_number(self, min_replicate_number):
         """
         This filter deletes variants if present in less than min_repln replicates
 
-        :param min_repln: minimal number of replicates in which the variant must be present
+        :param min_replicate_number: minimal number of replicates in which the variant must be present
         :return: None
         Non Low frequency noise filter minimum remplicant  (min_repln) with a single threshold or several.
         Function IDs: 9 (min_repln is 2)
@@ -103,7 +103,7 @@ class FilterNonLFNRunner:
         df_filter_output['filter_id'] = this_filter_id
         df_filter_output['filter_delete'] = False
         df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['variant_id', 'biosample_id'], how='inner')
-        df_filter_output.loc[df_filter_output.replicate_count < min_repln, 'filter_delete'] = True
+        df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
         #
         df_filter_output = df_filter_output[['variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete']]
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df_filter_output], sort=False)

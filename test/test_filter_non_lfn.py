@@ -42,7 +42,7 @@ class TestFilterNonLFN(TestCase):
         var_prop = 0
         pcr_error_by_sample = True
         # f9_pcr_error(var_prop=var_prop, pcr_error_by_sample=pcr_error_by_sample)
-        filter_non_lfn_runner.f9_delete_min_repln(min_repln=min_repln)
+        filter_non_lfn_runner.f9_delete_min_replicate_number(min_replicate_number=min_repln)
         #
         filter_non_lfn_runner.delete_variant_df.loc[filter_non_lfn_runner.delete_variant_df.filter_delete == 0].shape
         #

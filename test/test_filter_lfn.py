@@ -104,8 +104,8 @@ class TestFilterLFN(TestCase):
         self.filter_lfn_runner = FilterLFNRunner(self.variant_df, self.variant_read_count_df, self.marker_id)
 
     def test_02_f2_f4_lfn_delete_per_sum_variant(self):
-        lfn_var_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_var_threshold)
+        lfn_per_variant_threshold = 0.001
+        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold=lfn_per_variant_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 22)
                                                                      & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
@@ -147,8 +147,8 @@ class TestFilterLFN(TestCase):
 
 
     def test_04_f3_f5_lfn_delete_per_sum_variant_replicate(self):
-        lfn_var_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_var_threshold)
+        lfn_per_replicate_threshold = 0.005
+        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[
                             (self.filter_lfn_runner.delete_variant_df.variant_id == 12)
@@ -168,7 +168,7 @@ class TestFilterLFN(TestCase):
     def test_05_f3_f5_lfn_delete_per_sum_variant_replicate_threshold_specific(self):
         lfn_var_threshold = 0.0005
         lfn_per_replicate_series_threshold_specific = {9: 0.02, 22: 0.005}
-        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_var_threshold, lfn_per_replicate_series_threshold_specific=lfn_per_replicate_series_threshold_specific)
+        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_var_threshold, lfn_per_replicate_threshold_specific=lfn_per_replicate_series_threshold_specific)
         #import pdb; pdb.set_trace()
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 22)
@@ -252,5 +252,50 @@ class TestFilterLFN(TestCase):
                                                                          & (self.filter_lfn_runner.delete_variant_df.replicate_id == 1)
                                                                          & (self.filter_lfn_runner.delete_variant_df.filter_id == 6),
                                                                         'filter_delete'].values[0])
+
+
+
+    def test_08_f8_lfn_delete_do_not_pass_all_filters(self):
+        lfn_per_variant_threshold = 0.001
+        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold=lfn_per_variant_threshold)
+        lfn_per_replicate_threshold = 0.005
+        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_threshold=lfn_per_replicate_threshold)
+        #
+        self.filter_lfn_runner.f8_lfn_delete_do_not_pass_all_filters()
+        #
+        self.assertTrue(not self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.run_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.variant_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.replicate_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.filter_id == 8),
+                                                                        'filter_delete'].values[0])
+        self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.run_id == 1)                                                                         & (self.filter_lfn_runner.delete_variant_df.variant_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.replicate_id == 3)
+                                                                         & (self.filter_lfn_runner.delete_variant_df.filter_id == 8),
+                                                                        'filter_delete'].values[0])
+        # self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 12)
+        #                                                              & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+        #                                                              & (self.filter_lfn_runner.delete_variant_df.replicate_id == 1)
+        #                                                              & (self.filter_lfn_runner.delete_variant_df.filter_id == 6),
+        #                                                  'filter_delete'].values[0])
+        # self.assertTrue(not self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 12)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.replicate_id == 3)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.filter_id == 6),
+        #                                                                 'filter_delete'].values[0])
+        #
+        #
+        # self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.replicate_id == 3)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.filter_id == 6),
+        #                                                         'filter_delete'].values[0])
+        #
+        # self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 24)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.replicate_id == 1)
+        #                                                                  & (self.filter_lfn_runner.delete_variant_df.filter_id == 6),
+        #                                                                 'filter_delete'].values[0])
 
 
