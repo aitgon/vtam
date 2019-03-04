@@ -151,41 +151,11 @@ class Filter(ToolWrapper):
                 with engine.connect() as conn:
                     conn.execute(variant_filter_lfn_model.__table__.insert(), records)
                 # #
-                # ############################################
-                # # Filter 2: f2_lfn2_per_variant_delete
-                # # Filter 3: f3_f5_lfn_delete_per_sum_variant_replicate
-                # ############################################
-                # replicate_series = False
-                # if not replicate_series:
-                #     lfn_filter_runner.f2_lfn2_per_variant_delete(lfn_per_variant_threshold)
-                # else:
-                #     lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_series_threshold)
-                # #
-                # ############################################
-                # # Filter 4: f7_lfn_delete_absolute_read_count
-                # ############################################
-                # lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
-                # #
-                # ############################################
-                # # Filter 5: f5_lfn4_per_variant_with_cutoff
-                # # Filter 6: f6_lfn4_per_replicate_series_with_cutoff
-                # ############################################
-                # replicate_series = False
-                # if not replicate_series:
-                #     pass
-                #     # filter_lfn_runner.f5_lfn4_per_variant_with_cutoff(cutoff_file_tsv)
-                # else:
-                #     lfn_filter_runner.f6_lfn4_per_replicate_series_with_cutoff(cutoff_file_tsv)
-                # #
+                # TODO Add this filter
                 # ############################################
                 # # Filter 7: Repeatability: f9_delete_min_replicate_number
-                # # Filter 8: Repeatability: f8_min_replp
                 # ############################################
-                # replp = True
-                # if not replp:
-                #     lfn_filter_runner.f9_delete_min_replicate_number(2)
-                # else:
-                #     lfn_filter_runner.f8_min_replp()
+                # lfn_filter_runner.f9_delete_min_replicate_number
                 # #
                 # ###########################################
                 # # Filter 9: PCR error
