@@ -150,6 +150,14 @@ class Filter(ToolWrapper):
                 records = lfn_filter_runner.delete_variant_df.to_dict('records')
                 with engine.connect() as conn:
                     conn.execute(variant_filter_lfn_model.__table__.insert(), records)
+
+                ############################################$
+                #
+                # NON LFN FILTERS
+                #
+                ############################################
+                # todo create object filter non lfn
+                #
                 # #
                 # TODO Add this filter
                 # ############################################
