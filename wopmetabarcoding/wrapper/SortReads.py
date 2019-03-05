@@ -13,7 +13,7 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.wrapper.FilterLFN import f1_lfn_delete_singleton
+from wopmetabarcoding.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
@@ -79,11 +79,9 @@ class SortReads(ToolWrapper):
         #
         # Output tables models
         variant_read_count_model = self.output_table(SortReads.__output_table_variant_read_count)
-        with engine.connect() as conn:
-            conn.execute(variant_read_count_model.__table__.delete())
+        # with engine.connect() as conn:
+        #     conn.execute(variant_read_count_model.__table__.delete())
         variant_model = self.output_table(SortReads.__output_table_variant)
-        with engine.connect() as conn:
-            conn.execute(variant_model.__table__.delete())
         #
         # Some variables
         tsv_file_list_with_read_annotations = [] # List of TSV files with read annotations
@@ -319,7 +317,6 @@ class SortReads(ToolWrapper):
                 except sqlalchemy.exc.IntegrityError:
                     stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
                     with engine.connect() as conn:
-                        variant_id = conn.execute(stmt_select_var).first()[0]
                         variant_id = conn.execute(stmt_select_var).first()[0]
                 #
                 try:

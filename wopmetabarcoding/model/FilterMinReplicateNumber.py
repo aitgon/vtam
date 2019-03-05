@@ -4,8 +4,8 @@ from wopmars.framework.database.Base import Base
 from sqlalchemy import Column, String, Integer, ForeignKey
 
 
-class VariantFilterLFN(Base):
-    __tablename__ = "VariantFilterLFN"
+class FilterMinReplicateNumber(Base):
+    __tablename__ = "FilterMinReplicateNumber"
     __table_args__ = (
         UniqueConstraint('run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id'),
     )
@@ -15,6 +15,8 @@ class VariantFilterLFN(Base):
     variant_id = Column(Integer, ForeignKey("Variant.id"), nullable=False)
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
+    read_count = Column(Integer, nullable=False)
     filter_id = Column(Integer, nullable=False)
     filter_delete = Column(Boolean, nullable=False)
-    read_count = Column(Integer, nullable=False)
+
+

@@ -145,14 +145,14 @@ This rule fills in the *Variant* table with the number of reads per variant and 
 You can have more count detail in each category in the tmp files listed in the *sortreads_samplecount.tsv* file
 
 
-Run the *Filter* rule
+Run the *FilterMinReplicateNumber* rule
 -------------------------------------------------------------------------
 
-We can continue with the *Filter* rule. This rule is quite long, so be patient or test it first with smaller datasets.
+We can continue with the *FilterMinReplicateNumber* rule. This rule is quite long, so be patient or test it first with smaller datasets.
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t Filter
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t FilterMinReplicateNumber
 
 This rule fills in the *Variant* table with the number of reads per variant and marker across all samples.
 

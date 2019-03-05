@@ -112,7 +112,7 @@ class FilterNonLFNRunner:
 
     # def f8_min_replp(self):
     #     """
-    #     Filter watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
+    #     FilterMinReplicateNumber watching if a variant is present the more more than 1/3 of the number of sample replicates of a sample
     #
     #     :return: None
     #     """

@@ -3,7 +3,7 @@ import pandas
 from unittest import TestCase
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.FilterLFN import FilterLFNRunner
+from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 from wopmetabarcoding.wrapper.FilterNonLFN import FilterNonLFNRunner
 
 

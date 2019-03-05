@@ -1,4 +1,4 @@
-Developer - Filter wrapper
+Developer - FilterMinReplicateNumber wrapper
 =================================================
 
 Input
@@ -7,7 +7,7 @@ Input
 Output
 ---------------------
 
-The Filter wrapper outputs three files:
+The FilterMinReplicateNumber wrapper outputs three files:
 
 - filtered_dataframe_path.tsv
 - MFZR_variant_info.tsv
@@ -16,7 +16,7 @@ The Filter wrapper outputs three files:
 filtered_dataframe_path.tsv
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The path of this file is defined in the Wopfile *Filter* rule here:
+The path of this file is defined in the Wopfile *FilterMinReplicateNumber* rule here:
 
 .. code-block:: bash
 
@@ -27,22 +27,22 @@ The path of this file is defined in the Wopfile *Filter* rule here:
 This file has three columns with 
 
 - Marker_name
-- Path to a TSV file with variants of a marker that passed the filters and additional information from the Filter wrapper
+- Path to a TSV file with variants of a marker that passed the filters and additional information from the FilterMinReplicateNumber wrapper
 - Path to a FASTA file with sequences of those variants
 
 Example of *filtered_dataframe_path.tsv*
 
 .. code-block:: bash
 
-    MFZR	data/output/Filter/MFZR_variant_info.tsv	data/output/Filter/MFZR_variant.fasta
-    ZFZR	data/output/Filter/ZFZR_variant_info.tsv	data/output/Filter/ZFZR_variant.fasta
+    MFZR	data/output/FilterMinReplicateNumber/MFZR_variant_info.tsv	data/output/FilterMinReplicateNumber/MFZR_variant.fasta
+    ZFZR	data/output/FilterMinReplicateNumber/ZFZR_variant_info.tsv	data/output/FilterMinReplicateNumber/ZFZR_variant.fasta
 
-The directory path of the TSV and FASTA files of the markers is defined in the Wopfile *Filter* rule here:
+The directory path of the TSV and FASTA files of the markers is defined in the Wopfile *FilterMinReplicateNumber* rule here:
 
 .. code-block:: bash
 
     params:
-        filter_output_dir: data/output/Filter
+        filter_output_dir: data/output/FilterMinReplicateNumber
 
 First two lines of *MFZR_variant_info.tsv* for marker *MFZR*
 

@@ -57,7 +57,7 @@ rule SortReads:
 
 
 rule Filter:
-    tool: wopmetabarcoding.wrapper.Filter
+    tool: wopmetabarcoding.wrapper.FilterMinReplicateNumber
     input:
         table:
             Marker: wopmetabarcoding.model.Marker

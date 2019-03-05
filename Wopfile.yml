@@ -56,8 +56,8 @@
 #        overhang: 0
 #
 #
-#rule Filter:
-#    tool: wopmetabarcoding.wrapper.Filter
+#rule FilterMinReplicateNumber:
+#    tool: wopmetabarcoding.wrapper.FilterMinReplicateNumber
 #    input:
 #        table:
 #            Marker: wopmetabarcoding.model.Marker
@@ -71,7 +71,7 @@
 #        file:
 #            marker_variant_path: data/marker_variant_path.tsv
 #    params:
-#        filter_output_dir: data/output/Filter
+#        filter_output_dir: data/output/FilterMinReplicateNumber
 #        lfn_per_replicate_threshold: 0.001
 #        lfn_per_variant_threshold: 0.001
 #        lfn_per_replicate_series_threshold: 0.001

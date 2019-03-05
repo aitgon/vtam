@@ -1,6 +1,6 @@
 import pandas
 from unittest import TestCase
-from wopmetabarcoding.wrapper.FilterLFN import FilterLFNRunner, f1_lfn_delete_singleton
+from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner, f1_lfn_delete_singleton
 
 
 class TestSingleton(TestCase):
@@ -101,7 +101,7 @@ class TestFilterLFN(TestCase):
         })
         self.marker_id = 1
         #
-        self.filter_lfn_runner = FilterLFNRunner(self.variant_df, self.variant_read_count_df, self.marker_id)
+        self.filter_lfn_runner = FilterLFNRunner(self.variant_read_count_df)
 
     def test_02_f2_f4_lfn_delete_per_sum_variant(self):
         lfn_per_variant_threshold = 0.001
