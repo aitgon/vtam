@@ -15,12 +15,15 @@ class FilterMinReplicateNumber(ToolWrapper):
     # Input file
     # Input table
     __input_table_variant_filter_lfn = "FilterLFN"
+    __input_file_sample2fasta = "sample2fasta"
     # Output table
     __output_table_filter_replicate_number = "FilterMinReplicateNumber"
 
 
     def specify_input_file(self):
         return[
+            FilterMinReplicateNumber.__input_file_sample2fasta,
+
         ]
 
     def specify_input_table(self):
@@ -53,7 +56,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         variant_filter_replicate_number_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_replicate_number)
         #
         variant_filter_lfn_model_table = variant_filter_lfn_model.__table__
-        stmt_variant_filter_lfn = select([variant_filter_lfn_model_table.c.run_id,
+        stmt_variant_filter_lfn = select([variant_filter_lfn_model_table.c.marker_id,
+                                          variant_filter_lfn_model_table.c.run_id,
                                           variant_filter_lfn_model_table.c.variant_id,
                                           variant_filter_lfn_model_table.c.biosample_id,
                                           variant_filter_lfn_model_table.c.replicate_id,
@@ -68,10 +72,39 @@ class FilterMinReplicateNumber(ToolWrapper):
             for row in conn.execute(stmt_variant_filter_lfn).fetchall():
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete', 'read_count'])
+                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete', 'read_count'])
         #
-        variant_read_count_df = variant_read_count_df[['run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
-        import pdb; pdb.set_trace()
+        # variant_read_count_df = variant_read_count_df[['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
+
+        this_filter_id=9
+        min_replicate_number = self.option("min_replicate_number")        #
+        df_filter_output = variant_read_count_df.copy()
+        # replicate count
+
+        df_grouped = df_filter_output.groupby(by=['variant_id', 'biosample_id']).size().reset_index(name='replicate_count')
+
+        # df_grouped = df_grouped[]
+
+        #
+        df_filter_output['filter_id'] = this_filter_id
+        df_filter_output['filter_delete'] = False
+        df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['variant_id', 'biosample_id'], how='inner')
+
+        df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete']= True
+
+        df_filter_output = df_filter_output[['marker_id','variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete']]
+
+
+
+
+        #INSERT
+        # Write all LFN Filters
+        #         ############################################
+        records = df_filter_output.to_dict('records')
+        with engine.connect() as conn:
+            conn.execute(FilterMinReplicateNumber.__table__.insert(), records)
+
+        # import pdb; pdb.set_trace()
         # # Execute filter in a per_marker basis
         # with engine.connect() as conn:
         #     for row in conn.execute(stmt_marker_id).fetchall():
