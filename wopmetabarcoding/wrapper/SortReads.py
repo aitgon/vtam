@@ -85,7 +85,7 @@ class SortReads(ToolWrapper):
         #
         # Some variables
         tsv_file_list_with_read_annotations = [] # List of TSV files with read annotations
-        run_list = {}
+        # run_list = {}
         primer_tag_fasta = os.path.join(tempdir, 'primer_tag.fasta')
         checked_vsearch_output_tsv = os.path.join(tempdir, 'checked_vsearch_output.tsv')
         #
@@ -276,7 +276,7 @@ class SortReads(ToolWrapper):
             # One TSV file with read annotation per merged FASTA Fasta
             read_annotation_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'read_annotation.tsv')
             tsv_file_list_with_read_annotations.append(read_annotation_tsv)
-            run_list[read_annotation_tsv] = fasta_obj.run_id
+            # run_list[read_annotation_tsv] = fasta_obj.run_id
             logger.debug(
                 "file: {}; line: {}; trimmed_tsv {}".format(__file__, inspect.currentframe().f_lineno, trimmed_tsv))
             ################################################################
@@ -289,26 +289,31 @@ class SortReads(ToolWrapper):
                            fasta_id=fasta_id, out_tsv=read_annotation_tsv)
             read_annotation_df = pandas.read_csv(read_annotation_tsv, sep='\t',
                                  header=None,
-                                 names=['read_id', 'marker_id', 'run_id', 'tag_forward', 'tag_reverse', 'biosample_id',
+                                 names=['read_id', 'run_id', 'marker_id', 'tag_forward', 'tag_reverse', 'biosample_id',
                                         'replicate_id', 'variant_sequence'])
-            fasta_variant_read_count_df = read_annotation_df.groupby(['run_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+            variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
             #
             ################################################################
             # Remove singletons
             ################################################################
             logger.debug("file: {}; line: {};  Removing singletons".format(__file__, inspect.currentframe().f_lineno))
-            fasta_variant_read_count_df = f1_lfn_delete_singleton(fasta_variant_read_count_df)
+            variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
             ################################
+            #
             # Insert into final db, table 'VariantReadCount'
+            #
             ################################
             logger.debug(
                 "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
-            for row in fasta_variant_read_count_df.itertuples():
-                run_id = row[1]
-                biosample_id = row[2]
-                replicate_id = row[3]
-                variant_sequence = row[4]
-                read_count = row[5]
+            variant_read_count_instance_list = []
+            sample_instance_list = []
+            for row in variant_read_count_df.itertuples():
+                run_id = row.run_id
+                marker_id = row.marker_id
+                biosample_id = row.biosample_id
+                replicate_id = row.replicate_id
+                variant_sequence = row.variant_sequence
+                read_count = row.read_count
                 try:
                     stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
                     with engine.connect() as conn:
@@ -318,21 +323,15 @@ class SortReads(ToolWrapper):
                     stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
                     with engine.connect() as conn:
                         variant_id = conn.execute(stmt_select_var).first()[0]
+                variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
+                    'variant_id':variant_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id, 'read_count':read_count})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
                 #
-                try:
-                    #
-                    stmt_ins_read_count = variant_read_count_model.__table__.insert().values(run_id=run_id, variant_id=variant_id,
-                        marker_id=marker_id, biosample_id=biosample_id, replicate_id=replicate_id, read_count=read_count)
-                    with engine.connect() as conn:
-                        conn.execute(stmt_ins_read_count)
-                except sqlalchemy.exc.IntegrityError:
-                    stmt_upd = variant_read_count_model.__table__.update()\
-                        .where(variant_read_count_model.__table__.c.run_id==run_id)\
-                        .where(variant_read_count_model.__table__.c.variant_id==variant_id)\
-                        .where(variant_read_count_model.__table__.c.marker_id==marker_id)\
-                        .where(variant_read_count_model.__table__.c.biosample_id==biosample_id)\
-                        .where(variant_read_count_model.__table__.c.replicate_id==replicate_id)\
-                        .values(read_count=read_count)
-                    with engine.connect() as conn:
-                        conn.execute(stmt_upd)
-            logger.debug("file: {}; line: {};  Insert variants: Finished".format(__file__, inspect.currentframe().f_lineno))
+            ############################################
+            # Write all variant_read_count table
+            ############################################
+            logger.debug(
+                "file: {}; line: {};  Insert variant read count: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
+            with engine.connect() as conn:
+                conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
+                conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)

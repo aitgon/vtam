@@ -11,18 +11,17 @@ from Bio.Alphabet import IUPAC
 class SampleInformation(Base):
     __tablename__ = 'SampleInformation'
     __table_args__ = (
-        UniqueConstraint('tag_forward', 'tag_reverse', 'marker_id', 'fasta_id'),
-        UniqueConstraint('marker_id', 'biosample_id', 'replicate_id')
+        UniqueConstraint('run_id', 'marker_id', 'biosample_id', 'replicate_id'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(Integer, ForeignKey("Run.id"), nullable=False)
     marker_id = Column(Integer, ForeignKey("Marker.id"), nullable=False)
     primer_forward = Column(String(100), nullable=False)
     primer_reverse = Column(String(100), nullable=False)
     tag_forward = Column(String(100), nullable=False)
     tag_reverse = Column(String(100), nullable=False)
     fasta_id = Column(Integer, ForeignKey("Fasta.id"), nullable=False)
-    run_id = Column(Integer, ForeignKey("Run.id"), nullable=False)
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
 

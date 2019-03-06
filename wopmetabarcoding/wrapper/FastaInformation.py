@@ -98,7 +98,7 @@ class FastaInformation(ToolWrapper):
                 #
                 # Insert file path
                 is_trimmed = False # Default
-                fasta_obj = {'name': file_name, 'run_id': run_id, 'is_trimmed': is_trimmed}
+                fasta_obj = {'name': file_name, 'is_trimmed': is_trimmed}
                 fasta_instance = get_or_create(session, fasta_model, **fasta_obj)
                 fasta_id = fasta_instance.id
 
