@@ -16,13 +16,13 @@ class FilterLFN(ToolWrapper):
     # Input file
     __input_file_sample2fasta = "sample2fasta"
     # Input table
-    __input_table_variant_read_count = "VariantReadCount"
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
+    __input_table_variant_read_count = "VariantReadCount"
     # Output table
-    __output_table_variant_filter_lfn = "FilterLFN"
+    __output_table_filter_lfn = "FilterLFN"
 
 
     def specify_input_file(self):
@@ -32,17 +32,17 @@ class FilterLFN(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            FilterLFN.__input_table_variant_read_count,
             FilterLFN.__input_table_marker,
             FilterLFN.__input_table_run,
             FilterLFN.__input_table_biosample,
             FilterLFN.__input_table_replicate,
+            FilterLFN.__input_table_variant_read_count,
         ]
 
 
     def specify_output_table(self):
         return [
-            FilterLFN.__output_table_variant_filter_lfn,
+            FilterLFN.__output_table_filter_lfn,
         ]
 
     def specify_params(self):
@@ -63,17 +63,17 @@ class FilterLFN(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         #
         # Input file path
-        __input_file_sample2fasta = self.input_file(FilterLFN.__input_file_sample2fasta)
+        input_file_sample2fasta = self.input_file(FilterLFN.__input_file_sample2fasta)
         #
         # Input table models
-        variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
         marker_model = self.input_table(FilterLFN.__input_table_marker)
         run_model = self.input_table(FilterLFN.__input_table_run)
         biosample_model = self.input_table(FilterLFN.__input_table_biosample)
         replicate_model = self.input_table(FilterLFN.__input_table_replicate)
+        variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
         #
         # Output table models
-        variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_variant_filter_lfn)
+        variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
         #
         ##########################################################
         #
@@ -90,7 +90,7 @@ class FilterLFN(ToolWrapper):
         # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(__input_file_sample2fasta, sep="\t", header=None,\
+        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
@@ -148,7 +148,7 @@ class FilterLFN(ToolWrapper):
         #
         lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
         #
-        # FilterMinReplicateNumber parameters
+        # FilterLFN parameters
         lfn_per_variant_threshold = self.option("lfn_per_variant_threshold")
         lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
         lfn_per_replicate_series_threshold = self.option("lfn_per_replicate_series_threshold")
@@ -158,29 +158,29 @@ class FilterLFN(ToolWrapper):
         Logger.instance().info("Launching LFN filter:")
         #
         ############################################
-        # FilterMinReplicateNumber 2: f2_f4_lfn_delete_per_sum_variant
+        # FilterLFN 2: f2_f4_lfn_delete_per_sum_variant
         ############################################
         lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
         #
         ############################################
-        # FilterMinReplicateNumber  3: f3_f5_lfn_delete_per_sum_variant_replicate
+        # FilterLFN  3: f3_f5_lfn_delete_per_sum_variant_replicate
         ############################################
         lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_threshold)
 
         ############################################
-        # FilterMinReplicateNumber 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
+        # FilterLFN 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
         ############################################
 
         lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(
             lfn_per_biosample_per_replicate_threshold)
 
         ############################################
-        # FilterMinReplicateNumber  7:f7_lfn_delete_absolute_read_count
+        # FilterLFN  7:f7_lfn_delete_absolute_read_count
         ############################################
         lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
 
         ############################################
-        # FilterMinReplicateNumber 8:f8_lfn_delete_do_not_pass_all_filters
+        # FilterLFN 8:f8_lfn_delete_do_not_pass_all_filters
         ############################################
         lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
