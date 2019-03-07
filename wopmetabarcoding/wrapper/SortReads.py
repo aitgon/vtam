@@ -32,7 +32,8 @@ class SortReads(ToolWrapper):
     __input_table_sample_information = "SampleInformation"
     __input_table_fasta = "Fasta"
     __input_table_marker = "Marker"
-    # __input_file_sample2fasta = "sample2fasta"
+    #Input file
+    __input_file_sample2fasta = "sample2fasta"
     # Output
     # Output file
     # __output_read_count_tsv = "read_count"
@@ -49,7 +50,12 @@ class SortReads(ToolWrapper):
             SortReads.__input_table_sample_information,
             SortReads.__input_table_fasta,
             SortReads.__input_table_marker,
-          # SortReads.__input_file_sample2fasta,
+
+        ]
+
+    def specify_input_file(self):
+        return[
+            SortReads.__input_file_sample2fasta,
         ]
 
     def specify_output_table(self):

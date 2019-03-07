@@ -28,7 +28,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            FilterMinReplicateNumber.__input_table_variant_filter_lfn,
+             FilterMinReplicateNumber.__input_table_variant_filter_lfn,
         ]
 
 
@@ -73,6 +73,7 @@ class FilterMinReplicateNumber(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete', 'read_count'])
+
         #
         # variant_read_count_df = variant_read_count_df[['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
 
@@ -92,8 +93,9 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete']= True
 
-        df_filter_output = df_filter_output[['marker_id','variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete']]
-
+        df_filter_output = df_filter_output[['marker_id','run_id','variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete','read_count']]
+        # import pdb;
+        # pdb.set_trace()
 
 
 
@@ -102,7 +104,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #         ############################################
         records = df_filter_output.to_dict('records')
         with engine.connect() as conn:
-            conn.execute(FilterMinReplicateNumber.__table__.insert(), records)
+            conn.execute(variant_filter_replicate_number_model.__table__.insert(), records)
 
         # import pdb; pdb.set_trace()
         # # Execute filter in a per_marker basis
