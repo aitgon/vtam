@@ -38,7 +38,7 @@ class FilterMinReplicateNumber(ToolWrapper):
             FilterMinReplicateNumber.__input_table_run,
             FilterMinReplicateNumber.__input_table_biosample,
             FilterMinReplicateNumber.__input_table_replicate,
-         FilterMinReplicateNumber.__input_table_variant_filter_lfn,
+            FilterMinReplicateNumber.__input_table_variant_filter_lfn,
         ]
 
 

@@ -108,6 +108,7 @@ class TestFilterNonLFN(TestCase):
 
     def test_03_f10_pcr_error_vsearch_output_processing(self):
         #
+        pcr_error_var_prop = 0.05
         # Input from min_replicate_number
         variant_read_count_df = pandas.DataFrame({
             'run_id': [1]*8,
@@ -136,8 +137,38 @@ class TestFilterNonLFN(TestCase):
         pcr_error_vsearch_output_df[
             'sum_mism_gaps'] = pcr_error_vsearch_output_df.mism + pcr_error_vsearch_output_df.gaps
         # mism + gaps = 1
-        check_read_count_df = pcr_error_vsearch_output_df.loc[pcr_error_vsearch_output_df.sum_mism_gaps == 1,['query', 'target']]
-        import pdb; pdb.set_trace()
 
+
+        check_read_count_df = pcr_error_vsearch_output_df.loc[pcr_error_vsearch_output_df.sum_mism_gaps == 1,['query', 'target']]
+
+        #
+        # import pdb;
+        # pdb.set_trace()
+
+        #Add two colum the first for the variant id sequence query and the second for the target sequance variant id
+        check_read_count_df = check_read_count_df.merge(variant_read_count_grouped_df, left_on=['query'], right_on=['variant_id'])
+        check_read_count_df = check_read_count_df.merge(variant_read_count_grouped_df, left_on=['target'], right_on=['variant_id'])
+
+        #Let only the inte rset columns
+        check_read_count_df = check_read_count_df[['query', 'target', 'variant_id_x','read_count_x','variant_id_y','read_count_y']]
+
+
+        # Add two column for the two expected ratio cases ratio 1 and ratio 2
+        check_read_count_df['ratio'] = check_read_count_df.read_count_x / check_read_count_df.read_count_y
+        # check_read_count_df['ratio2']=check_read_count_df.read_count_y / check_read_count_df.read_count_x
+        # Add column read_count_ratio who has the min ratio of the ratio1 and ratio2
+        # check_read_count_df['read_count_ratio'] = check_read_count_df.min(axis=1)
+
+        #make the index like the query to be easy to track the variant id sequence to delete if not passed the filter
+        # check_read_count_df.index = check_read_count_df['query']
+
+        #create a list containing only unique variant id to delete
+        do_not_pass_variant_id_list = list(check_read_count_df.loc[check_read_count_df.ratio < pcr_error_var_prop].variant_id_x.unique())
+
+        # create a df for test containing only the rows of variant_id that passed
+        # passed_pcr_error_df=variant_read_count_df.loc[variant_read_count_df.variant_id != do_not_pass_variant_id_list]
+
+
+        import pdb; pdb.set_trace()
 
 
