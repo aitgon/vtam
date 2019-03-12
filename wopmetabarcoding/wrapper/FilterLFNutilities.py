@@ -81,7 +81,7 @@ class FilterLFNRunner:
                                                                (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
 
 
-    def f2_f4_lfn_delete_per_sum_variant(self, lfn_per_variant_threshold, lfn_var_threshold_specific=None):
+    def f2_f4_lfn_delete_per_sum_variant(self, lfn_per_sum_variant_threshold, lfn_per_sum_variant_threshold_specific=None):
         """
         Low frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
         thresholds. Function IDs: 2 (lfn_var_threshold_specific is None) ou 4 (lfn_var_threshold_specific is not None)
@@ -105,8 +105,8 @@ class FilterLFNRunner:
         February 22, 2019
 
         Args:
-            lfn_per_variant_threshold (float): Default deletion threshold
-            lfn_var_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
+            lfn_per_sum_variant_threshold (float): Default deletion threshold
+            lfn_per_sum_variant_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
 
         Returns:
             None: The output of this filter is added to the 'self.delete_variant_df'
@@ -138,17 +138,17 @@ class FilterLFNRunner:
         df2.loc[
             df2.read_count == 0, 'filter_delete'] = True
         #
-        # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
+        # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_sum_variant_threshold
         df2.loc[
-            df2.low_frequence_noice_per_variant < lfn_per_variant_threshold, 'filter_delete'] = True
+            df2.low_frequence_noice_per_variant < lfn_per_sum_variant_threshold, 'filter_delete'] = True
 
         ####################################################
-        # LFN_var_dep if there are variant specific thresholds: lfn_var_threshold_specific not None
+        # LFN_var_dep if there are variant specific thresholds: lfn_per_sum_variant_threshold_specific not None
         ####################################################
-        if not lfn_var_threshold_specific is None:
+        if not lfn_per_sum_variant_threshold_specific is None:
             this_filter_id = 4
-            for variant_id in lfn_var_threshold_specific:
-                variant_id_threshold = lfn_var_threshold_specific[variant_id]
+            for variant_id in lfn_per_sum_variant_threshold_specific:
+                variant_id_threshold = lfn_per_sum_variant_threshold_specific[variant_id]
                 #
                 df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
                 #
@@ -156,7 +156,7 @@ class FilterLFNRunner:
                 df2_f4_variant_id.loc[df2_f4_variant_id.variant_id == variant_id, 'filter_id'] = this_filter_id
                 df2_f4_variant_id.loc[df2_f4_variant_id.variant_id == variant_id, 'filter_delete'] = False
                 #
-                # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
+                # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_sum_variant_threshold
                 df2_f4_variant_id.loc[
                     df2_f4_variant_id.low_frequence_noice_per_variant < variant_id_threshold, 'filter_delete'] = True
 
@@ -177,7 +177,7 @@ class FilterLFNRunner:
         # Prepare output df and concatenate to self.delete_variant_df
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
-    def f3_f5_lfn_delete_per_sum_variant_replicate(self, lfn_per_replicate_threshold, lfn_per_replicate_threshold_specific=None):
+    def f3_f5_lfn_delete_per_sum_variant_replicate(self, lfn_per_sum_variant_replicate_threshold, lfn_per_replicate_threshold_specific=None):
         """
         Low frequency noise filter per variant (LFN var replicate) with a single threshold or several variant
         specific thresholds (LFN vardep_replicate series).
@@ -202,7 +202,7 @@ class FilterLFNRunner:
             February 25, 2019
 
         Args:
-            lfn_per_replicate_threshold (float): Default deletion threshold
+            lfn_per_sum_variant_replicate_threshold (float): Default deletion threshold
 
 
         Returns:
@@ -232,7 +232,7 @@ class FilterLFNRunner:
         df2['filter_id'] = this_filter_id # set this filter
         df2['filter_delete'] = False
         df2.loc[
-            df2.low_frequence_noice_per_replicate_series < lfn_per_replicate_threshold, 'filter_delete'] = True
+            df2.low_frequence_noice_per_replicate_series < lfn_per_sum_variant_replicate_threshold, 'filter_delete'] = True
         if not lfn_per_replicate_threshold_specific is None:
             this_filter_id = 5
             for variant_id in lfn_per_replicate_threshold_specific:
@@ -261,7 +261,7 @@ class FilterLFNRunner:
       # Prepare output df and concatenate to self.delete_variant_df
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
-    def f6_lfn_delete_per_sum_biosample_replicate(self, lfn_per_biosample_per_replicate_threshold):
+    def f6_lfn_delete_per_sum_biosample_replicate(self, lfn_per_sum_biosample_replicate_threshold):
         """
         Low frequency noise filter per biosample_replicate (LFN_repl) with a single threshold
         (lfn_per_biosample_per_replicate_threshold=0.001).
@@ -283,7 +283,7 @@ class FilterLFNRunner:
             February 23, 2019
 
         Args:
-            lfn_per_biosample_per_replicate_threshold (float): Default deletion threshold
+            lfn_per_sum_biosample_replicate_threshold (float): Default deletion threshold
 
 
         Returns:
@@ -317,7 +317,7 @@ class FilterLFNRunner:
         #
         # Selecting all the indexes where the ratio is below the ratio
         df2.loc[
-            df2.low_frequence_noice_per_replicate < lfn_per_biosample_per_replicate_threshold , 'filter_delete'] = True
+            df2.low_frequence_noice_per_replicate < lfn_per_sum_biosample_replicate_threshold , 'filter_delete'] = True
         #
         #Let only interest columns
         df2 = df2[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',

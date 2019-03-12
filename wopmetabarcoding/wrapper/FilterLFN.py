@@ -47,16 +47,11 @@ class FilterLFN(ToolWrapper):
 
     def specify_params(self):
         return {
-            "lfn_per_variant_threshold": "float",
-            "lfn_per_replicate_threshold": "float",
-            "lfn_per_biosample_per_replicate_threshold": "float",
+            "lfn_per_sum_variant_threshold": "float",
+            "lfn_per_sum_variant_replicate_threshold": "float",
+            "lfn_per_sum_biosample_replicate_threshold": "float",
             "lfn_read_count_threshold": "float",
         }
-
-    # "min_replicate_number": "int",
-    # "pcr_error_var_prop": "float",
-    # "renkonen_number_of_replicate": "int",
-    # "renkonen_renkonen_tail": "float"
 
     def run(self):
         session = self.session()
@@ -74,6 +69,13 @@ class FilterLFN(ToolWrapper):
         #
         # Output table models
         variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
+        #
+        # Options
+        # FilterLFN parameters
+        lfn_per_sum_variant_threshold = self.option("lfn_per_sum_variant_threshold")
+        lfn_per_sum_variant_replicate_threshold = self.option("lfn_per_sum_variant_replicate_threshold")
+        lfn_per_sum_biosample_replicate_threshold = self.option("lfn_per_sum_biosample_replicate_threshold")
+        lfn_read_count_threshold = self.option("lfn_read_count_threshold")
         #
         ##########################################################
         #
@@ -148,31 +150,23 @@ class FilterLFN(ToolWrapper):
         #
         lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
         #
-        # FilterLFN parameters
-        lfn_per_variant_threshold = self.option("lfn_per_variant_threshold")
-        lfn_per_replicate_threshold = self.option("lfn_per_replicate_threshold")
-        lfn_per_replicate_series_threshold = self.option("lfn_per_replicate_series_threshold")
-        lfn_read_count_threshold = self.option("lfn_read_count_threshold")
-        lfn_per_biosample_per_replicate_threshold = self.option("lfn_per_biosample_per_replicate_threshold")
-        #
         Logger.instance().info("Launching LFN filter:")
         #
         ############################################
         # FilterLFN 2: f2_f4_lfn_delete_per_sum_variant
         ############################################
-        lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_variant_threshold)
+        lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold)
         #
         ############################################
         # FilterLFN  3: f3_f5_lfn_delete_per_sum_variant_replicate
         ############################################
-        lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_replicate_threshold)
+        lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_sum_variant_replicate_threshold)
 
         ############################################
         # FilterLFN 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
         ############################################
 
-        lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(
-            lfn_per_biosample_per_replicate_threshold)
+        lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_per_sum_biosample_replicate_threshold)
 
         ############################################
         # FilterLFN  7:f7_lfn_delete_absolute_read_count

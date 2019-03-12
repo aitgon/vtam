@@ -71,7 +71,7 @@ class FilterPCRError(ToolWrapper):
         filter_min_replicate_number_model = self.input_table(FilterPCRError.__input_table_filter_min_replicate_number)
         #
         # Options
-        min_replicate_number = self.option("min_replicate_number")
+        pcr_error_var_prop = self.option("pcr_error_var_prop")
         #
         # Output table models
         filter_pcr_error_model = self.output_table(FilterPCRError.__output_table_filter_pcr_error)
@@ -139,14 +139,11 @@ class FilterPCRError(ToolWrapper):
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete', 'read_count'])
 
-        # import pdb;
-        # pdb.set_trace()
         ##########################################################
         #
         # 4. Select variant sequence
         #
         ##########################################################
-
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,
                                variant_model_table.c.sequence])
@@ -163,53 +160,14 @@ class FilterPCRError(ToolWrapper):
         # 5. Run Vsearch
         #
         ##########################################################
-        # test_02_f10_pcr_error
+        vsearch_output_df = f10_pcr_error_run_vsearch(variant_df)
 
-
-        # length of smallest sequence
-        length_min = min(variant_df.sequence.apply(len).tolist())
-        # calcul identity
-        identity = floor((length_min - 1) / length_min * 100) / 100
-
-        #
-            ###################################################################
-            # 5-1. Make a fasta file with all variants of the sample or replicate
-            ###################################################################
-
-        PathFinder.mkdir_p(os.path.join(tempdir, "f10_pcr_error"))
-        variant_fasta = os.path.join(tempdir, "f10_pcr_error", '{}.fasta'.format("pcr_error"))
-        with open(variant_fasta, 'w') as fout:
-            for row in variant_df.itertuples():
-                id = row.id
-                sequence = row.sequence
-                fout.write(">{}\n{}\n".format(id, sequence))
-            ###################################################################
-            # 5-2 Detect all pairs of variants with only 1 difference in the sequences and strong difference in abundance (readcounts)
-            # 5-2.1 vsearch
-            ###################################################################
-        # import pdb; pdb.set_trace()
-        sample_tsv = os.path.join(tempdir, '{}.tsv'.format("pcr_error"))
-        vsearch_usearch_global_args = {'db': variant_fasta,
-                                       'usearch_global': variant_fasta,
-                                       'id': str(identity),
-                                       'maxrejects': 0,
-                                       'maxaccepts': 0,
-                                       'userout': sample_tsv,
-                                       'userfields': "query+target+alnlen+ids+mism+gaps",
-                                       }
-
-        vsearch_usearch_global = VSearch1(**vsearch_usearch_global_args)
-        vsearch_usearch_global.run()
-        column_names = ['query', 'target', 'alnlen', 'ids', 'mism', 'gaps']
-        vsearch_output = pandas.read_csv(sample_tsv, sep='\t', names=column_names)
-        # import pdb;
-        # pdb.set_trace()
         ##########################################################
         #
-        # 6. Run Filter
+        # 6. Analyze vsearch output
         #
         ##########################################################
-        df_filter_output = f10_delete_pcr_error(variant_read_count_df, vsearch_output, 0.1)
+        df_filter_output = f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop)
 
         ##########################################################
         #
@@ -220,10 +178,46 @@ class FilterPCRError(ToolWrapper):
         records = df_filter_output.to_dict('records')
         with engine.connect() as conn:
             conn.execute(filter_pcr_error_model.__table__.insert(), records)
+def f10_pcr_error_run_vsearch(variant_df):
+    # length of smallest sequence
+    length_min = min(variant_df.sequence.apply(len).tolist())
+    # calcul identity
+    identity = floor((length_min - 1) / length_min * 100) / 100
 
+    #
+    ###################################################################
+    # 5-1. Make a fasta file with all variants of the sample or replicate
+    ###################################################################
 
+    PathFinder.mkdir_p(os.path.join(tempdir, "f10_pcr_error"))
+    variant_fasta = os.path.join(tempdir, "f10_pcr_error", '{}.fasta'.format("pcr_error"))
+    with open(variant_fasta, 'w') as fout:
+        for row in variant_df.itertuples():
+            id = row.id
+            sequence = row.sequence
+            fout.write(">{}\n{}\n".format(id, sequence))
+        ###################################################################
+        # 5-2 Detect all pairs of variants with only 1 difference in the sequences and strong difference in abundance (readcounts)
+        # 5-2.1 vsearch
+        ###################################################################
+    # import pdb; pdb.set_trace()
+    sample_tsv = os.path.join(tempdir, '{}.tsv'.format("pcr_error"))
+    vsearch_usearch_global_args = {'db': variant_fasta,
+                                   'usearch_global': variant_fasta,
+                                   'id': str(identity),
+                                   'maxrejects': 0,
+                                   'maxaccepts': 0,
+                                   'userout': sample_tsv,
+                                   'userfields': "query+target+alnlen+ids+mism+gaps",
+                                   }
 
-def f10_delete_pcr_error(variant_read_count_df,vsearch_output,pcr_error_var_prop):
+    vsearch_usearch_global = VSearch1(**vsearch_usearch_global_args)
+    vsearch_usearch_global.run()
+    column_names = ['query', 'target', 'alnlen', 'ids', 'mism', 'gaps']
+    vsearch_output_df = pandas.read_csv(sample_tsv, sep='\t', names=column_names)
+    return vsearch_output_df
+
+def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop):
     # Output of filter pcr_error
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_id'] = 10
@@ -234,11 +228,11 @@ def f10_delete_pcr_error(variant_read_count_df,vsearch_output,pcr_error_var_prop
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
     variant_read_count_grouped_df.drop('replicate_id', axis=1, inplace=True)
     # Compute sum mismatch and gap
-    vsearch_output[
-        'sum_mism_gaps'] = vsearch_output.mism + vsearch_output.gaps
+    vsearch_output_df[
+        'sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
     # Keep when sum mismatch and gap equals 1
-    check_read_count_df = vsearch_output.loc[
-        vsearch_output.sum_mism_gaps == 1, ['query', 'target']]
+    check_read_count_df = vsearch_output_df.loc[
+        vsearch_output_df.sum_mism_gaps == 1, ['query', 'target']]
     # Add two colum the first for the variant id sequence query and the second for the target sequance variant id
     check_read_count_df = variant_read_count_grouped_df.merge(check_read_count_df, left_on=['variant_id'],
                                                               right_on=['query'])
