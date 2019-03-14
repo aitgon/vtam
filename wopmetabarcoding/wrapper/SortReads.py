@@ -42,8 +42,8 @@ class SortReads(ToolWrapper):
     # __output_file_checked_vsearch_output_tsv = "checked_vsearch_output_tsv"
     # Output table
     # __output_table_obifasta = 'ObiFasta'
-    __output_table_variant = 'Variant'
-    __output_table_variant_read_count = 'VariantReadCount'
+    __output_file_sort_reads = 'sortreads'
+    # __output_table_variant_read_count = 'VariantReadCount'
 
     def specify_input_table(self):
         return [
@@ -58,10 +58,9 @@ class SortReads(ToolWrapper):
             SortReads.__input_file_sample2fasta,
         ]
 
-    def specify_output_table(self):
+    def specify_output_file(self):
         return [
-            SortReads.__output_table_variant,
-            SortReads.__output_table_variant_read_count,
+            SortReads.__output_file_sort_reads,
         ]
 
     def specify_params(self):
@@ -85,11 +84,12 @@ class SortReads(ToolWrapper):
         fasta_model = self.input_table(SortReads.__input_table_fasta)
         marker_model = self.input_table(SortReads.__input_table_marker)
         #
-        # Output tables models
-        variant_read_count_model = self.output_table(SortReads.__output_table_variant_read_count)
+        # Output input
+        # Output tsv wit fields: read_name, fasta_id, run_id, marker_id, biosample_id, replicate_id
+        sort_reads_tsv = self.output_file(SortReads.__output_file_sort_reads)
         # with engine.connect() as conn:
         #     conn.execute(variant_read_count_model.__table__.delete())
-        variant_model = self.output_table(SortReads.__output_table_variant)
+        # variant_model = self.output_table(VariantReadCount.__output_table_variant)
         #
         # Some variables
         tsv_file_list_with_read_annotations = [] # List of TSV files with read annotations
@@ -118,7 +118,7 @@ class SortReads(ToolWrapper):
                 "file: {}; line: {}; FASTA {} {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name))
             # file_id = fasta_obj.id
             sample_information_obj = session.query(sample_information_model).filter(sample_information_model.fasta_id==fasta_id).all()
-            PathFinder.mkdir_p(os.path.join(tempdir, "SortReads", os.path.basename(fasta_name)))
+            PathFinder.mkdir_p(os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name)))
             ############################################
             #
             # First (forward) trim: create_primer_tag_fasta_for_vsearch
@@ -141,7 +141,7 @@ class SortReads(ToolWrapper):
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; VSearch forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
-            vsearch_output_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), "vsearch_output_tsv")
+            vsearch_output_tsv = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), "vsearch_output_tsv")
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; vsearch_output_tsv".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             #
@@ -180,8 +180,8 @@ class SortReads(ToolWrapper):
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             # trimmed_tsv = os.path.join(tempdir, os.path.basename(merged_fasta), 'forward_trimmed.tsv')
-            trimmed_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'forward_trimmed.tsv')
-            temp_db_sqlite = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'forward_trimmed.sqlite')
+            trimmed_tsv = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), 'forward_trimmed.tsv')
+            temp_db_sqlite = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), 'forward_trimmed.sqlite')
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, temp_db_sqlite))
             trim_reads(checked_vsearch_output_tsv, fasta_name, trimmed_tsv, temp_db_sqlite)
@@ -191,7 +191,7 @@ class SortReads(ToolWrapper):
             ############################################
             # trimmed_fasta = trimmed_tsv.replace('.tsv', '.fasta')
             Logger.instance().info("Writing fasta file for forward trimming.")
-            trimmed_fasta = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'forward_trimmed.fasta')
+            trimmed_fasta = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), 'forward_trimmed.fasta')
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Writing fasta file for trimming.: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, trimmed_fasta))
             convert_trimmed_tsv_to_fasta(trimmed_tsv, trimmed_fasta)
@@ -227,7 +227,7 @@ class SortReads(ToolWrapper):
                                                                                             is_forward_strand))
             #
             # self.vsearch_subprocess(merged_fasta, is_forward_strand, primer_tag_fasta, vsearch_output_tsv)
-            vsearch_output_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name),
+            vsearch_output_tsv = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name),
                                               "vsearch_output_tsv")
 
             logger.debug(
@@ -268,8 +268,8 @@ class SortReads(ToolWrapper):
                                                                                                           fasta_name,
                                                                                                        is_forward_strand))
             # trimmed_tsv = os.path.join(tempdir, os.path.basename(merged_fasta), 'forward_trimmed.tsv')
-            trimmed_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'reverse_trimmed.tsv')
-            temp_db_sqlite = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name),
+            trimmed_tsv = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), 'reverse_trimmed.tsv')
+            temp_db_sqlite = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name),
                                           'reverse_trimmed.sqlite')
             logger.debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for reverse trimming: {}".format(__file__,
@@ -282,7 +282,7 @@ class SortReads(ToolWrapper):
             #
             Logger.instance().info("Annotating reads with Sample Information.")
             # One TSV file with read annotation per merged FASTA Fasta
-            read_annotation_tsv = os.path.join(tempdir, "SortReads", os.path.basename(fasta_name), 'read_annotation.tsv')
+            read_annotation_tsv = os.path.join(tempdir, "VariantReadCount", os.path.basename(fasta_name), 'read_annotation.tsv')
             tsv_file_list_with_read_annotations.append(read_annotation_tsv)
             # run_list[read_annotation_tsv] = fasta_obj.run_id
             logger.debug(
@@ -291,55 +291,55 @@ class SortReads(ToolWrapper):
             # Count number of times a given variant (Sequence unique) is observed in fasta file
             # In other words, store in 'VariantReadCount' for each 'variant_id' -> 'read count'
             ################################################################
-            marker2fasta2readannotationtsv_dict[marker_name] = {}
-            marker2fasta2readannotationtsv_dict[marker_name][fasta_name] = read_annotation_tsv
+            # marker2fasta2readannotationtsv_dict[marker_name] = {}
+            # marker2fasta2readannotationtsv_dict[marker_name][fasta_name] = read_annotation_tsv
             annotate_reads(session, sample_information_model, trimmed_tsv,
-                           fasta_id=fasta_id, out_tsv=read_annotation_tsv)
-            read_annotation_df = pandas.read_csv(read_annotation_tsv, sep='\t',
-                                 header=None,
-                                 names=['read_id', 'run_id', 'marker_id', 'tag_forward', 'tag_reverse', 'biosample_id',
-                                        'replicate_id', 'variant_sequence'])
-            variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
-            #
-            ################################################################
-            # Remove singletons
-            ################################################################
-            logger.debug("file: {}; line: {};  Removing singletons".format(__file__, inspect.currentframe().f_lineno))
-            variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
-            ################################
-            #
-            # Insert into final db, table 'VariantReadCount'
-            #
-            ################################
-            logger.debug(
-                "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
-            variant_read_count_instance_list = []
-            sample_instance_list = []
-            for row in variant_read_count_df.itertuples():
-                run_id = row.run_id
-                marker_id = row.marker_id
-                biosample_id = row.biosample_id
-                replicate_id = row.replicate_id
-                variant_sequence = row.variant_sequence
-                read_count = row.read_count
-                try:
-                    stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
-                    with engine.connect() as conn:
-                        stmt_result_var = conn.execute(stmt_ins_var)
-                    variant_id = stmt_result_var.inserted_primary_key[0]
-                except sqlalchemy.exc.IntegrityError:
-                    stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
-                    with engine.connect() as conn:
-                        variant_id = conn.execute(stmt_select_var).first()[0]
-                variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
-                    'variant_id':variant_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id, 'read_count':read_count})
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
-                #
-            ############################################
-            # Write all variant_read_count table
-            ############################################
-            logger.debug(
-                "file: {}; line: {};  Insert variant read count: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
-            with engine.connect() as conn:
-                conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
-                conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)
+                           fasta_id=fasta_id, out_tsv=sort_reads_tsv)
+            # read_annotation_df = pandas.read_csv(read_annotation_tsv, sep='\t',
+            #                      header=None,
+            #                      names=['read_id', 'run_id', 'marker_id', 'tag_forward', 'tag_reverse', 'biosample_id',
+            #                             'replicate_id', 'variant_sequence'])
+            # variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+            # #
+            # ################################################################
+            # # Remove singletons
+            # ################################################################
+            # logger.debug("file: {}; line: {};  Removing singletons".format(__file__, inspect.currentframe().f_lineno))
+            # variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
+            # ################################
+            # #
+            # # Insert into final db, table 'VariantReadCount'
+            # #
+            # ################################
+            # logger.debug(
+            #     "file: {}; line: {};  Insert variants: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
+            # variant_read_count_instance_list = []
+            # sample_instance_list = []
+            # for row in variant_read_count_df.itertuples():
+            #     run_id = row.run_id
+            #     marker_id = row.marker_id
+            #     biosample_id = row.biosample_id
+            #     replicate_id = row.replicate_id
+            #     variant_sequence = row.variant_sequence
+            #     read_count = row.read_count
+            #     try:
+            #         stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
+            #         with engine.connect() as conn:
+            #             stmt_result_var = conn.execute(stmt_ins_var)
+            #         variant_id = stmt_result_var.inserted_primary_key[0]
+            #     except sqlalchemy.exc.IntegrityError:
+            #         stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
+            #         with engine.connect() as conn:
+            #             variant_id = conn.execute(stmt_select_var).first()[0]
+            #     variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
+            #         'variant_id':variant_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id, 'read_count':read_count})
+            #     sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+            #     #
+            # ############################################
+            # # Write all variant_read_count table
+            # ############################################
+            # logger.debug(
+            #     "file: {}; line: {};  Insert variant read count: marker {} fasta {}".format(__file__, inspect.currentframe().f_lineno, marker_name, fasta_name))
+            # with engine.connect() as conn:
+            #     conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
+            #     conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)

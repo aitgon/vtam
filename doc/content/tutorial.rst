@@ -131,14 +131,14 @@ If the *Merge* rule was fine, then you can run until the *SampleInformation* ste
 Check the *db.sqlite* file using *sqlitebrowser*. All table except *Variant* should be filled.
 
 
-Run the *SortReads* rule
+Run the *VariantReadCount* rule
 -------------------------------------------------------------------------
 
-We can continue with the *SortReads* rule. This rule is quite long, so be patient or test it first with smaller datasets.
+We can continue with the *VariantReadCount* rule. This rule is quite long, so be patient or test it first with smaller datasets.
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t SortReads
+    wopmars -w Wopfile.yml -D "sqlite:///db.sqlite" -v -p -t VariantReadCount
 
 This rule fills in the *Variant* table with the number of reads per variant and marker across all samples.
 

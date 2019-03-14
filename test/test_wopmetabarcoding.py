@@ -96,7 +96,7 @@ class TestWopMetabarcoding(TestCase):
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
-    #     cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-t", "SortReads"]
+    #     cmd_line = ["wopmars", "-w", wopfile_path, "-D", db_url, "-d", self.__testdir_path, "-t", "VariantReadCount"]
     #     p = subprocess.Popen(cmd_line)
     #     p.wait()
     #     #

@@ -16,8 +16,8 @@ class FilterLFN(ToolWrapper):
     # Input file
     __input_file_sample2fasta = "sample2fasta"
     # Input table
-    __input_table_marker = "Marker"
     __input_table_run = "Run"
+    __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant_read_count = "VariantReadCount"
@@ -61,8 +61,8 @@ class FilterLFN(ToolWrapper):
         input_file_sample2fasta = self.input_file(FilterLFN.__input_file_sample2fasta)
         #
         # Input table models
-        marker_model = self.input_table(FilterLFN.__input_table_marker)
         run_model = self.input_table(FilterLFN.__input_table_run)
+        marker_model = self.input_table(FilterLFN.__input_table_marker)
         biosample_model = self.input_table(FilterLFN.__input_table_biosample)
         replicate_model = self.input_table(FilterLFN.__input_table_replicate)
         variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)

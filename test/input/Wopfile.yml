@@ -37,7 +37,7 @@ rule SampleInformation:
         fasta_dir: {{FASTA_DIR}}
 
 rule SortReads:
-    tool: wopmetabarcoding.wrapper.SortReads
+    tool: wopmetabarcoding.wrapper.VariantReadCount
     input:
         table:
             File: wopmetabarcoding.model.File

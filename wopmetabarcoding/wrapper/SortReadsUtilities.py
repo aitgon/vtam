@@ -230,7 +230,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
     # session.query(model2).filter(model2.file_name == merged_fasta_file_name).update({model2.final_csv: out_tsv})
     # # Open output file
     # output = open(out_tsv, 'w')
-    with open(out_tsv, 'w') as fout:
+    with open(out_tsv, 'a') as fout:
         # Parsing input csv file
         with open(trimmed_tsv, 'r') as fin:
             i = 0
@@ -251,11 +251,12 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
                 if sampleinformation_instance is not None:
                     try:
                         # Write a new tsv with these informations
-                        out_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(read_id,
-                            sampleinformation_instance.marker_id,
+                        # Output tsv wit fields: read_name, fasta_id, run_id, marker_id, biosample_id, replicate_id
+                        out_line = "{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(\
+                            read_id,
+                            fasta_id,
                             sampleinformation_instance.run_id,
-                            sampleinformation_instance.tag_forward,
-                            sampleinformation_instance.tag_reverse,
+                            sampleinformation_instance.marker_id,
                             sampleinformation_instance.biosample_id,
                             sampleinformation_instance.replicate_id,
                             read_sequence)
