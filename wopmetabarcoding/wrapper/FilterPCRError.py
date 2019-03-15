@@ -226,7 +226,9 @@ def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_outpu
     # Aggregate by biosample
     variant_read_count_grouped_df = variant_read_count_df.groupby(
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    variant_read_count_grouped_df.drop('replicate_id', axis=1, inplace=True)
+    # import  pdb;
+    # pdb.set_trace()
+    variant_read_count_grouped_df.drop(columns=['replicate_id'])
     # Compute sum mismatch and gap
     vsearch_output_df[
         'sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
@@ -240,8 +242,8 @@ def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_outpu
                                                     left_on=['run_id', 'marker_id', 'biosample_id', 'target'],
                                                     right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
 
-    check_read_count_df.drop('query', axis=1, inplace=True)
-    check_read_count_df.drop('target', axis=1, inplace=True)
+    check_read_count_df.drop(columns=['query'])
+    check_read_count_df.drop(columns=['target'])
     check_read_count_df = check_read_count_df.rename(columns={'variant_id_x': 'variant_id'})
     check_read_count_df = check_read_count_df.rename(columns={'variant_id_y': 'variant_id_target'})
     check_read_count_df = check_read_count_df.rename(columns={'read_count_x': 'read_count'})
