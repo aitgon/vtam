@@ -7,9 +7,9 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
 import pandas, itertools
 from Bio import SeqIO
-import re
 import os
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.wrapper.FilterChimera import f11_filter_chimera
 
 
 class TestChimera(TestCase):
@@ -132,3 +132,22 @@ class TestChimera(TestCase):
                                                                          & (filter_output_df.replicate_id == 1)
                                                                          & (filter_output_df.filter_id == 12),
                                                                         'filter_delete'].values[0])
+
+
+        df_output = f11_filter_chimera(self.variant_read_count_df,self.variant_df)
+
+        self.assertTrue(df_output.loc[(df_output.run_id == 1)
+                                             & (df_output.marker_id == 1)
+                                             & (df_output.variant_id == 6)
+                                             & (df_output.biosample_id == 1)
+                                             & (df_output.replicate_id == 1)
+                                             & (df_output.filter_id == 12),
+                                             'filter_delete'].values[0])
+        #
+        self.assertTrue(not df_output.loc[(df_output.run_id == 1)
+                                                 & (df_output.marker_id == 1)
+                                                 & (df_output.variant_id == 1)
+                                                 & (df_output.biosample_id == 1)
+                                                 & (df_output.replicate_id == 1)
+                                                 & (df_output.filter_id == 12),
+                                                 'filter_delete'].values[0])
