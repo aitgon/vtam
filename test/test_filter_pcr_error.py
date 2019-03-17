@@ -1,7 +1,6 @@
 import os
 import pandas
 from unittest import TestCase
-
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
 
