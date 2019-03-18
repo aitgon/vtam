@@ -169,11 +169,9 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
               # 1St way to write output on table: error
-        #records = df_filter_output.to_dict('records')
-        # with engine.connect() as conn:
-        #         conn.execute(filter_chimera_model.__table__.insert(), records)
-             # second way worked
-        df_filter_output.to_sql(name='FilterChimera', con=engine, index=False, if_exists='replace')
+        records = df_filter_output.to_dict('records')
+        with engine.connect() as conn:
+                conn.execute(filter_chimera_model.__table__.insert(), records)
 
 
 def f11_filter_chimera(variant_read_count_df, variant_df):
@@ -188,7 +186,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
     this_filter_name = 'FilterChimera'
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_id'] = 11
-    filter_output_df['filter_delete'] = 0
+    filter_output_df['filter_delete'] = False
     #
     df_grouped_variant_read_count = variant_read_count_df.groupby(
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
@@ -264,7 +262,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
                 filter_output_df.loc[(filter_output_df['run_id'] == run_id)
                                      & (filter_output_df['marker_id'] == marker_id)
                                      & (filter_output_df['biosample_id'] == biosample_id)
-                                     & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = 1
+                                     & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = True
 
         # with open(chimear2_borderline_fasta) as fasta_finr:
         #     chimera_seqio = SeqIO.parse(chimear2_borderline_fasta, 'fasta')
