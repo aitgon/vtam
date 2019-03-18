@@ -32,6 +32,7 @@ class FilterChimera(ToolWrapper):
     __input_table_Variant = "Variant"
     # Output table
     __output_table_filter_chimera = "FilterChimera"
+    __output_table_filter_chimera_borderline = "FilterChimeraBorderline"
 
 
     def specify_input_file(self):
@@ -54,6 +55,7 @@ class FilterChimera(ToolWrapper):
     def specify_output_table(self):
         return [
             FilterChimera.__output_table_filter_chimera,
+            FilterChimera.__output_table_filter_chimera_borderline,
         ]
 
 
@@ -77,6 +79,7 @@ class FilterChimera(ToolWrapper):
         #
         # Output table models
         filter_chimera_model = self.output_table(FilterChimera.__output_table_filter_chimera)
+        filter_chimera_borderline_model = self.output_table(FilterChimera.__output_table_filter_chimera_borderline)
 
         ##########################################################
         #
@@ -115,6 +118,9 @@ class FilterChimera(ToolWrapper):
         ##########################################################
         with engine.connect() as conn:
             conn.execute(filter_chimera_model.__table__.delete(), sample_instance_list)
+        #
+        with engine.connect() as conn:
+            conn.execute(filter_chimera_borderline_model.__table__.delete(), sample_instance_list)
 
         ##########################################################
         #
@@ -152,26 +158,25 @@ class FilterChimera(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                                                               columns=['id', 'sequence'])
-        # import pdb;
-        # pdb.set_trace()
         ##########################################################
         #
         # 4. Run Filter
         #
         ##########################################################
-        df_filter = f11_filter_chimera(variant_read_count_df, variant_df)
-        df_filter_output = df_filter.copy()
-        # import pdb;
-        # pdb.set_trace()
+        df_chimera, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df)
+        # df_filter_output = df_filter.copy()
         ##########################################################
         #
         # 5. Insert Filter data
         #
         ##########################################################
-              # 1St way to write output on table: error
-        records = df_filter_output.to_dict('records')
+        records = df_chimera.to_dict('records')
         with engine.connect() as conn:
                 conn.execute(filter_chimera_model.__table__.insert(), records)
+        #
+        records = df_chimera_borderline.to_dict('records')
+        with engine.connect() as conn:
+                conn.execute(filter_chimera_borderline_model.__table__.insert(), records)
 
 
 def f11_filter_chimera(variant_read_count_df, variant_df):
@@ -187,6 +192,10 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_id'] = 11
     filter_output_df['filter_delete'] = False
+    #
+    filter_borderline_output_df = variant_read_count_df.copy()
+    filter_borderline_output_df['filter_id'] = 11
+    filter_borderline_output_df['filter_delete'] = False
     #
     df_grouped_variant_read_count = variant_read_count_df.groupby(
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
@@ -234,18 +243,18 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
         # 3. Run uchime_denovo
         #
         ###################################################################
-        chimear2_borderline_fasta = os.path.join(tempdir, this_filter_name,
-                                                 'chimear2_biosample_id_{}_borderline.fasta'.format(biosample_id))
-        chimear2_nonchimeras_fasta = os.path.join(tempdir, this_filter_name,
-                                                  'chimear2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
-        chimear2_chimeras_fasta = os.path.join(tempdir, this_filter_name,
-                                               'chimear2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
+        chimera2_borderline_fasta = os.path.join(tempdir, this_filter_name,
+                                                 'chimera2_biosample_id_{}_borderline.fasta'.format(biosample_id))
+        chimera2_nonchimeras_fasta = os.path.join(tempdir, this_filter_name,
+                                                  'chimera2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
+        chimera2_chimeras_fasta = os.path.join(tempdir, this_filter_name,
+                                               'chimera2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
         #
         vsearch_chimera_args = {
             "uchime_denovo": chimera1_fasta,
-            "borderline": chimear2_borderline_fasta,
-            "nonchimeras": chimear2_nonchimeras_fasta,
-            "chimeras": chimear2_chimeras_fasta
+            "borderline": chimera2_borderline_fasta,
+            "nonchimeras": chimera2_nonchimeras_fasta,
+            "chimeras": chimera2_chimeras_fasta
         }
         vsearch_chimera = Vsearch3(**vsearch_chimera_args)
         vsearch_chimera.run()
@@ -255,24 +264,22 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
         # 4. Delete variant from replicate/sample if chimeras
         #
         ###################################################################
-        with open(chimear2_chimeras_fasta) as fasta_fin:
-            chimera_seqio = SeqIO.parse(chimear2_chimeras_fasta, 'fasta')
-            for chimera_seqrecord in chimera_seqio:
+        with open(chimera2_chimeras_fasta, "rU") as handle:
+            for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                 variant_id = int(chimera_seqrecord.id.split(';')[0])
                 filter_output_df.loc[(filter_output_df['run_id'] == run_id)
                                      & (filter_output_df['marker_id'] == marker_id)
                                      & (filter_output_df['biosample_id'] == biosample_id)
                                      & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = True
 
-        # with open(chimear2_borderline_fasta) as fasta_finr:
-        #     chimera_seqio = SeqIO.parse(chimear2_borderline_fasta, 'fasta')
-        #     for chimera_seqrecord in chimera_seqio:
-        #         variant_id = int(chimera_seqrecord.id.split(';')[0])
-        #         filter_output_df.loc[(filter_output_df['run_id'] == run_id)
-        #                              & (filter_output_df['marker_id'] == marker_id)
-        #                              & (filter_output_df['biosample_id'] == biosample_id)
-        #                              & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = 1
+        with open(chimera2_borderline_fasta, "rU") as handle:
+            for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
+                variant_id = int(chimera_seqrecord.id.split(';')[0])
+                filter_borderline_output_df.loc[(filter_borderline_output_df['run_id'] == run_id)
+                                     & (filter_borderline_output_df['marker_id'] == marker_id)
+                                     & (filter_borderline_output_df['biosample_id'] == biosample_id)
+                                     & (filter_borderline_output_df['variant_id'] == variant_id), 'filter_delete'] = True
         #
 
-    return filter_output_df
+    return filter_output_df, filter_borderline_output_df
 

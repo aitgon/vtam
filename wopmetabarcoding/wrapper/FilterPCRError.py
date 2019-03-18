@@ -226,8 +226,7 @@ def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_outpu
     # Aggregate by biosample
     variant_read_count_grouped_df = variant_read_count_df.groupby(
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    # import  pdb;
-    # pdb.set_trace()
+    # import pdb; pdb.set_trace()
     variant_read_count_grouped_df.drop(columns=['replicate_id'])
     # Compute sum mismatch and gap
     vsearch_output_df[
