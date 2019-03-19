@@ -133,7 +133,7 @@ class TestChimera(TestCase):
                                                                         'filter_delete'].values[0])
 
         #
-        df_output = f11_filter_chimera(self.variant_read_count_df, self.variant_df)
+        df_output,df_output_borderline = f11_filter_chimera(self.variant_read_count_df, self.variant_df)
 
         self.assertTrue(df_output.loc[(df_output.run_id == 1)
                                              & (df_output.marker_id == 1)
