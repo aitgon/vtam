@@ -1,10 +1,7 @@
 
-import os
-import pandas
 from unittest import TestCase
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
-import pandas, itertools
+from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
 from wopmetabarcoding.utils.constants import tempdir
@@ -153,3 +150,5 @@ class TestChimera(TestCase):
                                                  'filter_delete'].values[0])
 
         #
+
+
