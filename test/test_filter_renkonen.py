@@ -5,6 +5,8 @@ import itertools
 import os
 from wopmetabarcoding.utils.constants import tempdir
 import pandas
+from wopmetabarcoding.wrapper.FilterRenkonen import renkonen_distance
+
 
 class TestFilterRenkonen(TestCase):
     def setUp(self):
@@ -55,108 +57,73 @@ class TestFilterRenkonen(TestCase):
         variant_read_proportion_per_replicate_df.drop('read_count', axis=1, inplace=True)
         variant_read_proportion_per_replicate_df.drop('read_count_sum_per_replicate', axis=1, inplace=True)
         #
+
+        # # Select the read proportion for the biosample_id, left_replicate
+        # left_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
+        #                                 (variant_read_proportion_per_replicate_df.run_id == run_id)
+        #                                 & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
+        #                                 & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
+        #                                 & (variant_read_proportion_per_replicate_df.replicate_id == left_replicate_id)
+        # ]
+        #
+        # # Select the read proportion for the biosample_id, left_replicate
+        # right_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
+        #                                 (variant_read_proportion_per_replicate_df.run_id == run_id)
+        #                                 & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
+        #                                 & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
+        #                                 & (variant_read_proportion_per_replicate_df.replicate_id == right_replicate_id)
+        # ]
+        #
+        # #Distance
+        # # variant_read_proportion_per_replicate1_per_biosample_df = \
+        # #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
+        # #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 1, ['variant_id', 'replicate_id', 'variant_read_count_propotion_per_replicate']]
+        # #
+        # # variant_read_proportion_per_replicate2_per_biosample_df = \
+        # #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
+        # #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 2, ['variant_id', 'replicate_id', 'variant_read_count_propotion_per_replicate']]
+        # #
+        # # variant_read_proportion_per_replicate3_per_biosample_df = \
+        # #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
+        # #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 3, ['variant_id', 'replicate_id',
+        # #                                                                                    'variant_read_count_propotion_per_replicate']]
+        #
+        # # Merge left and right replicate
+        # variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge(\
+        #                 right_variant_read_proportion_per_replicate_per_biosample_df,
+        #                 on=['run_id', 'marker_id', 'variant_id', 'biosample_id'])
+        # # rename columns
+        # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
+        #     columns={'replicate_id_x': 'replicate_id_left'})
+        # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
+        #     columns={'variant_read_count_propotion_per_replicate_x': 'variant_read_count_propotion_per_replicate_left'})
+        # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
+        #     columns={'replicate_id_y': 'replicate_id_right'})
+        # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
+        #     columns={'variant_read_count_propotion_per_replicate_y': 'variant_read_count_propotion_per_replicate_right'})
+        # # variant_read_proportion_per_replicate_left_right.columns = ['variant_id', 'replicate_id1',
+        # #                                                      'rp_of_variant_in_replicate1',
+        # #                                                      'replicate_id2',
+        # #                                                      'rp_of_variant_in_replicate2']
+        #
+        # # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right[['variant_id','rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate2']]
+        #
+        # variant_read_proportion_per_replicate_left_right['min_read_proportion'] = variant_read_proportion_per_replicate_left_right[
+        #                                           ['variant_read_count_propotion_per_replicate_left', 'variant_read_count_propotion_per_replicate_right']].apply(lambda row: row.min(), axis=1)
+        #
+        # distance_left_right = 1 - sum(variant_read_proportion_per_replicate_left_right['min_read_proportion'])
+        #
         run_id = 1
         marker_id = 1
         biosample_id = 1
         left_replicate_id = 1
         right_replicate_id = 2
         #
-
-        # Select the read proportion for the biosample_id, left_replicate
-        left_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-                                        (variant_read_proportion_per_replicate_df.run_id == run_id)
-                                        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-                                        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-                                        & (variant_read_proportion_per_replicate_df.replicate_id == left_replicate_id)
-        ]
-
-        # Select the read proportion for the biosample_id, left_replicate
-        right_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-                                        (variant_read_proportion_per_replicate_df.run_id == run_id)
-                                        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-                                        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-                                        & (variant_read_proportion_per_replicate_df.replicate_id == right_replicate_id)
-        ]
-
-        #Distance
-        # variant_read_proportion_per_replicate1_per_biosample_df = \
-        #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
-        #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 1, ['variant_id', 'replicate_id', 'variant_read_count_propotion_per_replicate']]
-        #
-        # variant_read_proportion_per_replicate2_per_biosample_df = \
-        #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
-        #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 2, ['variant_id', 'replicate_id', 'variant_read_count_propotion_per_replicate']]
-        #
-        # variant_read_proportion_per_replicate3_per_biosample_df = \
-        #     left_variant_read_proportion_per_replicate_per_biosample_df.loc[
-        #         left_variant_read_proportion_per_replicate_per_biosample_df.replicate_id == 3, ['variant_id', 'replicate_id',
-        #                                                                                    'variant_read_count_propotion_per_replicate']]
-
-        # Merge left and right replicate
-        variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge(\
-                        right_variant_read_proportion_per_replicate_per_biosample_df,
-                        on=['run_id', 'marker_id', 'variant_id', 'biosample_id'])
-        # rename columns
-        variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-            columns={'replicate_id_x': 'replicate_id_left'})
-        variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-            columns={'variant_read_count_propotion_per_replicate_x': 'variant_read_count_propotion_per_replicate_left'})
-        variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-            columns={'replicate_id_y': 'replicate_id_right'})
-        variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-            columns={'variant_read_count_propotion_per_replicate_y': 'variant_read_count_propotion_per_replicate_right'})
-        # variant_read_proportion_per_replicate_left_right.columns = ['variant_id', 'replicate_id1',
-        #                                                      'rp_of_variant_in_replicate1',
-        #                                                      'replicate_id2',
-        #                                                      'rp_of_variant_in_replicate2']
-
-        # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right[['variant_id','rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate2']]
-
-        variant_read_proportion_per_replicate_left_right['min_read_proportion'] = variant_read_proportion_per_replicate_left_right[
-                                                  ['variant_read_count_propotion_per_replicate_left', 'variant_read_count_propotion_per_replicate_right']].apply(lambda row: row.min(), axis=1)
-        import pdb; pdb.set_trace()
-
-        distance_left_right = 1 - sum(variant_read_proportion_per_replicate_left_right['min_read_proportion'])
-
-            ## rep1 & rep3
-        variant_read_proportion_per_replicate_1_3 = variant_read_proportion_per_replicate1_per_biosample_df.merge(
-            variant_read_proportion_per_replicate3_per_biosample_df,
-            on='variant_id')
-        variant_read_proportion_per_replicate_1_3.columns = ['variant_id', 'replicate_id1',
-                                                             'rp_of_variant_in_replicate1',
-                                                             'replicate_id3',
-                                                             'rp_of_variant_in_replicate3']
-
-        variant_read_proportion_per_replicate_1_3 = variant_read_proportion_per_replicate_1_3[
-            ['variant_id', 'rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate3']]
-
-        variant_read_proportion_per_replicate_1_3['min_read_proportion'] = variant_read_proportion_per_replicate_1_3[
-            ['rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate3']].apply(lambda row: row.min(), axis=1)
-
-        distance_1_3 = 1 - sum(variant_read_proportion_per_replicate_1_3['min_read_proportion'])
-
-             ## rep2 & rep3
-        variant_read_proportion_per_replicate_2_3 = variant_read_proportion_per_replicate2_per_biosample_df.merge(
-            variant_read_proportion_per_replicate3_per_biosample_df,
-            on='variant_id')
-        variant_read_proportion_per_replicate_2_3.columns = ['variant_id', 'replicate_id2',
-                                                             'rp_of_variant_in_replicate2',
-                                                             'replicate_id3',
-                                                             'rp_of_variant_in_replicate3']
-
-        variant_read_proportion_per_replicate_2_3 = variant_read_proportion_per_replicate_2_3[
-            ['variant_id', 'rp_of_variant_in_replicate2', 'rp_of_variant_in_replicate3']]
-
-        variant_read_proportion_per_replicate_2_3['min_read_proportion'] = variant_read_proportion_per_replicate_2_3[
-            ['rp_of_variant_in_replicate2', 'rp_of_variant_in_replicate3']].apply(lambda row: row.min(), axis=1)
-
-        distance_2_3 = 1 - sum(variant_read_proportion_per_replicate_2_3['min_read_proportion'])
-
+        distance_left_right_12 = renkonen_distance(variant_read_count_df,run_id,marker_id,biosample_id,left_replicate_id,right_replicate_id)
+        right_replicate_id = 3
+        distance_left_right_13= renkonen_distance(variant_read_count_df,run_id,marker_id,biosample_id,left_replicate_id,right_replicate_id)
         import pdb;
         pdb.set_trace()
-
-
-
 
 
     def test_delete_replicate(self):
