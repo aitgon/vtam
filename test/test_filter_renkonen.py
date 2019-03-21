@@ -7,6 +7,7 @@ from wopmetabarcoding.utils.constants import tempdir
 import pandas
 from wopmetabarcoding.wrapper.FilterRenkonen import renkonen_distance
 
+from wopmetabarcoding.wrapper.FilterRenkonen import renkonen_distance_df
 
 class TestFilterRenkonen(TestCase):
     def setUp(self):
@@ -31,7 +32,7 @@ class TestFilterRenkonen(TestCase):
             'run_id': [1] * 6,
             'marker_id': [1] * 6,
             'variant_id': [1] * 3 + [2] * 3,
-            'biosample_id': [1] * 6,
+            'biosample_id': [1] *3 +[2]*3,
             'replicate_id': [1, 2, 3] * 2,
             'read_count': [
                 5180, 5254, 9378, 193, 99, 209
@@ -41,29 +42,26 @@ class TestFilterRenkonen(TestCase):
         # biosample_id 1, replicate_id 1, replicate_id 2, renkonen_similarity and distance 0.982573959807409 and 0.017426040192591
         # biosample_id 1, replicate_id 1, replicate_id 3, renkonen_similarity and distance 0.985880012193912 and 0.014119987806088
 
-        # Compute sum of read_count per 'run_id', 'marker_id', 'biosample_id', 'replicate_id'
-        variant_read_proportion_per_replicate_df = variant_read_count_df[
-            ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
-            by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-        variant_read_proportion_per_replicate_df = variant_read_proportion_per_replicate_df.rename(columns={'read_count': 'read_count_sum_per_replicate'})
-
-        # Merge variant read_count with read_count_sum_per_replicate
-        variant_read_proportion_per_replicate_df = variant_read_count_df.merge(variant_read_proportion_per_replicate_df,
-                                    left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
-                                        right_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-
-        variant_read_proportion_per_replicate_df['variant_read_count_propotion_per_replicate']\
-            = variant_read_proportion_per_replicate_df.read_count / variant_read_proportion_per_replicate_df.read_count_sum_per_replicate
-        variant_read_proportion_per_replicate_df.drop('read_count', axis=1, inplace=True)
-        variant_read_proportion_per_replicate_df.drop('read_count_sum_per_replicate', axis=1, inplace=True)
-        #
-
 
         run_id = 1
         marker_id = 1
         biosample_id = 1
         left_replicate_id = 1
         right_replicate_id = 2
+        df_out= renkonen_distance_df(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id,right_replicate_id)
+        #
+        biosample_list = variant_read_count_df.biosample_id.unique().tolist()
+        for biosample_indice in biosample_list:
+            biosample_id = biosample_indice
+            df=variant_read_count_df.groupby('biosample_id').replicate_id.apply(lambda x: ','.join(map(str, x)))
+            # df[1][2]
+
+            import pdb;
+            pdb.set_trace()
+
+
+        df = renkonen_distance_df(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id,right_replicate_id)
+
         #
         distance_left_right = renkonen_distance(variant_read_count_df,run_id,marker_id,biosample_id,left_replicate_id,right_replicate_id)
         self.assertAlmostEqual(distance_left_right, 0.017426040192591)
@@ -72,25 +70,27 @@ class TestFilterRenkonen(TestCase):
         self.assertAlmostEqual(distance_left_right, 0.014119987806088)
 
 
+        import pdb;
+        pdb.set_trace()
 
-    def test_delete_replicate(self):
-        # TODO
-
-        # Input
-        variant_read_count_df = pandas.DataFrame({
-            'run_id': [1] * 6,
-            'marker_id': [1] * 6,
-            'variant_id': [1] * 3 + [2] * 3,
-            'biosample_id': [1] * 6,
-            'replicate_id': [1, 2, 3] * 2,
-            'read_count': [
-                5180, 5254, 9378, 193, 99, 209
-            ],
-        })
-
-
-
-
+    # def test_delete_replicate(self):
+    #     # TODO
+    #
+    #     # Input
+    #     variant_read_count_df = pandas.DataFrame({
+    #         'run_id': [1] * 6,
+    #         'marker_id': [1] * 6,
+    #         'variant_id': [1] * 3 + [2] * 3,
+    #         'biosample_id': [1] * 6,
+    #         'replicate_id': [1, 2, 3] * 2,
+    #         'read_count': [
+    #             5180, 5254, 9378, 193, 99, 209
+    #         ],
+    #     })
+    #
+    #
+    #
+    #
 
 
     def test_f11_filter_renkonen(self):
