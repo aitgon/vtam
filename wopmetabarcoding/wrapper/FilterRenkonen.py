@@ -1,9 +1,10 @@
 import pandas, itertools
+from sqlalchemy import select
 
 
-class FilterRankonen:
+class FilterRenkonen:
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterRankonen"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterRenkonen"
     }
 
     # Input file
@@ -13,30 +14,30 @@ class FilterRankonen:
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_file_sample2fasta = "sample2fasta"
-    __input_table_filter_pcr_error = "FilterPCRError"
+    __input_table_chimera = "FilterChimera"
     __input_table_Variant = "Variant"
     # Output table
-    __output_table_filter_chimera = "FilterRankonen"
+    __output_table_filter_renkonen = "FilterRenkonen"
 
     def specify_input_file(self):
         return [
-            FilterRankonen.__input_file_sample2fasta,
+            FilterRenkonen.__input_file_sample2fasta,
 
         ]
 
     def specify_input_table(self):
         return [
-            FilterRankonen.__input_table_marker,
-            FilterRankonen.__input_table_run,
-            FilterRankonen.__input_table_biosample,
-            FilterRankonen.__input_table_replicate,
-            FilterRankonen.__input_table_filter_pcr_error,
-            FilterRankonen.__input_table_Variant,
+            FilterRenkonen.__input_table_marker,
+            FilterRenkonen.__input_table_run,
+            FilterRenkonen.__input_table_biosample,
+            FilterRenkonen.__input_table_replicate,
+            FilterRenkonen.__input_table_chimera,
+            FilterRenkonen.__input_table_Variant,
         ]
 
     def specify_output_table(self):
         return [
-            FilterRankonen.__output_table_filter_chimera,
+            FilterRenkonen.__output_table_filter_chimera,
         ]
 
     def run(self):
@@ -44,20 +45,20 @@ class FilterRankonen:
         engine = session._WopMarsSession__session.bind
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterRankonen.__input_file_sample2fasta)
+        input_file_sample2fasta = self.input_file(FilterRenkonen.__input_file_sample2fasta)
         #
         # Input table models
-        marker_model = self.input_table(FilterRankonen.__input_table_marker)
-        run_model = self.input_table(FilterRankonen.__input_table_run)
-        pcr_error_model = self.input_table(FilterRankonen.__input_table_filter_pcr_error)
-        biosample_model = self.input_table(FilterRankonen.__input_table_biosample)
-        replicate_model = self.input_table(FilterRankonen.__input_table_replicate)
-        variant_model = self.input_table(FilterRankonen.__input_table_Variant)
+        marker_model = self.input_table(FilterRenkonen.__input_table_marker)
+        run_model = self.input_table(FilterRenkonen.__input_table_run)
+        chimera_model = self.input_table(FilterRenkonen.__input_table_chimera)
+        biosample_model = self.input_table(FilterRenkonen.__input_table_biosample)
+        replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
+        variant_model = self.input_table(FilterRenkonen.__input_table_Variant)
         #
 
         #
         # Output table models
-        filter_chimera_model = self.output_table(FilterRankonen.__output_table_filter_chimera)
+        filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
 
         ##########################################################
         #
@@ -100,7 +101,7 @@ class FilterRankonen:
         #
         ##########################################################
         with engine.connect() as conn:
-            conn.execute(filter_chimera_model.__table__.delete(), sample_instance_list)
+            conn.execute(filter_renkonen_model.__table__.delete(), sample_instance_list)
 
         ##########################################################
         #
@@ -108,17 +109,17 @@ class FilterRankonen:
         #
         ##########################################################
 
-        pcr_error_model_table = pcr_error_model.__table__
-        stmt_variant_filter_lfn = select([pcr_error_model_table.c.marker_id,
-                                          pcr_error_model_table.c.run_id,
-                                          pcr_error_model_table.c.variant_id,
-                                          pcr_error_model_table.c.biosample_id,
-                                          pcr_error_model_table.c.replicate_id,
-                                          pcr_error_model_table.c.filter_id,
-                                          pcr_error_model_table.c.filter_delete,
-                                          pcr_error_model_table.c.read_count]) \
-            .where(pcr_error_model_table.c.filter_id == 10) \
-            .where(pcr_error_model_table.c.filter_delete == 0)
+        chimera_model_table = chimera_model.__table__
+        stmt_variant_filter_lfn = select([chimera_model_table.c.marker_id,
+                                          chimera_model_table.c.run_id,
+                                          chimera_model_table.c.variant_id,
+                                          chimera_model_table.c.biosample_id,
+                                          chimera_model_table.c.replicate_id,
+                                          chimera_model_table.c.filter_id,
+                                          chimera_model_table.c.filter_delete,
+                                          chimera_model_table.c.read_count]) \
+            .where(chimera_model_table.c.filter_id == 11) \
+            .where(chimera_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
@@ -126,8 +127,7 @@ class FilterRankonen:
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                                                               columns=['marker_id', 'run_id', 'variant_id',
-                                                                       'biosample_id', 'replicate_id', 'filter_id',
-                                                                       'filter_delete', 'read_count'])
+                                                                       'biosample_id', 'replicate_id','read_count'])
         # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,
@@ -140,26 +140,25 @@ class FilterRankonen:
                 variant_filter_lfn_passed_list.append(row)
         variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                                                    columns=['id', 'sequence'])
-        # import pdb;
-        # pdb.set_trace()
+
         ##########################################################
         #
         # 4. Run Filter
         #
         ##########################################################
 
-        # import pdb;
-        # pdb.set_trace()
+        df = f12_filter_delete_renkonen(variant_read_count_df)
+
         ##########################################################
         #
         # 5. Insert Filter data
         #
         ##########################################################
-        # 1St way to write output on table: error
-        # records = df_filter_output.to_dict('records')
-        # with engine.connect() as conn:
-        #         conn.execute(filter_chimera_model.__table__.insert(), records)
-        # second way worked
+
+        records = df.to_dict('records')
+        with engine.connect() as conn:
+                conn.execute(filter_renkonen_model.__table__.insert(), records)
+
 
 
 
@@ -228,72 +227,66 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
     return distance_left_right
 
 
-def renkonen_distance_df(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
-    variant_read_proportion_per_replicate_df = variant_read_count_df[
-        ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
-        by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-    variant_read_proportion_per_replicate_df = variant_read_proportion_per_replicate_df.rename(
-        columns={'read_count': 'read_count_sum_per_replicate'})
+def f12_filter_delete_renkonen(variant_read_count_df):
 
-    # Merge variant read_count with read_count_sum_per_replicate
-    variant_read_proportion_per_replicate_df = variant_read_count_df.merge(variant_read_proportion_per_replicate_df,
-                                                                           left_on=['run_id', 'marker_id',
-                                                                                    'biosample_id', 'replicate_id'],
-                                                                           right_on=['run_id', 'marker_id',
-                                                                                     'biosample_id', 'replicate_id'])
-
-    variant_read_proportion_per_replicate_df['variant_read_count_propotion_per_replicate'] \
-        = variant_read_proportion_per_replicate_df.read_count / variant_read_proportion_per_replicate_df.read_count_sum_per_replicate
-    variant_read_proportion_per_replicate_df.drop('read_count', axis=1, inplace=True)
-    variant_read_proportion_per_replicate_df.drop('read_count_sum_per_replicate', axis=1, inplace=True)
+    # RTHR number
+    Rthr = 0.005
+    # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
+    df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate_id').apply(
+        lambda x: list(set(x))).reset_index()
+    df2['threshold_distance_number'] = df2['replicate_id'].apply(lambda x: (len(x) - 1) / 2)
+    df2['replicate_id_pairwise'] = df2.replicate_id.apply(lambda x: list(itertools.combinations(x, 2)))
+    df2.drop('replicate_id', axis=1, inplace=True)
+    df3 = pandas.DataFrame(
+        data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'left_replicate_id': [], 'right_replicate_id': [],
+              'renkonen_distance': []}, dtype='int')
+    for row in df2.itertuples():
+        run_id = row.run_id
+        marker_id = row.marker_id
+        biosample_id = row.biosample_id
+        replicate_id_pairwise = row.replicate_id_pairwise
+        for left_replicate_id, right_replicate_id in replicate_id_pairwise:
+            df3 = pandas.concat(
+                [df3, pandas.DataFrame({'run_id': [run_id], 'marker_id': [marker_id], 'biosample_id': [biosample_id],
+                                        'left_replicate_id': [left_replicate_id],
+                                        'right_replicate_id': [right_replicate_id]})], axis=0, sort=True)
+    # count the renkonen distance by pair of replicate for each biosample_id
+    for row in df3.itertuples():
+        run_id = row.run_id
+        marker_id = row.marker_id
+        biosample_id = row.biosample_id
+        left_replicate_id = row.left_replicate_id
+        right_replicate_id = row.right_replicate_id
+        d = renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id,
+                              right_replicate_id)
+        df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
+                & (df3.left_replicate_id == left_replicate_id) & (
+                            df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
+    # compare the renkonen distance to the Rthr
+    df3['is_distance_gt_rthr'] = df3.renkonen_distance > Rthr
+    # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
+    df4 = pandas.DataFrame(
+        data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},
+        dtype='int')
+    df4 = df4.rename(columns={'replicate_id': 'left_replicate_id'})
+    df4 = pandas.concat([df4, df3[['run_id', 'marker_id', 'biosample_id', 'left_replicate_id', 'is_distance_gt_rthr']]])
+    df4 = df4.rename(columns={'left_replicate_id': 'right_replicate_id'})
+    df4 = pandas.concat(
+        [df4, df3[['run_id', 'marker_id', 'biosample_id', 'right_replicate_id', 'is_distance_gt_rthr']]], axis=0)
+    df4 = df4.rename(columns={'right_replicate_id': 'replicate_id'})
+    # group the data frame by 'run_id', 'marker_id', 'biosample_id', 'replicate_id' to count the sum  distance number for each replicate by biosample
+    # merge with the df2 to get the threshold_distance_number
+    df5 = df4.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
+    df5 = df5.rename(columns={'is_distance_gt_rthr': 'distance_number'})
+    df5 = df5.merge(df2[['run_id', 'marker_id', 'biosample_id', 'threshold_distance_number']])
+    #if  distance_number > threshold_distance_number do not pass the renkonen filter
+    df5['filter_delete'] = False
+    df5.loc[df5.distance_number > df5.threshold_distance_number, 'filter_delete'] = True
+    #merge resulted data frame df5 with the variant_read_count_df
+    dfout = variant_read_count_df.merge(df5)
+    dfout.drop(['distance_number', 'threshold_distance_number'], axis=1, inplace=True)
+    dfout['filter_id'] = 12
     #
-    run_id = 1
-    marker_id = 1
-    biosample_id = 1
-    left_replicate_id = 1
-    right_replicate_id = 2
-    # Select the read proportion for the biosample_id, left_replicate
-    left_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-        (variant_read_proportion_per_replicate_df.run_id == run_id)
-        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-        & (variant_read_proportion_per_replicate_df.replicate_id == left_replicate_id)
-        ]
+    return dfout
 
-    # Select the read proportion for the biosample_id, right_replicate
-    right_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-        (variant_read_proportion_per_replicate_df.run_id == run_id)
-        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-        & (variant_read_proportion_per_replicate_df.replicate_id == right_replicate_id)
-        ]
-    #  Merge left and right replicate
-    variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge( \
-        right_variant_read_proportion_per_replicate_per_biosample_df,
-        on=['run_id', 'marker_id', 'variant_id', 'biosample_id'])
-    # rename columns
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'replicate_id_x': 'replicate_id_left'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'variant_read_count_propotion_per_replicate_x': 'variant_read_count_propotion_per_replicate_left'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'replicate_id_y': 'replicate_id_right'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={
-            'variant_read_count_propotion_per_replicate_y': 'variant_read_count_propotion_per_replicate_right'})
-
-    # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right[['variant_id','rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate2']]
-
-    variant_read_proportion_per_replicate_left_right['min_read_proportion'] = \
-        variant_read_proportion_per_replicate_left_right[
-            ['variant_read_count_propotion_per_replicate_left',
-             'variant_read_count_propotion_per_replicate_right']].apply(
-            lambda row: row.min(), axis=1)
-    variant_read_proportion_per_replicate_left_right['distance_left_right'] = 1 - sum(
-        variant_read_proportion_per_replicate_left_right['min_read_proportion'])
-    variant_read_proportion_per_replicate_left_right = \
-        variant_read_proportion_per_replicate_left_right[
-            ['biosample_id', 'replicate_id_left', 'replicate_id_right', 'distance_left_right']].drop_duplicates()
-
-    return variant_read_proportion_per_replicate_left_right;
 
