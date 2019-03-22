@@ -227,10 +227,10 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
     return distance_left_right
 
 
-def f12_filter_delete_renkonen(variant_read_count_df):
+def f12_filter_delete_renkonen(variant_read_count_df, Rthr):
 
     # RTHR number
-    Rthr = 0.005
+    # Rthr = 0.005
     # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
     df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate_id').apply(
         lambda x: list(set(x))).reset_index()
