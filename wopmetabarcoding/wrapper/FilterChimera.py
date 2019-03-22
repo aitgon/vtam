@@ -31,7 +31,7 @@ class FilterChimera(ToolWrapper):
     __input_table_filter_pcr_error = "FilterPCRError"
     __input_table_Variant = "Variant"
     # Output table
-    __output_table_filter_chimera = "FilterRenkonen"
+    __output_table_filter_chimera = "FilterChimera"
     __output_table_filter_chimera_borderline = "FilterChimeraBorderline"
 
 

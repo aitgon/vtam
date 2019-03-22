@@ -14,7 +14,7 @@ class FilterRenkonen:
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_file_sample2fasta = "sample2fasta"
-    __input_table_chimera = "FilterRenkonen"
+    __input_table_chimera = "FilterChimera"
     __input_table_Variant = "Variant"
     # Output table
     __output_table_filter_renkonen = "FilterRenkonen"
@@ -37,7 +37,7 @@ class FilterRenkonen:
 
     def specify_output_table(self):
         return [
-            FilterRenkonen.__output_table_filter_chimera,
+            FilterRenkonen.__output_table_filter_renkonen,
         ]
 
     def specify_params(self):
