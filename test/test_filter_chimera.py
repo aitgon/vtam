@@ -42,7 +42,7 @@ class TestChimera(TestCase):
 
 
     def test_02_f11_chimera(self):
-        this_filter_name = 'FilterChimera'
+        this_filter_name = 'FilterRenkonen'
         filter_output_df = self.variant_read_count_df.copy()
         filter_output_df['filter_id'] = 11
         filter_output_df['filter_delete'] = 0

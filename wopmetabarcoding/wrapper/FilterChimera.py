@@ -18,7 +18,7 @@ from wopmetabarcoding.utils.logger import logger
 
 class FilterChimera(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterChimera"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterRenkonen"
     }
 
     # Input file
@@ -31,7 +31,7 @@ class FilterChimera(ToolWrapper):
     __input_table_filter_pcr_error = "FilterPCRError"
     __input_table_Variant = "Variant"
     # Output table
-    __output_table_filter_chimera = "FilterChimera"
+    __output_table_filter_chimera = "FilterRenkonen"
     __output_table_filter_chimera_borderline = "FilterChimeraBorderline"
 
 
@@ -188,7 +188,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
     logger.debug(
         "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
     #
-    this_filter_name = 'FilterChimera'
+    this_filter_name = 'FilterRenkonen'
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_id'] = 11
     filter_output_df['filter_delete'] = False

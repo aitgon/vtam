@@ -14,7 +14,7 @@ class FilterRenkonen:
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_file_sample2fasta = "sample2fasta"
-    __input_table_chimera = "FilterChimera"
+    __input_table_chimera = "FilterRenkonen"
     __input_table_Variant = "Variant"
     # Output table
     __output_table_filter_renkonen = "FilterRenkonen"
@@ -40,6 +40,11 @@ class FilterRenkonen:
             FilterRenkonen.__output_table_filter_chimera,
         ]
 
+    def specify_params(self):
+        return {
+            "renkonen_threshold": "float",
+        }
+
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
@@ -55,7 +60,9 @@ class FilterRenkonen:
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
         variant_model = self.input_table(FilterRenkonen.__input_table_Variant)
         #
-
+        # Options
+        # FilterLFN parameters
+        renkonen_threshold = float(self.option("renkonen_threshold"))
         #
         # Output table models
         filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
@@ -147,7 +154,7 @@ class FilterRenkonen:
         #
         ##########################################################
 
-        df = f12_filter_delete_renkonen(variant_read_count_df)
+        df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
 
         ##########################################################
         #
@@ -227,10 +234,8 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
     return distance_left_right
 
 
-def f12_filter_delete_renkonen(variant_read_count_df, Rthr):
+def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
 
-    # RTHR number
-    # Rthr = 0.005
     # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
     df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate_id').apply(
         lambda x: list(set(x))).reset_index()
@@ -262,8 +267,8 @@ def f12_filter_delete_renkonen(variant_read_count_df, Rthr):
         df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
                 & (df3.left_replicate_id == left_replicate_id) & (
                             df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
-    # compare the renkonen distance to the Rthr
-    df3['is_distance_gt_rthr'] = df3.renkonen_distance > Rthr
+    # compare the renkonen distance to the renkonen_threshold
+    df3['is_distance_gt_rthr'] = df3.renkonen_distance > renkonen_threshold
     # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
     df4 = pandas.DataFrame(
         data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},

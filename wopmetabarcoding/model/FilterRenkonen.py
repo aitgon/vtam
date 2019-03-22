@@ -4,7 +4,7 @@ from wopmars.framework.database.Base import Base
 from sqlalchemy import Column, String, Integer, ForeignKey
 
 
-class FilterChimera(Base):
+class FilterRenkonen(Base):
     __tablename__ = "FilterRenkonen"
     __table_args__ = (
         UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id'),

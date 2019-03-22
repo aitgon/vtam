@@ -68,20 +68,3 @@ class TestFilterRenkonen(TestCase):
         distance_left_right= renkonen_distance(self.variant_read_count_df,run_id,marker_id,biosample_id,left_replicate_id,right_replicate_id)
         self.assertAlmostEqual(distance_left_right, 0.014119987806088)
 
-
-
-    def test_delete_replicate(self):
-        # TODO
-
-        # Input
-        variant_read_count_df = pandas.DataFrame({
-            'run_id': [1] * 6,
-            'marker_id': [1] * 6,
-            'variant_id': [1] * 3 + [2] * 3,
-            'biosample_id': [1] * 6,
-            'replicate_id': [1, 2, 3] * 2,
-            'read_count': [
-                5180, 5254, 9378, 193, 99, 209
-            ],
-        })
-
