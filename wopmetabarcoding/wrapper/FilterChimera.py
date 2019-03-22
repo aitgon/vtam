@@ -264,7 +264,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
         # 4. Delete variant from replicate/sample if chimeras
         #
         ###################################################################
-        with open(chimera2_chimeras_fasta, "rU") as handle:
+        with open(chimera2_chimeras_fasta, "r") as handle:
             for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                 variant_id = int(chimera_seqrecord.id.split(';')[0])
                 filter_output_df.loc[(filter_output_df['run_id'] == run_id)
@@ -272,7 +272,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
                                      & (filter_output_df['biosample_id'] == biosample_id)
                                      & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = True
 
-        with open(chimera2_borderline_fasta, "rU") as handle:
+        with open(chimera2_borderline_fasta, "r") as handle:
             for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                 variant_id = int(chimera_seqrecord.id.split(';')[0])
                 filter_borderline_output_df.loc[(filter_borderline_output_df['run_id'] == run_id)
