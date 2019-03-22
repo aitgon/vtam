@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 
 
 class FilterChimera(Base):
-    __tablename__ = "FilterRenkonen"
+    __tablename__ = "FilterChimera"
     __table_args__ = (
         UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id'),
     )

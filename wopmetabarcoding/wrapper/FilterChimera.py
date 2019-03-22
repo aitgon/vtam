@@ -8,7 +8,6 @@ import os
 from wopmetabarcoding.utils.constants import tempdir
 
 from sqlalchemy import select
-import sqlalchemy
 import pandas
 
 from wopmetabarcoding.utils.logger import logger

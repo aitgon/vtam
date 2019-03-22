@@ -1,21 +1,21 @@
 import pandas, itertools
 from sqlalchemy import select
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 
-class FilterRenkonen:
+class FilterRenkonen(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.FilterRenkonen"
     }
 
     # Input file
+    __input_file_sample2fasta = "sample2fasta"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_file_sample2fasta = "sample2fasta"
     __input_table_chimera = "FilterChimera"
-    __input_table_Variant = "Variant"
     # Output table
     __output_table_filter_renkonen = "FilterRenkonen"
 
@@ -32,7 +32,6 @@ class FilterRenkonen:
             FilterRenkonen.__input_table_biosample,
             FilterRenkonen.__input_table_replicate,
             FilterRenkonen.__input_table_chimera,
-            FilterRenkonen.__input_table_Variant,
         ]
 
     def specify_output_table(self):
