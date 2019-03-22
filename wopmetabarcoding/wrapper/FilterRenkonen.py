@@ -57,7 +57,6 @@ class FilterRenkonen(ToolWrapper):
         chimera_model = self.input_table(FilterRenkonen.__input_table_chimera)
         biosample_model = self.input_table(FilterRenkonen.__input_table_biosample)
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
-        variant_model = self.input_table(FilterRenkonen.__input_table_Variant)
         #
         # Options
         # FilterLFN parameters
@@ -116,13 +115,11 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
 
         chimera_model_table = chimera_model.__table__
-        stmt_variant_filter_lfn = select([chimera_model_table.c.marker_id,
-                                          chimera_model_table.c.run_id,
-                                          chimera_model_table.c.variant_id,
+        stmt_variant_filter_lfn = select([chimera_model_table.c.run_id,
+                                          chimera_model_table.c.marker_id,
                                           chimera_model_table.c.biosample_id,
                                           chimera_model_table.c.replicate_id,
-                                          chimera_model_table.c.filter_id,
-                                          chimera_model_table.c.filter_delete,
+                                          chimera_model_table.c.variant_id,
                                           chimera_model_table.c.read_count]) \
             .where(chimera_model_table.c.filter_id == 11) \
             .where(chimera_model_table.c.filter_delete == 0)
@@ -132,20 +129,8 @@ class FilterRenkonen(ToolWrapper):
             for row in conn.execute(stmt_variant_filter_lfn).fetchall():
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['marker_id', 'run_id', 'variant_id',
-                                                                       'biosample_id', 'replicate_id','read_count'])
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
-
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                   columns=['id', 'sequence'])
+                                                              columns=['run_id', 'marker_id',
+                                                                       'biosample_id', 'replicate_id', 'variant_id', 'read_count',])
 
         ##########################################################
         #
@@ -160,7 +145,6 @@ class FilterRenkonen(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-
         records = df.to_dict('records')
         with engine.connect() as conn:
                 conn.execute(filter_renkonen_model.__table__.insert(), records)
@@ -234,62 +218,69 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
 
 
 def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
-
+    dfout = variant_read_count_df.copy()
+    dfout['filter_id'] = 12
+    dfout['filter_delete'] = False
+    #
     # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
     df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate_id').apply(
         lambda x: list(set(x))).reset_index()
     df2['threshold_distance_number'] = df2['replicate_id'].apply(lambda x: (len(x) - 1) / 2)
-    df2['replicate_id_pairwise'] = df2.replicate_id.apply(lambda x: list(itertools.combinations(x, 2)))
-    df2.drop('replicate_id', axis=1, inplace=True)
-    df3 = pandas.DataFrame(
-        data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'left_replicate_id': [], 'right_replicate_id': [],
-              'renkonen_distance': []}, dtype='int')
-    for row in df2.itertuples():
-        run_id = row.run_id
-        marker_id = row.marker_id
-        biosample_id = row.biosample_id
-        replicate_id_pairwise = row.replicate_id_pairwise
-        for left_replicate_id, right_replicate_id in replicate_id_pairwise:
-            df3 = pandas.concat(
-                [df3, pandas.DataFrame({'run_id': [run_id], 'marker_id': [marker_id], 'biosample_id': [biosample_id],
-                                        'left_replicate_id': [left_replicate_id],
-                                        'right_replicate_id': [right_replicate_id]})], axis=0, sort=True)
-    # count the renkonen distance by pair of replicate for each biosample_id
-    for row in df3.itertuples():
-        run_id = row.run_id
-        marker_id = row.marker_id
-        biosample_id = row.biosample_id
-        left_replicate_id = row.left_replicate_id
-        right_replicate_id = row.right_replicate_id
-        d = renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id,
-                              right_replicate_id)
-        df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
-                & (df3.left_replicate_id == left_replicate_id) & (
-                            df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
-    # compare the renkonen distance to the renkonen_threshold
-    df3['is_distance_gt_rthr'] = df3.renkonen_distance > renkonen_threshold
-    # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
-    df4 = pandas.DataFrame(
-        data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},
-        dtype='int')
-    df4 = df4.rename(columns={'replicate_id': 'left_replicate_id'})
-    df4 = pandas.concat([df4, df3[['run_id', 'marker_id', 'biosample_id', 'left_replicate_id', 'is_distance_gt_rthr']]])
-    df4 = df4.rename(columns={'left_replicate_id': 'right_replicate_id'})
-    df4 = pandas.concat(
-        [df4, df3[['run_id', 'marker_id', 'biosample_id', 'right_replicate_id', 'is_distance_gt_rthr']]], axis=0)
-    df4 = df4.rename(columns={'right_replicate_id': 'replicate_id'})
-    # group the data frame by 'run_id', 'marker_id', 'biosample_id', 'replicate_id' to count the sum  distance number for each replicate by biosample
-    # merge with the df2 to get the threshold_distance_number
-    df5 = df4.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-    df5 = df5.rename(columns={'is_distance_gt_rthr': 'distance_number'})
-    df5 = df5.merge(df2[['run_id', 'marker_id', 'biosample_id', 'threshold_distance_number']])
-    #if  distance_number > threshold_distance_number do not pass the renkonen filter
-    df5['filter_delete'] = False
-    df5.loc[df5.distance_number > df5.threshold_distance_number, 'filter_delete'] = True
-    #merge resulted data frame df5 with the variant_read_count_df
-    dfout = variant_read_count_df.merge(df5)
-    dfout.drop(['distance_number', 'threshold_distance_number'], axis=1, inplace=True)
-    dfout['filter_id'] = 12
+    df2 = df2.loc[df2.threshold_distance_number != 0] # drop if threshold_distance_number == 0
+    if df2.shape[0] == 0: # Only one replicate
+        dfout['filter_delete'] = True
+    else:
+        df2['replicate_id_pairwise'] = df2.replicate_id.apply(lambda x: list(itertools.combinations(x, 2)))
+        df2.drop('replicate_id', axis=1, inplace=True)
+        df3 = pandas.DataFrame(
+            data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'left_replicate_id': [], 'right_replicate_id': [],
+                  'renkonen_distance': []}, dtype='int')
+        for row in df2.itertuples():
+            run_id = row.run_id
+            marker_id = row.marker_id
+            biosample_id = row.biosample_id
+            replicate_id_pairwise = row.replicate_id_pairwise
+            for left_replicate_id, right_replicate_id in replicate_id_pairwise:
+                df3 = pandas.concat(
+                    [df3, pandas.DataFrame({'run_id': [run_id], 'marker_id': [marker_id], 'biosample_id': [biosample_id],
+                                            'left_replicate_id': [left_replicate_id],
+                                            'right_replicate_id': [right_replicate_id]})], axis=0, sort=True)
+        # count the renkonen distance by pair of replicate for each biosample_id
+        for row in df3.itertuples():
+            run_id = row.run_id
+            marker_id = row.marker_id
+            biosample_id = row.biosample_id
+            left_replicate_id = row.left_replicate_id
+            right_replicate_id = row.right_replicate_id
+            d = renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id,
+                                  right_replicate_id)
+            df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
+                    & (df3.left_replicate_id == left_replicate_id) & (
+                                df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
+        # compare the renkonen distance to the renkonen_threshold
+        df3['is_distance_gt_rthr'] = df3.renkonen_distance > renkonen_threshold
+        # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
+        df4 = pandas.DataFrame(
+            data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},
+            dtype='int')
+        df4 = df4.rename(columns={'replicate_id': 'left_replicate_id'})
+        df4 = pandas.concat([df4, df3[['run_id', 'marker_id', 'biosample_id', 'left_replicate_id', 'is_distance_gt_rthr']]])
+        df4 = df4.rename(columns={'left_replicate_id': 'right_replicate_id'})
+        df4 = pandas.concat(
+            [df4, df3[['run_id', 'marker_id', 'biosample_id', 'right_replicate_id', 'is_distance_gt_rthr']]], axis=0)
+        df4 = df4.rename(columns={'right_replicate_id': 'replicate_id'})
+        # group the data frame by 'run_id', 'marker_id', 'biosample_id', 'replicate_id' to count the sum  distance number for each replicate by biosample
+        # merge with the df2 to get the threshold_distance_number
+        df5 = df4.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
+        df5 = df5.rename(columns={'is_distance_gt_rthr': 'distance_number'})
+        dfout = dfout.merge(df2[['run_id', 'marker_id', 'biosample_id', 'threshold_distance_number']])
+        dfout = dfout.merge(df5[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'distance_number']])
+        #if  distance_number > threshold_distance_number do not pass the renkonen filter
+        # df5['filter_delete'] = False
+        dfout.loc[dfout.distance_number > dfout.threshold_distance_number, 'filter_delete'] = True
+        #merge resulted data frame df5 with the variant_read_count_df
+        # dfout = variant_read_count_df.merge(df5)
+        dfout.drop(['distance_number', 'threshold_distance_number'], axis=1, inplace=True)
     #
     return dfout
 

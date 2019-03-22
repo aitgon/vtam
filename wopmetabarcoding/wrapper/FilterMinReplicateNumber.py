@@ -134,7 +134,7 @@ class FilterMinReplicateNumber(ToolWrapper):
             for row in conn.execute(stmt_variant_filter_lfn).fetchall():
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id', 'filter_delete', 'read_count'])
+                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_id', 'filter_delete'])
 
         ##########################################################
         #
