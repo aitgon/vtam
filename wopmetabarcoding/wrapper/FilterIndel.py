@@ -1,11 +1,7 @@
 import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
-from Bio import SeqIO
-import os
-from wopmetabarcoding.utils.constants import tempdir
+
 
 from sqlalchemy import select
 import pandas
@@ -129,21 +125,20 @@ class FilterIndel(ToolWrapper):
                                           renkonen_model_table.c.variant_id,
                                           renkonen_model_table.c.biosample_id,
                                           renkonen_model_table.c.replicate_id,
-                                          renkonen_model_table.c.filter_id,
-                                          renkonen_model_table.c.filter_delete,
+                                          # renkonen_model_table.c.filter_id,
+                                          # renkonen_model_table.c.filter_delete,
                                           renkonen_model_table.c.read_count])\
             .where(renkonen_model_table.c.filter_id == 12)\
-            .where(renkonen_model_table.c.filter_delete == 0)
+            .where(renkonen_model_table.c.filter_delete == 1)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant_filter_lfn).fetchall():
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_id', 'filter_delete'])
+                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
 
-        import pdb;
-        pdb.set_trace()
+        
         # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,

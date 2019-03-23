@@ -1,8 +1,7 @@
 
 from unittest import TestCase
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.VSearch import Vsearch3
-from Bio import SeqIO
+
 import os
 from wopmetabarcoding.utils.constants import tempdir
 import pandas
@@ -68,21 +67,22 @@ class TestIndel(TestCase):
 
         df_out = f13_filter_indel(self.variant_read_count_df,self.variant_df)
         df_out1 = f13_filter_indel(self.variant_read_count_df, self.variant_df1)
-
-        self.assertTrue(df_out.loc[(df_out1.run_id == 1)
+        # import pdb;
+        # pdb.set_trace()
+        self.assertTrue(not df_out.loc[(df_out1.run_id == 1)
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 1)
                                          & (df_out.biosample_id == 1)
                                          & (df_out.replicate_id == 1)
-                                         & (df_out.filter_id == 12),
+                                         & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
     #
-        self.assertTrue(not df_out1.loc[(df_out1.run_id == 1)
+        self.assertTrue( df_out1.loc[(df_out1.run_id == 1)
                                              & (df_out1.marker_id == 1)
-                                             & (df_out1.variant_id == 2)
+                                             & (df_out1.variant_id == 7)
                                              & (df_out1.biosample_id == 1)
-                                             & (df_out1.replicate_id == 3)
-                                             & (df_out1.filter_id == 12),
+                                             & (df_out1.replicate_id == 1)
+                                             & (df_out1.filter_id == 13),
                                              'filter_delete'].values[0])
 
 
