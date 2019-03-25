@@ -183,27 +183,23 @@ def f15_filter_consensus(variant_read_count_df):
     variants_sequences = list(set(variants_sequences))
     read_average_columns = ['variant', 'read_average']
     read_average_df = pandas.DataFrame(columns=read_average_columns)
+
     # sum of read_count over variant_id and biosample_id
     read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
     read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate_id', axis=1, inplace=True)
     read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(columns={'read_count': 'read_count'})
+
     #  count of replicate number per variant_id and biosample_id
     replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
     replicate_count_over_variant_id_and_biosample_id_df.drop('read_count', axis=1, inplace=True)
     replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate_id': 'replicate_count'})
-    # merge
-    # merge
 
-    for variant in variants_sequences:
-        variant_df = variant_read_count_df.loc[
-            variant_read_count_df['variant_id'] == variant]
-        read_average = round(variant_df["read_count"].sum() / len(variant_df['read_count']), 0)
-        read_average_df.loc[len(read_average_df)] = [variant, read_average]
-    variant_read_count_df = variant_read_count_df.merge(read_average_df, left_on='variant_id',
-                                                                  right_on='variant')
-    variant_read_count_df = variant_read_count_df.drop(columns=['variant'])
+    # merge
+    df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(replicate_count_over_variant_id_and_biosample_id_df, left_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'),right_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'))
+    df_out['read_count'] = df_out.read_count/df_out.replicate_count
 
     #
-    return variant_read_count_df
+    return df_out
+
 
 
