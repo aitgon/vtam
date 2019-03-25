@@ -8,9 +8,9 @@ import pandas
 
 
 
-class FilterIndel(ToolWrapper):
+class FilterConsensus(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterIndel"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterConsensus"
     }
 
     # Input file
@@ -20,33 +20,34 @@ class FilterIndel(ToolWrapper):
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_file_sample2fasta = "sample2fasta"
-    __input_table_filter_renkonen = "FilterRenkonen"
-    __input_table_Variant = "Variant"
+    # __input_table_filter_codon_stop = "FilterCodonStop"
+    __input_table_filter_indel = "FilterIndel"
+
     # Output table
-    __output_table_filter_indel = "FilterIndel"
+    __output_table_filter_consensus = "FilterConsensus"
 
 
 
     def specify_input_file(self):
         return[
-            FilterIndel.__input_file_sample2fasta,
+            FilterConsensus.__input_file_sample2fasta,
 
         ]
 
     def specify_input_table(self):
         return [
-            FilterIndel.__input_table_marker,
-            FilterIndel.__input_table_run,
-            FilterIndel.__input_table_biosample,
-            FilterIndel.__input_table_replicate,
-            FilterIndel.__input_table_filter_renkonen,
-            FilterIndel.__input_table_Variant,
+            FilterConsensus.__input_table_marker,
+            FilterConsensus.__input_table_run,
+            FilterConsensus.__input_table_biosample,
+            FilterConsensus.__input_table_replicate,
+            FilterConsensus.__input_table_filter_indel,
+
         ]
 
 
     def specify_output_table(self):
         return [
-            FilterIndel.__output_table_filter_indel,
+            FilterConsensus.__output_table_filter_consensus,
 
         ]
 
@@ -57,20 +58,21 @@ class FilterIndel(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterIndel.__input_file_sample2fasta)
+        input_file_sample2fasta = self.input_file(FilterConsensus.__input_file_sample2fasta)
         #
         # Input table models
-        marker_model = self.input_table(FilterIndel.__input_table_marker)
-        run_model = self.input_table(FilterIndel.__input_table_run)
-        renkonen_model = self.input_table(FilterIndel.__input_table_filter_renkonen)
-        biosample_model = self.input_table(FilterIndel.__input_table_biosample)
-        replicate_model = self.input_table(FilterIndel.__input_table_replicate)
-        variant_model = self.input_table(FilterIndel.__input_table_Variant)
+        marker_model = self.input_table(FilterConsensus.__input_table_marker)
+        run_model = self.input_table(FilterConsensus.__input_table_run)
+        # codon_stop_model = self.input_table(FilterConsensus.__input_table_filter_codon_stop)
+        indel_model = self.input_table(FilterConsensus.__input_table_filter_indel)
+        biosample_model = self.input_table(FilterConsensus.__input_table_biosample)
+        replicate_model = self.input_table(FilterConsensus.__input_table_replicate)
+
         #
 
         #
         # Output table models
-        indel_model = self.output_table(FilterIndel.__output_table_filter_indel)
+        consensus_model = self.output_table(FilterConsensus.__output_table_filter_consensus)
 
 
         ##########################################################
@@ -109,7 +111,8 @@ class FilterIndel(ToolWrapper):
         #
         ##########################################################
         with engine.connect() as conn:
-            conn.execute(indel_model.__table__.delete(), sample_instance_list)
+            # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
+            conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         #
 
 
@@ -119,17 +122,26 @@ class FilterIndel(ToolWrapper):
         #
         ##########################################################
 
-        renkonen_model_table = renkonen_model.__table__
-        stmt_variant_filter_lfn = select([renkonen_model_table.c.marker_id,
-                                          renkonen_model_table.c.run_id,
-                                          renkonen_model_table.c.variant_id,
-                                          renkonen_model_table.c.biosample_id,
-                                          renkonen_model_table.c.replicate_id,
-                                          # renkonen_model_table.c.filter_id,
-                                          # renkonen_model_table.c.filter_delete,
-                                          renkonen_model_table.c.read_count])\
-            .where(renkonen_model_table.c.filter_id == 12)\
-            .where(renkonen_model_table.c.filter_delete == 1)
+        # codon_stop_model_table = codon_stop_model.__table__
+        # stmt_variant_filter_lfn = select([codon_stop_model_table.c.marker_id,
+        #                                   codon_stop_model_table.c.run_id,
+        #                                   codon_stop_model_table.c.variant_id,
+        #                                   codon_stop_model_table.c.biosample_id,
+        #                                   codon_stop_model_table.c.replicate_id,
+        #
+        #                                   codon_stop_model_table.c.read_count])\
+        #     .where(codon_stop_model_table.c.filter_id == 14)\
+        #     .where(codon_stop_model_table.c.filter_delete == 0)
+        indel_model_table = indel_model.__table__
+        stmt_variant_filter_lfn = select([indel_model_table.c.marker_id,
+                                          indel_model_table.c.run_id,
+                                          indel_model_table.c.variant_id,
+                                          indel_model_table.c.biosample_id,
+                                          indel_model_table.c.replicate_id,
+
+                                          indel_model_table.c.read_count]) \
+            .where(indel_model_table.c.filter_id == 13) \
+            .where(indel_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
@@ -139,24 +151,16 @@ class FilterIndel(ToolWrapper):
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
 
 
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
 
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['id', 'sequence'])
+
+
+
         ##########################################################
         #
         # 4. Run Filter
         #
         ##########################################################
-        df_out = f13_filter_indel(variant_read_count_df, variant_df)
+        df_out = f15_filter_consensus(variant_read_count_df)
         # df_filter_output = df_filter.copy()
 
         ##########################################################
@@ -166,30 +170,29 @@ class FilterIndel(ToolWrapper):
         ##########################################################
         records = df_out.to_dict('records')
         with engine.connect() as conn:
-                conn.execute(indel_model.__table__.insert(), records)
+                conn.execute(consensus_model.__table__.insert(), records)
         #
 
 
 
-def f13_filter_indel(variant_read_count_df, variant_df):
+def f15_filter_consensus(variant_read_count_df):
     """
-    filter chimera
+        Function used to display the read average of the remaining variant
     """
+    variants_sequences = variant_read_count_df['variant_id'].copy()
+    variants_sequences = list(set(variants_sequences))
+    read_average_columns = ['variant', 'read_average']
+    read_average_df = pandas.DataFrame(columns=read_average_columns)
+    for variant in variants_sequences:
+        variant_df = variant_read_count_df.loc[
+            variant_read_count_df['variant_id'] == variant]
+        read_average = round(variant_df["read_count"].sum() / len(variant_df['read_count']), 0)
+        read_average_df.loc[len(read_average_df)] = [variant, read_average]
+    variant_read_count_df = variant_read_count_df.merge(read_average_df, left_on='variant_id',
+                                                                  right_on='variant')
+    variant_read_count_df = variant_read_count_df.drop(columns=['variant'])
 
-    df_out = variant_read_count_df.copy()
-    df_out['filter_id'] = 13
-    df_out['filter_delete'] = False
     #
-    df = variant_df.copy()
-    df['sequence_length_module_3'] = variant_df.sequence.apply(lambda x: len(x) % 3)
-    majority_sequence_length_module_3 = df.sequence_length_module_3.mode()
-    # select id of variant that do not pass on a list
-    df = df.loc[df['sequence_length_module_3'] != majority_sequence_length_module_3.values[0]]
-    do_not_pass_variant_id_list = df.id.tolist()
-    #
-    for id in do_not_pass_variant_id_list:
-        df_out.loc[df_out['variant_id'] == id, 'filter_delete'] = True
-    #
-    return df_out
+    return variant_read_count_df
 
 

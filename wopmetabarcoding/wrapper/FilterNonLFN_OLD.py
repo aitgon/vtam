@@ -480,6 +480,7 @@ class FilterNonLFNRunner:
             variant_df = self.variant_biosample_replicate_df.loc[self.variant_biosample_replicate_df['variant_seq'] == variant]
             read_average = round(variant_df["count"].sum()/len(variant_df['count']), 0)
             read_average_df.loc[len(read_average_df)] = [variant, read_average]
+
         self.variant_biosample_replicate_df = self.variant_biosample_replicate_df.merge(read_average_df, left_on='variant_seq', right_on='variant')
         self.variant_biosample_replicate_df = self.variant_biosample_replicate_df.drop(columns=['variant'])
 
