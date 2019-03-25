@@ -139,7 +139,7 @@ class VariantReadCount(ToolWrapper):
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
                              header=None,
                              names=['read_id', 'fasta_id', 'run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence'])
-
+        read_annotation_df.drop('read_id', axis=1, inplace=True)
         ##########################################################
         #
         # 4. Group by read sequence

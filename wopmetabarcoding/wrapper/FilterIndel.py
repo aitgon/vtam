@@ -1,11 +1,13 @@
 import inspect
 
+import sys
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 
 from sqlalchemy import select
 import pandas
 
+from wopmetabarcoding.utils.logger import logger
 
 
 class FilterIndel(ToolWrapper):
@@ -129,7 +131,7 @@ class FilterIndel(ToolWrapper):
                                           # renkonen_model_table.c.filter_delete,
                                           renkonen_model_table.c.read_count])\
             .where(renkonen_model_table.c.filter_id == 12)\
-            .where(renkonen_model_table.c.filter_delete == 1)
+            .where(renkonen_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
@@ -137,37 +139,41 @@ class FilterIndel(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+        if variant_read_count_df.shape[0] != 0:
+            logger.debug(
+                "file: {}; line: {}; No data input for this filter.".format(__file__,
+                                                                      inspect.currentframe().f_lineno,
+                                                                      'Indel'))
 
+            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+            variant_model_table = variant_model.__table__
+            stmt_variant = select([variant_model_table.c.id,
+                                   variant_model_table.c.sequence])
 
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
+            # Select to DataFrame
+            variant_filter_lfn_passed_list = []
+            with engine.connect() as conn:
+                for row in conn.execute(stmt_variant).fetchall():
+                    variant_filter_lfn_passed_list.append(row)
+            variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
+                                                                  columns=['id', 'sequence'])
+            ##########################################################
+            #
+            # 4. Run Filter
+            #
+            ##########################################################
+            df_out = f13_filter_indel(variant_read_count_df, variant_df)
 
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['id', 'sequence'])
-        ##########################################################
-        #
-        # 4. Run Filter
-        #
-        ##########################################################
-        df_out = f13_filter_indel(variant_read_count_df, variant_df)
-        # df_filter_output = df_filter.copy()
+            ##########################################################
+            #
+            # 5. Insert Filter data
+            #
+            ##########################################################
 
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
-        records = df_out.to_dict('records')
-        with engine.connect() as conn:
-                conn.execute(indel_model.__table__.insert(), records)
-        #
+            records = df_out.to_dict('records')
+            with engine.connect() as conn:
+                    conn.execute(indel_model.__table__.insert(), records)
+
 
 
 

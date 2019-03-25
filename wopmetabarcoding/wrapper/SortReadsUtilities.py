@@ -230,6 +230,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
     # session.query(model2).filter(model2.file_name == merged_fasta_file_name).update({model2.final_csv: out_tsv})
     # # Open output file
     # output = open(out_tsv, 'w')
+    # import pdb; pdb.set_trace()
     with open(out_tsv, 'a') as fout:
         # Parsing input csv file
         with open(trimmed_tsv, 'r') as fin:

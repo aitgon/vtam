@@ -183,6 +183,18 @@ def f15_filter_consensus(variant_read_count_df):
     variants_sequences = list(set(variants_sequences))
     read_average_columns = ['variant', 'read_average']
     read_average_df = pandas.DataFrame(columns=read_average_columns)
+    # sum of read_count over variant_id and biosample_id
+    read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
+    read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate_id', axis=1, inplace=True)
+    read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(columns={'read_count': 'read_count'})
+    #  count of replicate number per variant_id and biosample_id
+    replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
+    replicate_count_over_variant_id_and_biosample_id_df.drop('read_count', axis=1, inplace=True)
+    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate_id': 'replicate_count'})
+    # merge
+    import pdb; pdb.set_trace()
+    # merge
+
     for variant in variants_sequences:
         variant_df = variant_read_count_df.loc[
             variant_read_count_df['variant_id'] == variant]
