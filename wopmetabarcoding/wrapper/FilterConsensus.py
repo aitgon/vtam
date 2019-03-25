@@ -192,7 +192,6 @@ def f15_filter_consensus(variant_read_count_df):
     replicate_count_over_variant_id_and_biosample_id_df.drop('read_count', axis=1, inplace=True)
     replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate_id': 'replicate_count'})
     # merge
-    import pdb; pdb.set_trace()
     # merge
 
     for variant in variants_sequences:

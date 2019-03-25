@@ -27,24 +27,6 @@ class TestIndel(TestCase):
 
                          ],
         })
-
-         #output
-         #seq_indel1(var7) and seq_indel7(var6) should be detected as potential pseudogenes/sequencing errors
-
-        self.variant_df1 = pandas.DataFrame({
-            'id': list(range(1, 8)),
-            'sequence': [
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTTTCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA',
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTGTCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA',
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACTATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA',
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTATTTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAA',
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA',
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTTTCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA',
-                'TGTTCTTTATTTATTATTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTA'
-
-
-            ],
-        })
         # output
         # seq_indel1(var1) and seq_indel7(var7) should be detected as potential pseudogenes/sequencing errors
         #
@@ -65,25 +47,24 @@ class TestIndel(TestCase):
 
     def test_01_f13_indel(self):
 
-        df_out = f13_filter_indel(self.variant_read_count_df,self.variant_df)
-        df_out1 = f13_filter_indel(self.variant_read_count_df, self.variant_df1)
-        # import pdb;
-        # pdb.set_trace()
-        self.assertTrue(not df_out.loc[(df_out1.run_id == 1)
+        df_out = f13_filter_indel(self.variant_read_count_df, self.variant_df)
+        # df_out1 = f13_filter_indel(self.variant_read_count_df, self.variant_df1)
+        # Variant 1 passes
+        self.assertTrue(not df_out.loc[(df_out.run_id == 1)
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 1)
                                          & (df_out.biosample_id == 1)
                                          & (df_out.replicate_id == 1)
                                          & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
-    #
-        self.assertTrue( df_out1.loc[(df_out1.run_id == 1)
-                                             & (df_out1.marker_id == 1)
-                                             & (df_out1.variant_id == 7)
-                                             & (df_out1.biosample_id == 1)
-                                             & (df_out1.replicate_id == 1)
-                                             & (df_out1.filter_id == 13),
-                                             'filter_delete'].values[0])
+        # Variant 7 passes
+        self.assertTrue(df_out.loc[(df_out.run_id == 1)
+                                         & (df_out.marker_id == 1)
+                                         & (df_out.variant_id == 7)
+                                         & (df_out.biosample_id == 1)
+                                         & (df_out.replicate_id == 1)
+                                         & (df_out.filter_id == 13),
+                                         'filter_delete'].values[0])
 
 
 

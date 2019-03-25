@@ -187,8 +187,9 @@ def f13_filter_indel(variant_read_count_df, variant_df):
     df_out['filter_delete'] = False
     #
     df = variant_df.copy()
-    df['sequence_length_module_3'] = variant_df.sequence.apply(lambda x: len(x) % 3)
-    majority_sequence_length_module_3 = df.sequence_length_module_3.mode()
+    df['sequence_length_module_3'] = variant_df.sequence.apply(lambda x: len(x) % 3) # compute module for each variant
+    majority_sequence_length_module_3 = df.sequence_length_module_3.mode() # most common remaining of modulo 3
+    import pdb; pdb.set_trace()
     # select id of variant that do not pass on a list
     df = df.loc[df['sequence_length_module_3'] != majority_sequence_length_module_3.values[0]]
     do_not_pass_variant_id_list = df.id.tolist()
