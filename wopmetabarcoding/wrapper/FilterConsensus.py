@@ -20,8 +20,8 @@ class FilterConsensus(ToolWrapper):
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_file_sample2fasta = "sample2fasta"
-    # __input_table_filter_codon_stop = "FilterCodonStop"
-    __input_table_filter_indel = "FilterIndel"
+    __input_table_filter_codon_stop = "FilterCodonStop"
+
 
     # Output table
     __output_table_filter_consensus = "FilterConsensus"
@@ -40,7 +40,7 @@ class FilterConsensus(ToolWrapper):
             FilterConsensus.__input_table_run,
             FilterConsensus.__input_table_biosample,
             FilterConsensus.__input_table_replicate,
-            FilterConsensus.__input_table_filter_indel,
+            FilterConsensus.__input_table_filter_codon_stop,
 
         ]
 
@@ -63,8 +63,7 @@ class FilterConsensus(ToolWrapper):
         # Input table models
         marker_model = self.input_table(FilterConsensus.__input_table_marker)
         run_model = self.input_table(FilterConsensus.__input_table_run)
-        # codon_stop_model = self.input_table(FilterConsensus.__input_table_filter_codon_stop)
-        indel_model = self.input_table(FilterConsensus.__input_table_filter_indel)
+        codon_stop_model = self.input_table(FilterConsensus.__input_table_filter_codon_stop)
         biosample_model = self.input_table(FilterConsensus.__input_table_biosample)
         replicate_model = self.input_table(FilterConsensus.__input_table_replicate)
 
@@ -122,26 +121,16 @@ class FilterConsensus(ToolWrapper):
         #
         ##########################################################
 
-        # codon_stop_model_table = codon_stop_model.__table__
-        # stmt_variant_filter_lfn = select([codon_stop_model_table.c.marker_id,
-        #                                   codon_stop_model_table.c.run_id,
-        #                                   codon_stop_model_table.c.variant_id,
-        #                                   codon_stop_model_table.c.biosample_id,
-        #                                   codon_stop_model_table.c.replicate_id,
-        #
-        #                                   codon_stop_model_table.c.read_count])\
-        #     .where(codon_stop_model_table.c.filter_id == 14)\
-        #     .where(codon_stop_model_table.c.filter_delete == 0)
-        indel_model_table = indel_model.__table__
-        stmt_variant_filter_lfn = select([indel_model_table.c.marker_id,
-                                          indel_model_table.c.run_id,
-                                          indel_model_table.c.variant_id,
-                                          indel_model_table.c.biosample_id,
-                                          indel_model_table.c.replicate_id,
+        codon_stop_model_table = codon_stop_model.__table__
+        stmt_variant_filter_lfn = select([codon_stop_model_table.c.marker_id,
+                                          codon_stop_model_table.c.run_id,
+                                          codon_stop_model_table.c.variant_id,
+                                          codon_stop_model_table.c.biosample_id,
+                                          codon_stop_model_table.c.replicate_id,
+                                          codon_stop_model_table.c.read_count])\
+            .where(codon_stop_model_table.c.filter_id == 14)\
+            .where(codon_stop_model_table.c.filter_delete == 0)
 
-                                          indel_model_table.c.read_count]) \
-            .where(indel_model_table.c.filter_id == 13) \
-            .where(indel_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:

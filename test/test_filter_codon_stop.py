@@ -6,6 +6,8 @@ import pandas
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 
+from wopmetabarcoding.wrapper.FilterCodonStop import f14_filter_chimera
+
 
 class TestFilterChimera(TestCase):
 
@@ -22,8 +24,16 @@ class TestFilterChimera(TestCase):
                          ],
         })
         #
-
-
+        self.variant_read_count_df = pandas.DataFrame({
+            'run_id': [1] * 12,
+            'marker_id': [1] * 12,
+            'variant_id': [7] * 1 + [6] * 1 + [1] * 2 + [2] * 2 + [3] * 2 + [4] * 2 + [5] * 2,
+            'biosample_id': [1] * 12,
+            'replicate_id': [1, 2] * 6,
+            'read_count': [
+                25, 25, 350, 360, 335, 325, 350, 350, 325, 325, 35, 25
+            ],
+        })
 
     def test_02_f14_codon_stop(self):
         """""
@@ -40,58 +50,9 @@ class TestFilterChimera(TestCase):
         # self.variant_read_count_df
         # transl_table=1
         #
-        orf1_codon_stop_nb = 0
-        orf2_codon_stop_nb = 0
-        orf3_codon_stop_nb = 0
+
         #
-        df = self.variant_df.copy()
-        #
-        variant_sequence = "AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG"
-        orf_frame_index = 1 # 1-based
-        str(Seq(variant_sequence[orf_frame_index-1:], IUPAC.unambiguous_dna).translate(Bio.Data.CodonTable.generic_by_id[1])).count('*')
-        #
-        # stop_codons = ["TAG","TAA"] # Read from data/genetic_codes.csv
-        # #
-        # df['orf1_codon_stop_nb'] = 0
-        # df['orf2_codon_stop_nb'] = 0
-        # df['orf3_codon_stop_nb'] = 0
-        # #
-        # df['orf_index_with_0_codon_stop']= 'none'
-        # #
-        # import pdb; pdb.set_trace()
-        # for row in df.iterrows():
-        #     sequence = row[1].sequence
-        #     id = row[1].id
-        #
-        #     for i in range(0, len(sequence), 3):
-        #         codon = sequence[i:i + 3]
-        #         if codon in stop_codons:
-        #           orf1_codon_stop_nb = orf1_codon_stop_nb + 1
-        #     for i in range(1, len(sequence), 3):
-        #         codon = sequence[i:i + 3]
-        #         if codon in stop_codons:
-        #            orf2_codon_stop_nb = orf2_codon_stop_nb + 1
-        #     for i in range(2, len(sequence), 3):
-        #         codon = sequence[i:i + 3]
-        #         if codon in stop_codons:
-        #           orf3_codon_stop_nb = orf3_codon_stop_nb + 1
-        #     df.loc[df.id==id,'orf1_codon_stop_nb']=orf1_codon_stop_nb
-        #     df.loc[df.id == id, 'orf2_codon_stop_nb'] = orf2_codon_stop_nb
-        #     df.loc[df.id == id, 'orf3_codon_stop_nb'] = orf3_codon_stop_nb
-        #     #
-        #     m = min(orf1_codon_stop_nb,orf2_codon_stop_nb)
-        #
-        #     if (m==orf1_codon_stop_nb) &( m==0):
-        #         df.loc[df.id==id,'orf_index_with_0_codon_stop']='orf_1'
-        #     if (m==orf2_codon_stop_nb) & (m==0):
-        #         df.loc[df.id==id,'orf_index_with_0_codon_stop']='orf_2'
-        #     if (m==orf3_codon_stop_nb) & (m==0):
-        #         df.loc[df.id == id, 'orf_index_with_0_codon_stop'] = 'orf_3'
-        #     #
-        #     orf1_codon_stop_nb = 0
-        #     orf2_codon_stop_nb = 0
-        #     orf3_codon_stop_nb = 0
-        # import pdb;
-        # pdb.set_trace()
+        df= f14_filter_chimera(self.variant_read_count_df,self.variant_df, 10)
+
 
 

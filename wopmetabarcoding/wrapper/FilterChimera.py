@@ -133,8 +133,6 @@ class FilterChimera(ToolWrapper):
                                           pcr_error_model_table.c.variant_id,
                                           pcr_error_model_table.c.biosample_id,
                                           pcr_error_model_table.c.replicate_id,
-                                          pcr_error_model_table.c.filter_id,
-                                          pcr_error_model_table.c.filter_delete,
                                           pcr_error_model_table.c.read_count])\
             .where(pcr_error_model_table.c.filter_id == 10)\
             .where(pcr_error_model_table.c.filter_delete == 0)
@@ -144,7 +142,7 @@ class FilterChimera(ToolWrapper):
             for row in conn.execute(stmt_variant_filter_lfn).fetchall():
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_id', 'filter_delete'])
+                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
         # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,
