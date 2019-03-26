@@ -1,7 +1,11 @@
 
 from unittest import TestCase
 
+import Bio
 import pandas
+from Bio.Alphabet import IUPAC
+from Bio.Seq import Seq
+
 
 class TestFilterChimera(TestCase):
 
@@ -31,49 +35,63 @@ class TestFilterChimera(TestCase):
          :return: void
 
         """
-
-        number_codon_stop_1 = 0
-        number_codon_stop_2 = 0
-        number_codon_stop_3 = 0
+        # Input
+        # self.variant_df
+        # self.variant_read_count_df
+        # transl_table=1
+        #
+        orf1_codon_stop_nb = 0
+        orf2_codon_stop_nb = 0
+        orf3_codon_stop_nb = 0
+        #
         df = self.variant_df.copy()
-        stop_codons = ["TAG","TAA"]
-        df['number_codon_stop_1'] = 0
-        df['number_codon_stop_2'] = 0
-        df['number_codon_stop_3'] = 0
-        df['orf_ref']= 'none'
-        for row in df.iterrows():
-            sequence = row[1].sequence
-            id = row[1].id
-
-            for i in range(0, len(sequence), 3):
-                codon = sequence[i:i + 3]
-                if codon in stop_codons:
-                  number_codon_stop_1 = number_codon_stop_1 + 1
-            for i in range(1, len(sequence), 3):
-                codon = sequence[i:i + 3]
-                if codon in stop_codons:
-                   number_codon_stop_2 = number_codon_stop_2 + 1
-            for i in range(2, len(sequence), 3):
-                codon = sequence[i:i + 3]
-                if codon in stop_codons:
-                  number_codon_stop_3 = number_codon_stop_3 + 1
-            df.loc[df.id==id,'number_codon_stop_1']=number_codon_stop_1
-            df.loc[df.id == id, 'number_codon_stop_2'] = number_codon_stop_2
-            df.loc[df.id == id, 'number_codon_stop_3'] = number_codon_stop_3
-            #
-            m = min(number_codon_stop_1,number_codon_stop_2)
-
-            if (m==number_codon_stop_1) &( m==0):
-                df.loc[df.id==id,'orf_ref']='orf_1'
-            if (m==number_codon_stop_2) & (m==0):
-                df.loc[df.id==id,'orf_ref']='orf_2'
-            if (m==number_codon_stop_3) & (m==0):
-                df.loc[df.id == id, 'orf_ref'] = 'orf_3'
-            #
-            number_codon_stop_1 = 0
-            number_codon_stop_2 = 0
-            number_codon_stop_3 = 0
-        import pdb;
-        pdb.set_trace()
+        #
+        variant_sequence = "AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG"
+        orf_frame_index = 1 # 1-based
+        str(Seq(variant_sequence[orf_frame_index-1:], IUPAC.unambiguous_dna).translate(Bio.Data.CodonTable.generic_by_id[1])).count('*')
+        #
+        # stop_codons = ["TAG","TAA"] # Read from data/genetic_codes.csv
+        # #
+        # df['orf1_codon_stop_nb'] = 0
+        # df['orf2_codon_stop_nb'] = 0
+        # df['orf3_codon_stop_nb'] = 0
+        # #
+        # df['orf_index_with_0_codon_stop']= 'none'
+        # #
+        # import pdb; pdb.set_trace()
+        # for row in df.iterrows():
+        #     sequence = row[1].sequence
+        #     id = row[1].id
+        #
+        #     for i in range(0, len(sequence), 3):
+        #         codon = sequence[i:i + 3]
+        #         if codon in stop_codons:
+        #           orf1_codon_stop_nb = orf1_codon_stop_nb + 1
+        #     for i in range(1, len(sequence), 3):
+        #         codon = sequence[i:i + 3]
+        #         if codon in stop_codons:
+        #            orf2_codon_stop_nb = orf2_codon_stop_nb + 1
+        #     for i in range(2, len(sequence), 3):
+        #         codon = sequence[i:i + 3]
+        #         if codon in stop_codons:
+        #           orf3_codon_stop_nb = orf3_codon_stop_nb + 1
+        #     df.loc[df.id==id,'orf1_codon_stop_nb']=orf1_codon_stop_nb
+        #     df.loc[df.id == id, 'orf2_codon_stop_nb'] = orf2_codon_stop_nb
+        #     df.loc[df.id == id, 'orf3_codon_stop_nb'] = orf3_codon_stop_nb
+        #     #
+        #     m = min(orf1_codon_stop_nb,orf2_codon_stop_nb)
+        #
+        #     if (m==orf1_codon_stop_nb) &( m==0):
+        #         df.loc[df.id==id,'orf_index_with_0_codon_stop']='orf_1'
+        #     if (m==orf2_codon_stop_nb) & (m==0):
+        #         df.loc[df.id==id,'orf_index_with_0_codon_stop']='orf_2'
+        #     if (m==orf3_codon_stop_nb) & (m==0):
+        #         df.loc[df.id == id, 'orf_index_with_0_codon_stop'] = 'orf_3'
+        #     #
+        #     orf1_codon_stop_nb = 0
+        #     orf2_codon_stop_nb = 0
+        #     orf3_codon_stop_nb = 0
+        # import pdb;
+        # pdb.set_trace()
 
 
