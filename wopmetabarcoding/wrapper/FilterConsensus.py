@@ -1,7 +1,7 @@
 import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-
+from wopmetabarcoding.utils.logger import logger
 
 from sqlalchemy import select
 import pandas
@@ -138,29 +138,29 @@ class FilterConsensus(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+        if variant_read_count_df.shape[0] == 0:
+            logger.debug(
+                "file: {}; line: {}; No data input for this filter.".format(__file__,
+                                                                      inspect.currentframe().f_lineno,
+                                                                      'Consensus'))
+        else:
+            ##########################################################
+            #
+            # 4. Run Filter
+            #
+            ##########################################################
+            df_out = f15_filter_consensus(variant_read_count_df)
+            # df_filter_output = df_filter.copy()
 
-
-
-
-
-
-        ##########################################################
-        #
-        # 4. Run Filter
-        #
-        ##########################################################
-        df_out = f15_filter_consensus(variant_read_count_df)
-        # df_filter_output = df_filter.copy()
-
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
-        records = df_out.to_dict('records')
-        with engine.connect() as conn:
-                conn.execute(consensus_model.__table__.insert(), records)
-        #
+            ##########################################################
+            #
+            # 5. Insert Filter data
+            #
+            ##########################################################
+            records = df_out.to_dict('records')
+            with engine.connect() as conn:
+                    conn.execute(consensus_model.__table__.insert(), records)
+            #
 
 
 

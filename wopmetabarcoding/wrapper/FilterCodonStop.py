@@ -8,8 +8,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-
-
+from wopmetabarcoding.utils.logger import logger
 
 
 class FilterCodonStop(ToolWrapper):
@@ -143,42 +142,47 @@ class FilterCodonStop(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
 
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['id', 'sequence'])
-        ##########################################################
-        #
-        # 4. Run Filter
-        #
-        ##########################################################
-        df_out = f14_filter_chimera(variant_df, number_genetic_table)
+        if variant_read_count_df.shape[0] == 0:
+            logger.debug(
+                "file: {}; line: {}; No data input for this filter.".format(__file__,
+                                                                      inspect.currentframe().f_lineno,'CodonStop'))
+        else:
+            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+            variant_model_table = variant_model.__table__
+            stmt_variant = select([variant_model_table.c.id,
+                                   variant_model_table.c.sequence])
 
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
-        records = df_out.to_dict('records')
-        with engine.connect() as conn:
-                conn.execute(filter_codon_stop_model.__table__.insert(), records)
-        #
+            # Select to DataFrame
+            variant_filter_lfn_passed_list = []
+            with engine.connect() as conn:
+                for row in conn.execute(stmt_variant).fetchall():
+                    variant_filter_lfn_passed_list.append(row)
+            variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
+                                                                  columns=['id', 'sequence'])
+            ##########################################################
+            #
+            # 4. Run Filter
+            #
+            ##########################################################
+            df_out = f14_filter_chimera(variant_df, number_genetic_table)
+
+            ##########################################################
+            #
+            # 5. Insert Filter data
+            #
+            ##########################################################
+            records = df_out.to_dict('records')
+            with engine.connect() as conn:
+                    conn.execute(filter_codon_stop_model.__table__.insert(), records)
+            #
 
 
 def f14_filter_chimera(variant_read_count_df, variant_df, number_genetic_table = 5):
     """
     filter chimera
     """
-
-    df = variant_df.copy()
+    df = variant_df
     df2 = variant_read_count_df.copy()
     df2['filter_id'] = 14
     df2['filter_delete']= 0
@@ -192,8 +196,6 @@ def f14_filter_chimera(variant_read_count_df, variant_df, number_genetic_table =
     #
     orf_frame_index = 1  #  1-based
     #
-    import pdb;
-    pdb.set_trace()
 
     for row in df.iterrows():
         id = row[1].id
