@@ -165,32 +165,36 @@ class FilterCodonStop(ToolWrapper):
             # 4. Run Filter
             #
             ##########################################################
-            df_out = f14_filter_chimera(variant_df, number_genetic_table)
+            df_out = f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_table)
 
             ##########################################################
             #
             # 5. Insert Filter data
             #
             ##########################################################
-            records = df_out.to_dict('records')
-            with engine.connect() as conn:
-                    conn.execute(filter_codon_stop_model.__table__.insert(), records)
+            # import pdb;
+            # pdb.set_trace()
+            # records = df_out.to_dict('records')
+            # with engine.connect() as conn:
+            #         conn.execute(filter_codon_stop_model.__table__.insert(), records)
+
+            df_out.to_sql(name='FilterCodonStop', con=engine.connect(), if_exists='replace')
             #
 
 
-def f14_filter_chimera(variant_read_count_df, variant_df, number_genetic_table = 5):
+def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_table=5):
     """
     filter chimera
     """
-    df = variant_df
+    df = variant_df.copy()
     df2 = variant_read_count_df.copy()
     df2['filter_id'] = 14
-    df2['filter_delete']= 0
+    df2['filter_delete'] = 0
     #
     df['orf1_codon_stop_nb'] = 0
     df['orf2_codon_stop_nb'] = 0
     df['orf3_codon_stop_nb'] = 0
-    df['min_nb_codon_stop']=1
+    df['min_nb_codon_stop'] = 1
     #
 
     #
@@ -205,7 +209,8 @@ def f14_filter_chimera(variant_read_count_df, variant_df, number_genetic_table =
             Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
         df.loc[df.id == id, 'orf1_codon_stop_nb'] = orf1_nb_codon_stop
         #
-        orf2_nb_codon_stop = str(Seq(sequence[orf_frame_index:], IUPAC.unambiguous_dna).translate(
+        orf2_nb_codon_stop = str(Seq
+(sequence[orf_frame_index:], IUPAC.unambiguous_dna).translate(
             Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
         df.loc[df.id == id, 'orf2_codon_stop_nb'] = orf2_nb_codon_stop
         #
@@ -220,6 +225,6 @@ def f14_filter_chimera(variant_read_count_df, variant_df, number_genetic_table =
     #
     #list of variant id that are Not OK
     list_variant_not_ok = df.id[df['min_nb_codon_stop'] == 1].tolist()
-    df2.loc[df2.variant_id.isin(list_variant_not_ok),'filter_delete'] =1
+    df2.loc[df2.variant_id.isin(list_variant_not_ok),'filter_delete'] = 1
 
     return df2

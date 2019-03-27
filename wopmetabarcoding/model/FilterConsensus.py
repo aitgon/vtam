@@ -7,7 +7,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 class FilterConsensus(Base):
     __tablename__ = "FilterConsensus"
     __table_args__ = (
-        UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id',),
+        UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)

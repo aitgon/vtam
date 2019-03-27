@@ -25,6 +25,7 @@ class TestFilterConsensus(TestCase):
     def test_02_f15_consensus(self):
         filter_output_df = f15_filter_consensus(self.variant_read_count_df)
 
+
         #
         self.assertTrue((filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)

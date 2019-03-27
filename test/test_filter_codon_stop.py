@@ -6,7 +6,7 @@ import pandas
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 
-from wopmetabarcoding.wrapper.FilterCodonStop import f14_filter_chimera
+from wopmetabarcoding.wrapper.FilterCodonStop import f14_filter_codon_stop
 
 
 class TestFilterChimera(TestCase):
@@ -52,7 +52,7 @@ class TestFilterChimera(TestCase):
         #
 
         #
-        df= f14_filter_chimera(self.variant_read_count_df,self.variant_df, 10)
+        df= f14_filter_codon_stop(self.variant_read_count_df,self.variant_df, 10)
 
 
 
