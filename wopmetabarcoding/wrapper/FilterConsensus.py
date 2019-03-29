@@ -150,7 +150,6 @@ class FilterConsensus(ToolWrapper):
             #
             ##########################################################
             df_out = f15_filter_consensus(variant_read_count_df)
-            # df_filter_output = df_filter.copy()
 
             ##########################################################
             #
@@ -160,7 +159,6 @@ class FilterConsensus(ToolWrapper):
             records = df_out.to_dict('records')
             with engine.connect() as conn:
                     conn.execute(consensus_model.__table__.insert(), records)
-            #
 
 
 
@@ -185,8 +183,7 @@ def f15_filter_consensus(variant_read_count_df):
 
     # merge
     df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(replicate_count_over_variant_id_and_biosample_id_df, left_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'),right_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'))
-    df_out['read_count'] = df_out.read_count/df_out.replicate_count
-
+    df_out['read_count_average'] = df_out.read_count/df_out.replicate_count
     #
     return df_out
 

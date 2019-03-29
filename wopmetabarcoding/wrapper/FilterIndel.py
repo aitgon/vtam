@@ -127,8 +127,6 @@ class FilterIndel(ToolWrapper):
                                           renkonen_model_table.c.variant_id,
                                           renkonen_model_table.c.biosample_id,
                                           renkonen_model_table.c.replicate_id,
-                                          # renkonen_model_table.c.filter_id,
-                                          # renkonen_model_table.c.filter_delete,
                                           renkonen_model_table.c.read_count])\
             .where(renkonen_model_table.c.filter_id == 12)\
             .where(renkonen_model_table.c.filter_delete == 0)

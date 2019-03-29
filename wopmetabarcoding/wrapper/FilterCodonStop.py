@@ -172,13 +172,11 @@ class FilterCodonStop(ToolWrapper):
             # 5. Insert Filter data
             #
             ##########################################################
-            # import pdb;
-            # pdb.set_trace()
-            # records = df_out.to_dict('records')
-            # with engine.connect() as conn:
-            #         conn.execute(filter_codon_stop_model.__table__.insert(), records)
+            records = df_out.to_dict('records')
+            with engine.connect() as conn:
+                    conn.execute(filter_codon_stop_model.__table__.insert(), df_out.to_dict('records'))
 
-            df_out.to_sql(name='FilterCodonStop', con=engine.connect(), if_exists='replace')
+            # df_out.to_sql(name='FilterCodonStop', con=engine.connect(), if_exists='replace')
             #
 
 
@@ -189,7 +187,7 @@ def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_tabl
     df = variant_df.copy()
     df2 = variant_read_count_df.copy()
     df2['filter_id'] = 14
-    df2['filter_delete'] = 0
+    df2['filter_delete'] = False
     #
     df['orf1_codon_stop_nb'] = 0
     df['orf2_codon_stop_nb'] = 0
@@ -205,16 +203,22 @@ def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_tabl
         id = row[1].id
         sequence = row[1].sequence
         #
-        orf1_nb_codon_stop = str(Seq(sequence[orf_frame_index - 1:], IUPAC.unambiguous_dna).translate(
+        sequence_orf1 = sequence[orf_frame_index - 1:] # get 1st orf sequence
+        sequence_orf1 = sequence_orf1[0:len(sequence_orf1) - (len(sequence_orf1) % 3)] # trimming for module 3
+        orf1_nb_codon_stop = str(Seq(sequence_orf1, IUPAC.unambiguous_dna).translate(
             Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
         df.loc[df.id == id, 'orf1_codon_stop_nb'] = orf1_nb_codon_stop
         #
-        orf2_nb_codon_stop = str(Seq
-(sequence[orf_frame_index:], IUPAC.unambiguous_dna).translate(
+        sequence_orf2 = sequence[orf_frame_index:] # get 2nd orf sequence
+        sequence_orf2 = sequence_orf2[0:len(sequence_orf2) - (len(sequence_orf2) % 3)] # trimming for module 3
+        orf2_nb_codon_stop = str(Seq(sequence_orf2, IUPAC.unambiguous_dna).translate(
             Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
         df.loc[df.id == id, 'orf2_codon_stop_nb'] = orf2_nb_codon_stop
         #
-        orf3_nb_codon_stop = str(Seq(sequence[orf_frame_index + 1:], IUPAC.unambiguous_dna).translate(
+        #
+        sequence_orf3 = sequence[orf_frame_index + 1:] # get 2nd orf sequence
+        sequence_orf3 = sequence_orf3[0:len(sequence_orf3) - (len(sequence_orf3) % 3)] # trimming for module 3
+        orf3_nb_codon_stop = str(Seq(sequence_orf3, IUPAC.unambiguous_dna).translate(
             Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
         df.loc[df.id == id, 'orf3_codon_stop_nb'] = orf3_nb_codon_stop
         # if min_nb_codon_stop =0 so the variant is OK
