@@ -25,24 +25,23 @@ class TestFilterConsensus(TestCase):
     def test_02_f15_consensus(self):
         filter_output_df = f15_filter_consensus(self.variant_read_count_df)
 
-
         #
         self.assertTrue((filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 1)
                                                                          & (filter_output_df.biosample_id == 1),
-                                                                        'read_count'].values[0]) == 248.5)
+                                                                        'read_count_average'].values[0]) == 248.5)
         #
         self.assertTrue((filter_output_df.loc[(filter_output_df.run_id == 1)
                                               & (filter_output_df.marker_id == 1)
                                               & (filter_output_df.variant_id == 2)
                                               & (filter_output_df.biosample_id == 2),
-                                              'read_count'].values[0]) == 119.5)
+                                              'read_count_average'].values[0]) == 119.5)
          #
 
         self.assertTrue((filter_output_df.loc[(filter_output_df.run_id == 1)
                                               & (filter_output_df.marker_id == 1)
                                               & (filter_output_df.variant_id == 2)
                                               & (filter_output_df.biosample_id == 1),
-                                              'read_count'].values[0]) == 116.0)
+                                              'read_count_average'].values[0]) == 116.0)
 
