@@ -9,7 +9,8 @@ from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.logger import logger, LOGGER_LEVEL
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
-rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order', 'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
+rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
+                 'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 
 def f_taxid2taxname(tax_id_list, tax_assign_sqlite):
     con = sqlite3.connect(tax_assign_sqlite)
