@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
+import inspect
 import urllib.request
 import tarfile
 import pandas as pd
@@ -8,6 +9,8 @@ import pandas as pd
 import errno, numpy, os, pandas, urllib
 
 import os
+
+from wopmetabarcoding.utils.logger import logger
 
 data_dir = os.path.join("{}/tmp/ncbi_taxonomy_dir".format(os.environ['HOME']))
 
@@ -19,10 +22,11 @@ def download():
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
-
     # Download files
     remotefile = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
     new_taxdump_path = os.path.join(data_dir, os.path.basename(remotefile))
+    logger.debug(
+        "file: {}; line: {}; Downloading NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     if not os.path.isfile(new_taxdump_path): # TODO verify MD5
         urllib.request.urlretrieve(remotefile, new_taxdump_path)
     return new_taxdump_path
@@ -30,9 +34,16 @@ def download():
 
 def f_create_taxonomy_db(path_taxonomy_db_sqlite):
     new_taxdump_path = download()
-
-    tar = tarfile.open(new_taxdump_path, "r:gz")
-    tar.extractall(path=data_dir)
+    logger.debug(
+        "file: {}; line: {}; Extracting NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
+    if not (os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "nodes.dmp"))\
+          and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "names.dmp"))\
+          and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "merged.dmp"))): # TODO verify MD5
+        tar = tarfile.open(new_taxdump_path, "r:gz")
+        tar.extractall(path=data_dir)
+        tar.close()
+    logger.debug(
+        "file: {}; line: {}; Reading and processing NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     #
     nodes_dmp = os.path.join(data_dir, "nodes.dmp")
     nodes_dmp_df = pandas.read_table(nodes_dmp, header=None, sep='\t', engine='python', usecols=[0, 2, 4],
@@ -54,10 +65,13 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite):
     #
     taxonomy_df = taxonomy_df.merge(merged_dmp_df, on='tax_id')
     #
-    tar.close()
-    #
+    logger.debug(
+        "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
     engine = create_engine('sqlite:///{}'.format(path_taxonomy_db_sqlite), echo=False)
-    taxonomy_df.to_sql('taxonomy', con=engine, index = False)
+    try:
+        taxonomy_df.to_sql('taxonomy', con=engine, index = False)
+    except ValueError:
+        return path_taxonomy_db_sqlite
     #
     return path_taxonomy_db_sqlite
 

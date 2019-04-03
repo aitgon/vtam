@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.wrapper.FilterConsensus import f15_filter_consensus
+from wopmetabarcoding.wrapper.ReadCountAverageOverReplicates import f15_filter_consensus
 
 
 class TestFilterConsensus(TestCase):

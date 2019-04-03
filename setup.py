@@ -1,4 +1,3 @@
-import os
 from setuptools import setup
 from setuptools import find_packages
 
@@ -21,5 +20,8 @@ setup(
     include_package_data=True,
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
+    entry_points={
+        'console_scripts': ['create_taxonomy_db=bin.create_taxonomy_db:main']
+    },
     )
 

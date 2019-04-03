@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 
 
 class FilterConsensus(Base):
-    __tablename__ = "FilterConsensus"
+    __tablename__ = "ReadCountAverageOverReplicates"
     __table_args__ = (
         UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id'),
     )

@@ -8,9 +8,9 @@ import pandas
 
 
 
-class FilterConsensus(ToolWrapper):
+class ReadCountAverageOverReplicates(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterConsensus"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.ReadCountAverageOverReplicates"
     }
 
     # Input file
@@ -24,30 +24,30 @@ class FilterConsensus(ToolWrapper):
 
 
     # Output table
-    __output_table_filter_consensus = "FilterConsensus"
+    __output_table_filter_consensus = "ReadCountAverageOverReplicates"
 
 
 
     def specify_input_file(self):
         return[
-            FilterConsensus.__input_file_sample2fasta,
+            ReadCountAverageOverReplicates.__input_file_sample2fasta,
 
         ]
 
     def specify_input_table(self):
         return [
-            FilterConsensus.__input_table_marker,
-            FilterConsensus.__input_table_run,
-            FilterConsensus.__input_table_biosample,
-            FilterConsensus.__input_table_replicate,
-            FilterConsensus.__input_table_filter_codon_stop,
+            ReadCountAverageOverReplicates.__input_table_marker,
+            ReadCountAverageOverReplicates.__input_table_run,
+            ReadCountAverageOverReplicates.__input_table_biosample,
+            ReadCountAverageOverReplicates.__input_table_replicate,
+            ReadCountAverageOverReplicates.__input_table_filter_codon_stop,
 
         ]
 
 
     def specify_output_table(self):
         return [
-            FilterConsensus.__output_table_filter_consensus,
+            ReadCountAverageOverReplicates.__output_table_filter_consensus,
 
         ]
 
@@ -58,20 +58,20 @@ class FilterConsensus(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterConsensus.__input_file_sample2fasta)
+        input_file_sample2fasta = self.input_file(ReadCountAverageOverReplicates.__input_file_sample2fasta)
         #
         # Input table models
-        marker_model = self.input_table(FilterConsensus.__input_table_marker)
-        run_model = self.input_table(FilterConsensus.__input_table_run)
-        codon_stop_model = self.input_table(FilterConsensus.__input_table_filter_codon_stop)
-        biosample_model = self.input_table(FilterConsensus.__input_table_biosample)
-        replicate_model = self.input_table(FilterConsensus.__input_table_replicate)
+        marker_model = self.input_table(ReadCountAverageOverReplicates.__input_table_marker)
+        run_model = self.input_table(ReadCountAverageOverReplicates.__input_table_run)
+        codon_stop_model = self.input_table(ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
+        biosample_model = self.input_table(ReadCountAverageOverReplicates.__input_table_biosample)
+        replicate_model = self.input_table(ReadCountAverageOverReplicates.__input_table_replicate)
 
         #
 
         #
         # Output table models
-        consensus_model = self.output_table(FilterConsensus.__output_table_filter_consensus)
+        consensus_model = self.output_table(ReadCountAverageOverReplicates.__output_table_filter_consensus)
 
 
         ##########################################################
