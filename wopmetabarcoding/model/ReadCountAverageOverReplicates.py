@@ -4,7 +4,7 @@ from wopmars.framework.database.Base import Base
 from sqlalchemy import Column, String, Integer, ForeignKey
 
 
-class FilterConsensus(Base):
+class ReadCountAverageOverReplicates(Base):
     __tablename__ = "ReadCountAverageOverReplicates"
     __table_args__ = (
         UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id'),
