@@ -56,14 +56,14 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite):
     names_dmp_df = names_dmp_df[['tax_id', 'name_txt']]
     #
     taxonomy_df = nodes_dmp_df.merge(names_dmp_df, on='tax_id')
-    del(nodes_dmp_df)
-    del(names_dmp_df)
+    # del(nodes_dmp_df)
+    # del(names_dmp_df)
     #
     merged_dmp = os.path.join(data_dir, "merged.dmp")
     merged_dmp_df = pandas.read_table(merged_dmp, header=None, sep='\t', engine='python', usecols=[0, 2],
                                       names=['old_tax_id', 'tax_id'])
     #
-    taxonomy_df = taxonomy_df.merge(merged_dmp_df, on='tax_id')
+    taxonomy_df = taxonomy_df.merge(merged_dmp_df, on='tax_id', how='left')
     #
     logger.debug(
         "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
