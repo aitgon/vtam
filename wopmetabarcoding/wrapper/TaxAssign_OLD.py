@@ -5,7 +5,7 @@ import resource
 
 import numpy
 from wopmars.framework.database. tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.wrapper.TaxAssignUtilities import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
+from wopmetabarcoding.wrapper.TaxAssignUtilities_OLD import vsearch_command, sub_fasta_creator, vsearch_output_to_sqlite, \
     get_vsearch_output_for_variant_as_df, f_variant_vsearch_output_to_ltg, convert_fileinfo_to_otu_df, f_taxid2taxname
 import pandas,os
 from wopmetabarcoding.utils.constants import tempdir
