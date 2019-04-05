@@ -5,7 +5,7 @@ import pandas
 from numpy import nan
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.TaxAssignUtilities import create_phylogenetic_line_df, f_majoritytaxid2percentage, \
+from wopmetabarcoding.wrapper.TaxAssignUtilities_OLD import create_phylogenetic_line_df, f_majoritytaxid2percentage, \
     f_taxid2taxname, f_taxlineage_to_ltg
 
 

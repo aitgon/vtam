@@ -6,18 +6,49 @@ from unittest import TestCase
 from bin.create_taxonomy_db import create_parser, f_create_taxonomy_db
 
 from wopmetabarcoding.utils.constants import rank_hierarchy
+from wopmetabarcoding.wrapper.TaxAssignUtilities import taxonomy_sqlite_to_df, tax_id_to_taxonomy_lineage
 
 
-class TestCreateTaxonomyDBSqlite(TestCase):
+class TestTaxAssign(TestCase):
 
     def setUp(self):
-        self.parser = create_parser()
+        self.taxonomy_db_df = taxonomy_sqlite_to_df('tax.sqlite')
 
     def test_tax_id_to_taxonomy_lineage(self):
-        # {'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193}
-        pass
+        tax_id = 183142
+        #
+        taxonomy_lineage_dic = tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df)
+        self.assertTrue({'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
+                         'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
+                         'superkingdom': 2759} == taxonomy_lineage_dic)
 
     def test_tax_id_list_to_taxonomy_lineage_df(self):
+        blast_out_dic = {
+            'target_id': [187475693, 187475691, 187475699, 187475689, 347466873, 347466869, 347466867, 401880215,
+                          401880085, 401880083, 1189131099, 1189131147, 1189131101, 401880223, 401880011, 514885218,
+                          514885058, 514884984, 514884980, 514884850, 514884848, 514884842, 514884840, 514884834,
+                          514884826, 514884824, 514884822, 514884820, 514884818, 514884774, 514884684, 514884680],
+            'identity': [82.759, 82.759, 82.184, 82.184, 82.081, 82.081, 82.081, 81.714, 80.702, 80.702, 80.571, 80.46,
+                         80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80],
+            'tax_id': [183142, 183142, 183142, 183142, 1087463, 1087463, 1087463, 1213204, 1213227, 1213227, 1957050,
+                       1957061, 1957050, 1225233, 1225250, 1344032, 1344033, 1344033, 1344033, 1344033, 1344033,
+                       1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344032, 1344033,
+                       1344033]}
+        blast_out_df = pandas.DataFrame(data=blast_out_dic)
+        #
+        lineage_list = []
+        for tax_id in set(blast_out_dic['tax_id']):
+            print(tax_id)
+            lineage_list.append(tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df))
+        lineage_df = pandas.DataFrame(data=lineage_list)
+        lineage_list_df_columns = lineage_df.columns.tolist()
+        rank_hierarchy_tax_id = ['tax_id'] + rank_hierarchy
+        lineage_list_df_columns_sorted = list(filter(lambda x: x in lineage_list_df_columns, rank_hierarchy_tax_id))
+        lineage_df = lineage_df[lineage_list_df_columns_sorted]
+        variant_id_to_target_lineage_df = blast_out_df.merge(lineage_df, on='tax_id')
+
+
+    def test_tax_id_list_to_taxonomy_lineage_df_bak(self):
         blast_out_dic = {
             'target_id': [187475693, 187475691, 187475699, 187475689, 347466873, 347466869, 347466867, 401880215,
                           401880085, 401880083, 1189131099, 1189131147, 1189131101, 401880223, 401880011, 514885218,
@@ -46,7 +77,6 @@ class TestCreateTaxonomyDBSqlite(TestCase):
         df = pandas.read_sql_query("SELECT * FROM taxonomy", cnx)
         lineage_list = []
         tax_lineage_header = ['tax_seq_id'] + rank_hierarchy
-
         for tax_seq_id in tax_id_list:
             lineage_dic['tax_id'] = tax_seq_id
             while True:
@@ -67,7 +97,7 @@ class TestCreateTaxonomyDBSqlite(TestCase):
             lineage_dic = {
                 'tax_id': [],
             }
-
+            import pdb; pdb.set_trace()
         # convert the lineage_list to a lineage_df data frame
 
         lineage_df = pandas.DataFrame(lineage_list)
