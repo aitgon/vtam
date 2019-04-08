@@ -13,3 +13,4 @@ taxonomic_levels = {"family": 5, "order": 4, "genus": 3, "species": 2, "subspeci
 rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 
+

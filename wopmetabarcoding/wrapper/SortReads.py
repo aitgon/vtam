@@ -2,23 +2,15 @@ import inspect
 
 import os
 
-import sqlalchemy
-from sqlalchemy import func
-from sqlalchemy.sql import select
-
-import pandas
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
-
-import errno
 
 from wopmetabarcoding.utils.constants import tempdir
 
