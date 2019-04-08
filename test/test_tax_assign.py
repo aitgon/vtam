@@ -41,10 +41,23 @@ class TestTaxAssign(TestCase):
             'identity': [100,100,100,100,100],
             'tax_id': [1419335,1419335,1419335,1419335,1419335]}
 
-        blast_out_df = pandas.DataFrame(data=blast_out_dic2)
+        # variant_id 5 from the emese file
+        blast_out_dic3 = {
+            'target_id': [1258178191, 1214941590, 1109411670 , 1214941112, 1214940769, 1214940743, 1214940345, 1214940329],
+            'identity': [99.429, 99.429, 99.429, 99.429, 99.429, 99.429, 99.429, 99.429 ],
+            'tax_id': [189839, 189839, 189839, 189839, 189839, 189839, 189839, 189839]}
+
+        #var id 8 from emese file
+        blast_out_dic4 = {
+            'target_id': [1049499563, 1049496963, 1239402664, 1239402658, 1049505397],
+            'identity': [100, 100, 100, 100,100],
+            'tax_id': [761875, 761875, 761875, 761875, 761875]}
+
+
+        blast_out_df = pandas.DataFrame(data=blast_out_dic3 )
         #
         lineage_list = []
-        for tax_id in set(blast_out_dic2['tax_id']):
+        for tax_id in set(blast_out_dic3['tax_id']):
             print(tax_id)
             lineage_list.append(tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df))
         lineage_df = pandas.DataFrame(data=lineage_list)
@@ -54,9 +67,18 @@ class TestTaxAssign(TestCase):
         lineage_df = lineage_df[lineage_list_df_columns_sorted]
         variant_id_to_target_lineage_df = blast_out_df.merge(lineage_df, on='tax_id')
 
+        #
+        # count the perc. to deduce the LTG
+        tax_count_perc = pandas.DataFrame(
+            {'id': variant_id_to_target_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0)})
+        tax_count_perc['count'] = variant_id_to_target_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)
+        tax_count_perc['perc'] = tax_count_perc['count'] / variant_id_to_target_lineage_df.shape[0] * 100
+        tax_count_perc.drop(['no rank'], axis=0, inplace=True)
+        tax_count_perc[['id', 'count']] = tax_count_perc[['id', 'count']].astype('int')
 
 
         #
+        # select the tax
 
         # variant_id_to_target_lineage_df['identity'].value_counts() / variant_id_to_target_lineage_df['identity'].count()
         import pdb;pdb.set_trace()
