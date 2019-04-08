@@ -149,7 +149,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
             # 4. Run Filter
             #
             ##########################################################
-            df_out = f15_filter_consensus(variant_read_count_df)
+            df_out = read_count_average_over_replicates(variant_read_count_df)
 
             ##########################################################
             #
@@ -162,7 +162,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
 
 
-def f15_filter_consensus(variant_read_count_df):
+def read_count_average_over_replicates(variant_read_count_df):
     """
         Function used to display the read average of the remaining variant
     """
