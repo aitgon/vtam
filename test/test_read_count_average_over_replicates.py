@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.wrapper.ReadCountAverageOverReplicates import f15_filter_consensus
+from wopmetabarcoding.wrapper.ReadCountAverageOverReplicates import read_count_average_over_replicates
 
 
 class TestFilterConsensus(TestCase):
@@ -23,7 +23,7 @@ class TestFilterConsensus(TestCase):
          })
 
     def test_02_f15_consensus(self):
-        filter_output_df = f15_filter_consensus(self.variant_read_count_df)
+        filter_output_df = read_count_average_over_replicates(self.variant_read_count_df)
 
         #
         self.assertTrue((filter_output_df.loc[(filter_output_df.run_id == 1)
