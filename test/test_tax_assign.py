@@ -1,14 +1,24 @@
 # -*- coding: utf-8 -*-
+import os
 
 import pandas
 from unittest import TestCase
-from wopmetabarcoding.wrapper.TaxAssignUtilities import taxonomy_sqlite_to_df, tax_id_to_taxonomy_lineage, select_ltg
+
+from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.wrapper.TaxAssignUtilities import taxonomy_sqlite_to_df, tax_id_to_taxonomy_lineage, \
+    f05_select_ltg, \
+    f02_import_blast_output_into_df, f04_blast_result_subset
 
 
 class TestTaxAssign(TestCase):
 
     def setUp(self):
         self.taxonomy_db_df = taxonomy_sqlite_to_df('tax.sqlite')
+        #
+        self.identity_threshold = 97
+        #
+        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
+        self.blast_output_tsv_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "MFZR_002737_blast.tsv")
 
     def test_tax_id_to_taxonomy_lineage(self):
         tax_id = 183142
@@ -28,7 +38,7 @@ class TestTaxAssign(TestCase):
         })
         identity = 80
         #
-        ltg_tax_id, ltg_rank = select_ltg(tax_lineage_df, identity)
+        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity)
         #
         self.assertTrue(ltg_tax_id == 183142)
         self.assertTrue(ltg_rank == 'species')
@@ -43,7 +53,7 @@ class TestTaxAssign(TestCase):
         })
         identity = 100
         #
-        ltg_tax_id, ltg_rank = select_ltg(tax_lineage_df, identity)
+        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity)
         #
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
@@ -71,7 +81,7 @@ class TestTaxAssign(TestCase):
         tax_lineage_df=pandas.DataFrame(lineage_list)
         tax_lineage_df.index=tax_lineage_df.tax_id
         tax_lineage_df.drop('tax_id', axis=1, inplace=True)
-        ltg_tax_id, ltg_rank = select_ltg(tax_lineage_df, identity=80)
+        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=80)
         #
         self.assertTrue(ltg_tax_id == 204743,)
         self.assertTrue(ltg_rank == 'family')
@@ -114,29 +124,23 @@ class TestTaxAssign(TestCase):
             'identity': [100, 100, 100, 100,100],
             'tax_id': [761875, 761875, 761875, 761875, 761875]}
 
-        #from txt to data frame
-        path_output_file='/home/mrr/Software/repositories/wopmetabarcodin/test/test_files/output.txt'
-        output_df = pandas.read_csv(path_output_file, sep="	", header=None)
-
+    def test_blast_output_to_dictionnary(self):
         #
-        output_df_filtred = output_df.drop(columns=[0, 3, 4]).copy()
-        target_id_df = output_df_filtred[1].copy()
-        output_df_filtred = output_df_filtred.drop(columns=[1])
-
-        # extract the target_id
-        target_id_df = target_id_df.str.split('|', 2).str[1]
-
-        #concatenate columns of interest
-        output_df_filtred['target_id'] = target_id_df
-        output_df_filtred.rename(columns={2: 'identity',
-                                          5: 'tax_id'}, inplace=True)
-        output_df_filtred = output_df_filtred[['target_id', 'identity', 'tax_id']]
-
+        blast_out_df = f02_import_blast_output_into_df(self.blast_output_tsv_path)
         #
-        #data frame to dictionnary
-        dict1 = output_df_filtred.to_dict('list')
+        self.assertTrue(blast_out_df.to_dict('list') == {'target_id': [1049499563, 1049496963, 1049491687, 1049490545],
+                                         'identity': [100.0, 100.0, 99.429, 99.429],
+                                         'target_tax_id': [761875, 761875, 761875, 761875]})
 
 
-
-        import pdb;
-        pdb.set_trace()
+    def test_full_tax_assign_after_blast(self):
+        #
+        blast_out_df = f02_import_blast_output_into_df(self.blast_output_tsv_path)
+        #
+        identity = 100
+        blast_out_df.loc[blast_out_df.identity >= self.identity_threshold]
+        blast_result_subset_df = blast_out_df.loc[blast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
+        tax_lineage_df = f04_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
+        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
+        self.assertTrue(ltg_tax_id==761875)
+        self.assertTrue(ltg_rank=='species')
