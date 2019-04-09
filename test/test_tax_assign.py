@@ -4,31 +4,58 @@ import os
 import pandas
 from unittest import TestCase
 
+from numpy import nan
+
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.wrapper.TaxAssignUtilities import taxonomy_sqlite_to_df, tax_id_to_taxonomy_lineage, \
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f03_1_tax_id_to_taxonomy_lineage, \
     f05_select_ltg, \
-    f02_import_blast_output_into_df, f04_blast_result_subset
+    f03_import_blast_output_into_df, f04_blast_result_subset
 
 
 class TestTaxAssign(TestCase):
 
     def setUp(self):
-        self.taxonomy_db_df = taxonomy_sqlite_to_df('tax.sqlite')
+        self.taxonomy_db_df = f01_taxonomy_sqlite_to_df('tax.sqlite')
         #
         self.identity_threshold = 97
         #
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.blast_output_tsv_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "MFZR_002737_blast.tsv")
+        self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
+        self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
 
-    def test_tax_id_to_taxonomy_lineage(self):
+    def test_f03_import_blast_output_into_df(self):
+        """This test assess whether the blast has been well imported into a df"""
+        #
+        blast_out_df = f03_import_blast_output_into_df(self.blast_MFZR_002737_tsv)
+        #
+        self.assertTrue(blast_out_df.to_dict('list') == {'target_id': [1049499563, 1049496963, 1049491687, 1049490545],
+                                         'identity': [100.0, 100.0, 99.429, 99.429],
+                                         'target_tax_id': [761875, 761875, 761875, 761875]})
+
+    def test_f03_1_tax_id_to_taxonomy_lineage(self):
         tax_id = 183142
         #
-        taxonomy_lineage_dic = tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df)
+        taxonomy_lineage_dic = f03_1_tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df)
         self.assertTrue({'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
                          'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
                          'superkingdom': 2759} == taxonomy_lineage_dic)
 
-    def test_select_ltg_identity_80(self):
+    def test_f04_blast_result_subset(self):
+        # From
+        # 'variant_id': 'MFZR_001274',
+        # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
+        blast_out_dic = {
+            'target_id': [514884684, 514884680],
+            'identity': [80, 80],
+            'target_tax_id': [1344033, 1344033]}
+        blast_result_subset_df = pandas.DataFrame(data=blast_out_dic)
+        tax_lineage_df = f04_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
+        self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
+            'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
+            'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
+            'species': [1344033, 1344033], 'superkingdom': [2759, 2759], 'superorder': [1709201, 1709201], 'tax_id': [1344033, 1344033]})
+
+    def test_f05_select_ltg_identity_80(self):
         # List of lineages that will correspond to list of tax_ids: One lineage per row
         tax_lineage_df = pandas.DataFrame(data={
             'species' : [666, 183142, 183142, 183142],
@@ -43,7 +70,7 @@ class TestTaxAssign(TestCase):
         self.assertTrue(ltg_tax_id == 183142)
         self.assertTrue(ltg_rank == 'species')
 
-    def test_select_ltg_identity_100(self):
+    def test_f05_select_ltg_identity_100(self):
         # List of lineages that will correspond to list of tax_ids: One lineage per row
         tax_lineage_df = pandas.DataFrame(data={
             'species' : [666, 183142, 183142, 183142],
@@ -58,84 +85,12 @@ class TestTaxAssign(TestCase):
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
 
-    def test_tax_id_list_to_taxonomy_lineage_df(self):
+    def test_99_full_tax_assign_after_blast_MFZR_002737(self):
+        """
+        This test takes a blast result and return ltg_tax_id, ltg_rank at given identity
+        """
         #
-        # 'variant_id': 'MFZR_001274',
-        # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
-        blast_out_dic = {
-            'target_id': [187475693, 187475691, 187475699, 187475689, 347466873, 347466869, 347466867, 401880215,
-                          401880085, 401880083, 1189131099, 1189131147, 1189131101, 401880223, 401880011, 514885218,
-                          514885058, 514884984, 514884980, 514884850, 514884848, 514884842, 514884840, 514884834,
-                          514884826, 514884824, 514884822, 514884820, 514884818, 514884774, 514884684, 514884680],
-            'identity': [82.759, 82.759, 82.184, 82.184, 82.081, 82.081, 82.081, 81.714, 80.702, 80.702, 80.571, 80.46,
-                         80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80],
-            'tax_id': [183142, 183142, 183142, 183142, 1087463, 1087463, 1087463, 1213204, 1213227, 1213227, 1957050,
-                       1957061, 1957050, 1225233, 1225250, 1344032, 1344033, 1344033, 1344033, 1344033, 1344033,
-                       1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344032, 1344033,
-                       1344033]}
-        blast_out_df = pandas.DataFrame(data=blast_out_dic)
-        # l = pandas.Series(blast_out_df.tax_id.unique()).apply(lambda x: tax_id_to_taxonomy_lineage(x, self.taxonomy_db_df))
-        lineage_list = []
-        for tax_id in blast_out_df.tax_id.unique().tolist():
-            lineage_list.append(tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df))
-        tax_lineage_df=pandas.DataFrame(lineage_list)
-        tax_lineage_df.index=tax_lineage_df.tax_id
-        tax_lineage_df.drop('tax_id', axis=1, inplace=True)
-        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=80)
-        #
-        self.assertTrue(ltg_tax_id == 204743,)
-        self.assertTrue(ltg_rank == 'family')
-
-    def test_tax_id_list_to_taxonomy_lineage_df_bak(self):
-        #
-        # 'variant_id': 'MFZR_001274',
-        # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
-        blast_out_dic = {
-            'target_id': [187475693, 187475691, 187475699, 187475689, 347466873, 347466869, 347466867, 401880215,
-                          401880085, 401880083, 1189131099, 1189131147, 1189131101, 401880223, 401880011, 514885218,
-                          514885058, 514884984, 514884980, 514884850, 514884848, 514884842, 514884840, 514884834,
-                          514884826, 514884824, 514884822, 514884820, 514884818, 514884774, 514884684, 514884680],
-            'identity': [82.759, 82.759, 82.184, 82.184, 82.081, 82.081, 82.081, 81.714, 80.702, 80.702, 80.571, 80.46,
-                         80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80],
-            'tax_id': [183142, 183142, 183142, 183142, 1087463, 1087463, 1087463, 1213204, 1213227, 1213227, 1957050,
-                       1957061, 1957050, 1225233, 1225250, 1344032, 1344033, 1344033, 1344033, 1344033, 1344033,
-                       1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344033, 1344032, 1344033,
-                       1344033]}
-        blast_out_dic2 = {
-            'variant_id': 'MFZR_001790',
-            'variant_sequence': 'CTTATATTTTATTTTCGGAGCTTGAGCTGGAATAGTTGGGACTTCCCTTAGTATACTAATTCGAGCTGAATTAGGTCATCCTGGTTCACTTATTGGTGATGATCAAATTTATAATGTAATTGTTACAGCTCATGCTTTTGTAATAATTTTTTTTATAGTTATACCTATTATAATT',
-            'target_id': [1109411676, 1109411672, 1109411670,1109411663, 674660246 ],
-            'identity': [100,100,100,100,100],
-            'tax_id': [1419335,1419335,1419335,1419335,1419335]}
-
-        # variant_id 5 from the emese file
-        blast_out_dic3 = {
-            'variant_id': 'MFZR_002045',
-            'variant_sequence': 'TTTATACTTTGTGTTTGGAGCTTGGGCTGGAATAGTCGGCTCCTCTCTAAGGGTTTTAATTCGTCTAGAGTTAGGGCAACCTGGCTCATTAATTGGGGATGATCAGATCTACAATGTAGTTGTGACAGCTCATGCTTTCGTTATAATCTTCTTTATGGTGATACCTGCTATAATT',
-            'target_id': [1258178191, 1214941590, 1109411670 , 1214941112, 1214940769, 1214940743, 1214940345, 1214940329],
-            'identity': [99.429, 99.429, 99.429, 99.429, 99.429, 99.429, 99.429, 99.429 ],
-            'tax_id': [189839, 189839, 189839, 189839, 189839, 189839, 189839, 189839]}
-
-        #var id 8 from emese file
-        blast_out_dic4 = {
-            'variant_id': 'MFZR_002737',
-            'variant_sequence': 'TCTTTATTTTATATTTGGAATCTGATCAGGCTTAGTAGGATCATCTTTAAGTTTTATTATTCGAATAGAATTAAGAACTCCTGGAAGATTTATTGGAAATGACCAAATTTATAATGTTGTAGTAACTTCTCATGCTTTTATCATAATTTTTTTTATAGTAATGCCTATTATAATC',
-            'target_id': [1049499563, 1049496963, 1239402664, 1239402658, 1049505397],
-            'identity': [100, 100, 100, 100,100],
-            'tax_id': [761875, 761875, 761875, 761875, 761875]}
-
-    def test_blast_output_to_dictionnary(self):
-        #
-        blast_out_df = f02_import_blast_output_into_df(self.blast_output_tsv_path)
-        #
-        self.assertTrue(blast_out_df.to_dict('list') == {'target_id': [1049499563, 1049496963, 1049491687, 1049490545],
-                                         'identity': [100.0, 100.0, 99.429, 99.429],
-                                         'target_tax_id': [761875, 761875, 761875, 761875]})
-
-
-    def test_full_tax_assign_after_blast(self):
-        #
-        blast_out_df = f02_import_blast_output_into_df(self.blast_output_tsv_path)
+        blast_out_df = f03_import_blast_output_into_df(self.blast_MFZR_002737_tsv)
         #
         identity = 100
         blast_out_df.loc[blast_out_df.identity >= self.identity_threshold]
@@ -143,4 +98,19 @@ class TestTaxAssign(TestCase):
         tax_lineage_df = f04_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
         self.assertTrue(ltg_tax_id==761875)
+        self.assertTrue(ltg_rank=='species')
+
+    def test_99_full_tax_assign_after_blast_MFZR_001274(self):
+        """
+        This test takes a blast result and return ltg_tax_id, ltg_rank at given identity
+        """
+        #
+        blast_out_df = f03_import_blast_output_into_df(self.blast_MFZR_001274_tsv)
+        #
+        identity = 80
+        blast_out_df.loc[blast_out_df.identity >= self.identity_threshold]
+        blast_result_subset_df = blast_out_df.loc[blast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
+        tax_lineage_df = f04_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
+        ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
+        self.assertTrue(ltg_tax_id==1344033)
         self.assertTrue(ltg_rank=='species')
