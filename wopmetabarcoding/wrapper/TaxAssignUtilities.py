@@ -1,11 +1,9 @@
-import sqlite3
-
 import pandas
+import sqlite3
 
 from wopmetabarcoding.utils.constants import rank_hierarchy
 
-
-def taxonomy_sqlite_to_df(taxonomy_sqlite):
+def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
     Imports taxonomy_db.sqlite file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
     into DataFrame
@@ -23,7 +21,34 @@ def taxonomy_sqlite_to_df(taxonomy_sqlite):
     con.close()
     return taxonomy_db_df
 
-def f02_import_blast_output_into_df(blast_output_tsv_path):
+
+def f02_blast(variant_id, variant_sequence):
+    """
+    Runs Blast
+
+    Args:
+        variant_id (Integer): Internal ID of variant
+        variant_sequence (String): Sequence of variant
+
+    Returns:
+        String: Path to output of blast in TSV format
+    """
+    # http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc98
+    # Create FASTA
+    from Bio.Blast.Applications import NcbiblastnCommandline
+    blastn_cline = NcbiblastnCommandline(query="opuntia.fasta", db="nr", evalue=0.001, outfmt=5, out="opuntia.xml")
+
+
+def f03_import_blast_output_into_df(blast_output_tsv_path):
+    """
+    Imports Blast output TSV into DataFrame
+
+    Args:
+        blast_output_tsv_path (String): Path to output of blast in TSV format
+
+    Returns:
+        DataFrame: with three columns: target_id, identity, target_tax_id
+    """
     blast_out_df = pandas.read_csv(blast_output_tsv_path, sep="\t", header=None, names=['target_id', 'identity', 'target_tax_id'], usecols=[1, 2, 5])
     # extract the target_id
     blast_out_df.target_id = blast_out_df.target_id.str.split('|', 2).str[1]
@@ -31,7 +56,7 @@ def f02_import_blast_output_into_df(blast_output_tsv_path):
     return blast_out_df
 
 
-def tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
+def f03_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
     """
     Takes tax_id and taxonomy_db.sqlite DB and create a dictionary with the taxonomy lineage
 
@@ -77,7 +102,7 @@ def f04_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
     """
     lineage_list = []
     for target_tax_id in blast_result_subset_df.target_tax_id.unique().tolist():
-        lineage_list.append(tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
+        lineage_list.append(f03_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
     tax_lineage_df = pandas.DataFrame(lineage_list)
     tax_lineage_df = blast_result_subset_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
     tax_lineage_df.drop('target_id', axis=1, inplace=True)
