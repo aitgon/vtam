@@ -114,4 +114,29 @@ class TestTaxAssign(TestCase):
             'identity': [100, 100, 100, 100,100],
             'tax_id': [761875, 761875, 761875, 761875, 761875]}
 
+        #from txt to data frame
+        path_output_file='/home/mrr/Software/repositories/wopmetabarcodin/test/test_files/output.txt'
+        output_df = pandas.read_csv(path_output_file, sep="	", header=None)
 
+        #
+        output_df_filtred = output_df.drop(columns=[0, 3, 4]).copy()
+        target_id_df = output_df_filtred[1].copy()
+        output_df_filtred = output_df_filtred.drop(columns=[1])
+
+        # extract the target_id
+        target_id_df = target_id_df.str.split('|', 2).str[1]
+
+        #concatenate columns of interest
+        output_df_filtred['target_id'] = target_id_df
+        output_df_filtred.rename(columns={2: 'identity',
+                                          5: 'tax_id'}, inplace=True)
+        output_df_filtred = output_df_filtred[['target_id', 'identity', 'tax_id']]
+
+        #
+        #data frame to dictionnary
+        dict1 = output_df_filtred.to_dict('list')
+
+
+
+        import pdb;
+        pdb.set_trace()
