@@ -22,6 +22,7 @@ class TestTaxAssign(TestCase):
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
         self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
+        self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "v1.fasta")
 
     def test_f03_import_blast_output_into_df(self):
         """This test assess whether the blast has been well imported into a df"""
@@ -114,3 +115,15 @@ class TestTaxAssign(TestCase):
         ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
         self.assertTrue(ltg_tax_id==1344033)
         self.assertTrue(ltg_rank=='species')
+
+
+    def test_f06_biopython_blast(self):
+        from Bio.Blast import NCBIWWW
+        sequence_data = open(self.v1_fasta).read()
+        result_handle = NCBIWWW.qblast("blastn", "nt", sequence_data, format_type = 'txt')
+        with open('results.txt', 'w') as save_file:
+            blast_v1_result = result_handle.read()
+            save_file.write(blast_v1_result)
+
+
+        import pdb;pdb.set_trace()
