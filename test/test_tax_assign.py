@@ -121,9 +121,10 @@ class TestTaxAssign(TestCase):
         from Bio.Blast import NCBIWWW
         with open(self.v1_fasta) as fin:
             sequence_data = fin.read()
-            result_handle = NCBIWWW.qblast("blastn", "nt", sequence_data, format_type = 'Tabular', ncbi_gi=True)
+            result_handle = NCBIWWW.qblast("blastn", "nt", sequence_data, ncbi_gi=True, format_type = 'Tabular')
             with open('results.tsv', 'w') as out_handle:
                 # blast_v1_result = result_handle.read()
                 out_handle.write(result_handle.read())
             result_handle.close()
-
+        # https://github.com/darcyabjones/gi-to-tax/blob/master/README.md
+        import pdb;pdb.set_trace()
