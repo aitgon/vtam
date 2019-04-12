@@ -20,7 +20,7 @@ class FilterMinReplicateNumber(ToolWrapper):
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_table_variant_filter_lfn = "FilterLFN"
+    __input_table_variant_filter_lfn = "TaxAssign"
     __input_file_sample2fasta = "sample2fasta"
     # Output table
     __output_table_filter_min_replicate_number = "FilterMinReplicateNumber"

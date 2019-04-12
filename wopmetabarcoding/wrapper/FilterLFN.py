@@ -10,7 +10,7 @@ import pandas
 
 class FilterLFN(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterLFN"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"
     }
 
     # Input file
@@ -22,7 +22,7 @@ class FilterLFN(ToolWrapper):
     __input_table_replicate = "Replicate"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
-    __output_table_filter_lfn = "FilterLFN"
+    __output_table_filter_lfn = "TaxAssign"
 
 
     def specify_input_file(self):
@@ -71,7 +71,7 @@ class FilterLFN(ToolWrapper):
         variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
         #
         # Options
-        # FilterLFN parameters
+        # TaxAssign parameters
         lfn_per_sum_variant_threshold = self.option("lfn_per_sum_variant_threshold")
         lfn_per_sum_variant_replicate_threshold = self.option("lfn_per_sum_variant_replicate_threshold")
         lfn_per_sum_biosample_replicate_threshold = self.option("lfn_per_sum_biosample_replicate_threshold")
@@ -153,33 +153,33 @@ class FilterLFN(ToolWrapper):
         Logger.instance().info("Launching LFN filter:")
         #
         ############################################
-        # FilterLFN 2: f2_f4_lfn_delete_per_sum_variant
+        # TaxAssign 2: f2_f4_lfn_delete_per_sum_variant
         ############################################
         lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold)
         #
         ############################################
-        # FilterLFN  3: f3_f5_lfn_delete_per_sum_variant_replicate
+        # TaxAssign  3: f3_f5_lfn_delete_per_sum_variant_replicate
         ############################################
         lfn_filter_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_per_sum_variant_replicate_threshold)
 
         ############################################
-        # FilterLFN 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
+        # TaxAssign 6:  f6_lfn_delete_per_sum_biosample_replicate_delete
         ############################################
 
         lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_per_sum_biosample_replicate_threshold)
 
         ############################################
-        # FilterLFN  7:f7_lfn_delete_absolute_read_count
+        # TaxAssign  7:f7_lfn_delete_absolute_read_count
         ############################################
         lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
 
         ############################################
-        # FilterLFN 8:f8_lfn_delete_do_not_pass_all_filters
+        # TaxAssign 8:f8_lfn_delete_do_not_pass_all_filters
         ############################################
         lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
         ############################################
-        # Delete current sample in FilterLFN
+        # Delete current sample in TaxAssign
         ############################################
 
         ############################################
