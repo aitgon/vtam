@@ -1,15 +1,25 @@
 # -*- coding: utf-8 -*-
+import errno
+import inspect
 import os
+import sqlite3
+import tarfile
+import urllib
 
 import pandas
 from unittest import TestCase
 
-from numpy import nan
+from Bio.Blast import NCBIWWW
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.constants import tempdir, data_dir
+from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f03_1_tax_id_to_taxonomy_lineage, \
     f05_select_ltg, \
     f03_import_blast_output_into_df, f04_blast_result_subset
+
+import gzip
+import shutil
 
 
 class TestTaxAssign(TestCase):
@@ -23,6 +33,99 @@ class TestTaxAssign(TestCase):
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
         self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
         self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "MFZR_001274.fasta")
+
+    def test_f06_1_create_nucl_gb_accession2taxid_sqlite(self):
+        #
+        # Check if exists datadir with ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz
+        try:
+            os.makedirs(data_dir)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+        #####################################
+        #
+        # Download nucl_gb.accession2taxid.gz
+        #
+        #####################################
+        file_remote = "ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz"
+        nucl_gb_accession2taxid_gz = os.path.join(data_dir, os.path.basename(file_remote))
+        if not os.path.isfile(nucl_gb_accession2taxid_gz):  #  TODO verify MD5
+            logger.debug(
+                "file: {}; line: {}; Downloading nucl_gb.accession2taxid.gz".format(__file__, inspect.currentframe().f_lineno))
+            urllib.request.urlretrieve(file_remote, nucl_gb_accession2taxid_gz)
+        #####################################
+        #
+        # Gunzipping nucl_gb.accession2taxid.gz
+        #
+        #####################################
+        nucl_gb_accession2taxid_tsv = os.path.join(data_dir, "nucl_gb.accession2taxid.tsv")
+        if not (os.path.isfile(nucl_gb_accession2taxid_tsv)):
+            logger.debug(
+                "file: {}; line: {}; Gunziping nucl_gb.accession2taxid.gz".format(__file__, inspect.currentframe().f_lineno))
+            with gzip.open(nucl_gb_accession2taxid_gz, 'rb') as f_in:
+                with open(nucl_gb_accession2taxid_tsv, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        #####################################
+        #
+        # Import nucl_gb.accession2taxid.gz to sqlite
+        #
+        #####################################
+        nucl_gb_accession2taxid_sqlite = nucl_gb_accession2taxid_tsv.replace("tsv", "sqlite")
+        logger.debug(
+            "file: {}; line: {}; Import nucl_gb.accession2taxid.gz to sqlite".format(__file__, inspect.currentframe().f_lineno))
+        conn = sqlite3.connect(nucl_gb_accession2taxid_sqlite)
+        conn.execute("DROP TABLE IF EXISTS nucl_gb_accession2taxid")
+        cur = conn.cursor()
+        conn.execute(
+            "CREATE TABLE nucl_gb_accession2taxid (gb_accession VARCHAR, tax_id INTEGER, unique(gb_accession, tax_id))"
+        )
+        cur.close()
+        conn.commit()
+        # gb_accession_to_tax_id_df = pandas.read_csv(os.path.join(data_dir, "nucl_gb.accession2taxid"), sep="\t",
+        #                     usecols=[1, 2],
+        #                      header=None, names=['gb_accession.version', 'tax_id'])
+        chunksize = 10 ** 6
+        for chunk_df in pandas.read_csv(os.path.join(data_dir, "nucl_gb.accession2taxid"), sep="\t",
+                            usecols=[1, 2],
+                             names=['gb_accession', 'tax_id'], chunksize=chunksize, header=0):
+            chunk_df.to_sql(name="nucl_gb_accession2taxid", con = conn, if_exists='append', index=False)
+        conn.close()
+
+    def test_f06_2_run_qblast(self):
+        #
+        #
+        # Run and read blast result
+        with open(self.v1_fasta) as fin:
+            variant_fasta_content = fin.read()
+            logger.debug(
+                "file: {}; line: {}; Blasting...".format(__file__, inspect.currentframe().f_lineno))
+            result_handle = NCBIWWW.qblast("blastn", "nt", variant_fasta_content, format_type = 'Tabular')
+            blast_result_tsv = os.path.join(tempdir, "tax_assign_blast.tsv")
+            with open(blast_result_tsv, 'w') as out_handle:
+                out_handle.write(result_handle.read())
+            result_handle.close()
+        blast_result_df = pandas.read_csv(blast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
+                             header=None, names=['variant_id', 'gb_accession', 'identity'])
+
+    def test_f06_3_annotate_blast_output_with_tax_id(self):
+        #
+        qblast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+                                                  "qblast_MFZR_001274.tsv")
+        nucl_gb_accession2taxid_MFZR_00001274_sqlite = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+                                                  "nucl_gb_accession2taxid_MFZR_001274.sqlite")
+        #
+        # Run and read blast result
+        blast_result_df = pandas.read_csv(qblast_MFZR_001274_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
+                             header=None, names=['variant_id', 'gb_accession', 'identity'])
+        blast_result_df = blast_result_df.loc[~pandas.isnull(blast_result_df).any(axis=1)]
+        # import pdb; pdb.set_trace()
+        con = sqlite3.connect(nucl_gb_accession2taxid_MFZR_00001274_sqlite)
+        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(blast_result_df.gb_accession.tolist()))
+        gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
+        con.close()
+        #
+        blast_result_tax_id_df = blast_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
+
 
     def test_f03_import_blast_output_into_df(self):
         """This test assess whether the blast has been well imported into a df"""
@@ -115,16 +218,3 @@ class TestTaxAssign(TestCase):
         ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
         self.assertTrue(ltg_tax_id==1344033)
         self.assertTrue(ltg_rank=='species')
-
-
-    def test_f06_biopython_blast(self):
-        from Bio.Blast import NCBIWWW
-        with open(self.v1_fasta) as fin:
-            sequence_data = fin.read()
-            result_handle = NCBIWWW.qblast("blastn", "nt", sequence_data, ncbi_gi=True, format_type = 'Tabular')
-            with open('results.tsv', 'w') as out_handle:
-                # blast_v1_result = result_handle.read()
-                out_handle.write(result_handle.read())
-            result_handle.close()
-        # https://github.com/darcyabjones/gi-to-tax/blob/master/README.md
-        import pdb;pdb.set_trace()

@@ -10,9 +10,8 @@ import errno, numpy, os, pandas, urllib
 
 import os
 
+from wopmetabarcoding.utils.constants import data_dir
 from wopmetabarcoding.utils.logger import logger
-
-data_dir = os.path.join("{}/tmp/ncbi_taxonomy_dir".format(os.environ['HOME']))
 
 from sqlalchemy import create_engine
 
