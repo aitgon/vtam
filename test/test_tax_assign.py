@@ -218,3 +218,32 @@ class TestTaxAssign(TestCase):
         ltg_tax_id, ltg_rank = f05_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
         self.assertTrue(ltg_tax_id==1344033)
         self.assertTrue(ltg_rank=='species')
+
+
+    def test_(self):
+
+        variant  = {  'id': [1, 2],
+                      'sequence':['TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
+                                  'ATTGTATGTAATCTTTGGTGCTTTTTCAGGTGTTCTAGGAACCACAATGTCTGTCTTGATCCGATTAGAATTGGCAAATCCAGGTAATCAATTGTTTGCAGGAAATCATCAACTTTATAACGTGATCATTACGGCGCACGCCTTCTTAATGATTTTCTTCATGTTGATGCCAATTTTAATT',],
+
+        }
+        variant_df= pandas.DataFrame(variant, columns = ['id', 'sequence'])
+
+
+
+
+        df = variant_df.iloc[0]
+        ofile = open('variant.fasta', "w")
+        for i in range(len(variant_df)):
+
+            # name_file='var'+str(i)+'.fasta'
+            # ofile = open('variant.fasta', "w")
+            ofile.write(">" + str(df['id'] )+ "\n" + str(df['sequence']) + "\n")
+
+            df = variant_df.iloc[i]
+        #
+
+        ofile.close()
+
+        import pdb;
+        pdb.set_trace()
