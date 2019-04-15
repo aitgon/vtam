@@ -10,7 +10,7 @@ import pandas
 
 class FilterLFN(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterLFN"
     }
 
     # Input file
@@ -22,7 +22,7 @@ class FilterLFN(ToolWrapper):
     __input_table_replicate = "Replicate"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
-    __output_table_filter_lfn = "TaxAssign"
+    __output_table_filter_lfn = "FilterLFN"
 
 
     def specify_input_file(self):
