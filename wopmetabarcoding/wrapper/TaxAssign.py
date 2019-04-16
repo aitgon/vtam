@@ -41,6 +41,12 @@ class TaxAssign(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # 1. Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         #
@@ -52,9 +58,12 @@ class TaxAssign(ToolWrapper):
         # Options
         # TaxAssign parameters
         #
+        ##########################################################
+        #
+        # Create Fasta from Variants that passed the Filters: One FASTA for all variants
+        #
+        ##########################################################
 
-
-        # Select marker/run/biosample/replicate from  codon_stop_model
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         stmt_variant_filter_lfn = select([filter_codon_stop_model_table.c.marker_id,
                                           filter_codon_stop_model_table.c.run_id,
@@ -94,37 +103,32 @@ class TaxAssign(ToolWrapper):
 
         # creation one fasta file containing all the variant
 
-        ofile = open('variant_passed.fasta', "w")
+        ofile = open('variant_passed.fasta', "w") # TODO Fasta goes to TMP
         for i in range(0, len(variant_df)):
             df = variant_passed_df.iloc[i]
             ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
         #
         ofile.close()
-
-        #  creation fasta file  for each variant
-
-        for i in range(0, (len(variant_df))):
-            name_file = 'var' + str(i) + '.fasta'
-            df = variant_passed_df.iloc[i]
-            ofile = open(name_file, "w")
-            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
-
-            ofile.close()
         #
-
-        # test_f06_1_create_nucl_gb_accession2taxid_sqlite
-
-
+        ##########################################################
+        #
+        # Run qblast: test_f06_2_run_qblast
+        #
+        ##########################################################
         import pdb;
         pdb.set_trace()
         ##########################################################
         #
-        # Create Fasta from Variants that passed the Filters
-        # test_f06_1_create_nucl_gb_accession2taxid_sqlite
-        # Run qblast: test_f06_2_run_qblast
-        # test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
-        # test_f03_1_tax_id_to_taxonomy_lineage
-        # test_f05_select_ltg_identity
+        # Previous preparation -------------------
+        # bin/create_db_taxonomy (sqlite)
+        # bin/create_db_accession_to_tax_id (sqlite)
+        #
+        # This wrapper -------------------
+        # 1 Create Fasta from Variants that passed the Filters: One FASTA for all variants
+        # 2 Run qblast: test_f06_2_run_qblast
+        # 3 test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
+        # 4 test_f03_1_tax_id_to_taxonomy_lineage
+        # 5 test_f05_select_ltg_identity
         #
         ##########################################################
 
