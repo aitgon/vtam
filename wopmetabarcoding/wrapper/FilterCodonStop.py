@@ -62,10 +62,15 @@ class FilterCodonStop(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # 0. Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterCodonStop.__input_file_sample2fasta)
-
         #
         # Input table models
         marker_model = self.input_table(FilterCodonStop.__input_table_marker)
