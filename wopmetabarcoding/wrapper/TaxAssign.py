@@ -92,6 +92,29 @@ class TaxAssign(ToolWrapper):
         # extract the id and sequence from variant_df that passed based on the id
         variant_passed_df = variant_df.loc[codon_stop_df['variant_id']]
 
+        # creation one fasta file containing all the variant
+
+        ofile = open('variant_passed.fasta', "w")
+        for i in range(0, len(variant_df)):
+            df = variant_passed_df.iloc[i]
+            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
+        #
+        ofile.close()
+
+        #  creation fasta file  for each variant
+
+        for i in range(0, (len(variant_df))):
+            name_file = 'var' + str(i) + '.fasta'
+            df = variant_passed_df.iloc[i]
+            ofile = open(name_file, "w")
+            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
+
+            ofile.close()
+        #
+
+        # test_f06_1_create_nucl_gb_accession2taxid_sqlite
+
+
         import pdb;
         pdb.set_trace()
         ##########################################################
