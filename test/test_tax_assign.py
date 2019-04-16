@@ -230,20 +230,26 @@ class TestTaxAssign(TestCase):
         variant_df= pandas.DataFrame(variant, columns = ['id', 'sequence'])
 
 
+        # creation one fasta file containing all the variant
 
-
-        df = variant_df.iloc[0]
-        ofile = open('variant.fasta', "w")
-        for i in range(len(variant_df)):
-
-            # name_file='var'+str(i)+'.fasta'
-            # ofile = open('variant.fasta', "w")
-            ofile.write(">" + str(df['id'] )+ "\n" + str(df['sequence']) + "\n")
-
+        ofile = open('variant_passed.fasta', "w")
+        for i in range(0, len(variant_df)):
             df = variant_df.iloc[i]
+            ofile.write(">" + str(df['id'] )+ "\n" + str(df['sequence']) + "\n")
         #
-
         ofile.close()
+
+        #  creation fasta file  for each variant
+
+
+        for i in range(0,(len(variant_df))):
+            name_file = 'var'+str(i)+'.fasta'
+            df = variant_df.iloc[i]
+            ofile = open(name_file, "w")
+            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
+
+            ofile.close()
+        #
 
         import pdb;
         pdb.set_trace()
