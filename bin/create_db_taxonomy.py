@@ -4,9 +4,8 @@ import argparse
 import inspect
 import urllib.request
 import tarfile
-import pandas as pd
 
-import errno, numpy, os, pandas, urllib
+import errno, pandas, urllib
 
 import os
 
