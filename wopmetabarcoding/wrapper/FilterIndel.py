@@ -57,6 +57,12 @@ class FilterIndel(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # 1. Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterIndel.__input_file_sample2fasta)
@@ -69,15 +75,12 @@ class FilterIndel(ToolWrapper):
         replicate_model = self.input_table(FilterIndel.__input_table_replicate)
         variant_model = self.input_table(FilterIndel.__input_table_Variant)
         #
-
-        #
         # Output table models
         indel_model = self.output_table(FilterIndel.__output_table_filter_indel)
 
-
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 2. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
         sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
@@ -107,7 +110,7 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # 2. Delete /run/markerbiosample/replicate from this filter table
+        # 3. Delete /run/markerbiosample/replicate from this filter table
         #
         ##########################################################
         with engine.connect() as conn:
@@ -117,7 +120,7 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # 3. Select marker/run/biosample/replicate from variant_read_count_model
+        # 4. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
@@ -157,14 +160,14 @@ class FilterIndel(ToolWrapper):
                                                                   columns=['id', 'sequence'])
             ##########################################################
             #
-            # 4. Run Filter
+            # 5. Run Filter
             #
             ##########################################################
             df_out = f13_filter_indel(variant_read_count_df, variant_df)
 
             ##########################################################
             #
-            # 5. Insert Filter data
+            # 6. Insert Filter data
             #
             ##########################################################
 
