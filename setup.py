@@ -21,7 +21,7 @@ setup(
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
     entry_points={
-        'console_scripts': ['create_taxonomy_db=bin.create_taxonomy_db:main']
+        'console_scripts': ['create_db_taxonomy=bin.create_db_taxonomy:main']
     },
     )
 
