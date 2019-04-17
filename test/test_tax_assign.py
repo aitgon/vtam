@@ -85,7 +85,7 @@ class TestTaxAssign(TestCase):
         #                     usecols=[1, 2],
         #                      header=None, names=['gb_accession.version', 'tax_id'])
         chunksize = 10 ** 6
-        for chunk_df in pandas.read_csv(os.path.join(data_dir, "nucl_gb.accession2taxid"), sep="\t",
+        for chunk_df in pandas.read_csv(os.path.join(data_dir, "nucl_gb.accession2taxid.tsv"), sep="\t",
                             usecols=[1, 2],
                              names=['gb_accession', 'tax_id'], chunksize=chunksize, header=0):
             chunk_df.to_sql(name="nucl_gb_accession2taxid", con = conn, if_exists='append', index=False)
@@ -224,7 +224,7 @@ class TestTaxAssign(TestCase):
 
         variant  = {  'id': [1, 2],
                       'sequence':['TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
-                                  'ATTGTATGTAATCTTTGGTGCTTTTTCAGGTGTTCTAGGAACCACAATGTCTGTCTTGATCCGATTAGAATTGGCAAATCCAGGTAATCAATTGTTTGCAGGAAATCATCAACTTTATAACGTGATCATTACGGCGCACGCCTTCTTAATGATTTTCTTCATGTTGATGCCAATTTTAATT',],
+                                   'ATTGTATGTAATCTTTGGTGCTTTTTCAGGTGTTCTAGGAACCACAATGTCTGTCTTGATCCGATTAGAATTGGCAAATCCAGGTAATCAATTGTTTGCAGGAAATCATCAACTTTATAACGTGATCATTACGGCGCACGCCTTCTTAATGATTTTCTTCATGTTGATGCCAATTTTAATT',],
 
         }
         variant_df= pandas.DataFrame(variant, columns = ['id', 'sequence'])
@@ -232,24 +232,14 @@ class TestTaxAssign(TestCase):
 
         # creation one fasta file containing all the variant
 
-        ofile = open('variant_passed.fasta', "w")
-        for i in range(0, len(variant_df)):
-            df = variant_df.iloc[i]
-            ofile.write(">" + str(df['id'] )+ "\n" + str(df['sequence']) + "\n")
-        #
-        ofile.close()
-
-        #  creation fasta file  for each variant
+        # ofile = open('variant_passed.fasta', "w")
+        # for i in range(0, len(variant_df)):
+        #     df = variant_df.iloc[i]
+        #     ofile.write(">" + str(df['id'] )+ "\n" + str(df['sequence']) + "\n")
+        # #
+        # ofile.close()
 
 
-        for i in range(0,(len(variant_df))):
-            name_file = 'var'+str(i)+'.fasta'
-            df = variant_df.iloc[i]
-            ofile = open(name_file, "w")
-            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
-
-            ofile.close()
-        #
 
         import pdb;
         pdb.set_trace()
