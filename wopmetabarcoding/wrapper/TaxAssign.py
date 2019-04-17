@@ -6,12 +6,11 @@ import sqlite3
 import sqlalchemy
 from Bio.Blast import NCBIWWW
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmars.utils.Logger import Logger
-from wopmetabarcoding.utils.constants import data_dir
+
 from sqlalchemy import select
 import pandas
-
-from wopmetabarcoding.utils import logger, PathFinder
+from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils import PathFinder
 from wopmetabarcoding.utils.constants import tempdir
 
 
@@ -67,9 +66,10 @@ class TaxAssign(ToolWrapper):
         #
         # Get variants that passed the filter
         #
+
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         stmt_variant_filter_lfn = select([filter_codon_stop_model_table.c.marker_id,
@@ -79,7 +79,7 @@ class TaxAssign(ToolWrapper):
                                           filter_codon_stop_model_table.c.replicate_id,
                                           filter_codon_stop_model_table.c.read_count]) \
             .where(filter_codon_stop_model_table.c.filter_id == 14) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 1)
+            .where(filter_codon_stop_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
@@ -113,7 +113,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
         this_tempdir = os.path.join(tempdir, __file__)
         try:
             os.makedirs(this_tempdir)
@@ -135,7 +135,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
         # Run and read blast result
         with open(variant_passed_fasta) as fin:
             result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
