@@ -1,6 +1,7 @@
 import errno
 import inspect
 import os
+import sqlite3
 
 import sqlalchemy
 from Bio.Blast import NCBIWWW
@@ -10,14 +11,13 @@ from wopmetabarcoding.utils.constants import data_dir
 from sqlalchemy import select
 import pandas
 
-from repositories.wopmetabarcodin.wopmetabarcoding.utils import logger
-from repositories.wopmetabarcodin.wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils import logger, PathFinder
+from wopmetabarcoding.utils.constants import tempdir
 
 
 class TaxAssign(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"
-    }
+        "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"}
 
     # Input file
     # Input table
@@ -69,8 +69,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
-                                                                        inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         stmt_variant_filter_lfn = select([filter_codon_stop_model_table.c.marker_id,
@@ -114,8 +113,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__,
-                                                                        inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
         this_tempdir = os.path.join(tempdir, __file__)
         try:
             os.makedirs(this_tempdir)
@@ -156,6 +154,33 @@ class TaxAssign(ToolWrapper):
         # 3- test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
         #
         ##########################################################
+        import pdb;
+        pdb.set_trace()
+        # path to the  nuclgb accession2taxid db
+        nucl_gb_accession2taxid_sqlite = os.path.join(os.getcwd(), "db_accession2taxid.sqlite")
+
+        # import pdb; pdb.set_trace()
+        con = sqlite3.connect(nucl_gb_accession2taxid_sqlite)
+        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(
+            tuple(blast_variant_result_df.gb_accession.tolist()))
+        gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
+        con.close()
+        #
+        # final result blast contaning all the info that we gonna need
+        blast_result_tax_id_df = blast_variant_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
+
+        import pdb;
+        pdb.set_trace()
+
+        ##########################################################
+        #
+        # 4- test_f03_1_tax_id_to_taxonomy_lineage
+        ##########################################################
+
+
+
+
+
 
 
         ##########################################################
