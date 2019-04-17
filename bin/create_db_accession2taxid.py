@@ -32,7 +32,7 @@ def download():
         urllib.request.urlretrieve(remotefile, nucl_gb_accession2taxid_gz)
     return nucl_gb_accession2taxid_gz
 
-def f_create_nucl_gb_accession2taxid_db():
+def f_create_nucl_gb_accession2taxid_db(accession2tax_id_sqlite_path):
 
     new_taxdump_path = download()
 
@@ -46,11 +46,11 @@ def f_create_nucl_gb_accession2taxid_db():
     #
     # Import nucl_gb.accession2taxid.gz to sqlite
 
-    nucl_gb_accession2taxid_sqlite = nucl_gb_accession2taxid_tsv.replace("tsv", "sqlite")
+    # nucl_gb_accession2taxid_sqlite = nucl_gb_accession2taxid_tsv.replace("tsv", "sqlite")
     logger.debug(
         "file: {}; line: {}; Import nucl_gb.accession2taxid.gz to sqlite".format(__file__,
                                                                                  inspect.currentframe().f_lineno))
-    conn = sqlite3.connect(nucl_gb_accession2taxid_sqlite)
+    conn = sqlite3.connect(accession2tax_id_sqlite_path)
     conn.execute("DROP TABLE IF EXISTS nucl_gb_accession2taxid")
     cur = conn.cursor()
     conn.execute(
@@ -65,10 +65,16 @@ def f_create_nucl_gb_accession2taxid_db():
         chunk_df.to_sql(name="nucl_gb_accession2taxid", con=conn, if_exists='append', index=False)
     conn.close()
 
+def create_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', dest='output', help="Path to sqlite DB with accession2tax_id information")
+    return parser
+
 
 def main():
-
-    f_create_nucl_gb_accession2taxid_db()
+    parser = create_parser()
+    args = parser.parse_args()
+    f_create_nucl_gb_accession2taxid_db(args.output)
 
 if __name__=='__main__':
     main()

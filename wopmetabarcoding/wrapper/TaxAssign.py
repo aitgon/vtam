@@ -63,14 +63,14 @@ class TaxAssign(ToolWrapper):
         variant_model = self.input_table(TaxAssign.__input_table_Variant)
         # Output table models
         #
-        # Options
-        # TaxAssign parameters
-        #
         ##########################################################
         #
-        # Create Fasta from Variants that passed the Filters: One FASTA for all variants
+        # Get variants that passed the filter
         #
         ##########################################################
+        logger.debug(
+            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
+                                                                        inspect.currentframe().f_lineno))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         stmt_variant_filter_lfn = select([filter_codon_stop_model_table.c.marker_id,
@@ -107,13 +107,23 @@ class TaxAssign(ToolWrapper):
         variant_passed_df = variant_df.loc[codon_stop_df['variant_id']]
 
         # creation one fasta file containing all the variant
+        #
+        ##########################################################
+        #
+        # Create Fasta from Variants
+        #
+        ##########################################################
+        logger.debug(
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__,
+                                                                        inspect.currentframe().f_lineno))
+        this_tempdir = os.path.join(tempdir, __file__)
         try:
-            os.makedirs(data_dir)
+            os.makedirs(this_tempdir)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        variant_paased_fasta = os.path.join(data_dir, 'variant_passed.fasta')
-        ofile = open(variant_paased_fasta, "w")          # TODO Fasta goes to TMP  /done
+        variant_passed_fasta = os.path.join(this_tempdir, 'variant_passed.fasta')
+        ofile = open(variant_passed_fasta, "w")
         for i in range(0, len(variant_df)):
             df = variant_passed_df.iloc[i]
             ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
@@ -126,15 +136,12 @@ class TaxAssign(ToolWrapper):
         # 2- Run qblast: test_f06_2_run_qblast
         #
         ##########################################################
-
+        logger.debug(
+            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno))
         # Run and read blast result
-        with open(variant_paased_fasta) as fin:
-            variant_fasta_content = fin
-
-            logger.debug(
-                "file: {}; line: {}; Blasting...".format(__file__, inspect.currentframe().f_lineno))
-            result_handle = NCBIWWW.qblast("blastn", "nt", variant_fasta_content.read(), format_type='Tabular')
-            blast_result_tsv = os.path.join(data_dir, "tax_assign_blast.tsv")
+        with open(variant_passed_fasta) as fin:
+            result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
+            blast_result_tsv = os.path.join(this_tempdir, "tax_assign_blast.tsv")
             with open(blast_result_tsv, 'w') as out_handle:
                 out_handle.write(result_handle.read())
             result_handle.close()
@@ -142,7 +149,7 @@ class TaxAssign(ToolWrapper):
                                           header=None, names=['variant_id', 'gb_accession', 'identity'])
 
         # let only the output coantaining non null values
-        blast_varaint_result_df = blast_result_df[blast_result_df['identity'].notnull()].copy()
+        blast_variant_result_df = blast_result_df[blast_result_df['identity'].notnull()].copy()
 
         ##########################################################
         #
