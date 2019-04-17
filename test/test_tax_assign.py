@@ -32,7 +32,9 @@ class TestTaxAssign(TestCase):
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
         self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
-        self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "MFZR_001274.fasta")
+        self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "MFZR_001274.fasta")
+        self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+                                                  "blast_MFZR_002737.tsv")
 
     def test_f06_1_create_nucl_gb_accession2taxid_sqlite(self):
         #
