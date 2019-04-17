@@ -30,7 +30,7 @@ def download():
     return new_taxdump_path
 
 
-def f_create_taxonomy_db(path_taxonomy_db_sqlite):
+def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
     new_taxdump_path = download()
     logger.debug(
         "file: {}; line: {}; Extracting NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
@@ -65,13 +65,13 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite):
     #
     logger.debug(
         "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
-    engine = create_engine('sqlite:///{}'.format(path_taxonomy_db_sqlite), echo=False)
+    engine = create_engine('sqlite:///{}'.format(path_taxonomy_db_sqlite_path), echo=False)
     try:
         taxonomy_df.to_sql('taxonomy', con=engine, index = False)
     except ValueError:
-        return path_taxonomy_db_sqlite
+        return path_taxonomy_db_sqlite_path
     #
-    return path_taxonomy_db_sqlite
+    return path_taxonomy_db_sqlite_path
 
 def create_parser():
     parser = argparse.ArgumentParser()
