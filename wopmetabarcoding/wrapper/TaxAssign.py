@@ -79,7 +79,7 @@ class TaxAssign(ToolWrapper):
                                           filter_codon_stop_model_table.c.replicate_id,
                                           filter_codon_stop_model_table.c.read_count]) \
             .where(filter_codon_stop_model_table.c.filter_id == 14) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 0)
+            .where(filter_codon_stop_model_table.c.filter_delete == 1)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
         with engine.connect() as conn:
