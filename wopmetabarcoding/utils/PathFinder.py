@@ -32,7 +32,7 @@ class PathFinder:
         :return: the path leading to the src file of the project
         """
 
-        wopfile_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile.yml")
+        wopfile_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile_merge.yml")
         return wopfile_path
 
     @staticmethod
