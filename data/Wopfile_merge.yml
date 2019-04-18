@@ -1,0 +1,20 @@
+rule Merge:
+  tool: wopmetabarcoding.wrapper.Merge
+  input:
+      file:
+          sample2fastq: {{fastqinfo}}
+  output:
+      file:
+          sample2fasta: {{fastainfo}}
+  params:
+      fastq_directory: {{fastqdir}}
+      fasta_dir: {{fastadir}}
+      fastq_minovlen: 50
+      fastq_maxmergelen: 300
+      fastq_minmergelen: 100
+      fastq_minlen: 50
+      fastq_maxee: 1
+      fastq_truncqual: 10
+      fastq_maxns: 0
+      threads: 8
+      fastq_ascii: 33

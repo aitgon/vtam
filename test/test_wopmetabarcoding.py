@@ -27,7 +27,7 @@ class TestWopMetabarcoding(TestCase):
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile.yml")
+    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
@@ -59,7 +59,7 @@ class TestWopMetabarcoding(TestCase):
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile.yml")
+    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
@@ -92,7 +92,7 @@ class TestWopMetabarcoding(TestCase):
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile.yml")
+    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
