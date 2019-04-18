@@ -3,14 +3,12 @@ import inspect
 import os
 import sqlite3
 
-import sqlalchemy
 from Bio.Blast import NCBIWWW
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-
 from sqlalchemy import select
 import pandas
+
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils import PathFinder
 from wopmetabarcoding.utils.constants import tempdir
 
 
