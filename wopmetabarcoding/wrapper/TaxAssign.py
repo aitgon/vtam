@@ -23,7 +23,7 @@ class TaxAssign(ToolWrapper):
     __input_table_Variant = "Variant"
 
     # Output table
-
+    __output_table_tax_assign = "TaxAssign"
 
     def specify_input_file(self):
         return[
@@ -35,9 +35,13 @@ class TaxAssign(ToolWrapper):
             TaxAssign.__input_table_filter_codon_stop,
         ]
 
-
     def specify_output_table(self):
         return [
+        ]
+
+    def specify_output_table(self):
+        return[
+            TaxAssign.__output_table_tax_assign
         ]
 
     def specify_params(self):
@@ -61,6 +65,7 @@ class TaxAssign(ToolWrapper):
         variant_model = self.input_table(TaxAssign.__input_table_Variant)
         # Output table models
         #
+        # Input file path
         ##########################################################
         #
         # Get variants that passed the filter
@@ -71,38 +76,16 @@ class TaxAssign(ToolWrapper):
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
-        stmt_variant_filter_lfn = select([filter_codon_stop_model_table.c.marker_id,
-                                          filter_codon_stop_model_table.c.run_id,
-                                          filter_codon_stop_model_table.c.variant_id,
-                                          filter_codon_stop_model_table.c.biosample_id,
-                                          filter_codon_stop_model_table.c.replicate_id,
-                                          filter_codon_stop_model_table.c.read_count]) \
-            .where(filter_codon_stop_model_table.c.filter_id == 14) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 0)
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        codon_stop_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['marker_id', 'run_id', 'variant_id',
-                                                                       'biosample_id', 'replicate_id', 'read_count'])
-
-        # Select id/ sequence from variant table
         variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
-
-        # Select variant table to DataFrame
-        variant_filter_lfn_passed_list = []
+        stmt_variant = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence]) \
+            .where(filter_codon_stop_model_table.c.variant_id == variant_model_table.c.id) \
+            .where(filter_codon_stop_model_table.c.filter_delete == 0).distinct().order_by("variant_id")
+        # Select to DataFrame
+        variant_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                   columns=['id', 'sequence'])
-
-        # extract the id and sequence from variant_df that passed based on the id
-        variant_passed_df = variant_df.loc[codon_stop_df['variant_id']]
+                variant_list.append(row)
+        variant_df = pandas.DataFrame.from_records(variant_list, columns=['variant_id', 'variant_sequence'])
 
         # creation one fasta file containing all the variant
         #
@@ -119,8 +102,8 @@ class TaxAssign(ToolWrapper):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        variant_passed_fasta = os.path.join(this_tempdir, 'variant_passed.fasta')
-        f02_variant_df_to_fasta(variant_df, variant_passed_fasta)
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
+        f02_variant_df_to_fasta(variant_df, variant_fasta)
         #
 
         ##########################################################
@@ -131,7 +114,7 @@ class TaxAssign(ToolWrapper):
         logger.debug(
             "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
         # Run and read blast result
-        with open(variant_passed_fasta) as fin:
+        with open(variant_fasta) as fin:
             result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
             blast_result_tsv = os.path.join(this_tempdir, "tax_assign_blast.tsv")
             with open(blast_result_tsv, 'w') as out_handle:
@@ -148,8 +131,6 @@ class TaxAssign(ToolWrapper):
         # 3- test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
         #
         ##########################################################
-        import pdb;
-        pdb.set_trace()
         # path to the  nuclgb accession2taxid db
         nucl_gb_accession2taxid_sqlite = os.path.join(os.getcwd(), "db_accession2taxid.sqlite")
 
