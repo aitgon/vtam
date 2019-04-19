@@ -10,6 +10,7 @@ import pandas
 
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta
 
 
 class TaxAssign(ToolWrapper):
@@ -107,29 +108,24 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         #
-        # Create Fasta from Variants
+        # 2 Create Fasta from Variants
         #
         ##########################################################
         logger.debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
-        this_tempdir = os.path.join(tempdir, __file__)
+        this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
         try:
             os.makedirs(this_tempdir)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
         variant_passed_fasta = os.path.join(this_tempdir, 'variant_passed.fasta')
-        ofile = open(variant_passed_fasta, "w")
-        for i in range(0, len(variant_df)):
-            df = variant_passed_df.iloc[i]
-            ofile.write(">" + str(df['id']) + "\n" + str(df['sequence']) + "\n")
-        #
-        ofile.close()
+        f02_variant_df_to_fasta(variant_df, variant_passed_fasta)
         #
 
         ##########################################################
         #
-        # 2- Run qblast: test_f06_2_run_qblast
+        # 3 Run qblast: test_f06_2_run_qblast
         #
         ##########################################################
         logger.debug(
