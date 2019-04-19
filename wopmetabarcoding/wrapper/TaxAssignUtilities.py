@@ -1,7 +1,10 @@
+import os
 import pandas
 import sqlite3
 
 from wopmetabarcoding.utils.constants import rank_hierarchy
+from wopmetabarcoding.utils.logger import logger
+
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
@@ -22,7 +25,25 @@ def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     return taxonomy_db_df
 
 
-def f02_blast(variant_id, variant_sequence):
+def f02_variant_df_to_fasta(variant_df, fasta_path):
+    """
+    Takes variant DF with two columns (variant_id, variant_sequence) and return FASTA file path
+
+    Args:
+        variant_df (pandas.DataFrame): DF with two columns (variant_id, variant_sequence)
+        fasta_path (str): Path to FASTA file
+
+
+    Returns:
+        None
+
+    """
+    with open(fasta_path, "w") as fout:
+        for row in variant_df.itertuples():
+            fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
+
+
+def f03_blast(variant_id, variant_sequence):
     """
     Runs Blast
 
@@ -39,7 +60,7 @@ def f02_blast(variant_id, variant_sequence):
     blastn_cline = NcbiblastnCommandline(query="opuntia.fasta", db="nr", evalue=0.001, outfmt=5, out="opuntia.xml")
 
 
-def f03_import_blast_output_into_df(blast_output_tsv_path):
+def f04_import_blast_output_into_df(blast_output_tsv_path):
     """
     Imports Blast output TSV into DataFrame
 
@@ -56,7 +77,7 @@ def f03_import_blast_output_into_df(blast_output_tsv_path):
     return blast_out_df
 
 
-def f03_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
+def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
     """
     Takes tax_id and taxonomy_db.sqlite DB and create a dictionary with the taxonomy lineage
 
@@ -81,7 +102,7 @@ def f03_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
         tax_id = parent_tax_id
     return lineage_dic
 
-def f04_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
+def f05_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
     """
     Takes blast_result_subset_df and returns tax_lineage_df with lineages of each target_tax_id
 
@@ -102,14 +123,14 @@ def f04_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
     """
     lineage_list = []
     for target_tax_id in blast_result_subset_df.target_tax_id.unique().tolist():
-        lineage_list.append(f03_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
+        lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
     tax_lineage_df = pandas.DataFrame(lineage_list)
     tax_lineage_df = blast_result_subset_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
     tax_lineage_df.drop('target_id', axis=1, inplace=True)
     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
     return tax_lineage_df
 
-def f05_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+def f06_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop=90, min_number_of_taxa=3):
     """
     Given tax_lineage_df, selects the LTG
 
