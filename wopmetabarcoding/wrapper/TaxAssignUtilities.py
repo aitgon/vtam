@@ -40,7 +40,7 @@ def f02_variant_df_to_fasta(variant_df, fasta_path):
     """
     with open(fasta_path, "w") as fout:
         for row in variant_df.itertuples():
-            fout.write(">{}\n{}\n".format(row.id, row.sequence))
+            fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
 
 
 def f03_blast(variant_id, variant_sequence):
