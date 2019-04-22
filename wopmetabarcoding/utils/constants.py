@@ -14,5 +14,5 @@ rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infrac
 
 
 data_dir = os.path.join("{}/tmp/ncbi_taxonomy_dir".format(os.environ['HOME']))
-
+wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.environ['HOME']))
 
