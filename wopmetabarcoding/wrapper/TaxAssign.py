@@ -12,6 +12,10 @@ from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta
 
+from wopmetabarcoding.utils.constants import wop_dir
+
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
+
 
 class TaxAssign(ToolWrapper):
     __mapper_args__ = {
@@ -70,7 +74,6 @@ class TaxAssign(ToolWrapper):
         #
         # Get variants that passed the filter
         #
-
         ##########################################################
         logger.debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
@@ -132,31 +135,52 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         # path to the  nuclgb accession2taxid db
-        nucl_gb_accession2taxid_sqlite = os.path.join(os.getcwd(), "db_accession2taxid.sqlite")
+        # to modify to add the path of the db_accession2taxid.sqlite database
+        logger.debug(
+            "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno, 'TaxAssign'))
+
+        wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.environ['HOME']))
+        nucl_gb_accession2taxid_sqlite = os.path.join(wop_dir, "db_accession2taxid.sqlite")
 
         # import pdb; pdb.set_trace()
         con = sqlite3.connect(nucl_gb_accession2taxid_sqlite)
-        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(
-            tuple(blast_variant_result_df.gb_accession.tolist()))
+        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(blast_variant_result_df.gb_accession.tolist()))
         gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
         con.close()
         #
         # final result blast contaning all the info that we gonna need
         blast_result_tax_id_df = blast_variant_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
 
-        import pdb;
-        pdb.set_trace()
+
 
         ##########################################################
         #
         # 4- test_f03_1_tax_id_to_taxonomy_lineage
         ##########################################################
+        logger.debug(
+            "file: {}; line: {}; Taxonomy Lineage creation".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
+        taxonomy_db_sqlite = os.path.join(wop_dir, "taxonomy_db.sqlite")
 
+        # getting the taxonomy_db to df
+        con = sqlite3.connect(taxonomy_db_sqlite)
+        sql = """SELECT *  FROM taxonomy """
+        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
+        con.close()
 
+        import pdb;
+        pdb.set_trace
 
+        lineage_list = []
+        for target_tax_id in blast_result_tax_id_df.tax_id.unique().tolist():lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id,taxonomy_db_df))
 
+        tax_lineage_df = pandas.DataFrame(lineage_list)
+        tax_lineage_df = blast_result_tax_id_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
+        # tax_lineage_df.drop('target_id', axis=1, inplace=True)
+        # tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
 
+        import pdb;
+        pdb.set_trace
 
         ##########################################################
         #
