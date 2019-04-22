@@ -16,6 +16,8 @@ from wopmetabarcoding.utils.constants import wop_dir
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f06_select_ltg
+
 
 class TaxAssign(ToolWrapper):
     __mapper_args__ = {
@@ -136,8 +138,6 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         # path to the  nuclgb accession2taxid db
         # to modify to add the path of the db_accession2taxid.sqlite database
-        import pdb;
-        pdb.set_trace()
 
         logger.debug(
             "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno, 'TaxAssign'))
@@ -172,7 +172,8 @@ class TaxAssign(ToolWrapper):
         con.close()
         #lineage from tax_id
         lineage_list = []
-        for target_tax_id in blast_result_tax_id_df.tax_id.unique().tolist():lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id,taxonomy_db_df))
+        for target_tax_id in blast_result_tax_id_df.tax_id.unique().tolist():
+            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id,taxonomy_db_df))
         #lineage to df
         tax_lineage_df = pandas.DataFrame(lineage_list)
         tax_lineage_df = blast_result_tax_id_df.merge(tax_lineage_df, left_on='tax_id', right_on='tax_id')
@@ -182,15 +183,37 @@ class TaxAssign(ToolWrapper):
 
 
 
-
-
-
         ##########################################################
         #
         #  5 test_f05_select_ltg_identity
         ##########################################################
+        logger.debug(
+            "file: {}; line: {}; LTG,".format(__file__, inspect.currentframe().f_lineno,
+                                                                   'TaxAssign'))
 
-        ##########################################################
+        identity =90
+        list_ltg = []
+        lineage_dic = {}
+        import pdb;
+        pdb.set_trace()
+
+        variant_id_tax_id_list = tax_lineage_df.variant_id.unique().tolist()
+        for varaint_id_tax_id in variant_id_tax_id_list:
+            tax_lineage_df_by_variant_id =tax_lineage_df[tax_lineage_df['variant_id']==str(varaint_id_tax_id)].copy()
+            ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df_by_variant_id, identity, identity_threshold=97, include_prop=90,min_number_of_taxa=3)
+            lineage_dic['variant_id'] = varaint_id_tax_id
+            lineage_dic['ltg_tax_id'] = ltg_tax_id
+            lineage_dic['ltg_rank'] = ltg_rank
+            # append to list
+            list_ltg.append(lineage_dic)
+            lineage_dic = {}
+        # error *** IndexError: ('index 0 is out of bounds for axis 0 with size 0', 'occurred at index superclass')
+        import pdb;
+        pdb.set_trace()
+
+        tax_lineage_df = pandas.DataFrame(lineage_list)
+
+            ##########################################################
         #
         # Previous preparation -------------------
         # bin/create_db_taxonomy (sqlite) / done
