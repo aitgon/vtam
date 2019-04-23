@@ -71,7 +71,6 @@ class FilterLFN(ToolWrapper):
         variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
         #
         # Options
-        # TaxAssign parameters
         lfn_per_sum_variant_threshold = self.option("lfn_per_sum_variant_threshold")
         lfn_per_sum_variant_replicate_threshold = self.option("lfn_per_sum_variant_replicate_threshold")
         lfn_per_sum_biosample_replicate_threshold = self.option("lfn_per_sum_biosample_replicate_threshold")
