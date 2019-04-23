@@ -24,6 +24,8 @@ class TaxAssign(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.TaxAssign"}
 
     # Input file
+    __input_file_taxonomy = "taxonomy"
+    __input_file_accession2taxid = "accession2taxid"
     # Input table
     __input_table_filter_codon_stop = "FilterCodonStop"
     __input_table_Variant = "Variant"
@@ -33,6 +35,8 @@ class TaxAssign(ToolWrapper):
 
     def specify_input_file(self):
         return[
+            TaxAssign.__input_file_taxonomy,
+            TaxAssign.__input_file_accession2taxid,
         ]
 
     def specify_input_table(self):
@@ -65,13 +69,19 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         #
         # Input file path
+        taxonomy_sqlite_path = self.input_file(TaxAssign.__input_file_taxonomy)
+        accession2taxid_sqlite_path = self.input_file(TaxAssign.__input_file_accession2taxid)
         #
         # Input table models
         filter_codon_stop_model = self.input_table(TaxAssign.__input_table_filter_codon_stop)
         variant_model = self.input_table(TaxAssign.__input_table_Variant)
         # Output table models
         #
-        # Input file path
+        # Options
+        identity_threshold = 97 # percentage
+        include_prop = 90 # percentage
+        min_number_of_taxa = 3 # count
+        #
         ##########################################################
         #
         # Get variants that passed the filter
@@ -133,20 +143,14 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 3- test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
+        # 4 test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
         #
         ##########################################################
-        # path to the  nuclgb accession2taxid db
-        # to modify to add the path of the db_accession2taxid.sqlite database
-
         logger.debug(
             "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno, 'TaxAssign'))
 
-        wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.environ['HOME']))
-        nucl_gb_accession2taxid_sqlite = os.path.join(wop_dir, "db_accession2taxid.sqlite")
-
         # import pdb; pdb.set_trace()
-        con = sqlite3.connect(nucl_gb_accession2taxid_sqlite)
+        con = sqlite3.connect(accession2taxid_sqlite_path)
         sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(blast_variant_result_df.gb_accession.tolist()))
         gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
         con.close()
@@ -154,19 +158,15 @@ class TaxAssign(ToolWrapper):
         # final result blast contaning all the info that we gonna need
         blast_result_tax_id_df = blast_variant_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
 
-
-
         ##########################################################
         #
-        # 4- test_f03_1_tax_id_to_taxonomy_lineage
+        # 5 test_f03_1_tax_id_to_taxonomy_lineage for many gb accessions and many variant_ids
+        #
         ##########################################################
         logger.debug(
             "file: {}; line: {}; Taxonomy Lineage creation".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
-
-        taxonomy_db_sqlite = os.path.join(wop_dir, "taxonomy_db.sqlite")
-
         # getting the taxonomy_db to df
-        con = sqlite3.connect(taxonomy_db_sqlite)
+        con = sqlite3.connect(taxonomy_sqlite_path)
         sql = """SELECT *  FROM taxonomy """
         taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
         con.close()
@@ -177,31 +177,49 @@ class TaxAssign(ToolWrapper):
         #lineage to df
         tax_lineage_df = pandas.DataFrame(lineage_list)
         tax_lineage_df = blast_result_tax_id_df.merge(tax_lineage_df, left_on='tax_id', right_on='tax_id')
-        # tax_lineage_df.drop('target_id', axis=1, inplace=True)
-        # tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
-
-
-
 
         ##########################################################
         #
-        #  5 test_f05_select_ltg_identity
+        #  6 test_f05_select_ltg_identity
+        #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; LTG,".format(__file__, inspect.currentframe().f_lineno,
-                                                                   'TaxAssign'))
-
-        identity =90
+            "file: {}; line: {}; LTG,".format(__file__, inspect.currentframe().f_lineno,  'TaxAssign'))
+        variant_id_list = tax_lineage_df.variant_id.unique().tolist()
+        #
+        identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
+        variant_id = variant_id_list[0]
         list_ltg = []
         lineage_dic = {}
+        #
+        for identity in identity_list:
+            tax_lineage_by_variant_id_df = tax_lineage_df.loc[
+                ((tax_lineage_df['variant_id'] == str(variant_id)) & (tax_lineage_df['identity'] >= identity))].copy()
+
+            if tax_lineage_by_variant_id_df.shape[0] > 0:
+                if identity < identity_threshold: # Case 2: min_number_of_taxa
+                    if tax_lineage_by_variant_id_df.shape[0] >= min_number_of_taxa: # More/equal rows than min_number_of_taxa
+                        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity, identity_threshold=identity_threshold,
+                                                              include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
+                            import pdb; pdb.set_trace()
+                else: # Case 1: include_prop
+                    ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity, identity_threshold=identity_threshold,
+                                                          include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
+            lineage_dic['variant_id'] = variant_id
+            lineage_dic['identity'] = identity
+            lineage_dic['ltg_tax_id'] = ltg_tax_id
+            lineage_dic['ltg_rank'] = ltg_rank
+            lineage_dic['ltg_lineage'] = None # Todo: How?
+        #
+
+
         import pdb;
         pdb.set_trace()
 
-        variant_id_tax_id_list = tax_lineage_df.variant_id.unique().tolist()
-        for varaint_id_tax_id in variant_id_tax_id_list:
-            tax_lineage_df_by_variant_id =tax_lineage_df[tax_lineage_df['variant_id']==str(varaint_id_tax_id)].copy()
-            ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df_by_variant_id, identity, identity_threshold=97, include_prop=90,min_number_of_taxa=3)
-            lineage_dic['variant_id'] = varaint_id_tax_id
+        for variant_id_tax_id in variant_id_list:
+            tax_lineage_by_variant_id_df =tax_lineage_df[tax_lineage_df['variant_id']==str(variant_id_tax_id)].copy()
+            ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity, identity_threshold=97, include_prop=90,min_number_of_taxa=3)
+            lineage_dic['variant_id'] = variant_id_tax_id
             lineage_dic['ltg_tax_id'] = ltg_tax_id
             lineage_dic['ltg_rank'] = ltg_rank
             # append to list
