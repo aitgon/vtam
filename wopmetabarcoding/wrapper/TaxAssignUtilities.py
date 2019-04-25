@@ -5,6 +5,8 @@ import sqlite3
 from wopmetabarcoding.utils.constants import rank_hierarchy
 from wopmetabarcoding.utils.logger import logger
 
+from wopmetabarcoding.utils.constants import identity_list
+
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
@@ -130,7 +132,7 @@ def f05_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
     return tax_lineage_df
 
-def f06_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, min_number_of_taxa):
     """
     Given tax_lineage_df, selects the Ltg
 
@@ -160,9 +162,68 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop
         ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
 
-def f07_blast_result_to_ltg(qblast_variant_result_df):
+def f07_blast_result_to_ltg(tax_lineage_df,identity_threshold, include_prop, min_number_of_taxa):
     """
     TODO Test variant 13 to ltg_tax_id using wopmetabarcodin/test/test_files/tax_lineage_variant13.tsv
     """
-    pass
+    #
+    list_variant_id_to_ltg = []
+    variant_id_list = sorted(tax_lineage_df.variant_id.unique().tolist())
+    #
+    for variant_id in variant_id_list:  #  Loop sorted each variant
+        for identity in identity_list:  # For each variant, loop each decreasing identity
+            # print(variant_id, identity, variant_id_list)
+            tax_lineage_by_variant_id_df = tax_lineage_df.loc[
+                ((tax_lineage_df['variant_id'] == variant_id) & (tax_lineage_df['identity'] >= identity))].copy()
+            ###########
+            #
+            # If some hits at this identity level, enter analysis
+            #
+            ###########
+            if tax_lineage_by_variant_id_df.shape[0] > 0:  # If some hits at this identity, enter analysis
+                # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
+                lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
+                                                  value in rank_hierarchy]
+                tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df[lineage_list_df_columns_sorted]
+                # drop column with NaN
+                tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(axis='columns', how='all')
+                ###########
+                #
+                # Case 1: based on include_prop parameter
+                #
+                ###########
+                ltg_tax_id, ltg_rank = None, None
+                if identity >= identity_threshold:
+                    #
+                    ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity,
+                                                          identity_threshold=identity_threshold,
+                                                          include_prop=include_prop,
+                                                          min_number_of_taxa=min_number_of_taxa)
+                    #
+                ###########
+                #
+                # Case 2: based on min_number_of_taxa parameter
+                #
+                ###########
+                else:
+                    if tax_lineage_by_variant_id_df.shape[0] >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
+                        #
+                        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity,
+                                                              identity_threshold=identity_threshold,
+                                                              include_prop=include_prop,
+                                                              min_number_of_taxa=min_number_of_taxa)
+                if not ltg_tax_id is None:
+                    lineage_dic = {}
+                    lineage_dic['variant_id'] = variant_id
+                    lineage_dic['identity'] = identity
+                    lineage_dic['ltg_tax_id'] = ltg_tax_id
+                    lineage_dic['ltg_rank'] = ltg_rank
+                    lineage_dic['ltg_lineage'] = None  #  Todo: How?
+                    # dictionnary to list
+                    list_variant_id_to_ltg.append(lineage_dic)
+                    break  # Do not continue lower identities
+
+    ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
+    return ltg_df
+
 

@@ -22,6 +22,8 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_d
 import gzip
 import shutil
 
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg
+
 
 class TestTaxAssign(TestCase):
 
@@ -42,13 +44,15 @@ class TestTaxAssign(TestCase):
         self.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         self.identity_threshold = 97
-        #
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
         self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
         self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "MFZR_001274.fasta")
-        self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
-                                                  "blast_MFZR_002737.tsv")
+        self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","blast_MFZR_002737.tsv")
+        self.tax_lineage_variant13_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+        self.tax_lineage_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path,
+                                                      "test_files", "tax_lineage.tsv")
+
 
     def test_f02_variant_df_to_fasta(self):
         variant_dic = {
@@ -222,54 +226,8 @@ class TestTaxAssign(TestCase):
         self.assertTrue(ltg_rank=='species')
 
     def test_f07_blast_result_to_ltg(self):
-        blast_result_to_ltg = """13	HF558455.1	86.471	170	23	0	1	170	9324	9493	1.91e-48	204
-13	MF694646.1	83.529	170	28	0	1	170	11574	11743	6.25e-42	181
-13	KY911088.1	80.791	177	34	0	1	177	31380	31556	1.38e-37	167
-13	KY911087.1	80.791	177	34	0	1	177	31501	31677	1.38e-37	167
-13	JQ007431.1	80.791	177	34	0	1	177	32	208	1.38e-37	167
-13	JQ007430.1	80.791	177	34	0	1	177	32	208	1.38e-37	167
-13	JQ007428.1	80.791	177	34	0	1	177	32	208	1.38e-37	167
-13	KY911089.1	80.226	177	35	0	1	177	32943	33119	5.86e-36	162
-13	JQ007429.1	80.226	177	35	0	1	177	32	208	5.86e-36	162
-13	LK052976.1	78.212	179	39	0	2	180	8577	8755	1.29e-31	148
-13	DQ157700.1	78.035	173	38	0	1	173	30341	30169	5.49e-30	141
-13	KC628747.1	77.222	180	41	0	1	180	13088	12909	1.91e-29	141
-13	HG529787.1	77.778	171	38	0	1	171	74574	74404	6.68e-29	138
-13	NC_039443.1	77.457	173	39	0	2	174	43	215	2.33e-28	137
-13	MH725800.1	77.457	173	39	0	2	174	43	215	2.33e-28	137
-13	MG783568.1	77.011	174	40	0	2	175	210	383	8.14e-28	134
-13	AP017979.1	77.711	166	37	0	3	168	8656	8821	2.84e-27	133
-13	CP010939.1	77.059	170	39	0	1	170	77066	76897	9.92e-27	132
-13	KY911092.1	76.744	172	40	0	2	173	30226	30397	9.92e-27	131
-13	XM_018135786.1	76.744	172	40	0	2	173	46	217	9.92e-27	131
-13	MH725798.1	76.437	174	41	0	2	175	282	455	3.46e-26	130
-13	JX499144.1	76.301	173	41	0	3	175	18809	18981	1.21e-25	128
-13	KY911091.1	75.706	177	43	0	2	178	14673	14849	4.22e-25	126
-13	XM_012330695.1	79.577	142	29	0	32	173	295	436	4.22e-25	126
-13	NC_039442.1	75.419	179	44	0	2	180	4268	4446	4.22e-25	125
-13	MH725794.1	75.419	179	44	0	2	180	4268	4446	4.22e-25	125
-13	KX810692.1	81.746	126	23	0	56	181	17	142	1.47e-24	124
-13	KX810689.1	81.746	126	23	0	56	181	17	142	1.47e-24	124
-13	KX810686.1	83.621	116	19	0	56	171	17	132	1.47e-24	124
-13	AP017981.1	76.506	166	39	0	3	168	29783	29948	1.47e-24	124
-13	AP017980.1	76.506	166	39	0	3	168	35698	35863	1.47e-24	124
-13	NC_039441.1	75.723	173	42	0	2	174	12053	12225	1.47e-24	123
-13	MH725793.1	75.723	173	42	0	2	174	12053	12225	1.47e-24	123
-13	FQ311469.1	75.740	169	41	0	2	170	57966	57798	1.79e-23	121
-13	NC_039439.1	75.145	173	43	0	2	174	79	251	6.26e-23	119
-13	MH725791.1	75.145	173	43	0	2	174	79	251	6.26e-23	119
-13	KY245891.1	76.074	163	39	0	3	165	47251	47413	6.26e-23	119
-13	XM_025501004.1	75.294	170	42	0	2	171	46	215	6.26e-23	118
-13	LC385608.1	76.506	166	37	2	11	175	28217	28381	2.18e-22	117
-13	KY911097.1	76.437	174	35	4	1	171	34051	34221	2.18e-22	117
-13	JX985789.1	76.506	166	37	2	11	175	52	216	2.18e-22	117
-13	NC_039440.1	74.713	174	44	0	2	175	140579	140406	2.18e-22	116
-13	MH725792.1	74.713	174	44	0	2	175	140579	140406	2.18e-22	116
-13	JX499145.1	75.148	169	42	0	3	171	20046	20214	2.18e-22	116
-13	GU133622.1	75.148	169	42	0	3	171	4888	4720	2.18e-22	116
-13	KY911085.1	74.854	171	43	0	1	171	11396	11566	7.63e-22	115
-13	KY911084.1	74.854	171	43	0	1	171	11560	11730	7.63e-22	115
-13	KY911083.1	74.854	171	43	0	1	171	11537	11707	7.63e-22	115
-13	KY911082.1	74.854	171	43	0	1	171	11342	11512	7.63e-22	115
-13	KY911081.1	74.854	171	43	0	1	171	11311	11481	7.63e-22	115"""
-        df = pandas.DataFrame([x.split(';') for x in data.split('\n')])
+        tax_lineage_df = pandas.read_csv(self.tax_lineage_tsv, sep=',')
+
+        ltg_df = f07_blast_result_to_ltg(tax_lineage_df)
+        import pdb;
+        pdb.set_trace()

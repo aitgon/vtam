@@ -18,6 +18,8 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f06_select_ltg
 
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg
+
 
 class TaxAssign(ToolWrapper):
     __mapper_args__ = {
@@ -174,7 +176,7 @@ class TaxAssign(ToolWrapper):
         #lineage to df
         tax_lineage_df = pandas.DataFrame(lineage_list)
         tax_lineage_df = blast_result_tax_id_df.merge(tax_lineage_df, left_on='tax_id', right_on='tax_id')
-        import pdb; pdb.set_trace()
+
         ##########################################################
         #
         #  6 test_f05_select_ltg_identity
@@ -182,66 +184,17 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         logger.debug(
             "file: {}; line: {}; Ltg,".format(__file__, inspect.currentframe().f_lineno,  'TaxAssign'))
-        variant_id_list = sorted(tax_lineage_df.variant_id.unique().tolist())
         #
-        list_variant_id_to_ltg = []
-        #
-        for variant_id in variant_id_list: # Loop sorted each variant
-            for identity in identity_list: # For each variant, loop each decreasing identity
-                print(variant_id, identity, variant_id_list)
-                tax_lineage_by_variant_id_df = tax_lineage_df.loc[((tax_lineage_df['variant_id'] == str(variant_id)) & (tax_lineage_df['identity'] >= identity))].copy()
-                ###########
-                #
-                # If some hits at this identity level, enter analysis
-                #
-                ###########
-                if tax_lineage_by_variant_id_df.shape[0] > 0: # If some hits at this identity, enter analysis
-                    # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
-                    lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if value in rank_hierarchy]
-                    tax_lineage_by_variant_id_df =tax_lineage_by_variant_id_df[lineage_list_df_columns_sorted]
-                    # drop column with NaN
-                    tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(axis='columns', how='all')
-                    ###########
-                    #
-                    # Case 1: based on include_prop parameter
-                    #
-                    ###########
-                    ltg_tax_id, ltg_rank = None, None
-                    if identity >= identity_threshold:
-                        #
-                        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity, identity_threshold=identity_threshold,
-                                                              include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
-                        #
-                    ###########
-                    #
-                    # Case 2: based on min_number_of_taxa parameter
-                    #
-                    ###########
-                    else:
-                        if tax_lineage_by_variant_id_df.shape[0] >= min_number_of_taxa: # More/equal rows than min_number_of_taxa
-                            #
-                            ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity, identity_threshold=identity_threshold,
-                                                                  include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
-                    if not ltg_tax_id is None:
-                        lineage_dic = {}
-                        lineage_dic['variant_id'] = variant_id
-                        lineage_dic['identity'] = identity
-                        lineage_dic['ltg_tax_id'] = ltg_tax_id
-                        lineage_dic['ltg_rank'] = ltg_rank
-                        lineage_dic['ltg_lineage'] = None  #  Todo: How?
-                        # dictionnary to list
-                        list_variant_id_to_ltg.append(lineage_dic)
-                        break # Do not continue lower identities
+        # f07_blast_result_to_ltg(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+        # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
+        ltg_df = f07_blast_result_to_ltg(tax_lineage_df,identity_threshold=identity_threshold, include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
 
-        tax_lineage_vars_df = pandas.DataFrame(data=list_variant_id_to_ltg)
 
         import pdb;
         pdb.set_trace()
-        #let only the variant with the higher identity
-        tax_lineage_df = tax_lineage_vars_df.groupby("variant_id").max()
-        tax_lineage_df = tax_lineage_df.reset_index()
 
-        tax_lineage_df.to_sql(name='TaxAssig', con=engine.connect(), if_exists='replace')
+
+        ltg_df.to_sql(name='TaxAssig', con=engine.connect(), if_exists='replace')
         #
 
             ##########################################################
