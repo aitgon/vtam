@@ -25,7 +25,7 @@ import shutil
 class TestTaxAssign(TestCase):
 
     def setUp(self):
-        self.taxonomy_db_df = f01_taxonomy_sqlite_to_df('tax.sqlite')
+        self.taxonomy_db_df = f01_taxonomy_sqlite_to_df('/home/mrr/Software/repositories/wopmetabarcodin/taxonomy_db.sqlite') # TODO to change the path
         #
         self.identity_threshold = 97
         #
