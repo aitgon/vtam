@@ -13,6 +13,10 @@ rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infrac
                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 
 
-data_dir = os.path.join("{}/tmp/ncbi_taxonomy_dir".format(os.environ['HOME']))
+data_dir = os.path.join("{}/tmp/vtam".format(os.environ['HOME']))
 wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.environ['HOME']))
+
+public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
+
+identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

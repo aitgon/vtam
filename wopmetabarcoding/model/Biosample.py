@@ -1,7 +1,6 @@
 from wopmars.framework.database.Base import Base
 
 from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import validates
 
 class Biosample(Base):
     __tablename__ = 'Biosample'

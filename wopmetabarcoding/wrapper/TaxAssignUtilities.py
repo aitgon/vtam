@@ -146,6 +146,8 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop
         ltg_rank (str): Rank of Ltg
 
     """
+    # Remove column if all values=NaN
+    tax_lineage_df.dropna(axis='columns', how='all', inplace=True)
     lineage_list_df_columns_sorted = list(filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy))
     tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
     putative_ltg_df = pandas.DataFrame({'putative_ltg_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0),'putative_ltg_count': tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)})
@@ -157,3 +159,10 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold=97, include_prop
         ltg_tax_id = int(putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].tail(1).values[0])
         ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
+
+def f07_blast_result_to_ltg(qblast_variant_result_df):
+    """
+    TODO Test variant 13 to ltg_tax_id using wopmetabarcodin/test/test_files/tax_lineage_variant13.tsv
+    """
+    pass
+
