@@ -1,12 +1,6 @@
 from wopmars.framework.database.Base import Base
 
 from sqlalchemy import Column, String, Integer
-from sqlalchemy.orm import validates
-
-import Bio
-from Bio.Seq import Seq
-from Bio.Alphabet import IUPAC
-from Bio import Alphabet
 
 # Todo: Rename to TagPair
 # Todo: Maybe will need TagPair model with each TagPair including fwd and rev
