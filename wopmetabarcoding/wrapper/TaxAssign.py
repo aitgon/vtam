@@ -54,7 +54,11 @@ class TaxAssign(ToolWrapper):
         ]
 
     def specify_params(self):
-        return []
+        return {
+        "identity_threshold":"float",  #  percentage
+        "include_prop" : "float",  # percentage
+        "min_number_of_taxa" : "float",  #  count
+        }
 
     def run(self):
         session = self.session()
@@ -77,9 +81,10 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
-        identity_threshold = 97 # percentage
-        include_prop = 90 # percentage
-        min_number_of_taxa = 3 # count
+        identity_threshold = float(self.option("identity_threshold")) # percentage
+        include_prop = float(self.option("include_prop")) # percentage
+        min_number_of_taxa = float(self.option("min_number_of_taxa")) # count
+
         #
         ##########################################################
         #
