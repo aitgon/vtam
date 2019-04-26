@@ -13,7 +13,6 @@ class TaxAssign(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     variant_id = Column(Integer, ForeignKey("Variant.id"), nullable=False)
     identity = Column(Integer, nullable=True)
-    tax_id = Column(Integer, nullable=True)
     ltg_lineage = Column(Integer, nullable=True)
     ltg_rank = Column(Integer, nullable=True)
     ltg_tax_id = Column(Integer, nullable=True)
