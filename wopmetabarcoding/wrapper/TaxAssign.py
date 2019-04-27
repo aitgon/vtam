@@ -65,9 +65,9 @@ class TaxAssign(ToolWrapper):
 
     def specify_params(self):
         return {
-        "identity_threshold":"float",  #  percentage
+        "identity_threshold":"float",  #  percentage
         "include_prop" : "float",  # percentage
-        "min_number_of_taxa" : "float",  #  count
+        "min_number_of_taxa" : "int",  #  count
         }
 
     def run(self):
@@ -96,9 +96,9 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
-        identity_threshold = float(self.option("identity_threshold")) # percentage
+        identity_threshold = float(self.option("identity_threshold")) # percentage
         include_prop = float(self.option("include_prop")) # percentage
-        min_number_of_taxa = float(self.option("min_number_of_taxa")) # count
+        min_number_of_taxa = int(self.option("min_number_of_taxa")) # count
 
 
         ##########################################################
@@ -138,7 +138,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         #
-        # 3a. Select variants from this run/markerbiosample/replicate combination
+        # 3a. Select variants from this run/markerbiosample/replicate combination
         #
         variant_id_delete_list = []
         for sample_instance in sample_instance_list:

@@ -1,3 +1,5 @@
+import time
+
 import pandas, itertools
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
@@ -145,9 +147,8 @@ class FilterRenkonen(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-        records = df.to_dict('records')
         with engine.connect() as conn:
-                conn.execute(filter_renkonen_model.__table__.insert(), records)
+                conn.execute(filter_renkonen_model.__table__.insert(), df.to_dict('records'))
 
 
 
