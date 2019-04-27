@@ -1,4 +1,5 @@
 import inspect
+import time
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.utils.PathFinder import PathFinder
@@ -167,13 +168,11 @@ class FilterChimera(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-        records = df_chimera.to_dict('records')
         with engine.connect() as conn:
-                conn.execute(filter_chimera_model.__table__.insert(), records)
+                conn.execute(filter_chimera_model.__table__.insert(), df_chimera.to_dict('records'))
         #
-        records = df_chimera_borderline.to_dict('records')
         with engine.connect() as conn:
-                conn.execute(filter_chimera_borderline_model.__table__.insert(), records)
+                conn.execute(filter_chimera_borderline_model.__table__.insert(), df_chimera_borderline.to_dict('records'))
 
 
 def f11_filter_chimera(variant_read_count_df, variant_df):
