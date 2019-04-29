@@ -1,0 +1,212 @@
+rule FastaInformation:
+    tool: wopmetabarcoding.wrapper.FastaInformation
+    input:
+        file:
+            sample2fasta: {{fastainfo}}
+    output:
+        table:
+            Run: wopmetabarcoding.model.Run
+            Marker: wopmetabarcoding.model.Marker
+            Biosample: wopmetabarcoding.model.Biosample
+            Replicate: wopmetabarcoding.model.Replicate
+            Fasta: wopmetabarcoding.model.Fasta
+            PrimerPair: wopmetabarcoding.model.PrimerPair
+            SampleInformation: wopmetabarcoding.model.SampleInformation
+            TagPair: wopmetabarcoding.model.TagPair
+    params:
+        fasta_dir: {{fastadir}}
+#
+#rule SortReads:
+#    tool: wopmetabarcoding.wrapper.SortReads
+#    input:
+#        table:
+#            Fasta: wopmetabarcoding.model.Fasta
+#            SampleInformation: wopmetabarcoding.model.SampleInformation
+#            Marker: wopmetabarcoding.model.Marker
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        file:
+#            sortreads: {{SORTREADS}}
+#    params:
+#        min_id: {{MIN_ID}}
+#        minseqlength: {{MINSEQLENGTH}}
+#        overhang: {{OVERHANG}}
+#
+#rule VariantReadCount:
+#    tool: wopmetabarcoding.wrapper.VariantReadCount
+#    input:
+#        file:
+#            sortreads: {{SORTREADS}}
+#            sample2fasta: {{fastainfo}}
+#        table:
+#            Run: wopmetabarcoding.model.Run
+#            Marker: wopmetabarcoding.model.Marker
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#    output:
+#        table:
+#            Variant: wopmetabarcoding.model.Variant
+#            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+#
+#rule FilterLFN:
+#    tool: wopmetabarcoding.wrapper.FilterLFN
+#    input:
+#        table:
+#            Run: wopmetabarcoding.model.Run
+#            Marker: wopmetabarcoding.model.Marker
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterLFN: wopmetabarcoding.model.FilterLFN
+#    params:
+#        lfn_per_sum_variant_threshold: {{LFN_PER_SUM_VARIANT_THRESHOLD}}
+#        lfn_per_sum_variant_replicate_threshold: {{LFN_PER_SUM_VARIANT_REPLICATE_THRESHOLD}}
+#        lfn_per_sum_biosample_replicate_threshold: {{LFN_PER_SUM_BIOSAMPLE_REPLICATE_THRESHOLD}}
+#        lfn_read_count_threshold: {{LFN_READ_COUNT_THRESHOLD}}
+#
+#rule FilterMinReplicateNumber:
+#    tool: wopmetabarcoding.wrapper.FilterMinReplicateNumber
+#    input:
+#        table:
+#            Run: wopmetabarcoding.model.Run
+#            Marker: wopmetabarcoding.model.Marker
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            FilterLFN: wopmetabarcoding.model.FilterLFN
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
+#    params:
+#        min_replicate_number: {{MIN_REPLICATE_NUMBER}}
+#
+#rule FilterPCRError:
+#    tool: wopmetabarcoding.wrapper.FilterPCRError
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            Variant: wopmetabarcoding.model.Variant
+#            FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterPCRError: wopmetabarcoding.model.FilterPCRError
+#    params:
+#        pcr_error_var_prop: {{PCR_ERROR_VAR_PROP}}
+#
+#rule FilterChimera:
+#    tool: wopmetabarcoding.wrapper.FilterChimera
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            Variant: wopmetabarcoding.model.Variant
+#            FilterPCRError: wopmetabarcoding.model.FilterPCRError
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterChimera: wopmetabarcoding.model.FilterChimera
+#            FilterChimeraBorderline: wopmetabarcoding.model.FilterChimeraBorderline
+#
+#rule FilterRenkonen:
+#    tool: wopmetabarcoding.wrapper.FilterRenkonen
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            FilterChimera: wopmetabarcoding.model.FilterChimera
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
+#    params:
+#        renkonen_threshold: {{RENKONEN_THRESHOLD}}
+#
+#rule FilterIndel:
+#    tool: wopmetabarcoding.wrapper.FilterIndel
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            Variant: wopmetabarcoding.model.Variant
+#            FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterIndel: wopmetabarcoding.model.FilterIndel
+#
+#rule FilterCodonStop:
+#    tool: wopmetabarcoding.wrapper.FilterCodonStop
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            Variant: wopmetabarcoding.model.Variant
+#            FilterIndel: wopmetabarcoding.model.FilterIndel
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+#    params:
+#        number_genetic_table: {{NUMBER_GENETIC_TABLE}}
+#
+#rule ReadCountAverageOverReplicates:
+#    tool: wopmetabarcoding.wrapper.ReadCountAverageOverReplicates
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+#        file:
+#            sample2fasta: {{fastainfo}}
+#    output:
+#        table:
+#            ReadCountAverageOverReplicates: wopmetabarcoding.model.ReadCountAverageOverReplicates
+#
+#
+#
+#rule TaxAssign:
+#    tool: wopmetabarcoding.wrapper.TaxAssign
+#    input:
+#        table:
+#            Marker: wopmetabarcoding.model.Marker
+#            Run: wopmetabarcoding.model.Run
+#            Biosample: wopmetabarcoding.model.Biosample
+#            Replicate: wopmetabarcoding.model.Replicate
+#            Variant: wopmetabarcoding.model.Variant
+#            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+#        file:
+#            sample2fasta: {{fastainfo}}
+#            taxonomy: {{TAXONOMY_SQLITE}}
+#            accession2taxid: {{ACCESSION2TAXID_SQLITE}}
+#    output:
+#        table:
+#            TaxAssign: wopmetabarcoding.model.TaxAssign
+#    params:
+#        identity_threshold: {{IDENTITY_THRESHOLD}}
+#        include_prop: {{INCLUDE_PROP}}
+#        min_number_of_taxa: {{MIN_NUMBER_OF_TAXA}}
