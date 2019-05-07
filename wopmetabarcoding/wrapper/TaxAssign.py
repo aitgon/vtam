@@ -189,7 +189,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
         this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
         try:
             os.makedirs(this_tempdir)
@@ -206,7 +206,9 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
+            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno, ))
+        logger.debug(
+            "file: {}; line: {}; FASTA input to qblast: {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
         # Run and read blast result
         with open(variant_fasta) as fin:
             result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
@@ -214,9 +216,12 @@ class TaxAssign(ToolWrapper):
             with open(blast_result_tsv, 'w') as out_handle:
                 out_handle.write(result_handle.read())
             result_handle.close()
+        logger.debug(
+            "file: {}; line: {}; TSV output from qblast: {}".format(__file__, inspect.currentframe().f_lineno, blast_result_tsv))
+        logger.debug(
+            "file: {}; line: {}; Finished qblast".format(__file__, inspect.currentframe().f_lineno, ))
         blast_result_df = pandas.read_csv(blast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
                                           header=None, names=['variant_id', 'gb_accession', 'identity'])
-
         # let only the output coantaining non null values
         blast_variant_result_df = blast_result_df[blast_result_df['identity'].notnull()].copy()
 
@@ -226,9 +231,10 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno, 'TaxAssign'))
-
-        # import pdb; pdb.set_trace()
+            "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno))
+        logger.debug(
+            "file: {}; line: {}; Connect to accession2taxid_sqlite: {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                               accession2taxid_sqlite_path))
         con = sqlite3.connect(accession2taxid_sqlite_path)
         sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(blast_variant_result_df.gb_accession.tolist()))
         gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
@@ -243,7 +249,10 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Taxonomy Lineage creation".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
+            "file: {}; line: {}; Taxonomy Lineage creation".format(__file__, inspect.currentframe().f_lineno))
+        logger.debug(
+            "file: {}; line: {}; Connect to taxonomy_sqlite: {}".format(__file__, inspect.currentframe().f_lineno,
+                                                                               taxonomy_sqlite_path))
         # getting the taxonomy_db to df
         con = sqlite3.connect(taxonomy_sqlite_path)
         sql = """SELECT *  FROM taxonomy """
@@ -263,7 +272,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Ltg,".format(__file__, inspect.currentframe().f_lineno,  'TaxAssign'))
+            "file: {}; line: {}; Ltg,".format(__file__, inspect.currentframe().f_lineno))
         #
         # f07_blast_result_to_ltg(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
