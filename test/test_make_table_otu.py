@@ -54,26 +54,46 @@ class TestMakeTableOTU(TestCase):
         # Merge pivoted biosamples with variant information
         otu_df = otu_df[['run_id', 'marker_id', 'variant_id', 'variant_sequence']].drop_duplicates().merge(otu_tmp_df,
                                                                             on=['run_id', 'marker_id', 'variant_id'])
+
+
+        # Variant Sequence length
+        variant_df_tmp = variant_df.copy()
+        variant_df_tmp['sequence_length'] = variant_df_tmp['variant_sequence'].str.len()
+        otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
+
+
+        # Taxonomy
+
+        otu_df = otu_df.merge(taxonomy_df, on='variant_id')
+
+
+        # getting the taxonomy_db to df
+        taxonomy_sqlite_path = "taxonomy.sqlite"
+        con = sqlite3.connect(taxonomy_sqlite_path)
+        sql = """SELECT *  FROM taxonomy """
+        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
+        con.close()
+
+        # Lineage creation
+        list_lineage=[]
+        for tax_id in  otu_df['ltg_tax_id'].tolist():
+          dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df)
+          list_lineage.append(dic_lineage)
+
+        lineage_df = pandas.DataFrame(data=list_lineage)
+
+
+        # Merge Otu_df with the lineage df
+
+        otu_df = otu_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
+
+        #
+        # df= taxonomy_db_df.loc[taxonomy_db_df['tax_id'] == 7496]
+        # df['name_txt']
+        # 
         import pdb; pdb.set_trace()
         # # variant_id_delete_list = []
         # out_dic = {}
-        # for variant_id in  variant_df["variant_id"].tolist():
-        #     #sequence length
-        #     out_dic['variant_id'] = variant_id
-        #     df = variant_df.loc[variant_df.variant_id == variant_id]
-        #     out_dic['sequence_length'] = df["variant_sequence"].str.len()
-        #
-        #     # out_dic['sample']
-        #
-        #     # out_dic[biosample_df]= biosample_df["name"]
-        #
-        #
-        #     # ltg lineage - Ltg taxid - Ltg identity - LTG rank
-        #     ltg_df = taxonomy_df.loc[taxonomy_df.variant_id == variant_id]
-        #
-        #     out_dic['ltg_tax_id'] = ltg_df["ltg_tax_id"]
-        #     out_dic['ltg_rank'] = ltg_df["ltg_rank"]
-        #     out_dic['identity'] = ltg_df["identity"]
         #
         #
         #     # taxonomy db
@@ -94,17 +114,3 @@ class TestMakeTableOTU(TestCase):
         #     out_dic['variant_sequence'] = df_sequence["variant_sequence"]
         #
         #
-        # for biosample_id in  biosample_df["id"].tolist():
-        #     df_biosample =  biosample_df.loc[biosample_df.id ==biosample_id]
-        #     # sample and read count
-        #     vatriant_filter_codon_stop_df = filter_codon_stop_df.loc[filter_codon_stop_df.variant_id == variant_id]
-        #     read_count_per_biosample = vatriant_filter_codon_stop_df.groupby(['biosample_id'])[
-        #         'read_count'].sum().reset_index()
-        #     df_biosample_read_count =  read_count_per_biosample.loc[read_count_per_biosample["biosample_id"] == biosample_id]
-        #
-        #     out_dic[df_biosample["name"]]= df_biosample_read_count["read_count"]
-        #
-        #
-        # out_df = pandas.DataFrame(out_dic, index=None)
-        # import pdb;
-        # pdb.set_trace()
