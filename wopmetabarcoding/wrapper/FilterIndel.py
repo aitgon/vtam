@@ -8,6 +8,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterIndel(ToolWrapper):
@@ -60,7 +61,7 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #

@@ -1,12 +1,12 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from wopmetabarcoding.utils.utilities import get_or_create
+from wopmetabarcoding.utils.utilities import get_or_create, create_step_tmp_dir
 
 import os
 
-class FastaInformation(ToolWrapper):
+class SampleInformation(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FastaInformation"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.SampleInformation"
     }
     __input_file_csv = "sample2fasta"
     #
@@ -20,18 +20,18 @@ class FastaInformation(ToolWrapper):
     __output_table_tagpair = "TagPair"
 
     def specify_input_file(self):
-        return [FastaInformation.__input_file_csv]
+        return [SampleInformation.__input_file_csv]
 
     def specify_output_table(self):
         return [
-            FastaInformation.__output_table_biosample,
-            FastaInformation.__output_table_fasta,
-            FastaInformation.__output_table_marker,
-            FastaInformation.__output_table_primerpair,
-            FastaInformation.__output_table_replicate,
-            FastaInformation.__output_table_run,
-            FastaInformation.__output_table_sample_information,
-            FastaInformation.__output_table_tagpair,
+            SampleInformation.__output_table_biosample,
+            SampleInformation.__output_table_fasta,
+            SampleInformation.__output_table_marker,
+            SampleInformation.__output_table_primerpair,
+            SampleInformation.__output_table_replicate,
+            SampleInformation.__output_table_run,
+            SampleInformation.__output_table_sample_information,
+            SampleInformation.__output_table_tagpair,
         ]
 
     def specify_params(self):
@@ -42,20 +42,25 @@ class FastaInformation(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # conn = engine.connect()
+
+        ##########################################################
         #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
+
         # input file paths
-        csv_path = self.input_file(FastaInformation.__input_file_csv)
+        csv_path = self.input_file(SampleInformation.__input_file_csv)
         #
         # Models
-        biosample_model = self.output_table(FastaInformation.__output_table_biosample)
-        fasta_model = self.output_table(FastaInformation.__output_table_fasta)
-        marker_model = self.output_table(FastaInformation.__output_table_marker)
-        primerpair_model = self.output_table(FastaInformation.__output_table_primerpair)
-        replicate_model = self.output_table(FastaInformation.__output_table_replicate)
-        run_model = self.output_table(FastaInformation.__output_table_run)
-        sampleinformation_model = self.output_table(FastaInformation.__output_table_sample_information)
-        tagpair_model = self.output_table(FastaInformation.__output_table_tagpair)
+        biosample_model = self.output_table(SampleInformation.__output_table_biosample)
+        fasta_model = self.output_table(SampleInformation.__output_table_fasta)
+        marker_model = self.output_table(SampleInformation.__output_table_marker)
+        primerpair_model = self.output_table(SampleInformation.__output_table_primerpair)
+        replicate_model = self.output_table(SampleInformation.__output_table_replicate)
+        run_model = self.output_table(SampleInformation.__output_table_run)
+        sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
+        tagpair_model = self.output_table(SampleInformation.__output_table_tagpair)
 
         with open(csv_path, 'r') as fin:
             for line in fin:

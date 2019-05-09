@@ -9,6 +9,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterCodonStop(ToolWrapper):
@@ -65,7 +66,7 @@ class FilterCodonStop(ToolWrapper):
 
         ##########################################################
         #
-        # 0. Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
