@@ -18,16 +18,7 @@ vtam/discussion_reda_aitor/example_filter.ods
 
 import inspect
 
-from sqlalchemy import select
-from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
-import pandas, itertools
-from Bio import SeqIO
-import re
-import os
-from wopmetabarcoding.utils.constants import tempdir
-
-from math import floor
+import pandas
 
 from wopmetabarcoding.utils.logger import logger
 
@@ -65,9 +56,6 @@ class FilterLFNRunner:
         # self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df[['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
         # self.marker_id = marker_id
-        #
-        self.tempdir = os.path.join(tempdir, "FilterUtilities", "FilterUtilities", self.__class__.__name__)
-        PathFinder.mkdir_p(self.tempdir)
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')

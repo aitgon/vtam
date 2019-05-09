@@ -4,9 +4,12 @@ import tempfile
 #####################
 #
 # Workflow tmp dir
+from wopmetabarcoding.utils.PathFinder import PathFinder
+
 VTAMTMPDIR = None
 if 'VTAMTMPDIR' in os.environ:
     VTAMTMPDIR = os.environ['VTAMTMPDIR']
+    PathFinder.mkdir_p(VTAMTMPDIR)
 tempdir = tempfile.mkdtemp(dir=VTAMTMPDIR)
 #
 #####################

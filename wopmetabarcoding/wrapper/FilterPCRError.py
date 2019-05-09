@@ -10,6 +10,7 @@ import pandas
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterPCRError(ToolWrapper):
@@ -60,6 +61,13 @@ class FilterPCRError(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        this_step_tmp_dir = create_step_tmp_dir(__file__)
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterPCRError.__input_file_sample2fasta)
@@ -166,7 +174,7 @@ class FilterPCRError(ToolWrapper):
         # 5. Run Vsearch
         #
         ##########################################################
-        vsearch_output_df = f10_pcr_error_run_vsearch(variant_df)
+        vsearch_output_df = f10_pcr_error_run_vsearch(variant_df, this_step_tmp_dir)
 
         ##########################################################
         #
@@ -184,7 +192,9 @@ class FilterPCRError(ToolWrapper):
         records = df_filter_output.to_dict('records')
         with engine.connect() as conn:
             conn.execute(filter_pcr_error_model.__table__.insert(), records)
-def f10_pcr_error_run_vsearch(variant_df):
+
+
+def f10_pcr_error_run_vsearch(variant_df, this_step_tmp_dir):
     # length of smallest sequence
     length_min = min(variant_df.sequence.apply(len).tolist())
     # calcul identity
@@ -195,8 +205,7 @@ def f10_pcr_error_run_vsearch(variant_df):
     # 5-1. Make a fasta file with all variants of the sample or replicate
     ###################################################################
 
-    PathFinder.mkdir_p(os.path.join(tempdir, "f10_pcr_error"))
-    variant_fasta = os.path.join(tempdir, "f10_pcr_error", '{}.fasta'.format("pcr_error"))
+    variant_fasta = os.path.join(this_step_tmp_dir, '{}.fasta'.format("pcr_error"))
     with open(variant_fasta, 'w') as fout:
         for row in variant_df.itertuples():
             id = row.id
@@ -207,7 +216,7 @@ def f10_pcr_error_run_vsearch(variant_df):
         # 5-2.1 vsearch
         ###################################################################
     # import pdb; pdb.set_trace()
-    sample_tsv = os.path.join(tempdir, '{}.tsv'.format("pcr_error"))
+    sample_tsv = os.path.join(this_step_tmp_dir, '{}.tsv'.format("pcr_error"))
     vsearch_usearch_global_args = {'db': variant_fasta,
                                    'usearch_global': variant_fasta,
                                    'id': str(identity),

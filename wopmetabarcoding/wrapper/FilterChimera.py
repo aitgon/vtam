@@ -1,5 +1,4 @@
 import inspect
-import time
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.utils.PathFinder import PathFinder
@@ -12,8 +11,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
-
-
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterChimera(ToolWrapper):
@@ -63,6 +61,13 @@ class FilterChimera(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        this_step_tmp_dir = create_step_tmp_dir(__file__)
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterChimera.__input_file_sample2fasta)
@@ -74,8 +79,6 @@ class FilterChimera(ToolWrapper):
         biosample_model = self.input_table(FilterChimera.__input_table_biosample)
         replicate_model = self.input_table(FilterChimera.__input_table_replicate)
         variant_model = self.input_table(FilterChimera.__input_table_Variant)
-        #
-
         #
         # Output table models
         filter_chimera_model = self.output_table(FilterChimera.__output_table_filter_chimera)
@@ -161,7 +164,7 @@ class FilterChimera(ToolWrapper):
         # 4. Run Filter
         #
         ##########################################################
-        df_chimera, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df)
+        df_chimera, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir)
         # df_filter_output = df_filter.copy()
         ##########################################################
         #
@@ -175,7 +178,7 @@ class FilterChimera(ToolWrapper):
                 conn.execute(filter_chimera_borderline_model.__table__.insert(), df_chimera_borderline.to_dict('records'))
 
 
-def f11_filter_chimera(variant_read_count_df, variant_df):
+def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
     """
     filter chimera
     """
@@ -184,7 +187,6 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
     logger.debug(
         "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
     #
-    this_filter_name = 'FilterRenkonen'
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_id'] = 11
     filter_output_df['filter_delete'] = False
@@ -222,11 +224,10 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
         ###################################################################
         df_grouped_biosample_id.sort_values(by='read_count', ascending=False, inplace=True)
         #
-        chimera1_fasta = os.path.join(tempdir, this_filter_name,
+        chimera1_fasta = os.path.join(this_step_tmp_dir,
                                       'chimera1_biosample_id_{}.fasta'.format(biosample_id))
         #
         #  Prepare 1 fasta file
-        PathFinder.mkdir_p(os.path.join(tempdir, this_filter_name))
         with open(chimera1_fasta, 'w') as fasta_fout:
             for variant_id in df_grouped_biosample_id.variant_id.unique():
                 variant_sequence = variant_df.loc[variant_df.id == variant_id, 'sequence'].values[0]
@@ -239,11 +240,11 @@ def f11_filter_chimera(variant_read_count_df, variant_df):
         # 3. Run uchime_denovo
         #
         ###################################################################
-        chimera2_borderline_fasta = os.path.join(tempdir, this_filter_name,
+        chimera2_borderline_fasta = os.path.join(this_step_tmp_dir,
                                                  'chimera2_biosample_id_{}_borderline.fasta'.format(biosample_id))
-        chimera2_nonchimeras_fasta = os.path.join(tempdir, this_filter_name,
+        chimera2_nonchimeras_fasta = os.path.join(this_step_tmp_dir,
                                                   'chimera2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
-        chimera2_chimeras_fasta = os.path.join(tempdir, this_filter_name,
+        chimera2_chimeras_fasta = os.path.join(this_step_tmp_dir,
                                                'chimera2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
         #
         vsearch_chimera_args = {

@@ -20,7 +20,7 @@ def create_primer_tag_fasta_for_vsearch(sample_information_obj, forward_strand, 
     Function creating a fasta file which will be used as a database by vsearch
 
     :param session: Current session of the database
-    :param sample_information_obj: Model of the FastaInformation table
+    :param sample_information_obj: Model of the SampleInformation table
     :param primer_tag_fasta:
     :param forward_strand: Boolean
     :return:
@@ -216,7 +216,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
     """
     Function used to merge all file information between the vsearch results reads and the file information csv
     :param session: Current session of the database
-    :param sample_information_model: FastaInformation table, contains all the necessary information like marker_id names
+    :param sample_information_model: SampleInformation table, contains all the necessary information like marker_id names
     :param model2: Fasta table, contains all the information about files used
     :param trimmed_tsv: csv file to parse
     :param merged_fasta_file_name: Name of the original merged fasta file
@@ -244,7 +244,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
                 tag_forward = id_tag_primer.split('|')[1]
                 tag_reverse = "".join([character for character in line[1] if character.islower()])
                 read_sequence = line[8]
-                # Get the information in the FastaInformation table with tags and helped by the merged_fasta_file_name
+                # Get the information in the SampleInformation table with tags and helped by the merged_fasta_file_name
                 sampleinformation_instance = session.query(sample_information_model)\
                     .filter(sample_information_model.tag_forward == tag_forward)\
                     .filter(sample_information_model.tag_reverse == tag_reverse)\

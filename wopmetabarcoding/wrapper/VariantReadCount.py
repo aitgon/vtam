@@ -6,6 +6,7 @@ from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
 
 
@@ -62,7 +63,12 @@ class VariantReadCount(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # conn = engine.connect()
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file
         sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
