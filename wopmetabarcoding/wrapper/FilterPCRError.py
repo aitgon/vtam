@@ -1,10 +1,12 @@
 import inspect
+import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 import os
 from math import floor
 from sqlalchemy import select
 import pandas
+
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1
@@ -137,6 +139,12 @@ class FilterPCRError(ToolWrapper):
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
 
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
         ##########################################################
         #
         # 4. Select variant sequence
@@ -224,8 +232,6 @@ def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_outpu
     # Aggregate by biosample
     variant_read_count_grouped_df = variant_read_count_df.groupby(
         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    # import pdb; pdb.set_trace()
-    variant_read_count_grouped_df.drop(columns=['replicate_id'])
     # Compute sum mismatch and gap
     vsearch_output_df[
         'sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
