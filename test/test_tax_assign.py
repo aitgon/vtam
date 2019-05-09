@@ -44,14 +44,17 @@ class TestTaxAssign(TestCase):
         self.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         self.identity_threshold = 97
+        self.min_number_of_taxa = 3
+        self.include_prop = 90
+        #
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_002737.tsv")
         self.blast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "blast_MFZR_001274.tsv")
         self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "MFZR_001274.fasta")
         self.blast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","blast_MFZR_002737.tsv")
         self.tax_lineage_variant13_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
-        self.tax_lineage_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path,
-                                                      "test_files", "tax_lineage.tsv")
+        # self.tax_lineage_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path,
+        #                                               "test_files", "tax_lineage.tsv")
 
 
     def test_f02_variant_df_to_fasta(self):
@@ -157,8 +160,9 @@ class TestTaxAssign(TestCase):
             'superorder' : [84394, 84394, 84394, 84394],
         })
         identity = 80
-        #
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df, identity)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
+                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
+                                              min_number_of_taxa=self.min_number_of_taxa)
         #
         self.assertTrue(ltg_tax_id == 183142)
         self.assertTrue(ltg_rank == 'species')
@@ -175,7 +179,9 @@ class TestTaxAssign(TestCase):
         #
         identity = 80
         #
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df, identity)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
+                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
+                                              min_number_of_taxa=self.min_number_of_taxa)
         #
         self.assertTrue(ltg_tax_id == 183142)
         self.assertTrue(ltg_rank == 'species')
@@ -190,7 +196,9 @@ class TestTaxAssign(TestCase):
         })
         identity = 100
         #
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df, identity)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
+                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
+                                              min_number_of_taxa=self.min_number_of_taxa)
         #
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
@@ -203,10 +211,13 @@ class TestTaxAssign(TestCase):
         blast_out_df = f04_import_blast_output_into_df(self.blast_MFZR_002737_tsv)
         #
         identity = 100
+        #
         blast_out_df.loc[blast_out_df.identity >= self.identity_threshold]
         blast_result_subset_df = blast_out_df.loc[blast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
         tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
+                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
+                                              min_number_of_taxa=self.min_number_of_taxa)
         self.assertTrue(ltg_tax_id==761875)
         self.assertTrue(ltg_rank=='species')
 
@@ -221,13 +232,15 @@ class TestTaxAssign(TestCase):
         blast_out_df.loc[blast_out_df.identity >= self.identity_threshold]
         blast_result_subset_df = blast_out_df.loc[blast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
         tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df, identity=identity, identity_threshold=self.identity_threshold)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
+                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
+                                              min_number_of_taxa=self.min_number_of_taxa)
         self.assertTrue(ltg_tax_id==1344033)
         self.assertTrue(ltg_rank=='species')
 
-    def test_f07_blast_result_to_ltg(self):
-        tax_lineage_df = pandas.read_csv(self.tax_lineage_tsv, sep=',')
-
-        ltg_df = f07_blast_result_to_ltg(tax_lineage_df)
-        import pdb;
-        pdb.set_trace()
+    # def test_f07_blast_result_to_ltg(self):
+    #     tax_lineage_df = pandas.read_csv(self.tax_lineage_tsv, sep=',')
+    #
+    #     ltg_df = f07_blast_result_to_ltg(tax_lineage_df)
+    #     import pdb;
+    #     pdb.set_trace()

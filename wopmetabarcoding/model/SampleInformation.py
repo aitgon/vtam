@@ -25,11 +25,6 @@ class SampleInformation(Base):
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
 
-    # @validates('file_name')
-    # def validates_filename(self, key, path):
-    #     assert ' ' not in path
-    #     return path
-
     @validates('name', 'sample_name', 'run_name')
     def validates_names(self, key, name):
         if '_' in name:

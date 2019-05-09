@@ -1,4 +1,5 @@
 import inspect
+import os
 import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
@@ -57,6 +58,12 @@ class FilterMinReplicateNumber(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterMinReplicateNumber.__input_file_sample2fasta)

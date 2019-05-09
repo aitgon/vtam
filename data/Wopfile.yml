@@ -1,5 +1,5 @@
-rule FastaInformation:
-    tool: wopmetabarcoding.wrapper.FastaInformation
+rule SampleInformation:
+    tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
             sample2fasta: {{fastainfo}}
@@ -11,8 +11,8 @@ rule FastaInformation:
             Replicate: wopmetabarcoding.model.Replicate
             Fasta: wopmetabarcoding.model.Fasta
             PrimerPair: wopmetabarcoding.model.PrimerPair
-            SampleInformation: wopmetabarcoding.model.SampleInformation
             TagPair: wopmetabarcoding.model.TagPair
+            SampleInformation: wopmetabarcoding.model.SampleInformation
     params:
         fasta_dir: {{fastadir}}
 #
