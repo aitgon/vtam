@@ -1,7 +1,15 @@
 import os
 import tempfile
 
-tempdir = tempfile.mkdtemp()
+#####################
+#
+# Workflow tmp dir
+VTAMTMPDIR = None
+if 'VTAMTMPDIR' in os.environ:
+    VTAMTMPDIR = os.environ['VTAMTMPDIR']
+tempdir = tempfile.mkdtemp(dir=VTAMTMPDIR)
+#
+#####################
 
 # Old tax_assign parameters
 order = [100.0, 97.0, 95.0, 90.0]
@@ -19,4 +27,3 @@ wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.envi
 public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
-

@@ -1,4 +1,5 @@
 import inspect
+import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -146,10 +147,22 @@ class FilterMinReplicateNumber(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-
         records = df_filter_output.to_dict('records')
         with engine.connect() as conn:
             conn.execute(filter_min_replicate_number_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit wopmetabarcoding if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert not df_filter_output.filter_delete.all()
+        except AssertionError:
+            sys.stderr.write("Error: This filter has deleted all the variants: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
+
 
 
 def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2):
