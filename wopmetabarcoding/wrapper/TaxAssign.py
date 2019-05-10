@@ -18,7 +18,7 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f06_select_ltg
 
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_qblast_result_to_ltg
 
 
 class TaxAssign(ToolWrapper):
@@ -202,44 +202,44 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 3 Run qblast: test_f06_2_run_qblast
+        # 3 Run qqblast: test_f06_2_run_qqblast
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Running qblast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
-        # Run and read blast result
+            "file: {}; line: {}; Running qqblast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
+        # Run and read qblast result
         with open(variant_fasta) as fin:
-            result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
-            blast_result_tsv = os.path.join(this_tempdir, "tax_assign_blast.tsv")
-            with open(blast_result_tsv, 'w') as out_handle:
+            result_handle = NCBIWWW.qqblast("qblastn", "nt", fin.read(), format_type='Tabular')
+            qblast_result_tsv = os.path.join(this_tempdir, "tax_assign_qblast.tsv")
+            with open(qblast_result_tsv, 'w') as out_handle:
                 out_handle.write(result_handle.read())
             result_handle.close()
         logger.debug(
-            "file: {}; line: {}; TSV output from qblast: {}".format(__file__, inspect.currentframe().f_lineno, blast_result_tsv))
+            "file: {}; line: {}; TSV output from qqblast: {}".format(__file__, inspect.currentframe().f_lineno, qblast_result_tsv))
         logger.debug(
-            "file: {}; line: {}; Finished qblast".format(__file__, inspect.currentframe().f_lineno, ))
-        blast_result_df = pandas.read_csv(blast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
+            "file: {}; line: {}; Finished qqblast".format(__file__, inspect.currentframe().f_lineno, ))
+        qblast_result_df = pandas.read_csv(qblast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
                                           header=None, names=['variant_id', 'gb_accession', 'identity'])
         # let only the output coantaining non null values
-        blast_variant_result_df = blast_result_df[blast_result_df['identity'].notnull()].copy()
+        qblast_variant_result_df = qblast_result_df[qblast_result_df['identity'].notnull()].copy()
 
         ##########################################################
         #
-        # 4 test_f06_3_annotate_blast_output_with_tax_id & test_f03_import_blast_output_into_df
+        # 4 test_f06_3_annotate_qblast_output_with_tax_id & test_f03_import_qblast_output_into_df
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Annotation blast output".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Annotation qblast output".format(__file__, inspect.currentframe().f_lineno))
         logger.debug(
             "file: {}; line: {}; Connect to accession2taxid_sqlite: {}".format(__file__, inspect.currentframe().f_lineno,
                                                                                accession2taxid_sqlite_path))
         con = sqlite3.connect(accession2taxid_sqlite_path)
-        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(blast_variant_result_df.gb_accession.tolist()))
+        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(qblast_variant_result_df.gb_accession.tolist()))
         gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
         con.close()
         #
-        # final result blast contaning all the info that we gonna need
-        blast_result_tax_id_df = blast_variant_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
+        # final result qblast contaning all the info that we gonna need
+        qblast_result_tax_id_df = qblast_variant_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
 
         ##########################################################
         #
@@ -258,11 +258,11 @@ class TaxAssign(ToolWrapper):
         con.close()
         #lineage from tax_id
         lineage_list = []
-        for target_tax_id in blast_result_tax_id_df.tax_id.unique().tolist():
+        for target_tax_id in qblast_result_tax_id_df.tax_id.unique().tolist():
             lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id,taxonomy_db_df))
         #lineage to df
         tax_lineage_df = pandas.DataFrame(lineage_list)
-        tax_lineage_df = blast_result_tax_id_df.merge(tax_lineage_df, left_on='tax_id', right_on='tax_id')
+        tax_lineage_df = qblast_result_tax_id_df.merge(tax_lineage_df, left_on='tax_id', right_on='tax_id')
 
         ##########################################################
         #
@@ -272,9 +272,9 @@ class TaxAssign(ToolWrapper):
         logger.debug(
             "file: {}; line: {}; Ltg,".format(__file__, inspect.currentframe().f_lineno))
         #
-        # f07_blast_result_to_ltg(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+        # f07_qblast_result_to_ltg(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
-        ltg_df = f07_blast_result_to_ltg(tax_lineage_df,identity_threshold=identity_threshold, include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
+        ltg_df = f07_qblast_result_to_ltg(tax_lineage_df,identity_threshold=identity_threshold, include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
 
         ##########################################################
         #
