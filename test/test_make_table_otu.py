@@ -7,6 +7,7 @@ from unittest import TestCase
 
 import pandas
 
+from wopmetabarcoding.utils.constants import rank_hierarchy_otu_table
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
@@ -15,102 +16,121 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_d
 class TestMakeTableOTU(TestCase):
 
     def test_f01_make_table_out(self):
-        pass
-        # # Input
+        #  Input
+
+        taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
+
+        run_dic = {
+            'id': [1],
+            'name': ['prerun']
+        }
+        marker_dic = {
+            'id': [1],
+            'name': ['MFZR']
+        }
+        variant_dic = {
+            'variant_id': [30],
+            'variant_sequence': [
+                'ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC']
+        }
+        filter_codon_stop_dic = {'run_id': [1, 1, 1, 1, 1, 1], 'marker_id': [1, 1, 1, 1, 1, 1],
+                                 'variant_id': [30, 30, 30, 30, 30, 30], 'biosample_id': [1, 1, 1, 2, 2, 2],
+                                 'replicate_id': [1, 2, 3, 1, 2, 3], 'read_count': [183, 93, 42, 175, 31, 63],
+                                 'fiter_id': [14, 14, 14, 14, 14, 14], 'filter_delete': [0, 0, 0, 0, 0, 0]}
         #
-        # taxonomy_sqlite_path="taxonomy.sqlite"
+        biosample_dic = {'id': [1, 2], 'name': ['Tpos1_prerun', 'Tpos2_prerun']}
         #
-        # variant_dic = {
-        #     'variant_id' : [30],
-        #     'variant_sequence' : ['ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC']
-        # }
-        # filter_codon_stop_dic = {'run_id': [1, 1, 1, 1, 1, 1], 'marker_id': [1, 1, 1, 1, 1, 1],
-        #                          'variant_id': [30, 30, 30, 30, 30, 30], 'biosample_id': [1, 1, 1, 2, 2, 2],
-        #                          'replicate_id': [1, 2, 3, 1, 2, 3], 'read_count': [183, 93, 42, 175, 31, 63],
-        #                          'fiter_id': [14, 14, 14, 14, 14, 14], 'filter_delete': [0, 0, 0, 0, 0, 0]}
-        # #
-        # biosample_dic = { 'id': [1, 2],'name': ['Tpos1_prerun','Tpos2_prerun']}
-        # #
-        # taxonomy_dic = { 'variant_id' : [30], 'identity': [85], 'ltg_rank': ['species'],  'ltg_tax_id':[268290]}
+        ltg_tax_assign_dic = {'variant_id': [30], 'identity': [85], 'ltg_rank': ['species'], 'ltg_tax_id': [268290]}
+
         #
-        # #
-        # # Get tables
-        # variant_df = pandas.DataFrame(variant_dic, index=None)
-        # biosample_df = pandas.DataFrame(biosample_dic, index=None)
-        # filter_codon_stop_df = pandas.DataFrame(filter_codon_stop_dic, index=None)
-        # taxonomy_df = pandas.DataFrame(taxonomy_dic, index=None)
-        # # out = pandas.DataFrame(columns=['variant_df', 'sequence_length'])
-        # #
-        # # Merge table
+        #  Get tables/df
+        run_df = pandas.DataFrame(run_dic, index=None)
+        marker_df = pandas.DataFrame(marker_dic, index=None)
+        variant_df = pandas.DataFrame(variant_dic, index=None)
+        biosample_df = pandas.DataFrame(biosample_dic, index=None)
+        filter_codon_stop_df = pandas.DataFrame(filter_codon_stop_dic, index=None)
+        ltg_tax_assign_df = pandas.DataFrame(ltg_tax_assign_dic, index=None)
+        #
+        # Initialize out_df
+        otu_df = variant_df.copy()
+        #
+        # Add Variant Sequence length
+        variant_df_tmp = variant_df.copy()
+        variant_df_tmp['sequence_length'] = variant_df_tmp['variant_sequence'].str.len()
+        otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
+        #
+        # Add read_count_sum_per_variant
+        read_count_sum_per_variant = filter_codon_stop_df.groupby('variant_id').sum().reset_index()[
+            ['variant_id', 'read_count']]
+        otu_df = otu_df.merge(read_count_sum_per_variant, on='variant_id')
+        #
+        # Merge variants and read_count per biosample
         # otu_df = variant_df.merge(filter_codon_stop_df, on='variant_id')
-        # #
-        # # Sum read counts over replicates of each biosample
-        # otu_df = otu_df.groupby(['run_id', 'marker_id', 'variant_id', 'variant_sequence', 'biosample_id'])[
-        #     'read_count'].sum().reset_index()
-        # #
-        # # Pivot biosamples
-        # otu_tmp_df = otu_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns="biosample_id", values='read_count').reset_index()
-        # #
-        # # Merge pivoted biosamples with variant information
-        # otu_df = otu_df[['run_id', 'marker_id', 'variant_id', 'variant_sequence']].drop_duplicates().merge(otu_tmp_df,
-        #                                                                     on=['run_id', 'marker_id', 'variant_id'])
+        #
+        ############################
+        #
+        # Prepare biosamples data
+        #
+        ############################
+        #
+        # Sum read counts over replicates of each biosample
+        otu_biosamples_df = filter_codon_stop_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id'])[
+            'read_count'].sum().reset_index()
+        #
+        # Replace biosample ids with their name
+        otu_biosamples_df = otu_biosamples_df.merge(biosample_df, left_on='biosample_id', right_on='id')
+        otu_biosamples_df.drop(['biosample_id', 'id'], axis=1, inplace=True)
+        otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'biosample_name'})
+        #
+        # Replace marker ids with their name
+        otu_biosamples_df = otu_biosamples_df.merge(marker_df, left_on='marker_id', right_on='id')
+        otu_biosamples_df.drop(['marker_id', 'id'], axis=1, inplace=True)
+        otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'marker_name'})
+        #
+        # Replace run ids with their name
+        otu_biosamples_df = otu_biosamples_df.merge(run_df, left_on='run_id', right_on='id')
+        otu_biosamples_df.drop(['run_id', 'id'], axis=1, inplace=True)
+        otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'run_name'})
+        #
+        # Pivot biosamples
+        otu_biosamples_df = otu_biosamples_df.pivot_table(index=['run_name', 'marker_name', 'variant_id'], columns="biosample_name",
+                                        values='read_count').reset_index()
+        #
+        ############################
+        #
+        # Merge variant and biosample information
+        #
+        ############################
+        otu_df = otu_df.merge(otu_biosamples_df, on='variant_id')
         #
         #
-        # # Variant Sequence length
-        # variant_df_tmp = variant_df.copy()
-        # variant_df_tmp['sequence_length'] = variant_df_tmp['variant_sequence'].str.len()
-        # otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
-        #
-        #
-        # # Taxonomy
-        #
-        # otu_df = otu_df.merge(taxonomy_df, on='variant_id')
+        # Merge ltg tax assign results
+        # import pdb; pdb.set_trace()
+        otu_df = otu_df.merge(ltg_tax_assign_df, on='variant_id')
 
+        # getting the taxonomy_db to df
+        con = sqlite3.connect(taxonomy_sqlite_path)
+        sql = """SELECT *  FROM taxonomy """
+        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
+        con.close()
 
-        # # getting the taxonomy_db to df
-        # taxonomy_sqlite_path = "taxonomy.sqlite"
-        # con = sqlite3.connect(taxonomy_sqlite_path)
-        # sql = """SELECT *  FROM taxonomy """
-        # taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
-        # con.close()
+        ##########################
         #
-        # # Lineage creation
-        # list_lineage=[]
-        # for tax_id in  otu_df['ltg_tax_id'].tolist():
-        #   dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df)
-        #   list_lineage.append(dic_lineage)
+        # Create lineage from each ltg_tax_id
         #
-        # lineage_df = pandas.DataFrame(data=list_lineage)
+        ##########################
+        list_lineage = []
+        for tax_id in otu_df['ltg_tax_id'].tolist():
+            dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
+            list_lineage.append(dic_lineage)
+        lineage_df = pandas.DataFrame(data=list_lineage)
+        lineage_list_df_columns_sorted = list(filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_otu_table))
+        lineage_df = lineage_df[lineage_list_df_columns_sorted + ['tax_id']]
 
 
         # Merge Otu_df with the lineage df
-
-        # otu_df = otu_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
-
-        #
-        # df= taxonomy_db_df.loc[taxonomy_db_df['tax_id'] == 7496]
-        # df['name_txt']
-        # 
-        # import pdb; pdb.set_trace()
-        # # variant_id_delete_list = []
-        # out_dic = {}
-        #
-        #
-        #     # taxonomy db
-        #     # getting the taxonomy_db to df
-        #     con = sqlite3.connect(taxonomy_sqlite_path)
-        #     sql = """SELECT *  FROM taxonomy """
-        #     taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
-        #     con.close()
-        #     ltg_taxid = ltg_df["ltg_tax_id"]
-        #
-        #
-        #     # dic_lineage = f04_1_tax_id_to_taxonomy_lineage(ltg_taxid, taxonomy_db_df)
-        #     import pdb;
-        #     pdb.set_trace()
-        #
-        #     # add variant-sequence
-        #     df_sequence = variant_df.loc[variant_df.variant_id == variant_id]
-        #     out_dic['variant_sequence'] = df_sequence["variant_sequence"]
-        #
-        #
+        otu_df = otu_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
+        otu_df.drop('tax_id', axis=1, inplace=True)
+        # TODO: assert
+        # TODO: function for all this
+        # TODO: wrapper with code in wopfile

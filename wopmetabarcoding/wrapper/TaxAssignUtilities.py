@@ -79,7 +79,7 @@ def f04_import_blast_output_into_df(blast_output_tsv_path):
     return blast_out_df
 
 
-def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
+def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
     """
     Takes tax_id and taxonomy_db.sqlite DB and create a dictionary with the taxonomy lineage
 
@@ -101,6 +101,9 @@ def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df):
         rank = tax_id_row['rank'].values[0]
         parent_tax_id = tax_id_row['parent_tax_id'].values[0]
         lineage_dic[rank] = tax_id
+        if give_tax_name: # return tax_name instead of tax_d
+            tax_name = tax_id_row['name_txt'].values[0]
+            lineage_dic[rank] = tax_name
         tax_id = parent_tax_id
     return lineage_dic
 

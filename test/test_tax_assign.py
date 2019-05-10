@@ -34,6 +34,7 @@ class TestTaxAssign(TestCase):
         #
         #####################################
 
+        PathFinder.mkdir_p(data_dir)
         file_remote = os.path.join(public_data_dir, "taxonomy.sqlite")
         taxonomy_sqlite_path = os.path.join(data_dir, os.path.basename(file_remote))
         if not os.path.isfile(taxonomy_sqlite_path):
