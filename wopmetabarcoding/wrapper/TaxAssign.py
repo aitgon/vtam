@@ -7,16 +7,12 @@ from Bio.Blast import NCBIWWW
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
-from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta
 
-from wopmetabarcoding.utils.constants import wop_dir
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
-
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f06_select_ltg
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_qblast_result_to_ltg
 
@@ -202,22 +198,22 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 3 Run qqblast: test_f06_2_run_qqblast
+        # 3 Run qblast: test_f06_2_run_qblast
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Running qqblast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
+            "file: {}; line: {}; Running qblast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
         # Run and read qblast result
         with open(variant_fasta) as fin:
-            result_handle = NCBIWWW.qqblast("qblastn", "nt", fin.read(), format_type='Tabular')
+            result_handle = NCBIWWW.qblast("qblastn", "nt", fin.read(), format_type='Tabular')
             qblast_result_tsv = os.path.join(this_tempdir, "tax_assign_qblast.tsv")
             with open(qblast_result_tsv, 'w') as out_handle:
                 out_handle.write(result_handle.read())
             result_handle.close()
         logger.debug(
-            "file: {}; line: {}; TSV output from qqblast: {}".format(__file__, inspect.currentframe().f_lineno, qblast_result_tsv))
+            "file: {}; line: {}; TSV output from qblast: {}".format(__file__, inspect.currentframe().f_lineno, qblast_result_tsv))
         logger.debug(
-            "file: {}; line: {}; Finished qqblast".format(__file__, inspect.currentframe().f_lineno, ))
+            "file: {}; line: {}; Finished qblast".format(__file__, inspect.currentframe().f_lineno, ))
         qblast_result_df = pandas.read_csv(qblast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
                                           header=None, names=['variant_id', 'gb_accession', 'identity'])
         # let only the output coantaining non null values
