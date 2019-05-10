@@ -206,9 +206,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Run qblast".format(__file__, inspect.currentframe().f_lineno, ))
-        logger.debug(
-            "file: {}; line: {}; FASTA input to qblast: {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
+            "file: {}; line: {}; Running qblast with FASTA input".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
         # Run and read blast result
         with open(variant_fasta) as fin:
             result_handle = NCBIWWW.qblast("blastn", "nt", fin.read(), format_type='Tabular')
