@@ -7,6 +7,7 @@ from wopmetabarcoding.utils.logger import logger
 
 from wopmetabarcoding.utils.constants import identity_list
 
+from Bio.Blast.Applications import NcbiblastnCommandline
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
@@ -45,7 +46,7 @@ def f02_variant_df_to_fasta(variant_df, fasta_path):
             fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
 
 
-def f03_blast(variant_id, variant_sequence):
+def f03_lblast(variant_fasta_path, variant_tsv_path):
     """
     Runs Blast
 
@@ -54,29 +55,31 @@ def f03_blast(variant_id, variant_sequence):
         variant_sequence (String): Sequence of variant
 
     Returns:
-        String: Path to output of blast in TSV format
+        String: Path to output of qblast in TSV format
     """
     # http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc98
     # Create FASTA
-    from Bio.Blast.Applications import NcbiblastnCommandline
-    blastn_cline = NcbiblastnCommandline(query="opuntia.fasta", db="nr", evalue=0.001, outfmt=5, out="opuntia.xml")
+    blastn_cline = NcbiblastnCommandline(query=variant_fasta_path, db="nt", evalue=1e-5,
+                                         outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+                                         qcov_hsp_perc=80, num_threads=1, out=variant_tsv_path)
+    stdout, stderr = blastn_cline()
 
 
-def f04_import_blast_output_into_df(blast_output_tsv_path):
+def f04_import_qblast_output_into_df(qblast_output_tsv_path):
     """
     Imports Blast output TSV into DataFrame
 
     Args:
-        blast_output_tsv_path (String): Path to output of blast in TSV format
+        qblast_output_tsv_path (String): Path to output of qblast in TSV format
 
     Returns:
         DataFrame: with three columns: target_id, identity, target_tax_id
     """
-    blast_out_df = pandas.read_csv(blast_output_tsv_path, sep="\t", header=None, names=['target_id', 'identity', 'target_tax_id'], usecols=[1, 2, 5])
+    qblast_out_df = pandas.read_csv(qblast_output_tsv_path, sep="\t", header=None, names=['target_id', 'identity', 'target_tax_id'], usecols=[1, 2, 5])
     # extract the target_id
-    blast_out_df.target_id = blast_out_df.target_id.str.split('|', 2).str[1]
-    blast_out_df.target_id = pandas.to_numeric(blast_out_df.target_id)
-    return blast_out_df
+    qblast_out_df.target_id = qblast_out_df.target_id.str.split('|', 2).str[1]
+    qblast_out_df.target_id = pandas.to_numeric(qblast_out_df.target_id)
+    return qblast_out_df
 
 
 def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
@@ -107,12 +110,12 @@ def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False
         tax_id = parent_tax_id
     return lineage_dic
 
-def f05_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
+def f05_qblast_result_subset(qblast_result_subset_df, taxonomy_db_df):
     """
-    Takes blast_result_subset_df and returns tax_lineage_df with lineages of each target_tax_id
+    Takes qblast_result_subset_df and returns tax_lineage_df with lineages of each target_tax_id
 
     Args:
-        blast_result_subset_df (DataFrame): DataFrame with result subset for given identity
+        qblast_result_subset_df (DataFrame): DataFrame with result subset for given identity
             where each column is target_id and target_tax_id
     target_id  target_tax_id
 0  1049499563         761875
@@ -120,17 +123,17 @@ def f05_blast_result_subset(blast_result_subset_df, taxonomy_db_df):
         taxonomy_db_df (pandas.DataFrame: DataFrame with taxonomy information
 
     Returns:
-        DataFrame: with a lineage per row that corresponds to the the lineage of each taxon from the blast sequence targets
+        DataFrame: with a lineage per row that corresponds to the the lineage of each taxon from the qblast sequence targets
    class  cohort  family  genus  infraclass  kingdom  no rank  order  phylum  species  subclass  subfamily  suborder  subphylum  superfamily  superkingdom  superorder
 0  50557   33392   41030  50443       33340    33208   131567  30263    6656   761875      7496     147297     93873       6960        41029          2759       85604
 1  50557   33392   41030  50443       33340    33208   131567  30263    6656   761875      7496     147297     93873       6960        41029          2759       85604
 
     """
     lineage_list = []
-    for target_tax_id in blast_result_subset_df.target_tax_id.unique().tolist():
+    for target_tax_id in qblast_result_subset_df.target_tax_id.unique().tolist():
         lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
     tax_lineage_df = pandas.DataFrame(lineage_list)
-    tax_lineage_df = blast_result_subset_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
+    tax_lineage_df = qblast_result_subset_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
     tax_lineage_df.drop('target_id', axis=1, inplace=True)
     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
     return tax_lineage_df
@@ -143,7 +146,7 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, m
         tax_lineage_df (pandas.DataFrame): DF where each column is a rank, rows are different target_ids and values are putative_ltg_ids
         identity (int): Identity value that were used to select the results from Blast
         identity_threshold (int): Identity value where we change of using include_prop method to min_number_of_taxa, default 97
-        include_prop (int): Percentage out of total selected blast hits for Ltg to be present when identity>=identity_threshold
+        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=identity_threshold
         min_number_of_taxa (int): Minimal number of taxa, where LTF must be present when identity<identity_threshold
 
     Returns:
@@ -165,7 +168,7 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, m
         ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
 
-def f07_blast_result_to_ltg(tax_lineage_df,identity_threshold, include_prop, min_number_of_taxa):
+def f07_qblast_result_to_ltg(tax_lineage_df,identity_threshold, include_prop, min_number_of_taxa):
     """
     TODO Test variant 13 to ltg_tax_id using wopmetabarcodin/test/test_files/tax_lineage_variant13.tsv
     """
