@@ -207,7 +207,7 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     """
     # this_filter_id = 9
     logger.debug(
-        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno))
+        "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     df_filter_output=variant_read_count_df.copy()
     # replicate count
