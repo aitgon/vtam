@@ -131,7 +131,6 @@ class FilterRenkonen(ToolWrapper):
                                           chimera_model_table.c.replicate_id,
                                           chimera_model_table.c.variant_id,
                                           chimera_model_table.c.read_count]) \
-            .where(chimera_model_table.c.filter_id == 11) \
             .where(chimera_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -228,7 +227,7 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
 
 def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
     dfout = variant_read_count_df.copy()
-    dfout['filter_id'] = 12
+    # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
     #
     # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
