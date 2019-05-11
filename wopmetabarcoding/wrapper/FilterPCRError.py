@@ -137,7 +137,6 @@ class FilterPCRError(ToolWrapper):
                                           filter_min_replicate_number_table.c.biosample_id,
                                           filter_min_replicate_number_table.c.replicate_id,
                                           filter_min_replicate_number_table.c.read_count])\
-            .where(filter_min_replicate_number_table.c.filter_id == 9)\
             .where(filter_min_replicate_number_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -235,7 +234,7 @@ def f10_pcr_error_run_vsearch(variant_df, this_step_tmp_dir):
 def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop):
     # Output of filter pcr_error
     filter_output_df = variant_read_count_df.copy()
-    filter_output_df['filter_id'] = 10
+    # filter_output_df['filter_id'] = 10
     filter_output_df['filter_delete'] = False
     #
     # Aggregate by biosample

@@ -132,7 +132,6 @@ class FilterIndel(ToolWrapper):
                                           renkonen_model_table.c.biosample_id,
                                           renkonen_model_table.c.replicate_id,
                                           renkonen_model_table.c.read_count])\
-            .where(renkonen_model_table.c.filter_id == 12)\
             .where(renkonen_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -147,7 +146,7 @@ class FilterIndel(ToolWrapper):
                                                                       inspect.currentframe().f_lineno,
                                                                       'Indel'))
         else:
-            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
             variant_model_table = variant_model.__table__
             stmt_variant = select([variant_model_table.c.id,
                                    variant_model_table.c.sequence])
@@ -185,7 +184,6 @@ def f13_filter_indel(variant_read_count_df, variant_df):
     """
 
     df_out = variant_read_count_df.copy()
-    df_out['filter_id'] = 13
     df_out['filter_delete'] = False
     #
     df = variant_df.copy()
