@@ -110,7 +110,7 @@ def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False
         tax_id = parent_tax_id
     return lineage_dic
 
-def f05_qblast_result_subset(qblast_result_subset_df, taxonomy_db_df):
+def f05_blast_result_subset(qblast_result_subset_df, taxonomy_db_df):
     """
     Takes qblast_result_subset_df and returns tax_lineage_df with lineages of each target_tax_id
 
@@ -168,19 +168,42 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, m
         ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
 
-def f07_qblast_result_to_ltg(tax_lineage_df,identity_threshold, include_prop, min_number_of_taxa):
+def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold, include_prop, min_number_of_taxa):
     """
-    TODO Test variant 13 to ltg_tax_id using wopmetabarcodin/test/test_files/tax_lineage_variant13.tsv
+    Main function that takes blast result with variant_id, target_id, identity and tax_id and returns ltg_tax_id and ltg_rank
+
+    Example of the input variantid_identity_lineage_df
+    variant_id  identity  target_tax_id  class  family   genus  infraclass  kingdom  no rank  order  phylum  species  subclass  suborder  subphylum  superkingdom
+0           3   100.000         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
+1           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
+2           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
+3           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
+4           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
+    Example of the output df:
+    identity ltg_rank  ltg_tax_id  variant_id
+0       100  species      189839           3
+1       100  species     1077837           7
+2        99  species     1077837           9
+
+    Args:
+        variantid_identity_lineage_df (pandas.DataFrame): DF with columns: variant_id, identity, target_tax_id and lineage_columns.
+        identity_threshold (int): Identity value where we change of using include_prop method to min_number_of_taxa, default 97
+        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=identity_threshold
+        min_number_of_taxa (int): Minimal number of taxa, where LTF must be present when identity<identity_threshold
+
+    Returns:
+        ltg_df (pandas.DataFrame): DF with variant_id, ltg_tax_id and ltg_tax_rank
+
     """
     #
     list_variant_id_to_ltg = []
-    variant_id_list = sorted(tax_lineage_df.variant_id.unique().tolist())
+    variant_id_list = sorted(variantid_identity_lineage_df.variant_id.unique().tolist())
     #
     for variant_id in variant_id_list:  #  Loop sorted each variant
         for identity in identity_list:  # For each variant, loop each decreasing identity
             # print(variant_id, identity, variant_id_list)
-            tax_lineage_by_variant_id_df = tax_lineage_df.loc[
-                ((tax_lineage_df['variant_id'] == variant_id) & (tax_lineage_df['identity'] >= identity))].copy()
+            tax_lineage_by_variant_id_df = variantid_identity_lineage_df.loc[
+                ((variantid_identity_lineage_df['variant_id'] == variant_id) & (variantid_identity_lineage_df['identity'] >= identity))].copy()
             ###########
             #
             # If some hits at this identity level, enter analysis
@@ -224,11 +247,9 @@ def f07_qblast_result_to_ltg(tax_lineage_df,identity_threshold, include_prop, mi
                     lineage_dic['identity'] = identity
                     lineage_dic['ltg_tax_id'] = ltg_tax_id
                     lineage_dic['ltg_rank'] = ltg_rank
-                    lineage_dic['ltg_lineage'] = None  #  Todo: How?
                     # dictionnary to list
                     list_variant_id_to_ltg.append(lineage_dic)
                     break  # Do not continue lower identities
-
     ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
     return ltg_df
 

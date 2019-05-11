@@ -3,26 +3,17 @@ import errno
 import inspect
 import os
 import sqlite3
-import tarfile
 import urllib
 
 import numpy
 import pandas
 from unittest import TestCase
 
-from Bio.Blast import NCBIWWW
-
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.constants import tempdir, data_dir, public_data_dir
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
-    f06_select_ltg, \
-    f04_import_qblast_output_into_df, f05_qblast_result_subset, f02_variant_df_to_fasta
-
-import gzip
-import shutil
-
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f07_qblast_result_to_ltg
+    f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
 
 
 class TestTaxAssign(TestCase):
@@ -49,13 +40,10 @@ class TestTaxAssign(TestCase):
         self.include_prop = 90
         #
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.qblast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "qblast_MFZR_002737.tsv")
-        self.qblast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "qblast_MFZR_001274.tsv")
-        self.v1_fasta = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "MFZR_001274.fasta")
-        self.qblast_MFZR_002737_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","qblast_MFZR_002737.tsv")
+        self.lblast_output_var3_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
+        self.lblast_output_var7_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
+        self.lblast_output_var9_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
         self.tax_lineage_variant13_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
-        # self.tax_lineage_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path,
-        #                                               "test_files", "tax_lineage.tsv")
 
 
     def test_f02_variant_df_to_fasta(self):
@@ -82,53 +70,6 @@ class TestTaxAssign(TestCase):
             variant_fasta_content = fin.read()
         self.assertTrue(variant_fasta_content_expected == variant_fasta_content)
 
-    #
-    # Commented because too slow
-    # Uncomment to test qqblast
-    # def test_f06_2_run_qblast(self):
-    #     #
-    #     # Run and read qblast result
-    #     with open(self.v1_fasta) as fin:
-    #         variant_fasta_content = fin.read()
-    #         logger.debug(
-    #             "file: {}; line: {}; Blasting...".format(__file__, inspect.currentframe().f_lineno))
-    #         result_handle = NCBIWWW.qblast("blastn", "nt", variant_fasta_content, format_type = 'Tabular')
-    #         blast_result_tsv = os.path.join(tempdir, "tax_assign_blast.tsv")
-    #         with open(blast_result_tsv, 'w') as out_handle:
-    #             out_handle.write(result_handle.read())
-    #         result_handle.close()
-    #     blast_result_df = pandas.read_csv(blast_result_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
-    #                          header=None, names=['variant_id', 'gb_accession', 'identity'])
-
-    def test_f06_3_annotate_qblast_output_with_tax_id(self):
-        #
-        qblast_MFZR_001274_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
-                                                  "qblast_MFZR_001274.tsv")
-        nucl_gb_accession2taxid_MFZR_00001274_sqlite = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
-                                                  "nucl_gb_accession2taxid_MFZR_001274.sqlite")
-        #
-        # Run and read qblast result
-        qblast_result_df = pandas.read_csv(qblast_MFZR_001274_tsv, sep="\t", skiprows=13, usecols=[0, 1, 2],
-                             header=None, names=['variant_id', 'gb_accession', 'identity'])
-        qblast_result_df = qblast_result_df.loc[~pandas.isnull(qblast_result_df).any(axis=1)]
-        # import pdb; pdb.set_trace()
-        con = sqlite3.connect(nucl_gb_accession2taxid_MFZR_00001274_sqlite)
-        sql = """SELECT gb_accession, tax_id FROM nucl_gb_accession2taxid WHERE gb_accession IN {}""".format(tuple(qblast_result_df.gb_accession.tolist()))
-        gb_accession_to_tax_id_df = pandas.read_sql(sql=sql, con=con)
-        con.close()
-        #
-        qblast_result_tax_id_df = qblast_result_df.merge(gb_accession_to_tax_id_df, on='gb_accession')
-
-
-    def test_f03_import_qblast_output_into_df(self):
-        """This test assess whether the qblast has been well imported into a df"""
-        #
-        qblast_out_df = f04_import_qblast_output_into_df(self.qblast_MFZR_002737_tsv)
-        #
-        self.assertTrue(qblast_out_df.to_dict('list') == {'target_id': [1049499563, 1049496963, 1049491687, 1049490545],
-                                         'identity': [100.0, 100.0, 99.429, 99.429],
-                                         'target_tax_id': [761875, 761875, 761875, 761875]})
-
     def test_f03_1_tax_id_to_taxonomy_lineage(self):
         tax_id = 183142
         #
@@ -137,7 +78,7 @@ class TestTaxAssign(TestCase):
                          'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
                          'superkingdom': 2759} == taxonomy_lineage_dic)
 
-    def test_f04_qblast_result_subset(self):
+    def test_f05_blast_result_subset(self):
         # From
         # 'variant_id': 'MFZR_001274',
         # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
@@ -146,7 +87,7 @@ class TestTaxAssign(TestCase):
             'identity': [80, 80],
             'target_tax_id': [1344033, 1344033]}
         qblast_result_subset_df = pandas.DataFrame(data=qblast_out_dic)
-        tax_lineage_df = f05_qblast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
         self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
             'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
             'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
@@ -204,45 +145,91 @@ class TestTaxAssign(TestCase):
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
 
-    def test_99_full_tax_assign_after_qblast_MFZR_002737(self):
+    def test_f05_f06_var7_identity100(self):
         """
-        This test takes a qblast result and return ltg_tax_id, ltg_rank at given identity
+        This test takes a local blast results of a single variant with variant_id, target_id, identity, evalue, coveration and target_tax_id
+        and returns the ltg_tax_id and ltg_rank
         """
         #
-        qblast_out_df = f04_import_qblast_output_into_df(self.qblast_MFZR_002737_tsv)
-        #
+        blast_output_df = pandas.read_csv(self.lblast_output_var3_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])        #
         identity = 100
-        #
-        qblast_out_df.loc[qblast_out_df.identity >= self.identity_threshold]
-        qblast_result_subset_df = qblast_out_df.loc[qblast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_qblast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
+        blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
+        tax_lineage_df = f05_blast_result_subset(blast_output_df, self.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
                             identity_threshold=self.identity_threshold, include_prop=self.include_prop,
                                               min_number_of_taxa=self.min_number_of_taxa)
-        self.assertTrue(ltg_tax_id==761875)
+        #
+        # Outputs
+        self.assertTrue(ltg_tax_id==189839)
         self.assertTrue(ltg_rank=='species')
 
-    def test_99_full_tax_assign_after_qblast_MFZR_001274(self):
+
+    def test_f05_f06_var9_identity99(self):
         """
-        This test takes a qblast result and return ltg_tax_id, ltg_rank at given identity
+        This test takes a local blast results of a single variant with variant_id, target_id, identity, evalue, coveration and target_tax_id
+        and returns the ltg_tax_id and ltg_rank
         """
         #
-        qblast_out_df = f04_import_qblast_output_into_df(self.qblast_MFZR_001274_tsv)
+        # Inputs
+        lblast_output_tsv = self.lblast_output_var9_tsv
+        identity = 99
         #
-        identity = 80
-        qblast_out_df.loc[qblast_out_df.identity >= self.identity_threshold]
-        qblast_result_subset_df = qblast_out_df.loc[qblast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_qblast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
+        blast_output_df = pandas.read_csv(lblast_output_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])        #
+        blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
+        tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
                             identity_threshold=self.identity_threshold, include_prop=self.include_prop,
                                               min_number_of_taxa=self.min_number_of_taxa)
-        self.assertTrue(ltg_tax_id==1344033)
+        #
+        # Outputs
+        self.assertTrue(ltg_tax_id==1077837)
         self.assertTrue(ltg_rank=='species')
 
-    # def test_f07_qblast_result_to_ltg(self):
-    #     tax_lineage_df = pandas.read_csv(self.tax_lineage_tsv, sep=',')
-    #
-    #     ltg_df = f07_qblast_result_to_ltg(tax_lineage_df)
-    #     ltg_df = f07_qblast_result_to_ltg(tax_lineage_df)
-    #     import pdb;
-    #     pdb.set_trace()
+
+    def test_f07_var3_var7_var9(self):
+        """
+        This test takes a local blast results of several variants and identities
+        with variant_id, target_id, identity, evalue, coveration and target_tax_id
+        and returns the resulting data
+        """
+        #
+        # Inputs
+        lblast_output_var3_tsv = self.lblast_output_var3_tsv
+        lblast_output_var7_tsv = self.lblast_output_var7_tsv
+        lblast_output_var9_tsv = self.lblast_output_var9_tsv
+        #
+        lblast_output_var3_df = pandas.read_csv(lblast_output_var3_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])
+        lblast_output_var7_df = pandas.read_csv(lblast_output_var7_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])
+        lblast_output_var9_df = pandas.read_csv(lblast_output_var9_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])
+        #
+        # Input processing
+        lblast_output_df = pandas.concat([lblast_output_var3_df, lblast_output_var7_df, lblast_output_var9_df], axis=0)
+        lblast_output_df = lblast_output_df[['variant_id', 'identity', 'target_tax_id']]
+        #
+        # Run
+        lineage_list = []
+        for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
+            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, self.taxonomy_db_df))
+        tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
+        #
+        # Merge lblast output with tax_id_to_lineage_df
+        variantid_identity_lineage_df = lblast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
+                                                               right_on='tax_id')
+        variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
+        #
+        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=self.identity_threshold,
+                                                include_prop=self.include_prop, min_number_of_taxa=self.min_number_of_taxa)
+        #
+        # Output
+        self.assertTrue(ltg_df.to_dict() == {'identity': {0: 100, 1: 100, 2: 99}, 'ltg_rank': {0: 'species', 1: 'species', 2: 'species'},
+         'ltg_tax_id': {0: 189839, 1: 1077837, 2: 1077837}, 'variant_id': {0: 3, 1: 7, 2: 9}})
