@@ -17,5 +17,4 @@ class FilterCodonStop(Base):
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
     read_count = Column(Integer, nullable=False)
-    filter_id = Column(Integer, nullable=False)
     filter_delete = Column(Boolean, nullable=False)

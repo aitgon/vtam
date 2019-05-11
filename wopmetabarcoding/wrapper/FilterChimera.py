@@ -138,7 +138,6 @@ class FilterChimera(ToolWrapper):
                                           pcr_error_model_table.c.biosample_id,
                                           pcr_error_model_table.c.replicate_id,
                                           pcr_error_model_table.c.read_count])\
-            .where(pcr_error_model_table.c.filter_id == 10)\
             .where(pcr_error_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -147,7 +146,7 @@ class FilterChimera(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,
                                variant_model_table.c.sequence])
@@ -183,16 +182,13 @@ def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
     filter chimera
     """
 
-    this_filter_id = 11
     logger.debug(
-        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
+        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno))
     #
     filter_output_df = variant_read_count_df.copy()
-    filter_output_df['filter_id'] = 11
     filter_output_df['filter_delete'] = False
     #
     filter_borderline_output_df = variant_read_count_df.copy()
-    filter_borderline_output_df['filter_id'] = 11
     filter_borderline_output_df['filter_delete'] = False
     #
     df_grouped_variant_read_count = variant_read_count_df.groupby(
