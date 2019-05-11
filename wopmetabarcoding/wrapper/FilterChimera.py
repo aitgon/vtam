@@ -183,7 +183,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
     """
 
     logger.debug(
-        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno))
+        "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     filter_output_df = variant_read_count_df.copy()
     filter_output_df['filter_delete'] = False
