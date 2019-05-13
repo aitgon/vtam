@@ -141,6 +141,8 @@ class TestMakeTableOTU(TestCase):
         otu_df = f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df,taxonomy_db_df)
 
 
+        import pdb;pdb.set_trace()
+
         self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
                                    & (otu_df.read_count == 120),
                                   'class'].values[0])=='Monogononta'
