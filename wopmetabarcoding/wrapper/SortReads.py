@@ -11,10 +11,7 @@ from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
-    convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
-
-from wopmetabarcoding.utils.constants import tempdir
-
+    convert_trimmed_tsv_to_fasta, annotate_reads
 
 class SortReads(ToolWrapper):
     __mapper_args__ = {
