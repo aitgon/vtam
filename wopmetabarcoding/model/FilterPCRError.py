@@ -7,7 +7,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 class FilterPCRError(Base):
     __tablename__ = "FilterPCRError"
     __table_args__ = (
-        UniqueConstraint('marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_id'),
+        UniqueConstraint('marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -17,7 +17,6 @@ class FilterPCRError(Base):
     biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
     replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
     read_count = Column(Integer, nullable=False)
-    filter_id = Column(Integer, nullable=False)
     filter_delete = Column(Boolean, nullable=False)
 
 

@@ -205,9 +205,9 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
 
 
     """
-    this_filter_id = 9
+    # this_filter_id = 9
     logger.debug(
-        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
+        "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     df_filter_output=variant_read_count_df.copy()
     # replicate count
@@ -217,11 +217,11 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     # import pdb; pdb.set_trace()
     # df_grouped.columns = ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_count']
     #
-    df_filter_output['filter_id'] = this_filter_id
+    # df_filter_output['filter_id'] = this_filter_id
     df_filter_output['filter_delete'] = False
     df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
     df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
     #
-    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_id', 'filter_delete']]
+    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_delete']]
     return df_filter_output
 

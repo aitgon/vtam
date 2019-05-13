@@ -128,7 +128,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
                                           codon_stop_model_table.c.biosample_id,
                                           codon_stop_model_table.c.replicate_id,
                                           codon_stop_model_table.c.read_count])\
-            .where(codon_stop_model_table.c.filter_id == 14)\
             .where(codon_stop_model_table.c.filter_delete == 0)
 
         # Select to DataFrame
