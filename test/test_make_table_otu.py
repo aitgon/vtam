@@ -12,6 +12,8 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
+from wopmetabarcoding.wrapper.MakeOtuTable import f16_otu_table_maker
+
 
 class TestMakeTableOTU(TestCase):
 
@@ -29,18 +31,19 @@ class TestMakeTableOTU(TestCase):
             'name': ['MFZR']
         }
         variant_dic = {
-            'variant_id': [30],
+            'variant_id': [30,15],
             'variant_sequence': [
-                'ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC']
+                'ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC',
+                'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA']
         }
-        filter_codon_stop_dic = {'run_id': [1, 1, 1, 1, 1, 1], 'marker_id': [1, 1, 1, 1, 1, 1],
-                                 'variant_id': [30, 30, 30, 30, 30, 30], 'biosample_id': [1, 1, 1, 2, 2, 2],
-                                 'replicate_id': [1, 2, 3, 1, 2, 3], 'read_count': [183, 93, 42, 175, 31, 63],
-                                 'fiter_id': [14, 14, 14, 14, 14, 14], 'filter_delete': [0, 0, 0, 0, 0, 0]}
+        filter_codon_stop_dic = {'run_id': [1, 1, 1, 1, 1, 1,1,1,1], 'marker_id': [1, 1, 1, 1, 1, 1,1,1,1],
+                                 'variant_id': [30, 30, 30, 30, 30, 30,15,15,15], 'biosample_id': [1, 1, 1, 2, 2, 2,1,2,1],
+                                 'replicate_id': [1, 2, 3, 1, 2, 3,1,2,3], 'read_count': [183, 93, 42, 175, 31, 63,20,40,60],
+                                 'fiter_id': [14, 14, 14, 14, 14, 14,14,14,14], 'filter_delete': [0, 0, 0, 0, 0, 0,0,0,0]}
         #
         biosample_dic = {'id': [1, 2], 'name': ['Tpos1_prerun', 'Tpos2_prerun']}
         #
-        ltg_tax_assign_dic = {'variant_id': [30], 'identity': [85], 'ltg_rank': ['species'], 'ltg_tax_id': [268290]}
+        ltg_tax_assign_dic = {'variant_id': [30,15], 'identity': [85,80], 'ltg_rank': ['species','species'], 'ltg_tax_id': [268290,84394]}
 
         #
         #  Get tables/df
@@ -107,7 +110,6 @@ class TestMakeTableOTU(TestCase):
         # Merge ltg tax assign results
         # import pdb; pdb.set_trace()
         otu_df = otu_df.merge(ltg_tax_assign_df, on='variant_id')
-
         # getting the taxonomy_db to df
         con = sqlite3.connect(taxonomy_sqlite_path)
         sql = """SELECT *  FROM taxonomy """
@@ -131,6 +133,18 @@ class TestMakeTableOTU(TestCase):
         # Merge Otu_df with the lineage df
         otu_df = otu_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
         otu_df.drop('tax_id', axis=1, inplace=True)
-        # TODO: assert
-        # TODO: function for all this
-        # TODO: wrapper with code in wopfile
+
+        # assert
+
+        otu_df = f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df,taxonomy_db_df)
+
+
+        self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
+                                   & (otu_df.read_count == 120),
+                                  'class'].values[0])=='Monogononta'
+
+        self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
+                                    & (otu_df.read_count == 120),
+                                   'order'].values[0]) == 'Ploima'
+
+
