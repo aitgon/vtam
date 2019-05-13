@@ -19,8 +19,10 @@ class TestMakeTableOTU(TestCase):
 
     def test_f01_make_table_out(self):
         #  Input
-
-        taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
+        try:
+            taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
+        except:
+            raise Exception('Please, set the DIR_DATA_NON_GIT environment variable. See the manual')
 
         run_dic = {
             'id': [1],
