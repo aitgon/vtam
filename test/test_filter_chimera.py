@@ -117,16 +117,16 @@ class TestChimera(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 6)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 11),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 11),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(not filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 1)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 11),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 11),
                                                                         'filter_delete'].values[0])
 
         #
@@ -136,8 +136,8 @@ class TestChimera(TestCase):
                                              & (df_output.marker_id == 1)
                                              & (df_output.variant_id == 6)
                                              & (df_output.biosample_id == 1)
-                                             & (df_output.replicate_id == 1)
-                                             & (df_output.filter_id == 11),
+                                             & (df_output.replicate_id == 1),
+                                             # & (df_output.filter_id == 11),
                                              'filter_delete'].values[0])
         #
 
@@ -145,8 +145,8 @@ class TestChimera(TestCase):
                                                  & (df_output.marker_id == 1)
                                                  & (df_output.variant_id == 1)
                                                  & (df_output.biosample_id == 1)
-                                                 & (df_output.replicate_id == 1)
-                                                 & (df_output.filter_id == 11),
+                                                 & (df_output.replicate_id == 1),
+                                                 # & (df_output.filter_id == 11),
                                                  'filter_delete'].values[0])
 
         #
