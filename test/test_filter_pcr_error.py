@@ -60,16 +60,16 @@ class TestFilterPCRError(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 3)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 4)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         pcr_error_var_prop = 0.1
@@ -80,16 +80,16 @@ class TestFilterPCRError(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 3)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 4)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
 
 

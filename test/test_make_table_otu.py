@@ -139,16 +139,16 @@ class TestMakeTableOTU(TestCase):
         # assert
 
         otu_df = f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df,taxonomy_db_df)
+        Index = ['variant_id', 'run_name', 'marker_name', 'Tpos1_prerun', 'Tpos2_prerun', 'identity',
+                 'ltg_rank', 'ltg_tax_id', 'phylum', 'class', 'order', 'family', 'genus',
+                 'species', 'sequence_length', 'read_count', 'variant_sequence', ]
 
+        otu_final_df = otu_df[Index]
 
-        import pdb;pdb.set_trace()
-
-        self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
-                                   & (otu_df.read_count == 120),
+        self.assertTrue(otu_df.loc[(otu_final_df.variant_id == 15)
+                                   & (otu_final_df.read_count == 120),
                                   'class'].values[0])=='Monogononta'
 
-        self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
-                                    & (otu_df.read_count == 120),
+        self.assertTrue(otu_df.loc[(otu_final_df.variant_id == 15)
+                                    & (otu_final_df.read_count == 120),
                                    'order'].values[0]) == 'Ploima'
-
-
