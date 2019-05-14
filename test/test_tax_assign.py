@@ -27,7 +27,8 @@ class TestTaxAssign(TestCase):
 
         PathFinder.mkdir_p(data_dir)
         file_remote = os.path.join(public_data_dir, "taxonomy.sqlite")
-        taxonomy_sqlite_path = os.path.join(data_dir, os.path.basename(file_remote))
+        taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
+        # taxonomy_sqlite_path = os.path.join(data_dir, os.path.basename(file_remote))
         if not os.path.isfile(taxonomy_sqlite_path):
             logger.debug(
                 "file: {}; line: {}; Downloading taxonomy.sqlite".format(__file__, inspect.currentframe().f_lineno))
