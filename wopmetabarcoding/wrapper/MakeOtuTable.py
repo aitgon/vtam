@@ -235,7 +235,7 @@ class MakeOtuTable(ToolWrapper):
 
         tax_assign_model_table = tax_assign_model.__table__
         stmt_ltg_tax_assign = select([tax_assign_model_table.c.variant_id,
-                               tax_assign_model_table.c.identiy,
+                               tax_assign_model_table.c.identity,
                                tax_assign_model_table.c.ltg_rank,
                                tax_assign_model_table.c.ltg_tax_id])
 
