@@ -1,6 +1,7 @@
 import inspect
 
 import os
+import shutil
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
@@ -11,10 +12,7 @@ from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
-    convert_trimmed_tsv_to_fasta, annotate_reads, gather_files, count_reads, insert_variant
-
-from wopmetabarcoding.utils.constants import tempdir
-
+    convert_trimmed_tsv_to_fasta, annotate_reads
 
 class SortReads(ToolWrapper):
     __mapper_args__ = {
@@ -96,6 +94,7 @@ class SortReads(ToolWrapper):
         # 2. Store read count of each variant in table 'VariantReadCount'
         # 3. Eliminate singleton: Variants found one time throughout all biosample-replicates
         ############################################
+        fasta_sort_reads_tsv_list = []
         for fasta_obj in session.query(fasta_model).order_by('name').all():
             fasta_id = fasta_obj.id
             fasta_name = fasta_obj.name
@@ -276,5 +275,16 @@ class SortReads(ToolWrapper):
             ################################################################
             # marker2fasta2readannotationtsv_dict[marker_name] = {}
             # marker2fasta2readannotationtsv_dict[marker_name][fasta_name] = read_annotation_tsv
-            annotate_reads(session, sample_information_model, trimmed_tsv,
-                           fasta_id=fasta_id, out_tsv=sort_reads_tsv)
+            fasta_sort_reads_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'sortreads.tsv')
+            fasta_sort_reads_tsv_list.append(fasta_sort_reads_tsv)
+            annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id=fasta_id, out_tsv=fasta_sort_reads_tsv)
+
+        ########################################################
+        #
+        # Concatenate sortreads files of different fasta files
+        #
+        ########################################################
+        with open(sort_reads_tsv, 'wb') as wfd:
+            for f in fasta_sort_reads_tsv_list:
+                with open(f, 'rb') as fd:
+                    shutil.copyfileobj(fd, wfd)
