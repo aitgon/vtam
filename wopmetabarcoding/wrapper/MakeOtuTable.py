@@ -29,7 +29,7 @@ class MakeOtuTable(ToolWrapper):
     __input_table_tax_assign = "TaxAssign"
 
     # Output table
-    __output_table_otu = "Otu_Table"
+    __output_table_otu = "OTUTable"
 
     def specify_input_file(self):
         return[
@@ -48,7 +48,7 @@ class MakeOtuTable(ToolWrapper):
             MakeOtuTable.__input_table_tax_assign,
         ]
 
-    def specify_output_table(self):
+    def specify_output_file(self):
         return[
             MakeOtuTable.__output_table_otu,
 
@@ -82,7 +82,7 @@ class MakeOtuTable(ToolWrapper):
         variant_model = self.input_table(MakeOtuTable.__input_table_variant)
         tax_assign_model = self.input_table(MakeOtuTable.__input_table_tax_assign)
         # Output table models
-        otu_model = self.output_table(MakeOtuTable.__output_table_otu)
+        otu_table_tsv_path = self.output_file(MakeOtuTable.__output_table_otu)
         #
         # Options
 
@@ -301,7 +301,7 @@ class MakeOtuTable(ToolWrapper):
                             taxonomy_db_df)
         otu_df = otu_df[Index]
 
-        otu_df.to_csv('otu_table.tsv',sep='\t',index=False)   #TODO CHANGE THE output file
+        otu_df.to_csv(otu_table_tsv_path, sep='\t', index=False, header=True)
 
 def f16_otu_table_maker(run_df,marker_df,variant_df,biosample_df,filter_codon_stop_df,ltg_tax_assign_df,taxonomy_db_df):
     """
