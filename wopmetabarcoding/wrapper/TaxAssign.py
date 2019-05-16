@@ -24,7 +24,6 @@ class TaxAssign(ToolWrapper):
     # Input file
     __input_file_sample2fasta = "sample2fasta"
     __input_file_taxonomy = "taxonomy"
-    __input_file_accession2taxid = "accession2taxid"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -40,7 +39,6 @@ class TaxAssign(ToolWrapper):
         return[
             TaxAssign.__input_file_sample2fasta,
             TaxAssign.__input_file_taxonomy,
-            TaxAssign.__input_file_accession2taxid,
         ]
 
     def specify_input_table(self):
@@ -78,7 +76,6 @@ class TaxAssign(ToolWrapper):
         #
         # Input file path
         taxonomy_sqlite_path = self.input_file(TaxAssign.__input_file_taxonomy)
-        accession2taxid_sqlite_path = self.input_file(TaxAssign.__input_file_accession2taxid)
         input_file_sample2fasta = self.input_file(TaxAssign.__input_file_sample2fasta)
         #
         # Input table models
@@ -99,7 +96,7 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 2. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 2. Read sample2f  asta to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
         sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
@@ -280,7 +277,6 @@ class TaxAssign(ToolWrapper):
         logger.debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
                 conn.execute(tax_assign_model.__table__.insert(), ltg_df.to_dict('records'))
-
 
 
 
