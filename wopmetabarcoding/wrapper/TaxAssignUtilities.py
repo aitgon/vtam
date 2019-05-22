@@ -138,16 +138,14 @@ def f05_blast_result_subset(qblast_result_subset_df, taxonomy_db_df):
     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
     return tax_lineage_df
 
-def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, min_number_of_taxa):
+# def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, min_number_of_taxa):
+def f06_select_ltg(tax_lineage_df, include_prop):
     """
     Given tax_lineage_df, selects the Ltg
 
     Args:
         tax_lineage_df (pandas.DataFrame): DF where each column is a rank, rows are different target_ids and values are putative_ltg_ids
-        identity (int): Identity value that were used to select the results from Blast
-        identity_threshold (int): Identity value where we change of using include_prop method to min_number_of_taxa, default 97
         include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=identity_threshold
-        min_number_of_taxa (int): Minimal number of taxa, where LTF must be present when identity<identity_threshold
 
     Returns:
         ltg_tax_id (int): Taxonomical ID of Ltg
@@ -159,13 +157,13 @@ def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, m
     lineage_list_df_columns_sorted = list(filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy))
     tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
     putative_ltg_df = pandas.DataFrame({'putative_ltg_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0),'putative_ltg_count': tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)})
-    if identity >= identity_threshold: # rule for include_prop
-        putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / tax_lineage_df.shape[0] * 100
-        ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].tail(1).values[0]
-        ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].index[-1]
-    else: # rule for min_number_of_taxa
-        ltg_tax_id = int(putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].tail(1).values[0])
-        ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
+    # if identity >= identity_threshold: # rule for include_prop
+    putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / tax_lineage_df.shape[0] * 100
+    ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].tail(1).values[0]
+    ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].index[-1]
+    # else: # rule for min_number_of_taxa
+    #     ltg_tax_id = int(putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].tail(1).values[0])
+    #     ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
 
 def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold, include_prop, min_number_of_taxa):
@@ -224,10 +222,7 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
                 ltg_tax_id, ltg_rank = None, None
                 if identity >= identity_threshold:
                     #
-                    ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity,
-                                                          identity_threshold=identity_threshold,
-                                                          include_prop=include_prop,
-                                                          min_number_of_taxa=min_number_of_taxa)
+                    ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
                     #
                 ###########
                 #
@@ -235,12 +230,10 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
                 #
                 ###########
                 else:
-                    if tax_lineage_by_variant_id_df.shape[0] >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
+                    # if tax_lineage_by_variant_id_df.shape[0] >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
+                    if tax_lineage_by_variant_id_df.target_tax_id.unique().count() >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
                         #
-                        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, identity,
-                                                              identity_threshold=identity_threshold,
-                                                              include_prop=include_prop,
-                                                              min_number_of_taxa=min_number_of_taxa)
+                        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
                 if not ltg_tax_id is None:
                     lineage_dic = {}
                     lineage_dic['variant_id'] = variant_id
