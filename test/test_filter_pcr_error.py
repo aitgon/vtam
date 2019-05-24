@@ -1,7 +1,5 @@
-import os
 import pandas
 from unittest import TestCase
-from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
 
@@ -46,9 +44,10 @@ class TestFilterPCRError(TestCase):
 
     def test_02_f10_pcr_error(self):
         #
-        vsearch_output_df = f10_pcr_error_run_vsearch(self.variant_df, this_step_tmp_dir=self.this_step_tmp_dir)
-        self.assertTrue(self.pcr_error_vsearch_output_df.ids.tolist()
-                        == [300, 299, 299, 298, 300, 299, 298, 297, 300, 299, 298, 297, 300, 299])
+        vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=self.variant_df,
+                                        variant_usearch_global_df=self.variant_df, tmp_dir=self.this_step_tmp_dir)
+        self.assertTrue(sorted(vsearch_output_df.ids.unique().tolist())
+                        == [297, 298, 299, 300])
 
     def test_03_f10_pcr_error_vsearch_output_processing(self):
         #
