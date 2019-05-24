@@ -106,9 +106,7 @@ class TestTaxAssign(TestCase):
         qblast_out_df.loc[qblast_out_df.identity >= self.identity_threshold]
         qblast_result_subset_df = qblast_out_df.loc[qblast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
         tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
-                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
-                                              min_number_of_taxa=self.min_number_of_taxa)
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         self.assertTrue(ltg_tax_id==761875)
         self.assertTrue(ltg_rank=='species')
 
@@ -123,8 +121,6 @@ class TestTaxAssign(TestCase):
         qblast_out_df.loc[qblast_out_df.identity >= self.identity_threshold]
         qblast_result_subset_df = qblast_out_df.loc[qblast_out_df.identity >= identity, ['target_id', 'target_tax_id']]
         tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, identity=identity,
-                            identity_threshold=self.identity_threshold, include_prop=self.include_prop,
-                                              min_number_of_taxa=self.min_number_of_taxa)
-        self.assertTrue(ltg_tax_id==1344033)
-        self.assertTrue(ltg_rank=='species')
+        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop )
+        self.assertTrue(ltg_tax_id == 84394.0)
+        self.assertTrue(ltg_rank == 'order')
