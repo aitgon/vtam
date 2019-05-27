@@ -105,8 +105,9 @@ class TestTaxAssign(TestCase):
         identity = 80
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
-        self.assertTrue(ltg_tax_id == 183142)
-        self.assertTrue(ltg_rank == 'species')
+        # import pdb; pdb.set_trace()
+        self.assertTrue(ltg_tax_id == 10194)
+        self.assertTrue(ltg_rank == 'genus')
 
     def test_f06_select_ltg_column_none(self):
         # List of lineages that will correspond to list of tax_ids: One lineage per row
@@ -122,8 +123,8 @@ class TestTaxAssign(TestCase):
         #
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
-        self.assertTrue(ltg_tax_id == 183142)
-        self.assertTrue(ltg_rank == 'species')
+        self.assertTrue(ltg_tax_id == 10194)
+        self.assertTrue(ltg_rank == 'genus')
 
     def test_f05_select_ltg_identity_100(self):
         # List of lineages that will correspond to list of tax_ids: One lineage per row
