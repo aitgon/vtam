@@ -8,7 +8,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.constants import tempdir, create_coi_blast_db
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta
 
 
@@ -203,27 +203,50 @@ class TaxAssign(ToolWrapper):
         #
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
-        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db="nt", evalue=1e-5,
-                                             outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+        map_taxids_tsv_path, coi_blast_db_dir = create_coi_blast_db()
+        os.environ['BLASTDB'] = coi_blast_db_dir
+        #
+        # Uncomment to run blast with full NCBI blast db)
+        #
+        # blastn_cline = NcbiblastnCommandline(query=variant_fasta, db="nt", evalue=1e-5,
+        #                                      outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+        #                                      qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
+        #
+        # Comment to run blast with full NCBI blast db)
+        #
+        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db="coi_db", evalue=1e-5,
+                                             outfmt='"6 qseqid sacc pident evalue qcovhsp"', dust='yes',
                                              qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
         stdout, stderr = blastn_cline()
+        # import pdb; pdb.set_trace()
+        #
+
+        ##########################################################
+        #
+        # 3 Merge blast result with tax ids (Based on COI blast db)
+        #
+        ##########################################################
+        blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
+        map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t", names=['target_id', 'target_tax_id'])
+        lblast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
         #
         ##########################################################
         #
-        # Process local blast TSV result
+        # Process local blast TSV result (Uncomment to run blast with full NCBI blast db)
         #
         ##########################################################
         # blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
-        logger.debug(
-            "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
-        lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
-                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
-                                                 'target_tax_id'])
+        # logger.debug(
+        #     "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
+        # lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
+        #                                   names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+        #                                          'target_tax_id'])
         #
         # remove multiple target_tax_ids, rename and convert target_tax_id to numeric
-        lblast_output_df = (pandas.concat([lblast_output_df, lblast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],axis=1))[['variant_id', 'identity', 0]]
-        lblast_output_df = lblast_output_df.rename(columns={0: 'target_tax_id'})
-        lblast_output_df.target_tax_id = pandas.to_numeric(lblast_output_df.target_tax_id)
+        # lblast_output_df = (pandas.concat([lblast_output_df, lblast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],axis=1))[['variant_id', 'identity', 0]]
+        # lblast_output_df = lblast_output_df.rename(columns={0: 'target_tax_id'})
+        # import pdb; pdb.set_trace()
         #
         ##########################################################
         #
@@ -235,18 +258,23 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         #
         logger.debug(
-            "file: {}; line: {}; Annotate each target_tax_id with each lineage as columns in wide format".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Open taxonomy.sqlite DB".format(__file__, inspect.currentframe().f_lineno))
+        lblast_output_df.target_tax_id = pandas.to_numeric(lblast_output_df.target_tax_id)
         # getting the taxonomy_db to df
         con = sqlite3.connect(taxonomy_sqlite_path)
         sql = """SELECT *  FROM taxonomy """
         taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
         con.close()
         #
+        logger.debug(
+            "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(__file__, inspect.currentframe().f_lineno))
         lineage_list = []
         for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
             lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
         tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         #
+        logger.debug(
+            "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__, inspect.currentframe().f_lineno))
         # Merge local blast output with tax_id_to_lineage_df
         variantid_identity_lineage_df = lblast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
                                                                right_on='tax_id')
