@@ -9,20 +9,23 @@ import errno, pandas, urllib
 
 import os
 
-from wopmetabarcoding.utils.constants import data_dir
+# from wopmetabarcoding.utils.constants import VTAM_DATA_DIR
+from wopmetabarcoding.utils.constants import create_vtam_data_dir
 from wopmetabarcoding.utils.logger import logger
 
 from sqlalchemy import create_engine
 
+VTAM_DATA_DIR = create_vtam_data_dir()
+
 def download():
     try:
-        os.makedirs(data_dir)
+        os.makedirs(VTAM_DATA_DIR)
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
     # Download files
     remotefile = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
-    new_taxdump_path = os.path.join(data_dir, os.path.basename(remotefile))
+    new_taxdump_path = os.path.join(VTAM_DATA_DIR, os.path.basename(remotefile))
     logger.debug(
         "file: {}; line: {}; Downloading NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     if not os.path.isfile(new_taxdump_path): # TODO verify MD5
@@ -38,16 +41,16 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
           and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "names.dmp"))\
           and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "merged.dmp"))): # TODO verify MD5
         tar = tarfile.open(new_taxdump_path, "r:gz")
-        tar.extractall(path=data_dir)
+        tar.extractall(path=VTAM_DATA_DIR)
         tar.close()
     logger.debug(
         "file: {}; line: {}; Reading and processing NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     #
-    nodes_dmp = os.path.join(data_dir, "nodes.dmp")
+    nodes_dmp = os.path.join(VTAM_DATA_DIR, "nodes.dmp")
     nodes_dmp_df = pandas.read_table(nodes_dmp, header=None, sep='\t', engine='python', usecols=[0, 2, 4],
                       names=['tax_id', 'parent_tax_id', 'rank'])
     #
-    names_dmp = os.path.join(data_dir, "names.dmp")
+    names_dmp = os.path.join(VTAM_DATA_DIR, "names.dmp")
     names_dmp_df = pandas.read_table(names_dmp, header=None, sep=r'\t', engine='python', usecols=[0, 2, 6],
                                      names=['tax_id', 'name_txt', 'name_class'])
     names_dmp_df = names_dmp_df.loc[names_dmp_df.name_class=='scientific name']
@@ -57,7 +60,7 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
     # del(nodes_dmp_df)
     # del(names_dmp_df)
     #
-    merged_dmp = os.path.join(data_dir, "merged.dmp")
+    merged_dmp = os.path.join(VTAM_DATA_DIR, "merged.dmp")
     merged_dmp_df = pandas.read_table(merged_dmp, header=None, sep='\t', engine='python', usecols=[0, 2],
                                       names=['old_tax_id', 'tax_id'])
     #

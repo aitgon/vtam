@@ -8,7 +8,7 @@ import pandas
 from unittest import TestCase
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.constants import data_dir, public_data_dir
+from wopmetabarcoding.utils.constants import VTAM_DATA_DIR, public_data_dir
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f06_select_ltg, \
     f04_import_qblast_output_into_df, f05_blast_result_subset
@@ -23,10 +23,10 @@ class TestTaxAssign(TestCase):
         #
         #####################################
 
-        PathFinder.mkdir_p(data_dir)
+        PathFinder.mkdir_p(VTAM_DATA_DIR)
         file_remote = os.path.join(public_data_dir, "taxonomy.sqlite")
         taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
-        # taxonomy_sqlite_path = os.path.join(data_dir, os.path.basename(file_remote))
+        # taxonomy_sqlite_path = os.path.join(VTAM_DATA_DIR, os.path.basename(file_remote))
         if not os.path.isfile(taxonomy_sqlite_path):
             logger.debug(
                 "file: {}; line: {}; Downloading taxonomy.sqlite".format(__file__, inspect.currentframe().f_lineno))
