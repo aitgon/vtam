@@ -62,7 +62,7 @@ rule SampleInformation:
 #            sample2fasta: {{fastainfo}}
 #    output:
 #        table:
-#            FilterLFN: wopmetabarcoding.model.FilterLFN
+#            OptimizeFilterLFN6: wopmetabarcoding.model.OptimizeFilterLFN6
 #    params:
 #        lfn_per_sum_variant_threshold: {{LFN_PER_SUM_VARIANT_THRESHOLD}}
 #        lfn_per_sum_variant_replicate_threshold: {{LFN_PER_SUM_VARIANT_REPLICATE_THRESHOLD}}
@@ -77,7 +77,7 @@ rule SampleInformation:
 #            Marker: wopmetabarcoding.model.Marker
 #            Biosample: wopmetabarcoding.model.Biosample
 #            Replicate: wopmetabarcoding.model.Replicate
-#            FilterLFN: wopmetabarcoding.model.FilterLFN
+#            OptimizeFilterLFN6: wopmetabarcoding.model.OptimizeFilterLFN6
 #        file:
 #            sample2fasta: {{fastainfo}}
 #    output:
