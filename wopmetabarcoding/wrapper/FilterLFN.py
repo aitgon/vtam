@@ -10,7 +10,7 @@ import pandas
 
 class FilterLFN(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterLFN"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeFilterLFN6"
     }
 
     # Input file
