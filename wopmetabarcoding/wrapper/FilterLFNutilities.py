@@ -71,12 +71,10 @@ class FilterLFNRunner:
 
     def f2_f4_lfn_delete_per_sum_variant(self, lfn_per_sum_variant_threshold, lfn_per_sum_variant_threshold_specific=None):
         """
-        Low frequency noise filter per variant (LFN_var) with a single threshold or several variant specific
-        thresholds. Function IDs: 2 (lfn_var_threshold_specific is None) ou 4 (lfn_var_threshold_specific is not None)
-
-        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
-        and replicate k to the total read_count N_i of variant i is below threshold lfn_per_variant_threshold.
-        The deletion condition is: N_ijk / N_i < lfn_per_variant_threshold.
+        This filter deletes the variant i in biosample j and replicate k
+        if the ratio of its read count N_ijk to the total read_count N_i of variant i
+        is below a threshold parameter lfn_per_variant_threshold.
+        Function IDs: 2 (lfn_var_threshold_specific is None) ou 4 (lfn_var_threshold_specific is not None)
 
         The argument lfn_var_threshold_specific allows a dictionary like {9: 0.05, 22: 0.01} with a variant-specific
         threshold.
@@ -90,7 +88,7 @@ class FilterLFNRunner:
           4.1 Set variant/biosample/replicate for deletion if N_ijk / N_i < lfn_var_threshold_specific_i
 
         Updated:
-        February 22, 2019
+        May 28, 2019
 
         Args:
             lfn_per_sum_variant_threshold (float): Default deletion threshold
@@ -98,8 +96,8 @@ class FilterLFNRunner:
 
         Returns:
             None: The output of this filter is added to the 'self.delete_variant_df'
-            with filter_id='f2_lfn_var' and 'filter_delete'=1 or 0
-            with filter_id='f5_lfn_var_dep' and 'filter_delete'=1 or 0
+            with filter_id=2 and 'filter_delete'=1 or 0 (General threshold)
+            and with filter_id=4 and 'filter_delete'=1 or 0 (Variant-specific threshold)
 
 
         """
@@ -167,15 +165,10 @@ class FilterLFNRunner:
 
     def f3_f5_lfn_delete_per_sum_variant_replicate(self, lfn_per_sum_variant_replicate_threshold, lfn_per_replicate_threshold_specific=None):
         """
-        Low frequency noise filter per variant (LFN var replicate) with a single threshold or several variant
-        specific thresholds (LFN vardep_replicate series).
-        lfn_per_replicate_series_threshold = 0.005
-        Function IDs: 3 (lfn_per_replicate_threshold_specific is None) ou 5 (lfn_per_replicate_threshold_specific is not None)
-
-        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j and
-        replicate k to the total read_count N_ik per replicate k i is below threshold lfn_per_replicate_series_threshold .
-        The deletion condition is: N_ijk / N_ik < lfn_per_replicate_series_threshold .
-
+        This filter deletes the variant i in biosample j and replicate k
+        if the ratio of its read count N_ijk to the replicate read_count N_ik
+        is below a threshold parameter lfn_per_replicate_series_threshold.
+        Function IDs: 3 (lfn_per_replicate_threshold_specific is None) ou 5 (lfn_per_replicate_threshold_specific is not None).
 
         Pseudo-algorithm of this function:
 
@@ -185,17 +178,18 @@ class FilterLFNRunner:
             4. If variant specific thresholds, test the ratio of these variant/biosample/replicate rows
              4.1 Set variant/biosample/replicate for deletion if N_ijk / N_ik < lfn_var_threshold_specific_i
 
-
          Updated:
-            February 25, 2019
+            May 28, 2019
 
         Args:
             lfn_per_sum_variant_replicate_threshold (float): Default deletion threshold
+            lfn_per_replicate_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
 
 
         Returns:
             None: The output of this filter is added to the 'self.delete_variant_df'
-            with filter_id='f3_f5_lfn_delete_per_sum_variant_replicate' and 'filter_delete'=1 or 0
+            with filter_id=3 and 'filter_delete'=1 or 0 (General threshold)
+            or with filter_id=5 and 'filter_delete'=1 or 0 (Variant-specific threshold)
 
         """
         this_filter_id = 3
@@ -251,21 +245,16 @@ class FilterLFNRunner:
 
     def f6_lfn_delete_per_sum_biosample_replicate(self, lfn_per_sum_biosample_replicate_threshold):
         """
-        Low frequency noise filter per biosample_replicate (LFN_repl) with a single threshold
-        (lfn_per_biosample_per_replicate_threshold=0.001).
+        This filter deletes the variant i in biosample j and replicate k
+        if the ratio of its read count N_ijk to the read_count N_jk
+        is below a threshold parameter lfn_per_sum_biosample_replicate_threshold (Default 0.001).
         Function IDs: 6 (LFN_repl)
-
-        This filters deletes the variant if the ratio of the read count N_ijk of variant i in biosample j
-        and replicate k to the total read_count N_jk of biosample per each replicate i is below threshold lfn_per_replicate_threshold.
-        The deletion condition is: N_ijk / N_jk < lfn_per_replicate_threshold.
-
 
         Pseudo-algorithm of this function:
 
         1. Compute ratio N_ijk / N_jk
         2. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
         3. Set variant/biosample/replicate for deletion if ratio N_ijk / N_jk < lfn_per_biosample_per_replicate_threshold
-
 
         Updated:
             February 23, 2019
