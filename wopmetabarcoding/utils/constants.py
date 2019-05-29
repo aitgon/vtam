@@ -25,7 +25,7 @@ def create_vtam_data_dir():
         VTAM_DATA_DIR = os.environ['VTAM_DATA_DIR']
         PathFinder.mkdir_p(VTAM_DATA_DIR)
     else:
-        VTAM_DATA_DIR = os.path.join(tempdir, 'vtam_data_dir')
+        VTAM_DATA_DIR = os.environ['PWD']
     return VTAM_DATA_DIR
 
 ##########################################################
