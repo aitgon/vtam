@@ -118,7 +118,7 @@ class OptimizeLFN(ToolWrapper):
             by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
         optimized_lfn_df = optimized_lfn_df.merge(aggregate_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        optimized_lfn_df['N_ijk/N_jk'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_jk']
+        optimized_lfn_df['lfn per_sum_biosample_replicate: N_ijk/N_jk'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_jk']
 
         ##########################################################
         #
@@ -129,7 +129,7 @@ class OptimizeLFN(ToolWrapper):
             by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_i'})
         optimized_lfn_df = optimized_lfn_df.merge(aggregate_df, on=['run_id', 'marker_id', 'variant_id'])
-        optimized_lfn_df['N_ijk/N_i'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_i']
+        optimized_lfn_df['lfn per_sum_variant: N_ijk/N_i'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_i']
 
         ##########################################################
         #
@@ -140,5 +140,11 @@ class OptimizeLFN(ToolWrapper):
             by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_ij'})
         optimized_lfn_df = optimized_lfn_df.merge(aggregate_df, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'])
-        optimized_lfn_df['N_ijk/N_ij'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_ij']
-        import pdb; pdb.set_trace()
+        optimized_lfn_df['per_sum_variant_replicate: N_ijk/N_ij'] = optimized_lfn_df['N_ijk'] / optimized_lfn_df['N_ij']
+
+        ##########################################################
+        #
+        # 7. Write TSV file
+        #
+        ##########################################################
+        optimized_lfn_df.to_csv(output_file_optimize_lfn, header=True, sep='\t')
