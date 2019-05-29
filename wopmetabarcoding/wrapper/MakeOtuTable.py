@@ -24,6 +24,7 @@ class MakeOtuTable(ToolWrapper):
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
+    __input_table_filter_chimera_borderline = "FilterChimeraBorderline"
     __input_table_filter_codon_stop = "FilterCodonStop"
     __input_table_variant = "Variant"
     __input_table_tax_assign = "TaxAssign"
@@ -44,6 +45,7 @@ class MakeOtuTable(ToolWrapper):
             MakeOtuTable.__input_table_biosample,
             MakeOtuTable.__input_table_replicate,
             MakeOtuTable.__input_table_variant,
+            MakeOtuTable.__input_table_filter_chimera_borderline,
             MakeOtuTable.__input_table_filter_codon_stop,
             MakeOtuTable.__input_table_tax_assign,
         ]
@@ -56,7 +58,6 @@ class MakeOtuTable(ToolWrapper):
 
     def specify_params(self):
         return {
-
         }
 
     def run(self):
@@ -77,7 +78,7 @@ class MakeOtuTable(ToolWrapper):
         marker_model = self.input_table(MakeOtuTable.__input_table_marker)
         run_model = self.input_table(MakeOtuTable.__input_table_run)
         biosample_model = self.input_table(MakeOtuTable.__input_table_biosample)
-        replicate_model = self.input_table(MakeOtuTable.__input_table_replicate)
+        filter_chimera_borderline_model = self.input_table(MakeOtuTable.__input_table_filter_chimera_borderline)
         filter_codon_stop_model = self.input_table(MakeOtuTable.__input_table_filter_codon_stop)
         variant_model = self.input_table(MakeOtuTable.__input_table_variant)
         tax_assign_model = self.input_table(MakeOtuTable.__input_table_tax_assign)
@@ -90,22 +91,27 @@ class MakeOtuTable(ToolWrapper):
         ##########################################################
         #
         # Get variants that passed the filter
+        # Get also chimera borderline information
         #
         ##########################################################
         logger.debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
+        filter_chimera_borderline_model_table = filter_chimera_borderline_model.__table__
         variant_model_table = variant_model.__table__
-        stmt_filter_codon_stop = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence]) \
+        stmt_filter_codon_stop = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence,
+                            filter_chimera_borderline_model_table.c.filter_delete, ]) \
             .where(filter_codon_stop_model_table.c.variant_id == variant_model_table.c.id) \
+            .where(filter_chimera_borderline_model_table.c.variant_id == variant_model_table.c.id) \
             .where(filter_codon_stop_model_table.c.filter_delete == 0).distinct().order_by("variant_id")
         # Select to DataFrame
         variant_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_filter_codon_stop).fetchall():
                 variant_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_list, columns=['variant_id', 'variant_sequence'])
+        variant_df = pandas.DataFrame.from_records(variant_list, columns=['variant_id', 'variant_sequence', 'chimera_borderline'])
+
 
         ##########################################################
         #
@@ -265,9 +271,9 @@ def f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codo
     otu_df = variant_df.copy()
     #
     # Add Variant Sequence length
-    variant_df_tmp = variant_df.copy()
-    variant_df_tmp['sequence_length'] = variant_df_tmp['variant_sequence'].str.len()
-    otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
+    # variant_df_tmp = variant_df.copy()
+    otu_df['sequence_length'] = otu_df['variant_sequence'].str.len()
+    # otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
     #
     # Add read_count_sum_per_variant
     read_count_sum_per_variant = filter_codon_stop_df.groupby('variant_id').sum().reset_index()[
@@ -345,6 +351,7 @@ def f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codo
     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('ltg_tax_name'))]
     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('identity'))]
     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('ltg_rank'))]
+    otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('chimera_borderline'))]
     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('variant_sequence'))]
     #
     # reorder
