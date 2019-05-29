@@ -148,4 +148,3 @@ class OptimizeLFN(ToolWrapper):
         #
         ##########################################################
         optimized_lfn_df.to_csv(output_file_optimize_lfn, header=True, sep='\t')
-        import pdb; pdb.set_trace()

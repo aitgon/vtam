@@ -6,7 +6,7 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 
 ##########################################################
 #
-# Define VTAM_TMP_DIR
+# Define/create VTAM_TMP_DIR
 #
 ##########################################################
 VTAM_TMP_DIR = None
