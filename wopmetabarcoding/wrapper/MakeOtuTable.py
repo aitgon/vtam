@@ -5,9 +5,9 @@ import sqlite3
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
-from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list
+from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list, download_taxonomy_sqlite
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
 from wopmetabarcoding.utils.constants import rank_hierarchy_otu_table
 
 
@@ -16,7 +16,6 @@ class MakeOtuTable(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.MakeOtuTable"}
 
     # Input file
-    taxonomy_sqlite_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'taxonomy.sqlite')
     __input_file_sample2fasta = "sample2fasta"
     __input_file_taxonomy = "taxonomy"
     # Input table
@@ -35,7 +34,6 @@ class MakeOtuTable(ToolWrapper):
     def specify_input_file(self):
         return[
             MakeOtuTable.__input_file_sample2fasta,
-            MakeOtuTable.__input_file_taxonomy,
         ]
 
     def specify_input_table(self):
@@ -71,7 +69,6 @@ class MakeOtuTable(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        taxonomy_sqlite_path = self.input_file(MakeOtuTable.__input_file_taxonomy)
         input_file_sample2fasta = self.input_file(MakeOtuTable.__input_file_sample2fasta)
         #
         # Input table models
@@ -171,19 +168,13 @@ class MakeOtuTable(ToolWrapper):
         marker_df = pandas.DataFrame.from_records(marker_list,
                                                   columns=['id', 'name'])
 
-
-
         #####
         #
         # taxonomy_db to df
         #
         #####
-
-        con = sqlite3.connect(taxonomy_sqlite_path)
-        sql = """SELECT *  FROM taxonomy """
-        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
-        con.close()
-
+        taxonomy_sqlite_path = download_taxonomy_sqlite()
+        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 
         #####
         #
@@ -230,17 +221,6 @@ class MakeOtuTable(ToolWrapper):
                 filter_codon_stop_list.append(row)
         filter_codon_stop_df = pandas.DataFrame.from_records(filter_codon_stop_list,
             columns=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
-
-        #####
-        #
-        # taxonomy_db to df
-        #
-        #####
-
-        con = sqlite3.connect(taxonomy_sqlite_path)
-        sql = """SELECT *  FROM taxonomy """
-        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
-        con.close()
 
         #
 
