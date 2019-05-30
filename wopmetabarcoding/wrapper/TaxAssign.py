@@ -8,9 +8,8 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils.constants import tempdir, create_coi_blast_db
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta
-
+from wopmetabarcoding.utils.constants import tempdir, download_coi_db, download_taxonomy_sqlite
+from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 
@@ -23,7 +22,6 @@ class TaxAssign(ToolWrapper):
 
     # Input file
     __input_file_sample2fasta = "sample2fasta"
-    __input_file_taxonomy = "taxonomy"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -38,7 +36,6 @@ class TaxAssign(ToolWrapper):
     def specify_input_file(self):
         return[
             TaxAssign.__input_file_sample2fasta,
-            TaxAssign.__input_file_taxonomy,
         ]
 
     def specify_input_table(self):
@@ -75,7 +72,6 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        taxonomy_sqlite_path = self.input_file(TaxAssign.__input_file_taxonomy)
         input_file_sample2fasta = self.input_file(TaxAssign.__input_file_sample2fasta)
         #
         # Input table models
@@ -94,7 +90,8 @@ class TaxAssign(ToolWrapper):
         min_number_of_taxa = int(self.option("min_number_of_taxa")) # count
 
 
-        ##########################################################
+        #################        taxonomy_sqlite_path = download_taxonomy_sqlite()
+#########################################
         #
         # 2. Read sample2f  asta to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
@@ -203,7 +200,7 @@ class TaxAssign(ToolWrapper):
         #
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
-        map_taxids_tsv_path, coi_blast_db_dir = create_coi_blast_db()
+        map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
         os.environ['BLASTDB'] = coi_blast_db_dir
         #
         # Uncomment to run blast with full NCBI blast db)
@@ -261,10 +258,8 @@ class TaxAssign(ToolWrapper):
             "file: {}; line: {}; Open taxonomy.sqlite DB".format(__file__, inspect.currentframe().f_lineno))
         lblast_output_df.target_tax_id = pandas.to_numeric(lblast_output_df.target_tax_id)
         # getting the taxonomy_db to df
-        con = sqlite3.connect(taxonomy_sqlite_path)
-        sql = """SELECT *  FROM taxonomy """
-        taxonomy_db_df = pandas.read_sql(sql=sql, con=con)
-        con.close()
+        taxonomy_sqlite_path = download_taxonomy_sqlite()
+        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         logger.debug(
             "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(__file__, inspect.currentframe().f_lineno))
