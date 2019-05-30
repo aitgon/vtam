@@ -30,10 +30,32 @@ def create_vtam_data_dir():
 
 ##########################################################
 #
-# Define/create COI_BLAST_DB_DIR
+# Define/create taxonomy_sqlite_path
 #
 ##########################################################
-def create_coi_blast_db():
+def download_taxonomy_sqlite():
+    ####
+    # vtam_data_dir and coi_blast_db dir
+    ####
+    vtam_data_dir = create_vtam_data_dir()
+    coi_blast_db_dir = os.path.join(vtam_data_dir, 'coi_blast_db')
+    PathFinder.mkdir_p(os.path.join(coi_blast_db_dir))
+    ####
+    # taxonomy.sqlite
+    ####
+    taxonomy_sqlite_url = os.path.join(public_data_dir, "taxonomy.sqlite")
+    taxonomy_sqlite_path = os.path.join(vtam_data_dir, 'taxonomy.sqlite')
+    if not os.path.isfile(os.path.join(taxonomy_sqlite_path)):
+        urllib.request.urlretrieve(taxonomy_sqlite_url, taxonomy_sqlite_path)
+    #
+    return taxonomy_sqlite_path
+
+##########################################################
+#
+# Define/create map_taxids_tsv_path, coi_blast_db_dir
+#
+##########################################################
+def download_coi_db():
     ####
     # vtam_data_dir and coi_blast_db dir
     ####
@@ -89,7 +111,7 @@ def create_coi_blast_db():
     coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nsq')
     if not os.path.isfile(os.path.join(coi_db_path)):
         urllib.request.urlretrieve(coi_db_url, coi_db_path)
-
+    #
     return map_taxids_tsv_path, coi_blast_db_dir
 
 #
