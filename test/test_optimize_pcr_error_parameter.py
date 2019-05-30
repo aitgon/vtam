@@ -69,5 +69,5 @@ class TestOptimizePcrErrorParameter(TestCase):
         #
         #
         #
-        # import pdb;pdb.set_trace()
+        import pdb;pdb.set_trace()
         # self.assertTrue(read_count_unexpected_expected_ratio_max == 0.03182775567516967)
