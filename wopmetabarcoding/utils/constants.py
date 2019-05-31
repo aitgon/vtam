@@ -21,6 +21,26 @@ tempdir = tempfile.mkdtemp(dir=VTAM_TMP_DIR)
 #
 ##########################################################
 def create_vtam_data_dir():
+    """
+    This function creates a VTAM data directory, where all data of VTAM will be downloaded.
+
+    If the VTAM_DATA_DIR environment variable is passed, then that value will be the VTAM data directory.
+    Otherwise the PWD environment will be used.
+    Currently these data sets will be downloaded
+
+    - The taxonomy sqlite database
+    - The COI Blast database
+    - The map_taxids.tsv will the link between accession and taxids
+
+        Updated:
+            May 31, 2019
+
+        Args:
+            None
+
+        Returns:
+            String: The path to the VTAM data directory
+    """
     if 'VTAM_DATA_DIR' in os.environ:
         VTAM_DATA_DIR = os.environ['VTAM_DATA_DIR']
         PathFinder.mkdir_p(VTAM_DATA_DIR)
@@ -30,10 +50,27 @@ def create_vtam_data_dir():
 
 ##########################################################
 #
-# Define/create taxonomy_sqlite_path
+# Define/create taxonomy.sqlite path
 #
 ##########################################################
 def download_taxonomy_sqlite():
+    """
+    These function is used to define and return the path of the taxonomy.sqlite database.
+
+    If the TAXONOMY_SQLITE environment variable is passed, then that path will be used
+    Otherwise the taxonomy.sqlite database will be downloaded from the VTAM public data dir to the VTAM local data directory
+
+        Updated:
+            May 31, 2019
+
+        Args:
+            None
+
+        Returns:
+            String: The path to the taxonomy.sqlite database
+    """
+    if 'TAXONOMY_SQLITE' in os.environ:
+        return os.environ['TAXONOMY_SQLITE']
     ####
     # vtam_data_dir and coi_blast_db dir
     ####
@@ -56,6 +93,103 @@ def download_taxonomy_sqlite():
 #
 ##########################################################
 def download_coi_db():
+    """
+    These function is used to define and return the path of the COI Blast database directory and map_taxids.tsv file.
+
+    The COI Blast database are downloaded from the VTAM public data dir to the VTAM local data directory
+
+        Updated:
+            May 31, 2019
+
+        Args:
+            None
+
+        Returns:
+            String, String: The paths of the map_taxids.tsv file and COI Blast DB directory
+    """
+    # if 'COI_BLAST_DB' in os.environ:
+    #     return os.environ['COI_BLAST_DB']
+    ####
+    # vtam_data_dir and coi_blast_db dir
+    ####
+    vtam_data_dir = create_vtam_data_dir()
+    coi_blast_db_dir = os.path.join(vtam_data_dir, 'coi_blast_db')
+    PathFinder.mkdir_p(os.path.join(coi_blast_db_dir))
+    ####
+    # map_taxids.tsv
+    ####
+    map_taxids_tsv_url = os.path.join(public_data_dir, "map_taxids.tsv")
+    map_taxids_tsv_path = os.path.join(vtam_data_dir, 'map_taxids.tsv')
+    if not os.path.isfile(os.path.join(map_taxids_tsv_path)):
+        urllib.request.urlretrieve(map_taxids_tsv_url, map_taxids_tsv_path)
+    ####
+    # coi_db.nhr
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nhr")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nhr')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    ####
+    # coi_db.nin
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nin")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nin')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    ####
+    # coi_db.nog
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nog")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nog')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    ####
+    # coi_db.nsd
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nsd")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nsd')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    ####
+    # coi_db.nsi
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nsi")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nsi')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    ####
+    # coi_db.nsq
+    ####
+    coi_db_url = os.path.join(public_data_dir, "coi_blast_db", "coi_db.nsq")
+    coi_db_path = os.path.join(vtam_data_dir, 'coi_blast_db', 'coi_db.nsq')
+    if not os.path.isfile(os.path.join(coi_db_path)):
+        urllib.request.urlretrieve(coi_db_url, coi_db_path)
+    #
+    return map_taxids_tsv_path, coi_blast_db_dir
+
+##########################################################
+#
+# Define/create map_taxids_tsv_path, coi_blast_db_dir
+#
+##########################################################
+def download_coi_db():
+    """
+    These function is used to define and return the path of the COI Blast database directory.
+
+    If the COI_BLAST_DB environment variable is passed, then that path will be used as COI Blast database directory.
+    Otherwise the COI Blast database will be downloaded from the VTAM public data dir to the VTAM local data directory
+
+        Updated:
+            May 31, 2019
+
+        Args:
+            None
+
+        Returns:
+            String: The path to the taxonomy.sqlite database
+    """
+    if 'COI_BLAST_DB' in os.environ:
+        return os.environ['COI_BLAST_DB']
     ####
     # vtam_data_dir and coi_blast_db dir
     ####
