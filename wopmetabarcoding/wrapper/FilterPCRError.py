@@ -345,7 +345,7 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     #########
     # import pdb;pdb.set_trace()
     # Add two colum the first for the variant id sequence query and the second for the target sequance variant id
-    check_read_count_df = variant_read_count_grouped_df.merge(check_read_count_df, left_on=['variant_id'], right_on=['query'])
+    check_read_count_df = variant_read_count_grouped_df.merge(check_read_count_df, left_on=['variant_id'], right_on=['target']) #  TODO VERIFY AITOR WAS  'query' ARGS REPLACED BY 'target'
     check_read_count_df.drop(columns=['variant_id'], inplace = True)
     check_read_count_df.rename(columns={'query': 'variant_id_unexpected'}, inplace=True)
     check_read_count_df.rename(columns={'read_count': 'read_count_unexpected'}, inplace=True)
@@ -355,12 +355,11 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     #
     #########
 
-    check_read_count_df = check_read_count_df.merge(variant_read_count_grouped_df,left_on=['run_id', 'marker_id', 'biosample_id', 'target'],
-                                                    right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+    check_read_count_df = check_read_count_df.merge(variant_read_count_grouped_df,left_on=['run_id', 'marker_id', 'biosample_id', 'target'],right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
     check_read_count_df.drop(columns=['variant_id'], inplace = True)
     check_read_count_df.rename(columns={'target': 'variant_id_expected'}, inplace=True)
     check_read_count_df.rename(columns={'read_count': 'read_count_expected'}, inplace=True)
-    # check_read_count_df['read_count_unexpected_expected_ratio'] = check_read_count_df.read_count_unexpected / check_read_count_df.read_count_expected
+    # check_read_count_df['read_count_unexpected_expected_ratio'] = check_read_count_df.read_count_unexpected / check_read_count_df.read_count_expected # TODO verify
     check_read_count_df['read_count_unexpected_expected_ratio'] = check_read_count_df.N_ijk_x / check_read_count_df.N_ijk_y
     check_read_count_df.sort_values(by='read_count_unexpected_expected_ratio', ascending=False, inplace=True)
     check_read_count_df = check_read_count_df.head(1)
