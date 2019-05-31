@@ -36,7 +36,9 @@ class TestMakeOtuTable(TestCase):
         #
         biosample_dic = {'id': [1, 2], 'name': ['Tpos1_prerun', 'Tpos2_prerun']}
         #
-        ltg_tax_assign_dic = {'variant_id': [30,15], 'identity': [85,80], 'ltg_rank': ['species','species'], 'ltg_tax_id': [268290,84394]}
+        ltg_tax_assign_dic = {'variant_id': [30,15], 'identity': [85,80], 'ltg_rank': ['species','species'],
+                              'ltg_tax_id': [268290,84394], 'ltg_tax_name': ['Nyssomyia trapidoi', 'Ploima'],
+                              'chimera_borderline': [False, False]}
 
         #
         #  Get tables/df
@@ -52,7 +54,6 @@ class TestMakeOtuTable(TestCase):
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 
         otu_df = f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df, taxonomy_db_df)
-
         # otu_final_df = otu_df[columns]
         self.assertTrue(otu_df.loc[(otu_df.variant_id == 15)
                                    & (otu_df.read_count == 120),
