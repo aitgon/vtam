@@ -1,3 +1,4 @@
+import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.FilterPCRError import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
@@ -5,6 +6,8 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
+
+from wopmetabarcoding.utils.logger import logger
 
 
 class OptimizePCRError(ToolWrapper):
@@ -101,8 +104,6 @@ class OptimizePCRError(ToolWrapper):
                 run_name = row.run_name
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
-                variant_id = row.variant_id
-                variant_sequence = row.variant_sequence
                 stmt_select = select([
                     variant_model.__table__.c.id,
                     variant_model.__table__.c.sequence, ]) \
@@ -112,12 +113,11 @@ class OptimizePCRError(ToolWrapper):
                     .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
                     .where(biosample_model.__table__.c.name == biosample_name) \
                     .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
-                    .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
+                    .where(variant_read_count_model.__table__.c.variant_id == variant_model.__table__.c.id) \
                     .distinct()
                 variant_list = variant_list + conn.execute(stmt_select).fetchall()
 
         variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
-
         # .where(variant_model.__table__.c.sequence == variant_sequence) \
 
         variant_read_count_list = []
@@ -126,8 +126,6 @@ class OptimizePCRError(ToolWrapper):
                 run_name = row.run_name
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
-                variant_id = row.variant_id
-                variant_sequence = row.variant_sequence
                 stmt_select = select([
                     run_model.__table__.c.id,
                     marker_model.__table__.c.id,
@@ -142,7 +140,7 @@ class OptimizePCRError(ToolWrapper):
                     .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
                     .where(biosample_model.__table__.c.name == biosample_name) \
                     .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
-                    .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
+                    .where(variant_read_count_model.__table__.c.variant_id == variant_model.__table__.c.id) \
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
 
@@ -154,6 +152,31 @@ class OptimizePCRError(ToolWrapper):
         #     .where(variant_model.__table__.c.sequence == variant_sequence) \
         # test if empty
 
+        ##############
+        #
+        #  control the positive variant
+        #
+        #############  # todo control positive variant
+        #
+        # import pdb;pdb.set_trace()
+
+        for row in positive_variant_df.itertuples():
+            variant_id = row.variant_id
+            variant_sequence = row.variant_sequence
+            id_pos = variant_df.loc[variant_df.sequence == variant_sequence, 'id'].values
+            if( variant_id  != id_pos[0] ):
+               logger.debug(
+                "file: {}; line: {}; ERROR, positive variants sequences are not coerent with the ids".format(__file__,inspect.currentframe().f_lineno,'OptimizePCRError'))
+
+               df = pandas.DataFrame({"optimal_pcr_error_param": [" error postive variant are not coherent with the ids "]})
+
+               ##########################################################
+               #
+               # 7. Write TSV file
+               #
+               ##########################################################
+               df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t')
+               exit()
 
         ##############
         #
@@ -181,8 +204,8 @@ class OptimizePCRError(ToolWrapper):
 
         df = pandas.DataFrame({"optimal_pcr_error_param": [read_count_unexpected_expected_ratio_max]})
 
-
-
+        logger.debug(
+            "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRError'))
         ##########################################################
         #
         # 7. Write TSV file
@@ -191,13 +214,4 @@ class OptimizePCRError(ToolWrapper):
         df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t')
 
 
-
-        #
-        # 1. Read positive_variants.tsv
-        # 2. Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df
-        # 3. Get read_count: N_ijk
-        # 4. Compute ratio per_sum_biosample_replicate: N_ijk / N_jk
-        # 5. Compute ratio per_sum_variant: N_ijk / N_i
-        # 6. Compute ratio per_sum_variant_replicate: N_ijk / N_ij
-        # 7. Output run_name, marker_name, variant, positive biosample j, replicate k. N_ijk, N_jk , N_ijk /N_jk, N_ijk / N_i, N_ijk / N_ij
 
