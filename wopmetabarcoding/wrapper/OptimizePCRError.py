@@ -102,8 +102,7 @@ class OptimizePCRError(ToolWrapper):
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
                 variant_id = row.variant_id
-                variant_sequence = row.variant_sequence    # add this condition     .where(marker_model.__table__.c.sequence == variant_sequence) \
-
+                variant_sequence = row.variant_sequence
                 stmt_select = select([
                     variant_model.__table__.c.id,
                     variant_model.__table__.c.sequence, ]) \
@@ -111,7 +110,6 @@ class OptimizePCRError(ToolWrapper):
                     .where(variant_read_count_model.__table__.c.run_id == run_model.__table__.c.id) \
                     .where(marker_model.__table__.c.name == marker_name) \
                     .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
-                    .where(marker_model.__table__.c.sequence == variant_sequence) \
                     .where(biosample_model.__table__.c.name == biosample_name) \
                     .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
                     .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
@@ -120,8 +118,7 @@ class OptimizePCRError(ToolWrapper):
 
         variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
 
-
-        import pdb; pdb.set_trace()
+        # .where(variant_model.__table__.c.sequence == variant_sequence) \
 
         variant_read_count_list = []
         with engine.connect() as conn:
@@ -135,6 +132,7 @@ class OptimizePCRError(ToolWrapper):
                     run_model.__table__.c.id,
                     marker_model.__table__.c.id,
                     variant_read_count_model.__table__.c.variant_id,
+                    variant_model.__table__.c.sequence,
                     biosample_model.__table__.c.id,
                     variant_read_count_model.__table__.c.replicate_id,
                     variant_read_count_model.__table__.c.read_count, ]) \
@@ -149,12 +147,13 @@ class OptimizePCRError(ToolWrapper):
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
 
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                                columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                                columns=['run_id', 'marker_id', 'variant_id','variant_sequence', 'biosample_id',
                                                                 'replicate_id', 'N_ijk'])
         variant_read_count_df.drop_duplicates(inplace=True)
         # .where(variant_model.__table__.c.id == variant_read_count_model.__table__.c.variant_id) \
         #     .where(variant_model.__table__.c.sequence == variant_sequence) \
         # test if empty
+
 
         ##############
         #
@@ -162,13 +161,12 @@ class OptimizePCRError(ToolWrapper):
         #
         #############
 
-        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(positive_variant_df.variant_id.unique().tolist())][
-            ['id', 'sequence']].drop_duplicates()
+        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(positive_variant_df.variant_id.unique().tolist())][['id', 'sequence']].drop_duplicates()
 
         variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
         #
-        variant_vsearch_query_df = variant_read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
-        variant_vsearch_query_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
+        # variant_vsearch_query_df = variant_read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        # variant_vsearch_query_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
 
         ##############
         #
