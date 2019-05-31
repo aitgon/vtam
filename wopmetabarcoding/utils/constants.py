@@ -44,9 +44,10 @@ def create_vtam_data_dir():
     if 'VTAM_DATA_DIR' in os.environ:
         VTAM_DATA_DIR = os.environ['VTAM_DATA_DIR']
         PathFinder.mkdir_p(VTAM_DATA_DIR)
+        return VTAM_DATA_DIR
     else:
-        VTAM_DATA_DIR = os.environ['PWD']
-    return VTAM_DATA_DIR
+        return os.environ['PWD']
+
 
 ##########################################################
 #
@@ -75,8 +76,7 @@ def download_taxonomy_sqlite():
     # vtam_data_dir and coi_blast_db dir
     ####
     vtam_data_dir = create_vtam_data_dir()
-    coi_blast_db_dir = os.path.join(vtam_data_dir, 'coi_blast_db')
-    PathFinder.mkdir_p(os.path.join(coi_blast_db_dir))
+    PathFinder.mkdir_p(os.path.join(vtam_data_dir))
     ####
     # taxonomy.sqlite
     ####
