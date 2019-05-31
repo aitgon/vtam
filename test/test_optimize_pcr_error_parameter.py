@@ -58,7 +58,7 @@ class TestOptimizePcrErrorParameter(TestCase):
             ['id', 'sequence']].drop_duplicates()
         variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
         #
-        # variant_vsearch_query_df = read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        # variant_vsearch_query_df = variant_read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
         # variant_vsearch_query_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
         #
         vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df, tmp_dir=self.this_step_tmp_dir)
