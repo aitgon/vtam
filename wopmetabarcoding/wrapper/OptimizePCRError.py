@@ -87,6 +87,42 @@ class OptimizePCRError(ToolWrapper):
         # 
         #
         ##########################################################
+
+
+        ####
+        #
+        # Select all variants from the positive samples
+        #
+        ####
+
+        variant_list = []
+        with engine.connect() as conn:
+            for row in positive_variant_df.itertuples():
+                run_name = row.run_name
+                marker_name = row.marker_name
+                biosample_name = row.biosample_name
+                variant_id = row.variant_id
+                variant_sequence = row.variant_sequence    # add this condition     .where(marker_model.__table__.c.sequence == variant_sequence) \
+
+                stmt_select = select([
+                    variant_model.__table__.c.id,
+                    variant_model.__table__.c.sequence, ]) \
+                    .where(run_model.__table__.c.name == run_name) \
+                    .where(variant_read_count_model.__table__.c.run_id == run_model.__table__.c.id) \
+                    .where(marker_model.__table__.c.name == marker_name) \
+                    .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
+                    .where(marker_model.__table__.c.sequence == variant_sequence) \
+                    .where(biosample_model.__table__.c.name == biosample_name) \
+                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
+                    .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
+                    .distinct()
+                variant_list = variant_list + conn.execute(stmt_select).fetchall()
+
+        variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
+
+
+        import pdb; pdb.set_trace()
+
         variant_read_count_list = []
         with engine.connect() as conn:
             for row in positive_variant_df.itertuples():
@@ -112,41 +148,27 @@ class OptimizePCRError(ToolWrapper):
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
 
-        optimized_pcr_error_df = pandas.DataFrame.from_records(variant_read_count_list,
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
                                                                 columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
                                                                 'replicate_id', 'N_ijk'])
-
+        variant_read_count_df.drop_duplicates(inplace=True)
         # .where(variant_model.__table__.c.id == variant_read_count_model.__table__.c.variant_id) \
         #     .where(variant_model.__table__.c.sequence == variant_sequence) \
         # test if empty
 
-        optimized_pcr_error_df.drop_duplicates(inplace=True)
-
-
         ##############
         #
-        # Select all variants from Variant table
+        #  Create  variant_vsearch_db_df from the variant_df having the variant_id in the variant_id_list of the positive variant
         #
         #############
 
-        variant_list = []
-        with engine.connect() as conn:
-            stmt_select = select([
-                variant_model.__table__.c.id,
-                variant_model.__table__.c.sequence,])
-            variant_list = variant_list + conn.execute(stmt_select).fetchall()
-
-        variant_df = pandas.DataFrame.from_records(variant_list,
-                                                               columns=['id', 'sequence'])
-        ##############
-        #
-        # create variant_vsearch_db_df from variant_df based on the positive_variant_df.variant_id
-        #
-        #############
         variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(positive_variant_df.variant_id.unique().tolist())][
             ['id', 'sequence']].drop_duplicates()
-        variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
 
+        variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
+        #
+        variant_vsearch_query_df = variant_read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        variant_vsearch_query_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
 
         ##############
         #
@@ -155,38 +177,6 @@ class OptimizePCRError(ToolWrapper):
         #############
 
         vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df, tmp_dir=create_step_tmp_dir(__file__))
-
-        ##############
-        #
-        #  getting variant read count df  havinf the same biosample_name of the positifs variant
-        #
-        #############
-
-        variant_read_count_list = []
-        with engine.connect() as conn:
-            for row in positive_variant_df.itertuples():
-                run_name = row.run_name
-                marker_name = row.marker_name
-                biosample_name = row.biosample_name
-                stmt_select = select([
-                    run_model.__table__.c.id,
-                    marker_model.__table__.c.id,
-                    variant_read_count_model.__table__.c.variant_id,
-                    biosample_model.__table__.c.id,
-                    variant_read_count_model.__table__.c.replicate_id,
-                    variant_read_count_model.__table__.c.read_count, ]) \
-                    .where(run_model.__table__.c.name == run_name) \
-                    .where(variant_read_count_model.__table__.c.run_id == run_model.__table__.c.id) \
-                    .where(marker_model.__table__.c.name == marker_name) \
-                    .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
-                    .where(biosample_model.__table__.c.name == biosample_name) \
-                    .distinct()
-                variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
-
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                               columns=['run_id', 'marker_id', 'variant_id',
-                                                                        'biosample_id',
-                                                                        'replicate_id', 'N_ijk'])
 
         read_count_unexpected_expected_ratio_max = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
         #
