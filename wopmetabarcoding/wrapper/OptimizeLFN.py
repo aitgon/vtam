@@ -147,4 +147,4 @@ class OptimizeLFN(ToolWrapper):
         # 7. Write TSV file
         #
         ##########################################################
-        optimized_lfn_df.to_csv(output_file_optimize_lfn, header=True, sep='\t')
+        optimized_lfn_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
