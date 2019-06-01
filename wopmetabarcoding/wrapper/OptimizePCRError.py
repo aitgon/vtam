@@ -199,10 +199,11 @@ class OptimizePCRError(ToolWrapper):
 
         vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df, tmp_dir=create_step_tmp_dir(__file__))
 
-        read_count_unexpected_expected_ratio_max = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
+        # read_count_unexpected_expected_ratio_max = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
+        pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
         #
 
-        df = pandas.DataFrame({"optimal_pcr_error_param": [read_count_unexpected_expected_ratio_max]})
+        # df = pandas.DataFrame({"optimal_pcr_error_param": [read_count_unexpected_expected_ratio_max]})
 
         logger.debug(
             "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRError'))
@@ -211,7 +212,8 @@ class OptimizePCRError(ToolWrapper):
         # 7. Write TSV file
         #
         ##########################################################
-        df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t')
+        # df.to_csv(output_file_optimize_pcr_error, header=True, sep='\
+        pcr_error_df.head().to_csv(output_file_optimize_pcr_error, header=True, sep='\t', float_format='%.10f', index=False)
 
 
 
