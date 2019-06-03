@@ -213,7 +213,7 @@ class OptimizePCRError(ToolWrapper):
         #
         ##########################################################
         # df.to_csv(output_file_optimize_pcr_error, header=True, sep='\
-        pcr_error_df.head().to_csv(output_file_optimize_pcr_error, header=True, sep='\t', float_format='%.10f', index=False)
+        pcr_error_df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t', float_format='%.10f', index=False)
 
 
 
