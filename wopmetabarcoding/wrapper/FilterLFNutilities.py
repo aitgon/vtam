@@ -163,6 +163,7 @@ class FilterLFNRunner:
         # Prepare output df and concatenate to self.delete_variant_df
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
+
     def f3_f5_lfn_delete_per_sum_variant_replicate(self, lfn_per_sum_variant_replicate_threshold, lfn_per_replicate_threshold_specific=None):
         """
         This filter deletes the variant i in biosample j and replicate k
