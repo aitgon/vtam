@@ -121,7 +121,7 @@ class OptimizeF6(ToolWrapper):
         optimized_lfn_df = pandas.DataFrame.from_records(variant_read_count_list,
             columns=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'N_ijk'])
         optimized_lfn_df.drop_duplicates(inplace=True)
-        import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         ##########################################################
         #
         # 4. Compute ratio per_sum_biosample_replicate: N_ijk / N_jk
