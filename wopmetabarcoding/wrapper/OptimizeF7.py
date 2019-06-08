@@ -1,9 +1,13 @@
+import os
+
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
 # from wopmetabarcoding.wrapper.OptimizeLFNutilities import OptimizeLFNRunner
 from sqlalchemy import select
 import pandas
+
+from wopmetabarcoding.utils.logger import logger
 
 
 class OptimizeF7(ToolWrapper):
@@ -17,6 +21,7 @@ class OptimizeF7(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
+    __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
     __output_file_optimize_lfn = "optimize_lfn"
@@ -62,39 +67,62 @@ class OptimizeF7(ToolWrapper):
         run_model = self.input_table(OptimizeF7.__input_table_run)
         marker_model = self.input_table(OptimizeF7.__input_table_marker)
         biosample_model = self.input_table(OptimizeF7.__input_table_biosample)
+        variant_model = self.input_table(OptimizeF7.__input_table_variant)
+
         variant_read_count_model = self.input_table(OptimizeF7.__input_table_variant_read_count)
         #
         # Output file path
         output_file_optimize_lfn = self.output_file(OptimizeF7.__output_file_optimize_lfn)
 
+
         ##########################################################
         #
-        # 1. Read input_file_positive_variants to get run_id, marker_id, biosample_id, for current analysis
+        # 1. Read variants_optimize to get run_id, marker_id, biosample_id, variant_id for current analysis
         #
         ##########################################################
-        positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
-                                 names=['marker_name', 'run_name', 'biosample_name', 'sample_type',
-                                            'variant_id', 'action', 'variant_sequence', 'Note'], index_col=False)
+        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
+        #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
 
-        delete_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
-            names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
+        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+                                              names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
+                                                     'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
-        negative_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
-                             names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'],
-                             index_col=False)
+        ########################
+        #
+        # Control if user variants and sequence are consistent in the database
+        #
+        ########################
+        variant_control_df = variants_optimize_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
+        with engine.connect() as conn:
+            for row in variant_control_df.itertuples():
+                variant_id = row.variant_id
+                variant_sequence = row.variant_sequence
+                stmt_select = select([variant_model.__table__.c.id, variant_model.__table__.c.sequence])\
+                    .where(variant_model.__table__.c.id == variant_id)\
+                    .where(variant_model.__table__.c.sequence == variant_sequence)
+                if conn.execute(stmt_select).first() is None:
+                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   os.mknod(output_file_optimize_lfn)
+                   exit()
 
-        #########################################################
-            #
-            # 1-1 extract only the columns of interests and the variant having delete as action
-            #
-            ##########################################################
+        ##########################################################
+        #
+        # Extract some columns and not in "keep or tolerate " variants
+        #
+        ##########################################################
+        variant_delete_df = variants_optimize_df[variants_optimize_df["action"].isin(["keep", "tolerate"])]
+        variant_delete_df = variant_delete_df[['biosample_name', 'variant_id']]
 
-        delete_variant_df = delete_variant_df[delete_variant_df["action"] == "delete"]
 
-        delete_variant_df = delete_variant_df[['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence']]
+        ##########################################################
+        #
+        # Extract some columns and "keep" variants
+        #
+        ##########################################################
+        variants_keep_df = variants_optimize_df[variants_optimize_df["action"].isin(["keep"])]
+        variants_keep_df = variants_keep_df[['marker_name', 'run_name', 'biosample_name','biosample_type,' 'variant_id', 'variant_sequence']]
 
-        #add the negative variant to delete_df
-        delete_variant_df = delete_variant_df.append(negative_variant_df, ignore_index=True)
 
         ##########################################################
         #
@@ -104,12 +132,9 @@ class OptimizeF7(ToolWrapper):
         ##########################################################
         variant_read_count_list = []
         with engine.connect() as conn:
-            for row in delete_variant_df.itertuples():
-                run_name = row.run_name
-                marker_name = row.marker_name
+            for row in variant_delete_df.itertuples():
                 biosample_name = row.biosample_name
                 variant_id = row.variant_id
-                variant_sequence = row.variant_sequence
                 stmt_select = select([
                     run_model.__table__.c.id,
                     marker_model.__table__.c.id,
@@ -117,19 +142,14 @@ class OptimizeF7(ToolWrapper):
                     biosample_model.__table__.c.id,
                     variant_read_count_model.__table__.c.replicate_id,
                     variant_read_count_model.__table__.c.read_count, ]) \
-                    .where(run_model.__table__.c.name == run_name) \
-                    .where(variant_read_count_model.__table__.c.run_id == run_model.__table__.c.id) \
-                    .where(marker_model.__table__.c.name == marker_name) \
-                    .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
-                    .where(biosample_model.__table__.c.name == biosample_name) \
-                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
-                    .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
+                    .where(biosample_model.__table__.c.name != biosample_name) \
+                    .where(variant_read_count_model.__table__.c.variant_id != variant_id) \
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
-        optimized_lfn_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                         columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+        variants_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+                                                       columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
                                                                   'replicate_id', 'N_ijk'])
-        optimized_lfn_df.drop_duplicates(inplace=True)
+        variants_read_count_df.drop_duplicates(inplace=True)
 
 
         ##########################################################
@@ -140,25 +160,25 @@ class OptimizeF7(ToolWrapper):
         lfn_read_count_threshod_dic = {}
         lfn_read_count_threshod_list = []
 
-        sample_type_list = positive_variant_df.sample_type.tolist()
-        for sample_type in sample_type_list:
-              df =  positive_variant_df[positive_variant_df["sample_type"] == sample_type]
+        biosample_type_list = variants_keep_df.biosample_type.tolist()
+        for biosample_type in biosample_type_list:
+              df = variants_keep_df[variants_keep_df["sample_type"] == biosample_type]
               df = df[['marker_name', 'run_name', 'biosample_name','sample_type','variant_id', 'variant_sequence']]
               variant_id_list = df.variant_id.tolist()
               for variant_id in variant_id_list:
-                 df_by_sample_type_df = optimized_lfn_df[optimized_lfn_df["variant_id"] == variant_id]
-                 rdc_list =df_by_sample_type_df["N_ijk"].tolist()
+                 df_by_biosample_type = variants_read_count_df[variants_read_count_df["variant_id"] == variant_id]
+                 rdc_list =df_by_biosample_type["N_ijk"].tolist()
                  rdc_max_min  = [max(rdc_list), min(rdc_list)]
                  if  rdc_list[1] not in rdc_max_min: lfn_read_count_threshold = rdc_list[1]
                  if rdc_list[2] not in rdc_max_min: lfn_read_count_threshold = rdc_list[2]
                  if rdc_list[3] not in rdc_max_min: lfn_read_count_threshold = rdc_list[3]
                  #
-                 read_count_number= df_by_sample_type_df["N_ijk"].sum()
+                 read_count_number= df_by_biosample_type["N_ijk"].sum()
                  lfn_read_count_threshod_dic = {}
                  # write in data frame the variant_id with his lfn_read_count_threshold and sample_type
                  lfn_read_count_threshod_dic["variant_id"] = variant_id
                  lfn_read_count_threshod_dic["lfn_read_count_threshold"] = lfn_read_count_threshold
-                 lfn_read_count_threshod_dic["sample_type"] = sample_type
+                 lfn_read_count_threshod_dic["sample_type"] = biosample_type
                  lfn_read_count_threshod_dic["read_count_number"] = read_count_number
               lfn_read_count_threshod_list.append(lfn_read_count_threshod_dic)
         # data frame containing the ['variant_id','lfn_read_count_threshold','sample_type','read_count_number']
@@ -184,10 +204,6 @@ class OptimizeF7(ToolWrapper):
         # 5- Run filter for a series of (lfn_read_count_threshold -lfn_per_variant_threshold) combinations
         #
         ##########################################################
-
-
-        f7_lfn_delete_absolute_read_count()
-        f2_f4_lfn_delete_per_sum_variant()
 
 
 
