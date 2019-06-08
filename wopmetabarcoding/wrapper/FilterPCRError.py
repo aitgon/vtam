@@ -361,7 +361,7 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     pcr_error_df.rename(columns={'read_count': 'read_count_expected'}, inplace=True)
     # check_read_count_df['read_count_unexpected_expected_ratio'] = check_read_count_df.read_count_unexpected / check_read_count_df.read_count_expected # TODO verify
     pcr_error_df['read_count_unexpected_expected_ratio'] = pcr_error_df.N_ijk_x / pcr_error_df.N_ijk_y
-    pcr_error_df.sort_values(by='read_count_unexpected_expected_ratio', ascending=True, inplace=True)
+    pcr_error_df.sort_values(by='read_count_unexpected_expected_ratio', ascending=False, inplace=True)
     # check_read_count_df = check_read_count_df.head(1)
     # read_count_unexpected_expected_ratio_max = check_read_count_df.read_count_unexpected_expected_ratio.values[0]
     # return read_count_unexpected_expected_ratio_max
