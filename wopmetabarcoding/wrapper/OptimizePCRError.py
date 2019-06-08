@@ -1,5 +1,6 @@
 import inspect
 
+import os
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.FilterPCRError import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
 from sqlalchemy import select
@@ -74,15 +75,45 @@ class OptimizePCRError(ToolWrapper):
         #
         # Output file path
         output_file_optimize_pcr_error = self.output_file(OptimizePCRError.__output_file_optimize_pcr_error)
-        ################
+
         ##########################################################
         #
-        # 1-Read positive_variants.tsv
+        # 1. Read input_file_positive_variants to get run_id, marker_id, biosample_id, for current analysis
         #
         ##########################################################
-        positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
-                                              names=['marker_name', 'run_name', 'biosample_name', 'variant_id',
-                                                     'variant_sequence'], index_col=False)
+        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
+        #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
+
+        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+                                              names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
+                                                     'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
+
+        ########################
+        #
+        # Control if user variants and sequence are consistent in the database
+        #
+        ########################
+        variant_control_df = variants_optimize_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
+        with engine.connect() as conn:
+            for row in variant_control_df.itertuples():
+                variant_id = row.variant_id
+                variant_sequence = row.variant_sequence
+                stmt_select = select([variant_model.__table__.c.id, variant_model.__table__.c.sequence])\
+                    .where(variant_model.__table__.c.id == variant_id)\
+                    .where(variant_model.__table__.c.sequence == variant_sequence)
+                if conn.execute(stmt_select).first() is None:
+                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   os.mknod(output_file_optimize_pcr_error)
+                   exit()
+
+        ##########################################################
+        #
+        # Extract some columns and "keep" variants
+        #
+        ##########################################################
+        variants_keep_df = variants_optimize_df[variants_optimize_df["action"].isin(["keep"])]
+        variants_keep_df = variants_keep_df[['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence']]
 
         ##########################################################
         #
@@ -100,7 +131,7 @@ class OptimizePCRError(ToolWrapper):
 
         variant_list = []
         with engine.connect() as conn:
-            for row in positive_variant_df.itertuples():
+            for row in variants_keep_df.itertuples():
                 run_name = row.run_name
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
@@ -118,11 +149,10 @@ class OptimizePCRError(ToolWrapper):
                 variant_list = variant_list + conn.execute(stmt_select).fetchall()
 
         variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
-        # .where(variant_model.__table__.c.sequence == variant_sequence) \
 
         variant_read_count_list = []
         with engine.connect() as conn:
-            for row in positive_variant_df.itertuples():
+            for row in variants_keep_df.itertuples():
                 run_name = row.run_name
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
@@ -148,35 +178,6 @@ class OptimizePCRError(ToolWrapper):
                                                                 columns=['run_id', 'marker_id', 'variant_id','variant_sequence', 'biosample_id',
                                                                 'replicate_id', 'N_ijk'])
         variant_read_count_df.drop_duplicates(inplace=True)
-        # .where(variant_model.__table__.c.id == variant_read_count_model.__table__.c.variant_id) \
-        #     .where(variant_model.__table__.c.sequence == variant_sequence) \
-        # test if empty
-
-        ##############
-        #
-        #  control the positive variant
-        #
-        #############  # todo control positive variant
-        #
-        # import pdb;pdb.set_trace()
-
-        for row in positive_variant_df.itertuples():
-            variant_id = row.variant_id
-            variant_sequence = row.variant_sequence
-            id_pos = variant_df.loc[variant_df.sequence == variant_sequence, 'id'].values
-            if( variant_id  != id_pos[0] ):
-               logger.debug(
-                "file: {}; line: {}; ERROR, positive variants sequences are not coerent with the ids".format(__file__,inspect.currentframe().f_lineno,'OptimizePCRError'))
-
-               df = pandas.DataFrame({"optimal_pcr_error_param": [" error postive variant are not coherent with the ids "]})
-
-               ##########################################################
-               #
-               # 7. Write TSV file
-               #
-               ##########################################################
-               df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t')
-               exit()
 
         ##############
         #
@@ -184,7 +185,7 @@ class OptimizePCRError(ToolWrapper):
         #
         #############
 
-        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(positive_variant_df.variant_id.unique().tolist())][['id', 'sequence']].drop_duplicates()
+        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(variants_keep_df.variant_id.unique().tolist())][['id', 'sequence']].drop_duplicates()
 
         variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
         #
