@@ -205,7 +205,8 @@ class OptimizeF7(ToolWrapper):
         #
         ##########################################################
 
-
+        for lfn_per_variant_threshold in itertools.product([1, 2], [5, 6], ['eleven', 'f']):
+            for lfn_read_count_threshold in itertools.product([1, 2], [5, 6], ['eleven', 'f']):
 
 
 
