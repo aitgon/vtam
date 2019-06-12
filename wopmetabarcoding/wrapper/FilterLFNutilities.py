@@ -135,6 +135,7 @@ class FilterLFNRunner:
             this_filter_id = 4
             for variant_id in lfn_per_sum_variant_threshold_specific:
                 variant_id_threshold = lfn_per_sum_variant_threshold_specific[variant_id]
+
                 #
                 df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
                 #
