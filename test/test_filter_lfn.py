@@ -140,11 +140,9 @@ class TestFilterLFN(TestCase):
         lfn_var_threshold_specific_df = pandas.read_csv(self.lfn_var_threshold_specific, sep='\t', header=0)
         lfn_var_threshold_specific={}
         for  row in lfn_var_threshold_specific_df.itertuples():
-           lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold.replace(',','.'))
-
-
-        import pdb;
-        pdb.set_trace()
+           lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold)
+        # import pdb;
+        # pdb.set_trace()
 
 
         self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_var_threshold, lfn_per_sum_variant_threshold_specific=lfn_var_threshold_specific)
