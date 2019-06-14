@@ -143,7 +143,7 @@ class OptimizeF7(ToolWrapper):
                 .format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_list = []
         with engine.connect() as conn:
-            for row in variant_delete_df.itertuples():
+            for row in variants_keep_df.itertuples():
                 biosample_name = row.biosample_name
                 variant_id = row.variant_id
                 stmt_select = select([
@@ -153,15 +153,16 @@ class OptimizeF7(ToolWrapper):
                     biosample_model.__table__.c.id,
                     variant_read_count_model.__table__.c.replicate_id,
                     variant_read_count_model.__table__.c.read_count, ]) \
-                    .where(biosample_model.__table__.c.name != biosample_name) \
-                    .where(variant_read_count_model.__table__.c.variant_id != variant_id) \
+                    .where(biosample_model.__table__.c.name == biosample_name) \
+                    .where(variant_read_count_model.__table__.c.variant_id == variant_id) \
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
         variants_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
                                                        columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
                                                                   'replicate_id', 'N_ijk'])
         variants_read_count_df.drop_duplicates(inplace=True)
-
+        import pdb;
+        pdb.set_trace()
 
         ##########################################################
         #
