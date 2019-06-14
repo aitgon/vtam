@@ -161,8 +161,6 @@ class OptimizeF7(ToolWrapper):
                                                        columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
                                                                   'replicate_id', 'N_ijk'])
         variants_read_count_df.drop_duplicates(inplace=True)
-        import pdb;
-        pdb.set_trace()
 
         ##########################################################
         #
@@ -175,7 +173,10 @@ class OptimizeF7(ToolWrapper):
         lfn_read_count_threshod_dic = {}
         lfn_read_count_threshod_list = []
 
-        biosample_type_list = variants_keep_df.biosample_type.tolist()
+        # Extract list of unique biosample_type
+        biosample_type_list = variants_keep_df.biosample_type.unique()
+        biosample_type_list = biosample_type_list.tolist()
+
         for biosample_type in biosample_type_list:
             df = variants_keep_df[variants_keep_df["biosample_type"] == biosample_type]
             df = df[['marker_name', 'run_name', 'biosample_name','biosample_type','variant_id', 'variant_sequence']]
