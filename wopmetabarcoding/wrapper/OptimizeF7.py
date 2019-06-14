@@ -193,12 +193,12 @@ class OptimizeF7(ToolWrapper):
                 lfn_read_count_threshod_dic = {}
                 # write in data frame the variant_id with his lfn_read_count_threshold and sample_type
                 lfn_read_count_threshod_dic["variant_id"] = variant_id
-                import pdb; pdb.set_trace()
                 lfn_read_count_threshod_dic["lfn_read_count_threshold"] = lfn_read_count_threshold
                 lfn_read_count_threshod_dic["biosample_type"] = biosample_type
                 lfn_read_count_threshod_dic["read_count_number"] = read_count_number
             lfn_read_count_threshod_list.append(lfn_read_count_threshod_dic)
         # data frame containing the ['variant_id','lfn_read_count_threshold','biosample_type','read_count_number']
+        import pdb; pdb.set_trace()
         lfn_read_count_threshod_df = pandas.DataFrame(lfn_read_count_threshod_list)
 
         #choose the lowest value of the lfn_read_count_threshold from the data frame
@@ -213,39 +213,6 @@ class OptimizeF7(ToolWrapper):
         #
         lfn_per_variant_threshold = lfn_read_count_threshod_df['lfn_per_variant_threshold'].head(1).values[0]
 
-
-        ##########################################################
-        #
-        # 2. Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df
-        #  3. Get read_count: N_ijk
-        #
-        ##########################################################
-        logger.debug(
-            "file: {}; line: {}; Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df"
-                .format(__file__, inspect.currentframe().f_lineno))
-        logger.debug(
-            "file: {}; line: {}; Get read_count: N_ijk"
-                .format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_list = []
-        with engine.connect() as conn:
-            for row in variant_delete_df.itertuples():
-                biosample_name = row.biosample_name
-                variant_id = row.variant_id
-                stmt_select = select([
-                    run_model.__table__.c.id,
-                    marker_model.__table__.c.id,
-                    variant_read_count_model.__table__.c.variant_id,
-                    biosample_model.__table__.c.id,
-                    variant_read_count_model.__table__.c.replicate_id,
-                    variant_read_count_model.__table__.c.read_count, ]) \
-                    .where(biosample_model.__table__.c.name != biosample_name) \
-                    .where(variant_read_count_model.__table__.c.variant_id != variant_id) \
-                    .distinct()
-                variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
-        variants_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                       columns=['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                                  'replicate_id', 'N_ijk'])
-        variants_read_count_df.drop_duplicates(inplace=True)
 
 
 
