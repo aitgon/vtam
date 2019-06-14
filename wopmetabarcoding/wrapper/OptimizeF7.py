@@ -190,90 +190,102 @@ class OptimizeF7(ToolWrapper):
         #
         ##########################################################
         variant_delete_df = variants_optimize_df[~variants_optimize_df["action"].isin(["keep", "tolerate"])]
-        variant_delete_df = variant_delete_df[['biosample_name', 'variant_id']]
+        # variant_delete_df = variant_delete_df[['biosample_name', 'variant_id']]
 
-        # import pdb ; pdb.set_trace()
         #
-        # ##########################################################
-        # #
-        # # 4 - Create data frame containing the variant_id, lfn_read_count_threshold, sample_type (mock1,mock2 ...)
-        # #
-        # ##########################################################
-        # logger.debug(
-        #     "file: {}; line: {}; Create data frame containing the variant_id, lfn_read_count_threshold, sample_type (mock1,mock2 ...)"
-        #         .format(__file__, inspect.currentframe().f_lineno))
-        # lfn_read_count_threshod_dic = {}
-        # lfn_read_count_threshod_list = []
+
+
+
+        ##########################################################
         #
-        # # Extract list of unique biosample_type
-        # biosample_type_list = variants_keep_df.biosample_type.unique()
-        # biosample_type_list = biosample_type_list.tolist()
+        # 2. Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df
+        # 3. Get read_count: N_ijk
         #
-        # for biosample_type in biosample_type_list:
-        #     df = variants_keep_df[variants_keep_df["biosample_type"] == biosample_type]
-        #     df = df[['marker_name', 'run_name', 'biosample_name','biosample_type','variant_id', 'variant_sequence']]
-        #     variant_id_list = df.variant_id.tolist()
-        #     for variant_id in variant_id_list:
-        #         df_by_biosample_type = variants_read_count_keep_df[variants_read_count_keep_df["variant_id"] == variant_id]
-        #         rdc_list =df_by_biosample_type["N_ijk"].tolist()
-        #         rdc_max_min  = [max(rdc_list), min(rdc_list)]
-        #         if  rdc_list[1] not in rdc_max_min: lfn_read_count_threshold = rdc_list[1]
-        #         if rdc_list[2] not in rdc_max_min: lfn_read_count_threshold = rdc_list[2]
-        #         if rdc_list[3] not in rdc_max_min: lfn_read_count_threshold = rdc_list[3]
-        #         #
-        #         read_count_number= df_by_biosample_type["N_ijk"].sum()
-        #         lfn_read_count_threshod_dic = {}
-        #         # write in data frame the variant_id with his lfn_read_count_threshold and sample_type
-        #         lfn_read_count_threshod_dic["variant_id"] = variant_id
-        #         lfn_read_count_threshod_dic["lfn_read_count_threshold"] = lfn_read_count_threshold
-        #         lfn_read_count_threshod_dic["biosample_type"] = biosample_type
-        #         lfn_read_count_threshod_dic["read_count_number"] = read_count_number
-        #     lfn_read_count_threshod_list.append(lfn_read_count_threshod_dic)
-        # # data frame containing the ['variant_id','lfn_read_count_threshold','biosample_type','read_count_number']
-        # import pdb; pdb.set_trace()
-        # lfn_read_count_threshod_df = pandas.DataFrame(lfn_read_count_threshod_list)
+        ##########################################################
+        logger.debug(
+            "file: {}; line: {}; Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df with action delete "
+                .format(__file__, inspect.currentframe().f_lineno))
+        logger.debug(
+            "file: {}; line: {}; Get read_count: N_ijk"
+                .format(__file__, inspect.currentframe().f_lineno))
+        variant_read_count_delete_list = []
+
+        with engine.connect() as conn:
+            for row in variant_delete_df.itertuples():
+                run_name = row.run_name
+                marker_name = row.marker_name
+                biosample_name = row.biosample_name
+                # variant_id = row.variant_id
+                stmt_select = select([
+                    run_model.__table__.c.id,
+                    marker_model.__table__.c.id,
+                    variant_read_count_model.__table__.c.variant_id,
+                    biosample_model.__table__.c.id,
+                    variant_read_count_model.__table__.c.replicate_id,
+                    variant_read_count_model.__table__.c.read_count, ]) \
+                    .where(run_model.__table__.c.name == run_name) \
+                    .where(variant_read_count_model.__table__.c.run_id == run_model.__table__.c.id) \
+                    .where(marker_model.__table__.c.name == marker_name) \
+                    .where(variant_read_count_model.__table__.c.marker_id == marker_model.__table__.c.id) \
+                    .where(biosample_model.__table__.c.name == biosample_name) \
+                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_model.__table__.c.id) \
+                    .distinct()
+                variant_read_count_delete_list = variant_read_count_delete_list + conn.execute(stmt_select).fetchall()
+        variants_read_count_delete_df = pandas.DataFrame.from_records(variant_read_count_delete_list,
+                                                                    columns=['run_id', 'marker_id', 'variant_id',
+                                                                             'biosample_id',
+                                                                             'replicate_id', 'N_ijk'])
+        variants_read_count_delete_df.drop_duplicates(inplace=True)
+
+
+        ##########################################################
         #
-        # #choose the lowest value of the lfn_read_count_threshold from the data frame
-        # lfn_read_count_threshod_df = lfn_read_count_threshod_df.sort_values('lfn_read_count_threshold', ascending=True)
-        # lfn_read_count_threshold = lfn_read_count_threshod_df['lfn_read_count_threshold'].head(1).values[0]
+        # N_ijk / N_ik for "delete" variants
         #
-        # # for the lfn_per_variant_threshold Do the ration  lfn_read_count_threshol / number_read_count and choose alsoo the lowest one
+        ##########################################################
+
+        N_ik_df = variants_read_count_delete_df.groupby(
+            by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
+        N_ik_df.drop(['biosample_id'], axis=1, inplace=True)
+        N_ik_df = N_ik_df.rename(columns={'N_ijk': 'N_ik'})
+        out_delete_df = variants_read_count_delete_df.merge(N_ik_df, on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+        out_delete_df['N_ijk/N_ik'] = out_delete_df.N_ijk / out_delete_df.N_ik
+
+        ##########################################################
         #
-        # lfn_read_count_threshod_df["lfn_per_variant_threshold"] = lfn_read_count_threshod_df["lfn_read_count_threshold"]/ lfn_read_count_threshod_df["read_count_number"]
-        # # sort by lowest value lfn_per_variant_threshold
-        # lfn_read_count_threshod_df = lfn_read_count_threshod_df.sort_values('lfn_per_variant_threshold', ascending=True)
-        # #
-        # lfn_per_variant_threshold = lfn_read_count_threshod_df['lfn_per_variant_threshold'].head(1).values[0]
+        # N_ijk / N_i  for "delete" variants
         #
+        ###########
+        N_i_df = variants_read_count_delete_df.groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
+        N_i_df.drop(['biosample_id', 'replicate_id'], axis=1, inplace=True)
+        N_i_df = N_i_df.rename(columns={'N_ijk': 'N_i'})
+        out_delete_df = out_delete_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
+        out_delete_df['N_ijk/N_i'] = out_delete_df.N_ijk / out_delete_df.N_i
+
+
+        ##########################################################
         #
+        #  variant with delete as "action"
         #
-        #
-        #
-        # ##########################################################
-        # #
-        # # 5- Run filter for a series of (lfn_read_count_threshold -lfn_per_variant_threshold) combinations
-        # #
-        # ##########################################################
-        # import pdb;
-        # pdb.set_trace()
-        # # for lfn_per_variant_threshold in itertools.product([1, 2], [5, 6], ['eleven', 'f']):
-        # #     for lfn_read_count_threshold in itertools.product([1, 2], [5, 6], ['eleven', 'f']):
-        #
-        #
-        #
-        #
-        #
-        # ##########################################################
-        # #
-        # # 6 -determine a specific lfn_per_variant_threshold specified to the delete variant that steel there despite using the optimal combinaison in 5)-
-        # #
-        # ##########################################################
+        ##########################################################
+
+
+
+
 
         ##########################################################
         #
         # 7. Write TSV file
         #
         ##########################################################
-        out_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk/N_i'], ascending=True, inplace=True)
         out_df['action'] = 'keep'
+
+        # fo "delete" variants
+        out_delete_df['action'] = 'delete'
+        # concatenation
+        out_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
+        out_delete_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
+        out_df = pandas.concat([out_df, out_delete_df])
+
+        # write to csv
         out_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
