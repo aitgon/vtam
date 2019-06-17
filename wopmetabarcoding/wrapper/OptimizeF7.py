@@ -3,6 +3,7 @@ import os
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
+from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 
 # from wopmetabarcoding.wrapper.OptimizeLFNutilities import OptimizeLFNRunner
 from sqlalchemy import select
@@ -52,7 +53,7 @@ class OptimizeF7(ToolWrapper):
         return {
         }
 
-    def run(self):
+    def run(self, f7_lfn_delete_absolute_read_count=None):
         session = self.session()
         engine = session._WopMarsSession__session.bind
 
@@ -263,13 +264,6 @@ class OptimizeF7(ToolWrapper):
         out_delete_df['N_ijk/N_i'] = out_delete_df.N_ijk / out_delete_df.N_i
 
 
-        ##########################################################
-        #
-        #  variant with delete as "action"
-        #
-        ##########################################################
-
-
 
 
 
@@ -289,3 +283,31 @@ class OptimizeF7(ToolWrapper):
 
         # write to csv
         out_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
+
+
+
+        ##########################################################
+        #
+        #   function of wrapper
+        #
+        ##########################################################
+
+         # column that should be on the variant_read_count_df  'id', 'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'
+
+         # run_id  marker_id  variant_id  biosample_id  replicate_id  N_ijk  N_ik  N_ijk/N_ik  N_i  N_ijk/N_i  action
+        variant_read_count_df = out_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'N_ijk']]
+        variant_read_count_df = variant_read_count_df.rename(columns={"N_ijk": "read_count"})
+
+
+
+        lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+        import pdb;
+        pdb.set_trace()
+        lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(0.27325)
+        lfn_filter_runner.f7_lfn_delete_absolute_read_count(63)
+        lfn_filter_runner.delete_variant_df
+
+         # deleted variant with different threshold of functuon f2_f4
+         # 0.107325     9 876*8
+         # 0.7325     11 353 rows x 8 columns]
+         # 0.27         7 241 rows x 8 columns]       19 270

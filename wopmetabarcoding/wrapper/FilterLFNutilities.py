@@ -359,6 +359,8 @@ class FilterLFNRunner:
         #
         # Concatenate vertically output df
         #  Prepare output df and concatenate to self.delete_variant_df
+
+
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
         logger.debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
