@@ -59,40 +59,41 @@ class OptimizePCRError(ToolWrapper):
         session = self.session()
         engine = session._WopMarsSession__session.bind
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
-        ## Input file path
+        ################################################################################################################
+
+        # Input file paths
         input_file_positive_variants = self.input_file(OptimizePCRError.__input_file_positive_variants)
         #
+        # Input models
         run_model = self.input_table(OptimizePCRError.__input_table_run)
         marker_model = self.input_table(OptimizePCRError.__input_table_marker)
         variant_model = self.input_table(OptimizePCRError.__input_table_variant)
         biosample_model = self.input_table(OptimizePCRError.__input_table_biosample)
         variant_read_count_model = self.input_table(OptimizePCRError.__input_table_variant_read_count)
         #
-        # Output file path
+        # Output file paths
         output_file_optimize_pcr_error = self.output_file(OptimizePCRError.__output_file_optimize_pcr_error)
 
-        ##########################################################
+        ################################################################################################################
         #
-        # 1. Read input_file_positive_variants to get run_id, marker_id, biosample_id, for current analysis
+        # Read user known variant information
         #
-        ##########################################################
-        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
-        #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
+        ################################################################################################################
 
         variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
-        ########################
+        ################################################################################################################
         #
-        # Control if user variants and sequence are consistent in the database
+        # Control if user variant IDs and sequences are consistent with information in the database
         #
-        ########################
+        ################################################################################################################
+
         variant_control_df = variants_optimize_df[['variant_id', 'variant_sequence']].drop_duplicates()
         variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
         with engine.connect() as conn:
@@ -107,28 +108,24 @@ class OptimizePCRError(ToolWrapper):
                    os.mknod(output_file_optimize_pcr_error)
                    exit()
 
-        ##########################################################
+        ################################################################################################################
         #
-        # Extract some columns and "keep" variants
+        # Extract "keep" variants and some columns
         #
-        ##########################################################
+        ################################################################################################################
+
         variants_keep_df = variants_optimize_df[variants_optimize_df["action"].isin(["keep"])]
-        variants_keep_df = variants_keep_df[['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence']]
+        variants_keep_df = variants_keep_df[['marker_name', 'run_name', 'biosample_name', 'variant_id',
+                                             'variant_sequence']]
 
-        ##########################################################
+        ################################################################################################################
         #
-        # 2. Select run_id, marker_id, variant_id, biosample, replicate where variant, biosample, etc in positive_variants_df
-        # 
+        # For "keep" variants , select run_id, marker_id, variant_id, variant_sequence, biosample_id, replicated_id
+        # and read_count (N_ijk)
         #
-        ##########################################################
+        ################################################################################################################
 
-
-        ####
-        #
-        # Select all variants from the positive samples
-        #
-        ####
-
+        # Todo: variant_df can be got directly from variant_read_count_df
         variant_list = []
         with engine.connect() as conn:
             for row in variants_keep_df.itertuples():
@@ -174,47 +171,39 @@ class OptimizePCRError(ToolWrapper):
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
 
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                                columns=['run_id', 'marker_id', 'variant_id','variant_sequence', 'biosample_id',
-                                                                'replicate_id', 'N_ijk'])
+        variant_read_count_df = pandas.DataFrame.from_records(
+            variant_read_count_list, columns=[
+                'run_id', 'marker_id', 'variant_id', 'variant_sequence', 'biosample_id', 'replicate_id', 'N_ijk'])
         variant_read_count_df.drop_duplicates(inplace=True)
 
-        ##############
+        ################################################################################################################
         #
-        #  Create  variant_vsearch_db_df from the variant_df having the variant_id in the variant_id_list of the positive variant
+        #  Create variant information input to run PCRError vsearch
         #
-        #############
+        ################################################################################################################
 
-        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(variants_keep_df.variant_id.unique().tolist())][['id', 'sequence']].drop_duplicates()
+        variant_vsearch_db_df = variant_df.loc[variant_df.id.isin(
+            variants_keep_df.variant_id.unique().tolist())][['id', 'sequence']].drop_duplicates()
 
         variant_vsearch_db_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
-        #
-        # variant_vsearch_query_df = variant_read_count_df[['variant_id', 'variant_sequence']].drop_duplicates()
-        # variant_vsearch_query_df.rename(columns={'variant_id': 'id', 'variant_sequence': 'sequence'}, inplace=True)
 
-        ##############
+        ################################################################################################################
         #
-        # run  f10_pcr_error_run_vsearch &  read_count_unexpected_expected_ratio_max
+        # run f10_pcr_error_run_vsearch &  read_count_unexpected_expected_ratio_max
         #
-        #############
+        ################################################################################################################
 
-        vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df, tmp_dir=create_step_tmp_dir(__file__))
+        vsearch_output_df = f10_pcr_error_run_vsearch(
+            variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df,
+            tmp_dir=create_step_tmp_dir(__file__))
 
-        # read_count_unexpected_expected_ratio_max = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
         pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
-        #
-
-        # df = pandas.DataFrame({"optimal_pcr_error_param": [read_count_unexpected_expected_ratio_max]})
 
         logger.debug(
             "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRError'))
         ##########################################################
         #
-        # 7. Write TSV file
+        # 7. Write Optimize PCRError to TSV file
         #
         ##########################################################
-        # df.to_csv(output_file_optimize_pcr_error, header=True, sep='\
         pcr_error_df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t', float_format='%.10f', index=False)
-
-
-
