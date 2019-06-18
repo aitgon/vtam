@@ -192,45 +192,6 @@ class FilterPCRError(ToolWrapper):
         with engine.connect() as conn:
             conn.execute(filter_pcr_error_model.__table__.insert(), records)
 
-
-# def f10_pcr_error_run_vsearch(variant_df, this_step_tmp_dir):
-#     # length of smallest sequence
-#     length_min = min(variant_df.sequence.apply(len).tolist())
-#     # calcul identity
-#     identity = floor((length_min - 1) / length_min * 100) / 100
-#
-#     #
-#     ###################################################################
-#     # 5-1. Make a fasta file with all variants of the sample or replicate
-#     ###################################################################
-#
-#     variant_fasta = os.path.join(this_step_tmp_dir, '{}.fasta'.format("pcr_error"))
-#     with open(variant_fasta, 'w') as fout:
-#         for row in variant_df.itertuples():
-#             id = row.id
-#             sequence = row.sequence
-#             fout.write(">{}\n{}\n".format(id, sequence))
-#         ###################################################################
-#         # 5-2 Detect all pairs of variants with only 1 difference in the sequences and strong difference in abundance (readcounts)
-#         # 5-2.1 vsearch
-#         ###################################################################
-#     # import pdb; pdb.set_trace()
-#     sample_tsv = os.path.join(this_step_tmp_dir, '{}.tsv'.format("pcr_error"))
-#     vsearch_usearch_global_args = {'db': variant_fasta,
-#                                    'usearch_global': variant_fasta,
-#                                    'id': str(identity),
-#                                    'maxrejects': 0,
-#                                    'maxaccepts': 0,
-#                                    'userout': sample_tsv,
-#                                    'userfields': "query+target+alnlen+ids+mism+gaps",
-#                                    }
-#
-#     vsearch_usearch_global = VSearch1(**vsearch_usearch_global_args)
-#     vsearch_usearch_global.run()
-#     column_names = ['query', 'target', 'alnlen', 'ids', 'mism', 'gaps']
-#     vsearch_output_df = pandas.read_csv(sample_tsv, sep='\t', names=column_names)
-#     return vsearch_output_df
-
 def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_df, tmp_dir):
     """
     This function runs vsearch to detect PCR errors (1 mism or gap) between the "db" and the "query" sets
