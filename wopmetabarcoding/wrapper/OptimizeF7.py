@@ -299,15 +299,11 @@ class OptimizeF7(ToolWrapper):
         variant_read_count_df = variant_read_count_df.rename(columns={"N_ijk": "read_count"})
 
 
+        # Main loop to test parameters
+        # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+        # import pdb;
+        # pdb.set_trace()
+        # lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(0.27325)
+        # lfn_filter_runner.f7_lfn_delete_absolute_read_count(63)
+        # lfn_filter_runner.delete_variant_df
 
-        lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-        import pdb;
-        pdb.set_trace()
-        lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(0.27325)
-        lfn_filter_runner.f7_lfn_delete_absolute_read_count(63)
-        lfn_filter_runner.delete_variant_df
-
-         # deleted variant with different threshold of functuon f2_f4
-         # 0.107325     9 876*8
-         # 0.7325     11 353 rows x 8 columns]
-         # 0.27         7 241 rows x 8 columns]       19 270
