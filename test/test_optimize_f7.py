@@ -69,66 +69,18 @@ class TestOptimizeF7(TestCase):
                            "lfn_read_count_threshold": lfn_read_count_threshold,
                            "count_keep": count_keep, "count_delete": count_delete}
                 out_lfn_per_sum_variant_list.append(out_lfn_per_sum_variant_row_dic)
-                #
-                print(
-                    "lfn_per_sum_variant_threshold = {}, lfn_read_count_threshold = {}. count_keep: {}, count_delete: {}"
-                    .format(lfn_per_sum_variant_threshold, lfn_read_count_threshold, count_keep, count_delete))
                 del (lfn_filter_runner)
                 #
                 # Increase
                 lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold * 10
                 lfn_read_count_threshold = lfn_read_count_threshold * 10
-        #
-        #
-        # lfn_per_sum_variant_threshold = 0.001
-        # lfn_read_count_threshold = 10
-        # #
-        # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-        # lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
-        # variant_read_cound_remained_df = lfn_filter_runner.delete_variant_df
-        # variant_read_cound_remained_df = variant_read_cound_remained_df.loc[variant_read_cound_remained_df.filter_delete == 0]
-        # #
-        # variant_remained_list = variant_read_cound_remained_df.variant_id.unique().tolist()
-        # # Count how many from 'keep' in remaining
-        # count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
-        # count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
-        # print("lfn_per_sum_variant_threshold = {}, lfn_read_count_threshold = {}. count_keep: {}, count_delete: {}"
-        #       .format(lfn_per_sum_variant_threshold, lfn_read_count_threshold, count_keep, count_delete))
-        # del(lfn_filter_runner)
-        # #
-        # #
-        # #
-        # lfn_per_sum_variant_threshold = 0.01
-        # lfn_read_count_threshold = 100
-        # #
-        # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-        # lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
-        # variant_read_cound_remained_df = lfn_filter_runner.delete_variant_df
-        # variant_read_cound_remained_df = variant_read_cound_remained_df.loc[variant_read_cound_remained_df.filter_delete == 0]
-        # #
-        # variant_remained_list = variant_read_cound_remained_df.variant_id.unique().tolist()
-        # # Count how many from 'keep' in remaining
-        # count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
-        # count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
-        # print("lfn_per_sum_variant_threshold = {}, lfn_read_count_threshold = {}. count_keep: {}, count_delete: {}"
-        #       .format(lfn_per_sum_variant_threshold, lfn_read_count_threshold, count_keep, count_delete))
-        # del(lfn_filter_runner)
-        # #
-        # #
-        # #
-        # lfn_per_sum_variant_threshold = 1
-        # lfn_read_count_threshold = 10000
-        # #
-        # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-        # lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
-        # variant_read_cound_remained_df = lfn_filter_runner.delete_variant_df
-        # variant_read_cound_remained_df = variant_read_cound_remained_df.loc[variant_read_cound_remained_df.filter_delete == 0]
-        # #
-        # variant_remained_list = variant_read_cound_remained_df.variant_id.unique().tolist()
-        # # Count how many from 'keep' in remaining
-        # count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
-        # count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
-        # print("lfn_per_sum_variant_threshold = {}, lfn_read_count_threshold = {}. count_keep: {}, count_delete: {}"
-        #       .format(lfn_per_sum_variant_threshold, lfn_read_count_threshold, count_keep, count_delete))
-        # del(lfn_filter_runner)
-
+        self.assertTrue(out_lfn_per_sum_variant_list==[
+            {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 6,
+             'count_delete': 331},
+            {'lfn_per_sum_variant_threshold': 0.01, 'lfn_read_count_threshold': 100, 'count_keep': 6,
+             'count_delete': 10},
+            {'lfn_per_sum_variant_threshold': 0.1, 'lfn_read_count_threshold': 1000, 'count_keep': 2,
+             'count_delete': 6},
+            {'lfn_per_sum_variant_threshold': 1.0, 'lfn_read_count_threshold': 10000, 'count_keep': 0,
+             'count_delete': 1}])
+        out_lfn_per_sum_variant_df = pandas.DataFrame(out_lfn_per_sum_variant_list) # output
