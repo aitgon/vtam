@@ -57,7 +57,9 @@ class TestOptimizeF7(TestCase):
         lfn_per_sum_biosample_replicate_threshold = 0.001
         #
         lfn_per_sum_variant_threshold = 0.001 # default value
+        lfn_per_sum_variant_threshold_range = [i / 10000 for i in range(1, 1000)]
         lfn_read_count_threshold = 10
+        lfn_read_count_threshold_range = [10*i for i in range(1, 1000)]
         # lfn_per_sum_variant_threshold_max = lfn_per_sum_variant_threshold_min * 1000
         # lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold_min
         #
@@ -176,14 +178,8 @@ class TestOptimizeF7(TestCase):
             lfn_read_count_threshold = lfn_read_count_threshold + 5
             lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold + 0.0005
         # import pdb; pdb.set_trace()
-        # self.assertTrue(out_lfn_per_sum_variant_list==[
-        #     {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 6,
-        #      'count_delete': 331},
-        #     {'lfn_per_sum_variant_threshold': 0.01, 'lfn_read_count_threshold': 100, 'count_keep': 6,
-        #      'count_delete': 10},
-        #     {'lfn_per_sum_variant_threshold': 0.1, 'lfn_read_count_threshold': 1000, 'count_keep': 2,
-        #      'count_delete': 6},
-        #     {'lfn_per_sum_variant_threshold': 1.0, 'lfn_read_count_threshold': 10000, 'count_keep': 0,
-        #      'count_delete': 1}])
+        self.assertTrue(out_lfn_per_sum_variant_list[0]
+                        == {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 12,
+                            'count_delete': 3})
         out_lfn_per_sum_variant_df = pandas.DataFrame(out_lfn_per_sum_variant_list) # output
-        print(pandas.DataFrame(out_lfn_per_sum_variant_list))
+        # print(pandas.DataFrame(out_lfn_per_sum_variant_list))
