@@ -97,19 +97,24 @@ class FilterMinReplicateNumber(ToolWrapper):
             replicate_name = row.replicate_name
             with engine.connect() as conn:
                 # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
+                stmt_select_run_id = select([run_model.__table__.c.id])\
+                    .where(run_model.__table__.c.name==run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name==marker_name)
+                stmt_select_marker_id = select([marker_model.__table__.c.id])\
+                    .where(marker_model.__table__.c.name==marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id])\
+                    .where(biosample_model.__table__.c.name==biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
+                stmt_select_replicate_id = select([replicate_model.__table__.c.id])\
+                    .where(replicate_model.__table__.c.name==replicate_name)
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                             'replicate_id':replicate_id})
 
         ##########################################################
         #
