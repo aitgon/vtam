@@ -7,15 +7,17 @@ import pandas
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
-from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_run_vsearch
+from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
 class TestOptimizeF7(TestCase):
 
     def setUp(self):
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.read_count_keep_delete_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
-                                                  "optimize_f7", "read_coutn_keep_delete.tsv")
+        self.variant_read_count_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+                                                  "optimize_f7", "variant_read_count.tsv")
+        self.variants_optimize_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+                                                  "optimize_f7", "variants_optimize.tsv")
         self.this_step_tmp_dir = create_step_tmp_dir(__file__)
         #
 
@@ -27,60 +29,161 @@ class TestOptimizeF7(TestCase):
         #  read_count of keep and delete
         #
         ####
-        read_count_keep_delete_df = pandas.read_csv(self.read_count_keep_delete_path, sep='\t', header=0)
+        variant_read_count_df = pandas.read_csv(self.variant_read_count_path, sep='\t', header=0)
         #
-        variant_read_count_df = read_count_keep_delete_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'N_ijk']]
-        variant_read_count_df = variant_read_count_df.rename(columns={"N_ijk": "read_count"})
+        variants_optimize_df = pandas.read_csv(self.variants_optimize_path, sep='\t', header=0)
         #
-        variant_keep_list = (
-        read_count_keep_delete_df.loc[read_count_keep_delete_df.action == 'keep']).variant_id.unique().tolist()
-        variant_delete_list = (
-        read_count_keep_delete_df.loc[read_count_keep_delete_df.action == 'delete']).variant_id.unique().tolist()
+        # variant_keep_list = (
+        # variant_read_count_df.loc[variant_read_count_df.action == 'keep']).variant_id.unique().tolist()
+        # variant_delete_list = (
+        # variant_read_count_df.loc[variant_read_count_df.action == 'delete']).variant_id.unique().tolist()
+
+
+        variant_keep_df = variants_optimize_df.loc[variants_optimize_df.action == 'keep']
+        variant_delete_negative_df = variants_optimize_df.loc[(variants_optimize_df.action == 'delete') &
+                                                     (variants_optimize_df.biosample_type == 'negative')]
+        variant_delete_real_df = variants_optimize_df.loc[(variants_optimize_df.action == 'delete') &
+                                                     (variants_optimize_df.biosample_type == 'real')]
 
         ##############
         #
         # Main loop through parameter values
         #
         ##############
-        lfn_read_count_threshold_min = 10
-        lfn_read_count_threshold_max = lfn_read_count_threshold_min * 1000
-        lfn_read_count_threshold = lfn_read_count_threshold_min
-        #
-        lfn_per_sum_variant_threshold_min = 0.001 # default value
-        lfn_per_sum_variant_threshold_max = lfn_per_sum_variant_threshold_min * 1000
-        lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold_min
         #
         out_lfn_per_sum_variant_list = []
-        while lfn_per_sum_variant_threshold <= lfn_per_sum_variant_threshold_max:
-            while lfn_read_count_threshold <= lfn_read_count_threshold_max:
+        #
+        min_repln = 2
+        lfn_per_sum_biosample_replicate_threshold = 0.001
+        #
+        lfn_per_sum_variant_threshold = 0.001 # default value
+        lfn_read_count_threshold = 10
+        # lfn_per_sum_variant_threshold_max = lfn_per_sum_variant_threshold_min * 1000
+        # lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold_min
+        #
+        count_keep = 0
+        count_keep_max = 0
+        #
+        while count_keep >= count_keep_max:
+            #
+            # lfn_read_count_threshold_min = 10
+            # lfn_read_count_threshold_max = lfn_read_count_threshold_min * 1000
+            # lfn_read_count_threshold = lfn_read_count_threshold_min
+            #
+            # while lfn_read_count_threshold <= lfn_read_count_threshold_max and count_keep >= count_keep_max:
                 #
-                lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-                lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
-                variant_read_cound_remained_df = lfn_filter_runner.delete_variant_df
-                variant_read_cound_remained_df = variant_read_cound_remained_df.loc[
-                    variant_read_cound_remained_df.filter_delete == 0]
-                #
-                variant_remained_list = variant_read_cound_remained_df.variant_id.unique().tolist()
-                #  Count how many from 'keep' in remaining
-                count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
-                count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
-                #
-                out_lfn_per_sum_variant_row_dic = {"lfn_per_sum_variant_threshold": lfn_per_sum_variant_threshold,
-                           "lfn_read_count_threshold": lfn_read_count_threshold,
-                           "count_keep": count_keep, "count_delete": count_delete}
-                out_lfn_per_sum_variant_list.append(out_lfn_per_sum_variant_row_dic)
-                del (lfn_filter_runner)
-                #
-                # Increase
-                lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold * 10
-                lfn_read_count_threshold = lfn_read_count_threshold * 10
-        self.assertTrue(out_lfn_per_sum_variant_list==[
-            {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 6,
-             'count_delete': 331},
-            {'lfn_per_sum_variant_threshold': 0.01, 'lfn_read_count_threshold': 100, 'count_keep': 6,
-             'count_delete': 10},
-            {'lfn_per_sum_variant_threshold': 0.1, 'lfn_read_count_threshold': 1000, 'count_keep': 2,
-             'count_delete': 6},
-            {'lfn_per_sum_variant_threshold': 1.0, 'lfn_read_count_threshold': 10000, 'count_keep': 0,
-             'count_delete': 1}])
+            lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+
+            ###################
+            #
+            # Filter lfn_per_sum_variant
+            #
+            ####################
+
+            lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold)
+
+            ###################
+            #
+            # Filter lfn_per_sum_biosample_replicate
+            #
+            ####################
+
+            lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_per_sum_biosample_replicate_threshold)
+
+            ###################
+            #
+            # Filter absolute read count
+            #
+            ####################
+
+            lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
+
+            ###################
+            #
+            # f8_lfn_delete_do_not_pass_all_filters
+            #
+            ####################
+
+            lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
+
+            variant_read_count_remained_df = lfn_filter_runner.delete_variant_df
+
+            variant_read_count_remained_df = variant_read_count_remained_df.loc[
+                (variant_read_count_remained_df.filter_id == 8) &
+                (variant_read_count_remained_df.filter_delete == 0)]
+
+            ##########################################################
+            #
+            # f9_delete_min_replicate_number
+            #
+            ##########################################################
+
+            variant_read_count_remained_df = f9_delete_min_replicate_number(variant_read_count_remained_df, min_repln)
+            variant_read_count_remained_df = variant_read_count_remained_df.loc[
+                (variant_read_count_remained_df.filter_delete == 0)]
+            variant_read_count_remained_df.drop('filter_delete', axis=1, inplace=True)
+
+            ##########################################################
+            #
+            # Count keep
+            #
+            ##########################################################
+
+            variant_read_count_remained_df = variant_read_count_remained_df[['run_id', 'marker_id', 'variant_id', 'biosample_id']]
+            variant_read_count_remained_df.drop_duplicates(inplace=True)
+            variant_read_count_remained_keep_df = variant_read_count_remained_df.merge(variant_keep_df,
+                                                 on=['run_id', 'marker_id', 'variant_id', 'biosample_id']).drop_duplicates()
+            count_keep = variant_read_count_remained_keep_df.shape[0]
+
+            ##########################################################
+            #
+            # Count delete
+            #
+            ##########################################################
+
+            variant_read_count_remained_delete_negative_df = variant_read_count_remained_df.merge(
+                variant_delete_negative_df, on=['run_id', 'marker_id', 'biosample_id']).drop_duplicates()
+            variant_read_count_remained_delete_real_df = variant_read_count_remained_df.merge(
+                variant_delete_real_df, on=['run_id', 'marker_id', 'variant_id', 'biosample_id']).drop_duplicates()
+            count_delete = variant_read_count_remained_delete_negative_df.shape[0] \
+                           + variant_read_count_remained_delete_real_df.shape[0]
+
+            # variant_read_count_remained_df[
+            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_delete']].groupby(
+            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id']).sum().reset_index()
+            #
+            # variant_read_count_remained_df = variant_read_count_remained_df.loc[
+            #     variant_read_count_remained_df.filter_delete == 0]
+            # #
+            # variant_remained_list = variant_read_count_remained_df.variant_id.unique().tolist()
+            # #  Count how many from 'keep' in remaining
+            # count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
+            # count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
+            # #
+            out_lfn_per_sum_variant_row_dic = {"lfn_per_sum_variant_threshold": lfn_per_sum_variant_threshold,
+                       "lfn_read_count_threshold": lfn_read_count_threshold,
+                       "count_keep": count_keep, "count_delete": count_delete}
+            out_lfn_per_sum_variant_list.append(out_lfn_per_sum_variant_row_dic)
+            del (lfn_filter_runner)
+            #
+            print(out_lfn_per_sum_variant_row_dic, count_keep_max)
+            # if count_keep < count_keep_max:
+            #     break
+            if count_keep > count_keep_max:
+                count_keep_max = count_keep
+            #
+            # Increase
+            lfn_read_count_threshold = lfn_read_count_threshold + 5
+            lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold + 0.0005
+        # import pdb; pdb.set_trace()
+        # self.assertTrue(out_lfn_per_sum_variant_list==[
+        #     {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 6,
+        #      'count_delete': 331},
+        #     {'lfn_per_sum_variant_threshold': 0.01, 'lfn_read_count_threshold': 100, 'count_keep': 6,
+        #      'count_delete': 10},
+        #     {'lfn_per_sum_variant_threshold': 0.1, 'lfn_read_count_threshold': 1000, 'count_keep': 2,
+        #      'count_delete': 6},
+        #     {'lfn_per_sum_variant_threshold': 1.0, 'lfn_read_count_threshold': 10000, 'count_keep': 0,
+        #      'count_delete': 1}])
         out_lfn_per_sum_variant_df = pandas.DataFrame(out_lfn_per_sum_variant_list) # output
+        print(pandas.DataFrame(out_lfn_per_sum_variant_list))

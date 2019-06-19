@@ -372,7 +372,9 @@ class FilterLFNRunner:
     def f8_lfn_delete_do_not_pass_all_filters(self):
         this_filter_id = 8
         # Calculating the total of reads by variant
-        df2 = self.delete_variant_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_delete']].groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id']).sum().reset_index()
+        df2 = self.delete_variant_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id',
+                                      'filter_delete']].groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                                 'replicate_id']).sum().reset_index()
         df2 = df2.rename(columns={'filter_delete': 'filter_delete_aggregate'})
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
