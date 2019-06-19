@@ -162,28 +162,28 @@ class OptimizeF7(ToolWrapper):
                                                                   'replicate_id', 'N_ijk'])
         variants_read_count_keep_df.drop_duplicates(inplace=True)
 
-        ##########################################################
+        # ##########################################################
+        # #
+        # # N_ijk / N_ik
+        # #
+        # ##########################################################
         #
-        # N_ijk / N_ik
+        # N_ik_df = variants_read_count_keep_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
+        # N_ik_df.drop(['biosample_id'], axis=1, inplace=True)
+        # N_ik_df = N_ik_df.rename(columns={'N_ijk': 'N_ik'})
+        # out_df = variants_read_count_keep_df.merge(N_ik_df, on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+        # out_df['N_ijk/N_ik'] = out_df.N_ijk / out_df.N_ik
         #
-        ##########################################################
-
-        N_ik_df = variants_read_count_keep_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
-        N_ik_df.drop(['biosample_id'], axis=1, inplace=True)
-        N_ik_df = N_ik_df.rename(columns={'N_ijk': 'N_ik'})
-        out_df = variants_read_count_keep_df.merge(N_ik_df, on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
-        out_df['N_ijk/N_ik'] = out_df.N_ijk / out_df.N_ik
-
-        ##########################################################
-        #
-        # N_ijk / N_i
-        #
-        ###########
-        N_i_df = variants_read_count_keep_df.groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
-        N_i_df.drop(['biosample_id', 'replicate_id'], axis=1, inplace=True)
-        N_i_df = N_i_df.rename(columns={'N_ijk': 'N_i'})
-        out_df = out_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
-        out_df['N_ijk/N_i'] = out_df.N_ijk / out_df.N_i
+        # ##########################################################
+        # #
+        # # N_ijk / N_i
+        # #
+        # ###########
+        # N_i_df = variants_read_count_keep_df.groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
+        # N_i_df.drop(['biosample_id', 'replicate_id'], axis=1, inplace=True)
+        # N_i_df = N_i_df.rename(columns={'N_ijk': 'N_i'})
+        # out_df = out_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
+        # out_df['N_ijk/N_i'] = out_df.N_ijk / out_df.N_i
 
         ##########################################################
         #
@@ -235,72 +235,77 @@ class OptimizeF7(ToolWrapper):
                                                                              'replicate_id', 'N_ijk'])
         variants_read_count_delete_df.drop_duplicates(inplace=True)
 
-
         ##########################################################
         #
-        # N_ijk / N_ik for "delete" variants
-        #
-        ##########################################################
-
-        N_ik_df = variants_read_count_delete_df.groupby(
-            by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
-        N_ik_df.drop(['biosample_id'], axis=1, inplace=True)
-        N_ik_df = N_ik_df.rename(columns={'N_ijk': 'N_ik'})
-        out_delete_df = variants_read_count_delete_df.merge(N_ik_df, on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
-        out_delete_df['N_ijk/N_ik'] = out_delete_df.N_ijk / out_delete_df.N_ik
-
-        ##########################################################
-        #
-        # N_ijk / N_i  for "delete" variants
-        #
-        ###########
-        N_i_df = variants_read_count_delete_df.groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
-        N_i_df.drop(['biosample_id', 'replicate_id'], axis=1, inplace=True)
-        N_i_df = N_i_df.rename(columns={'N_ijk': 'N_i'})
-        out_delete_df = out_delete_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
-        out_delete_df['N_ijk/N_i'] = out_delete_df.N_ijk / out_delete_df.N_i
-
-
-
-
-
-        ##########################################################
-        #
-        # 7. Write TSV file
-        #
-        ##########################################################
-        out_df['action'] = 'keep'
-
-        # fo "delete" variants
-        out_delete_df['action'] = 'delete'
-        # concatenation
-        out_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
-        out_delete_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
-        out_df = pandas.concat([out_df, out_delete_df])
-
-        # write to csv
-        out_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
-
-
-
-        ##########################################################
-        #
-        #   function of wrapper
+        # Concatenate variants_read_count_keep_df and variants_read_count_delete_df
         #
         ##########################################################
 
-         # column that should be on the variant_read_count_df  'id', 'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'
-
-         # run_id  marker_id  variant_id  biosample_id  replicate_id  N_ijk  N_ik  N_ijk/N_ik  N_i  N_ijk/N_i  action
-        variant_read_count_df = out_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'N_ijk']]
-        variant_read_count_df = variant_read_count_df.rename(columns={"N_ijk": "read_count"})
+        import pdb; pdb.set_trace()
 
 
-        # Main loop to test parameters
-        # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
-        # import pdb;
-        # pdb.set_trace()
-        # lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(0.27325)
-        # lfn_filter_runner.f7_lfn_delete_absolute_read_count(63)
-        # lfn_filter_runner.delete_variant_df
+        # ##########################################################
+        # #
+        # # N_ijk / N_ik for "delete" variants
+        # #
+        # ##########################################################
+        #
+        # N_ik_df = variants_read_count_delete_df.groupby(
+        #     by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
+        # N_ik_df.drop(['biosample_id'], axis=1, inplace=True)
+        # N_ik_df = N_ik_df.rename(columns={'N_ijk': 'N_ik'})
+        # out_delete_df = variants_read_count_delete_df.merge(N_ik_df, on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+        # out_delete_df['N_ijk/N_ik'] = out_delete_df.N_ijk / out_delete_df.N_ik
+        #
+        # ##########################################################
+        # #
+        # # N_ijk / N_i  for "delete" variants
+        # #
+        # ###########
+        # N_i_df = variants_read_count_delete_df.groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
+        # N_i_df.drop(['biosample_id', 'replicate_id'], axis=1, inplace=True)
+        # N_i_df = N_i_df.rename(columns={'N_ijk': 'N_i'})
+        # out_delete_df = out_delete_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
+        # out_delete_df['N_ijk/N_i'] = out_delete_df.N_ijk / out_delete_df.N_i
+        #
+        #
+        # ##########################################################
+        # #
+        # # 7. Write TSV file
+        # #
+        # ##########################################################
+        # out_df['action'] = 'keep'
+        #
+        # # fo "delete" variants
+        # out_delete_df['action'] = 'delete'
+        # # concatenation
+        # out_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
+        # out_delete_df.sort_values(by=['biosample_id', 'variant_id', 'N_ijk'], ascending=True, inplace=True)
+        # out_df = pandas.concat([out_df, out_delete_df])
+        #
+        # # write to csv
+        # out_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
+        #
+        #
+        #
+        # ##########################################################
+        # #
+        # #   function of wrapper
+        # #
+        # ##########################################################
+        #
+        #  # column that should be on the variant_read_count_df  'id', 'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'
+        #
+        #  # run_id  marker_id  variant_id  biosample_id  replicate_id  N_ijk  N_ik  N_ijk/N_ik  N_i  N_ijk/N_i  action
+        # variant_read_count_df = out_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'N_ijk']]
+        # variant_read_count_df = variant_read_count_df.rename(columns={"N_ijk": "read_count"})
+        #
+        #
+        # # Main loop to test parameters
+        # # lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+        # # import pdb;
+        # # pdb.set_trace()
+        # # lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(0.27325)
+        # # lfn_filter_runner.f7_lfn_delete_absolute_read_count(63)
+        # # lfn_filter_runner.delete_variant_df
 
