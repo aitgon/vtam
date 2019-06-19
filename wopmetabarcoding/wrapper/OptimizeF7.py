@@ -190,12 +190,9 @@ class OptimizeF7(ToolWrapper):
         # Select "delete" variants
         #
         ##########################################################
+
         variant_delete_df = variants_optimize_df[~variants_optimize_df["action"].isin(["keep", "tolerate"])]
         # variant_delete_df = variant_delete_df[['biosample_name', 'variant_id']]
-
-        #
-
-
 
         ##########################################################
         #
