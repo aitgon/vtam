@@ -54,7 +54,10 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
 
     def specify_params(self):
         return {
+            "lfn_variant_threshold": "float",
             "lfn_biosample_replicate_threshold": "float",
+            "lfn_read_count_threshold": "float",
+            "min_replicate_number": "int",
         }
 
     def run(self, f7_lfn_delete_absolute_read_count=None):
@@ -83,8 +86,12 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
             OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_and_read_count)
         output_file_lfn_variant_specific_threshold_tsv = self.output_file(
             OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_specific)
-
-
+        #
+        # Options
+        min_replicate_number = self.option("min_replicate_number")
+        lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
+        lfn_read_count_threshold = self.option("lfn_read_count_threshold")
+        lfn_variant_threshold = self.option("lfn_variant_threshold")
 
 
 
@@ -206,15 +213,6 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
         #
         out_lfn_variant_list = []
         #
-        min_repln = 2
-        lfn_biosample_replicate_threshold = 0.001
-        #
-        lfn_variant_threshold = 0.001 # default value
-        lfn_variant_threshold_range = [i / 10000 for i in range(1, 1000)]
-        lfn_read_count_threshold = 10
-        lfn_read_count_threshold_range = [10*i for i in range(1, 1000)]
-        # lfn_variant_threshold_max = lfn_variant_threshold_min * 1000
-        # lfn_variant_threshold = lfn_variant_threshold_min
         #
         count_keep = 0
         count_keep_max = 0
@@ -277,7 +275,7 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
             #
             ##########################################################
 
-            variant_read_count_remained_df = f9_delete_min_replicate_number(variant_read_count_remained_df, min_repln)
+            variant_read_count_remained_df = f9_delete_min_replicate_number(variant_read_count_remained_df, min_replicate_number)
             variant_read_count_remained_df = variant_read_count_remained_df.loc[
                 (variant_read_count_remained_df.filter_delete == 0)]
             variant_read_count_remained_df.drop('filter_delete', axis=1, inplace=True)
@@ -333,8 +331,8 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
                 count_keep_max = count_keep
             #
             # Increase
-            lfn_read_count_threshold = lfn_read_count_threshold + 5
-            lfn_variant_threshold = lfn_variant_threshold + 0.0005
+            lfn_read_count_threshold = lfn_read_count_threshold + lfn_read_count_threshold/2
+            lfn_variant_threshold = lfn_variant_threshold + lfn_variant_threshold/2
         out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list) # output
 
         ##########################################################
