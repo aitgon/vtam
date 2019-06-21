@@ -13,9 +13,9 @@ from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
-class OptimizeLFNvariantAndReadCount(ToolWrapper):
+class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFN"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNreadCountAndLFNvariant"
     }
 
     # Input file
@@ -27,29 +27,29 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
-    __output_file_optimize_lfn_variant_and_read_count = "optimize_lfn_variant_and_read_count"
+    __output_file_optimize_lfn_read_count_and_lfn_variant = "optimize_lfn_read_count_and_lfn_variant"
     __output_file_optimize_lfn_variant_specific = "optimize_lfn_variant_specific"
 
 
     def specify_input_file(self):
         return[
-            OptimizeLFNvariantAndReadCount.__input_file_positive_variants,
+            OptimizeLFNreadCountAndLFNvariant.__input_file_positive_variants,
         ]
 
     def specify_input_table(self):
         return [
-            OptimizeLFNvariantAndReadCount.__input_table_marker,
-            OptimizeLFNvariantAndReadCount.__input_table_run,
-            OptimizeLFNvariantAndReadCount.__input_table_biosample,
-            OptimizeLFNvariantAndReadCount.__input_table_variant,
-            OptimizeLFNvariantAndReadCount.__input_table_variant_read_count,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_marker,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_run,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_biosample,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_variant,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count,
         ]
 
 
     def specify_output_file(self):
         return [
-            OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_and_read_count,
-            OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_specific,
+            OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_read_count_and_lfn_variant,
+            OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_variant_specific,
         ]
 
     def specify_params(self):
@@ -71,21 +71,21 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_positive_variants = self.input_file(OptimizeLFNvariantAndReadCount.__input_file_positive_variants)
+        input_file_positive_variants = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_positive_variants)
         #
         # Input table models
-        run_model = self.input_table(OptimizeLFNvariantAndReadCount.__input_table_run)
-        marker_model = self.input_table(OptimizeLFNvariantAndReadCount.__input_table_marker)
-        biosample_model = self.input_table(OptimizeLFNvariantAndReadCount.__input_table_biosample)
-        variant_model = self.input_table(OptimizeLFNvariantAndReadCount.__input_table_variant)
+        run_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_run)
+        marker_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_marker)
+        biosample_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_biosample)
+        variant_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant)
 
-        variant_read_count_model = self.input_table(OptimizeLFNvariantAndReadCount.__input_table_variant_read_count)
+        variant_read_count_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count)
         #
         # Output file path
         output_file_optimize_lfn_tsv = self.output_file(
-            OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_and_read_count)
+            OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_read_count_and_lfn_variant)
         output_file_lfn_variant_specific_threshold_tsv = self.output_file(
-            OptimizeLFNvariantAndReadCount.__output_file_optimize_lfn_variant_specific)
+            OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_variant_specific)
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
@@ -220,6 +220,8 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
 
         variant_read_count_df = variant_read_count_df[
             ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
+        lfn_read_count_threshold_default = lfn_read_count_threshold
+        lfn_variant_threshold_default = lfn_variant_threshold
         while count_keep >= count_keep_max:
             # import pdb; pdb.set_trace()
             #
@@ -315,20 +317,18 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
             ##########################################################
             out_lfn_variant_row_dic = {"lfn_variant_threshold": lfn_variant_threshold,
                        "lfn_read_count_threshold": lfn_read_count_threshold,
-                       "count_keep": count_keep, "count_delete": count_delete}
+                       "variant_nb_keep": count_keep, "variant_nb_delete": count_delete}
             out_lfn_variant_list.append(out_lfn_variant_row_dic)
             del (lfn_filter_runner)
             #
-            print(out_lfn_variant_row_dic, count_keep_max)
             # if count_keep < count_keep_max:
             #     break
             if count_keep > count_keep_max:
                 count_keep_max = count_keep
             #
             # Increase
-            lfn_read_count_threshold = lfn_read_count_threshold + lfn_read_count_threshold/2
-            lfn_variant_threshold = lfn_variant_threshold + lfn_variant_threshold/2
-        out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list) # output
+            lfn_read_count_threshold = lfn_read_count_threshold + lfn_read_count_threshold_default/2
+            lfn_variant_threshold = lfn_variant_threshold + lfn_variant_threshold_default/2
 
         ##########################################################
         #
@@ -336,7 +336,12 @@ class OptimizeLFNvariantAndReadCount(ToolWrapper):
         #
         ##########################################################
 
-        out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', float_format='%.10f', index=False)
+        out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list, columns=['variant_nb_keep', 'variant_nb_delete',
+                                                                             'lfn_read_count_threshold',
+                                                                             'lfn_variant_threshold']) # output
+
+        # out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', float_format='%.10f', index=False)
+        out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False)
 
         ##########################################################
         #
