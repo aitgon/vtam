@@ -9,6 +9,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterCodonStop(ToolWrapper):
@@ -65,7 +66,7 @@ class FilterCodonStop(ToolWrapper):
 
         ##########################################################
         #
-        # 0. Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
@@ -138,7 +139,6 @@ class FilterCodonStop(ToolWrapper):
                                           indel_model_table.c.biosample_id,
                                           indel_model_table.c.replicate_id,
                                           indel_model_table.c.read_count])\
-            .where(indel_model_table.c.filter_id == 13)\
             .where(indel_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -153,7 +153,7 @@ class FilterCodonStop(ToolWrapper):
                 "file: {}; line: {}; No data input for this filter.".format(__file__,
                                                                       inspect.currentframe().f_lineno,'CodonStop'))
         else:
-            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
             variant_model_table = variant_model.__table__
             stmt_variant = select([variant_model_table.c.id,
                                    variant_model_table.c.sequence])
@@ -191,7 +191,6 @@ def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_tabl
     """
     df = variant_df.copy()
     df2 = variant_read_count_df.copy()
-    df2['filter_id'] = 14
     df2['filter_delete'] = False
     #
     df['orf1_codon_stop_nb'] = 0
