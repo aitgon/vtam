@@ -1,7 +1,6 @@
-import os
 import pandas
 from unittest import TestCase
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
 
 
@@ -40,12 +39,15 @@ class TestFilterPCRError(TestCase):
             'gaps' : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         })
 
+        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
+
 
     def test_02_f10_pcr_error(self):
         #
-        vsearch_output_df = f10_pcr_error_run_vsearch(self.variant_df)
-        self.assertTrue(self.pcr_error_vsearch_output_df.ids.tolist()
-                        == [300, 299, 299, 298, 300, 299, 298, 297, 300, 299, 298, 297, 300, 299])
+        vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=self.variant_df,
+                                        variant_usearch_global_df=self.variant_df, tmp_dir=self.this_step_tmp_dir)
+        self.assertTrue(sorted(vsearch_output_df.ids.unique().tolist())
+                        == [297, 298, 299, 300])
 
     def test_03_f10_pcr_error_vsearch_output_processing(self):
         #
@@ -57,16 +59,16 @@ class TestFilterPCRError(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 3)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 4)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         pcr_error_var_prop = 0.1
@@ -77,16 +79,16 @@ class TestFilterPCRError(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 3)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 4)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 10),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 10),
                                                                         'filter_delete'].values[0])
 
 

@@ -54,16 +54,16 @@ class TestIndel(TestCase):
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 1)
                                          & (df_out.biosample_id == 1)
-                                         & (df_out.replicate_id == 1)
-                                         & (df_out.filter_id == 13),
+                                         & (df_out.replicate_id == 1),
+                                         # & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
         # Variant 7 passes
         self.assertTrue(df_out.loc[(df_out.run_id == 1)
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 7)
                                          & (df_out.biosample_id == 1)
-                                         & (df_out.replicate_id == 1)
-                                         & (df_out.filter_id == 13),
+                                         & (df_out.replicate_id == 1),
+                                         # & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
 
 

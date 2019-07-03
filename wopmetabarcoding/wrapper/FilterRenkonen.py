@@ -1,6 +1,10 @@
+import time
+
 import pandas, itertools
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterRenkonen(ToolWrapper):
@@ -47,6 +51,12 @@ class FilterRenkonen(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterRenkonen.__input_file_sample2fasta)
@@ -121,7 +131,6 @@ class FilterRenkonen(ToolWrapper):
                                           chimera_model_table.c.replicate_id,
                                           chimera_model_table.c.variant_id,
                                           chimera_model_table.c.read_count]) \
-            .where(chimera_model_table.c.filter_id == 11) \
             .where(chimera_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -145,9 +154,8 @@ class FilterRenkonen(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-        records = df.to_dict('records')
         with engine.connect() as conn:
-                conn.execute(filter_renkonen_model.__table__.insert(), records)
+                conn.execute(filter_renkonen_model.__table__.insert(), df.to_dict('records'))
 
 
 
@@ -219,7 +227,7 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
 
 def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
     dfout = variant_read_count_df.copy()
-    dfout['filter_id'] = 12
+    # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
     #
     # group by on variant read count df  and aggregate by replicate_id to get all the replicate_id by biosample_id
