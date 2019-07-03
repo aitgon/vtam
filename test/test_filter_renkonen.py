@@ -37,16 +37,16 @@ class TestFilterRenkonen(TestCase):
                                              & (filter_output_df.marker_id == 1)
                                              & (filter_output_df.variant_id == 1)
                                              & (filter_output_df.biosample_id == 1)
-                                             & (filter_output_df.replicate_id == 1)
-                                             & (filter_output_df.filter_id == 12),
+                                             & (filter_output_df.replicate_id == 1),
+                                             # & (filter_output_df.filter_id == 12),
                                              'filter_delete'].values[0])
         #
         self.assertTrue(not filter_output_df.loc[(filter_output_df.run_id == 1)
                                              & (filter_output_df.marker_id == 1)
                                              & (filter_output_df.variant_id == 2)
                                              & (filter_output_df.biosample_id == 1)
-                                             & (filter_output_df.replicate_id == 3)
-                                             & (filter_output_df.filter_id == 12),
+                                             & (filter_output_df.replicate_id == 3),
+                                             # & (filter_output_df.filter_id == 12),
                                              'filter_delete'].values[0])
 
         # import pdb;

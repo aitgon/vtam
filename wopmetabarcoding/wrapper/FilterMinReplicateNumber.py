@@ -1,4 +1,6 @@
 import inspect
+import os
+import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -56,6 +58,12 @@ class FilterMinReplicateNumber(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
         #
         # Input file path
         input_file_sample2fasta = self.input_file(FilterMinReplicateNumber.__input_file_sample2fasta)
@@ -89,19 +97,24 @@ class FilterMinReplicateNumber(ToolWrapper):
             replicate_name = row.replicate_name
             with engine.connect() as conn:
                 # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
+                stmt_select_run_id = select([run_model.__table__.c.id])\
+                    .where(run_model.__table__.c.name==run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name==marker_name)
+                stmt_select_marker_id = select([marker_model.__table__.c.id])\
+                    .where(marker_model.__table__.c.name==marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id])\
+                    .where(biosample_model.__table__.c.name==biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
+                stmt_select_replicate_id = select([replicate_model.__table__.c.id])\
+                    .where(replicate_model.__table__.c.name==replicate_name)
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                             'replicate_id':replicate_id})
 
         ##########################################################
         #
@@ -146,10 +159,22 @@ class FilterMinReplicateNumber(ToolWrapper):
         # 5. Insert Filter data
         #
         ##########################################################
-
         records = df_filter_output.to_dict('records')
         with engine.connect() as conn:
             conn.execute(filter_min_replicate_number_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit wopmetabarcoding if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert not df_filter_output.filter_delete.all()
+        except AssertionError:
+            sys.stderr.write("Error: This filter has deleted all the variants: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
+
 
 
 def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2):
@@ -185,9 +210,9 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
 
 
     """
-    this_filter_id = 9
+    # this_filter_id = 9
     logger.debug(
-        "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
+        "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     df_filter_output=variant_read_count_df.copy()
     # replicate count
@@ -197,11 +222,11 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     # import pdb; pdb.set_trace()
     # df_grouped.columns = ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_count']
     #
-    df_filter_output['filter_id'] = this_filter_id
+    # df_filter_output['filter_id'] = this_filter_id
     df_filter_output['filter_delete'] = False
     df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
     df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
     #
-    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_id', 'filter_delete']]
+    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_delete']]
     return df_filter_output
 
