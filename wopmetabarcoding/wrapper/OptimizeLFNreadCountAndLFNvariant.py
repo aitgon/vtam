@@ -272,7 +272,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # lfn_read_count_threshold_default = lfn_read_count_threshold
         # lfn_variant_threshold_default = lfn_variant_threshold
         # while count_keep >= count_keep_max:
-        for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max+1, 10)): # loop over lfn_read_count_threshold
+        for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max+1, 5)): # loop over lfn_read_count_threshold
             # loop over lfn_variant_threshold: 0.001, 0.002, ...
             for lfn_variant_threshold in [i/1000 for i in range(1, int(lfn_variant_threshold_max*1000)+1, 1)]:
 
@@ -322,7 +322,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                                                              'lfn_variant_threshold'])
 
         out_lfn_variant_df.sort_values(by=["variant_nb_keep", "variant_nb_delete", "lfn_read_count_threshold",
-                                           "lfn_variant_threshold"], ascending=[False, True, False, False], inplace=True)
+                                           "lfn_variant_threshold"], ascending=[False, True, True, True], inplace=True)
 
         # out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', float_format='%.10f', index=False)
         out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False)
@@ -350,7 +350,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_variant_specific_threshold_df = lfn_variant_specific_threshold_df.merge(variant_delete_df[
                                            ['run_id', 'marker_id', 'variant_id', 'biosample_type',
                                             'action']].drop_duplicates(), on=['run_id', 'marker_id', 'variant_id'])
-        # lfn_variant_specific_threshold_df.to_csv(output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', float_format='%.10f', index=False)
+        lfn_variant_specific_threshold_df.sort_values(by=["variant_id", "biosample_type"], inplace=True)
+        lfn_variant_specific_threshold_df = lfn_variant_specific_threshold_df.groupby(by=['run_id',
+            'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold', 'action'])['biosample_type']\
+            .apply(lambda x: ','.join(x)).reset_index()
+        lfn_variant_specific_threshold_df = lfn_variant_specific_threshold_df.rename(columns={'read_count': 'N_ijk_max'})
         lfn_variant_specific_threshold_df.to_csv(output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False)
 
 
