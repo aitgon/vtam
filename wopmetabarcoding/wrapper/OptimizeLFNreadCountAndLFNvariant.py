@@ -15,7 +15,7 @@ from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_repl
 
 class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNreadCountAndLFNvariant"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNreadCountAndLFNvariantReplicate"
     }
 
     # Input file
