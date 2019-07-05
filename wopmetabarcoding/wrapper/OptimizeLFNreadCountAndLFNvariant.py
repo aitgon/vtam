@@ -322,11 +322,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                                                              'lfn_variant_threshold'])
 
         out_lfn_variant_df.sort_values(by=["variant_nb_keep", "variant_nb_delete", "lfn_read_count_threshold",
-<<<<<<< HEAD
+
                                            "lfn_variant_threshold"], ascending=[False, True, True, True], inplace=True)
-=======
-                                           "lfn_variant_threshold"], ascending=[False, True, False, False], inplace=True)
->>>>>>> feature/fix_optimize
 
         # out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', float_format='%.10f', index=False)
         out_lfn_variant_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False)
