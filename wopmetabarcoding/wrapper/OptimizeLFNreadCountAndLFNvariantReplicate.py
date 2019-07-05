@@ -173,7 +173,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
                 stmt_select = stmt_select.distinct()
 
                 stmt_select_fetchall = conn.execute(stmt_select).fetchall()
-                # append action
+                # append action
                 variant_read_count_list = variant_read_count_list\
                                           + [list(r) + [biosample_type, action] for r in stmt_select_fetchall]
 
@@ -219,9 +219,17 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         #  loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
 
+<<<<<<< HEAD
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant_replicate(variant_read_count_df, variant_keep_df, lfn_variant_replicate_threshold,
                                            lfn_biosample_replicate_threshold,
                                            lfn_read_count_threshold, min_replicate_number)
+=======
+        lfn_read_count_threshold_default = lfn_read_count_threshold
+        lfn_variant_replicate_threshold_default = lfn_variant_replicate_threshold
+        # while count_keep >= count_keep_max:
+        for lfn_read_count_threshold in list(range(10, 1001, 10)): # loop over lfn_read_count_threshold
+            for lfn_variant_replicate_threshold in [i/1000 for i in range(1, 101, 1)]: # loop over lfn_variant_threshold
+>>>>>>> feature/fix_optimize
 
             if count_keep > count_keep_max:
                 count_keep_max = count_keep
@@ -298,8 +306,14 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
                 # Store results
                 #
                 ##########################################################
+<<<<<<< HEAD
                 if count_keep >= count_keep_max: # Store results if count_keep maximal
                     out_lfn_variant_replicate_row_dic = {"lfn_variant_replicate_threshold": lfn_variant_replicate_threshold,
+=======
+                import pdb; pdb.set_trace()
+                if count_keep >= count_keep_max: # Store results if count_keep maximal
+                    out_lfn_variant_row_dic = {"lfn_variant_replicate_threshold": lfn_variant_replicate_threshold,
+>>>>>>> feature/fix_optimize
                                "lfn_read_count_threshold": lfn_read_count_threshold,
                                "variant_nb_keep": count_keep, "variant_nb_delete": count_delete}
                     out_lfn_variant_replicate_list.append(out_lfn_variant_replicate_row_dic)
