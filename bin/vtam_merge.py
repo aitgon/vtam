@@ -10,7 +10,8 @@ import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
 
-def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
+# def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
+def vtam_run(args_dic):
     #
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile_merge.yml')
     wopfile_out_path = os.path.join(tempdir, 'Wopfile_merge.yml')
@@ -22,10 +23,11 @@ def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
     #############################################################
     with open(wopfile_in_path) as fin:
         template = jinja2.Template(fin.read())
-    context = {'fastqinfo' : fastqinfo, 'fastainfo' : fastainfo, 'fastqdir' : fastqdir, 'fastadir' : fastadir}
-    wopfile_rendered = template.render(context)
+    # context = {'fastqinfo' : fastqinfo, 'fastainfo' : fastainfo, 'fastqdir' : fastqdir, 'fastadir' : fastadir}
+    wopfile_rendered = template.render(args_dic)
     with open(wopfile_out_path, "w") as fout:
         fout.write(wopfile_rendered)
+    args_dic['wopfile_out_path'] = wopfile_out_path
     print(wopfile_out_path)
     #
     #############################################################
@@ -33,8 +35,9 @@ def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
     # Run Wopfile
     #
     #############################################################
-    cmd = "wopmars -w {} -D sqlite:///{} -v -p".format(wopfile_out_path, wopdb)
-    if forceall:
+    # cmd = "wopmars -w {} -D sqlite:///{} -v -p".format(wopfile_out_path, wopdb)
+    cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{wopdb} -v -p".format(**args_dic)
+    if args_dic['forceall']:
         cmd = cmd + " -F"
     # import pdb; pdb.set_trace()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
@@ -56,7 +59,16 @@ def main():
     parser = create_parser()
     args = parser.parse_args()
     #
-    vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0], args.forceall)
+    args_dic = {
+        'wopdb': args.wopdb[0],
+        'fastqinfo': args.fastqinfo[0],
+        'fastainfo': args.fastainfo[0],
+        'fastqdir': args.fastqdir[0],
+        'fastadir': args.fastadir[0],
+        'forceall': args.forceall
+    }
+    # vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0], args.forceall)
+    vtam_run(args_dic)
 
 if __name__=='__main__':
     main()
