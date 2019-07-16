@@ -10,7 +10,6 @@ import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
 
-# def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
 def vtam_run(args_dic):
     #
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile_merge.yml')
@@ -39,7 +38,6 @@ def vtam_run(args_dic):
     cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{wopdb} -v -p".format(**args_dic)
     if args_dic['forceall']:
         cmd = cmd + " -F"
-    # import pdb; pdb.set_trace()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     stdout = p.communicate()
     p.wait()  # wait program to finish
