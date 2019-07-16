@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import sys
+
 import jinja2
 import os
 import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
 
-def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir):
+def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir, forceall):
     #
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile_merge.yml')
     wopfile_out_path = os.path.join(tempdir, 'Wopfile_merge.yml')
@@ -32,10 +34,13 @@ def vtam_run(wopdb, fastqinfo, fastainfo, fastqdir, fastadir):
     #
     #############################################################
     cmd = "wopmars -w {} -D sqlite:///{} -v -p".format(wopfile_out_path, wopdb)
+    if forceall:
+        cmd = cmd + " -F"
     # import pdb; pdb.set_trace()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     stdout = p.communicate()
     p.wait()  # wait program to finish
+    sys.exit(0)
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -44,13 +49,14 @@ def create_parser():
     parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
     parser.add_argument('--fastqdir', dest='fastqdir', nargs=1, help="Directory with FASTQ files")
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
+    parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars")
     return parser
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
     #
-    vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0])
+    vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0], args.forceall)
 
 if __name__=='__main__':
     main()
