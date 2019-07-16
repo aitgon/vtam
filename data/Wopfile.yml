@@ -16,23 +16,22 @@ rule SampleInformation:
     params:
         fasta_dir: {{fastadir}}
 
-#
-#rule SortReads:
-#    tool: wopmetabarcoding.wrapper.SortReads
-#    input:
-#        table:
-#            Fasta: wopmetabarcoding.model.Fasta
-#            SampleInformation: wopmetabarcoding.model.SampleInformation
-#            Marker: wopmetabarcoding.model.Marker
-#        file:
-#            sample2fasta: {{fastainfo}}
-#    output:
-#        file:
-#            sortreads: {{SORTREADS}}
-#    params:
-#        min_id: {{MIN_ID}}
-#        minseqlength: {{MINSEQLENGTH}}
-#        overhang: {{OVERHANG}}
+rule SortReads:
+    tool: wopmetabarcoding.wrapper.SortReads
+    input:
+        table:
+            Fasta: wopmetabarcoding.model.Fasta
+            SampleInformation: wopmetabarcoding.model.SampleInformation
+            Marker: wopmetabarcoding.model.Marker
+        file:
+            sample2fasta: {{fastainfo}}
+    output:
+        file:
+            sortreads: {{sortreads}}
+    params:
+        min_id: {{min_id}}
+        minseqlength: {{minseqlength}}
+        overhang: {{overhang}}
 #
 #rule VariantReadCount:
 #    tool: wopmetabarcoding.wrapper.VariantReadCount

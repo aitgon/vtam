@@ -5,6 +5,7 @@ import argparse
 import sys
 
 import jinja2
+import yaml
 import os
 import subprocess
 
@@ -14,6 +15,13 @@ def vtam_run(args_dic):
     #
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile.yml')
     wopfile_out_path = os.path.join(tempdir, 'Wopfile.yml')
+    #
+    #############################################################
+    #
+    # Read parameter values from param_yml file
+    #
+    #############################################################
+    args_dic.update(yaml.load(open(args_dic['params'])))
     #
     #############################################################
     #
@@ -51,6 +59,7 @@ def create_parser():
     parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
     parser.add_argument('--outdir', nargs=1, help="Directory for output")
+    parser.add_argument('--params', nargs=1, help="YML file with parameter values")
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars")
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...")
     return parser
@@ -65,8 +74,10 @@ def main():
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
+        'params': args.params[0],
         'targetrule': args.targetrule[0],
-        'forceall': args.forceall
+        'forceall': args.forceall,
+        'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
     }
     vtam_run(args_dic)
 
