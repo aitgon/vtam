@@ -41,8 +41,7 @@ def vtam_run(args_dic):
     # Run Wopfile
     #
     #############################################################
-    # cmd = "wopmars -w {} -D sqlite:///{} -v -p".format(wopfile_out_path, wopdb)
-    cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{wopdb} -v -p".format(**args_dic)
+    cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{db} -v -p".format(**args_dic)
     if args_dic['forceall']:
         cmd = cmd + " -F"
     if not args_dic['targetrule'] is None:
@@ -55,7 +54,7 @@ def vtam_run(args_dic):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--wopdb', dest='wopdb', nargs=1, help="SQLITE file with WopMars DB")
+    parser.add_argument('--db', dest='db', nargs=1, help="SQLITE file with DB")
     parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
     parser.add_argument('--outdir', nargs=1, help="Directory for output")
@@ -70,7 +69,7 @@ def main():
     # import pdb; pdb.set_trace()
     #
     args_dic = {
-        'wopdb': os.path.join(args.outdir[0], 'db.sqlite'),
+        'db': os.path.join(args.outdir[0], 'db.sqlite'),
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
