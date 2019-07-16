@@ -15,6 +15,7 @@ rule SampleInformation:
             SampleInformation: wopmetabarcoding.model.SampleInformation
     params:
         fasta_dir: {{fastadir}}
+
 #
 #rule SortReads:
 #    tool: wopmetabarcoding.wrapper.SortReads
