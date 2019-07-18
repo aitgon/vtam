@@ -68,6 +68,7 @@ def create_parser():
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files", required=True)
     parser.add_argument('--outdir', nargs=1, help="Directory for output", required=True)
     parser.add_argument('--params', nargs=1, help="YML file with parameter values", required=True)
+    parser.add_argument('--filter_lfn_variant', nargs=1, help="Boolean 0|1 to filter_lfn_variant (1) or filter_lfn_variant_replicate (0)", required=True)
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
     return parser
@@ -81,6 +82,7 @@ def main():
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
+        'filter_lfn_variant': args.filter_lfn_variant[0],
         'params': args.params[0],
         'targetrule': args.targetrule[0],
         'forceall': args.forceall,
