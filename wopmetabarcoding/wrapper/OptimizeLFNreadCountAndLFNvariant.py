@@ -19,7 +19,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     }
 
     # Input file
-    __input_file_positive_variants = "positive_variants"
+    __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -33,7 +33,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizeLFNreadCountAndLFNvariant.__input_file_positive_variants,
+            OptimizeLFNreadCountAndLFNvariant.__input_file_variant_known,
         ]
 
     def specify_input_table(self):
@@ -71,7 +71,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_positive_variants = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_positive_variants)
+        input_file_variant_known = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_variant_known)
         #
         # Input table models
         run_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_run)
@@ -98,10 +98,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # Read "variants_optimize" to get run_id, marker_id, biosample_id, variant_id for current analysis
         #
         ##########################################################
-        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
+        # positive_variant_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0,\
         #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
 
-        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+        variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
@@ -121,7 +121,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     .where(variant_model.__table__.c.id == variant_id)\
                     .where(variant_model.__table__.c.sequence == variant_sequence)
                 if conn.execute(stmt_select).first() is None:
-                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   # logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
                    os.mknod(output_file_optimize_lfn_tsv)
                    exit()
 
@@ -139,11 +139,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         ##########################################################
         #
-        # Keep: Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in positive_variants_df
+        # Keep: Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in variant_known_df
         #
         ##########################################################
         logger.debug(
-            "file: {}; line: {}; Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in positive_variants_df"
+            "file: {}; line: {}; Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in variant_known_df"
                 .format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_list = []
         with engine.connect() as conn:
@@ -218,6 +218,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_read_count_threshold_previous = 10
         #  loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
+            logger.debug(
+                "file: {}; line: {}; lfn_read_count_threshold: {} ----------------------"
+                    .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold))
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_variant_threshold,
                                            lfn_biosample_replicate_threshold,
@@ -246,6 +249,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_variant_threshold_previous = 0.001 # is divided by 1000
         # loop over lfn_variant_threshold: 0.001, 0.002, ...
         for lfn_variant_threshold in [i/1000 for i in range(int(lfn_variant_threshold_previous*1000), 101, 1)]:
+            logger.debug(
+                "file: {}; line: {}; lfn_variant_threshold: {} ----------------------"
+                    .format(__file__, inspect.currentframe().f_lineno, lfn_variant_threshold))
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_variant_threshold,
                                            lfn_biosample_replicate_threshold,
@@ -275,6 +281,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max+1, 5)): # loop over lfn_read_count_threshold
             # loop over lfn_variant_threshold: 0.001, 0.002, ...
             for lfn_variant_threshold in [i/1000 for i in range(1, int(lfn_variant_threshold_max*1000)+1, 1)]:
+                logger.debug(
+                    "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_threshold: {} ============="
+                        .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, lfn_variant_threshold))
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_variant_threshold,
                                                lfn_biosample_replicate_threshold,

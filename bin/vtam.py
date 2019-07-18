@@ -67,6 +67,7 @@ def create_parser():
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files", required=True)
     parser.add_argument('--outdir', nargs=1, help="Directory for output", required=True)
     parser.add_argument('--params', nargs=1, help="YML file with parameter values", required=True)
+    parser.add_argument('--variant_known', nargs=1, help="TSV file with known variants", required=False)
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
     return parser
@@ -74,10 +75,6 @@ def create_parser():
 def main():
     parser = create_parser()
     args = parser.parse_args()
-    # set taxonomy sqlite path
-    # os.environ['']
-    #
-    # import pdb; pdb.set_trace()
     #
     args_dic = {
         'db': os.path.join(args.outdir[0], 'db.sqlite'),
@@ -89,9 +86,18 @@ def main():
         'forceall': args.forceall,
         'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
         'outtable': os.path.join(args.outdir[0], 'otutable.tsv'),
+        'optimize_lfn_biosample_replicate': os.path.join(args.outdir[0], 'optimize_lfn_biosample_replicate.tsv'),
+        'optimize_pcr_error': os.path.join(args.outdir[0], 'optimize_pcr_error.tsv'),
+        'optimize_lfn_read_count_and_lfn_variant':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant.tsv'),
+        'optimize_lfn_variant_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_specific.tsv'),
+        'optimize_lfn_read_count_and_lfn_variant_replicate':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant_replicate.tsv'),
+        'optimize_lfn_variant_replicate_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_replicate_specific.tsv'),
     }
+    if not args.variant_known is None:
+        args_dic['variant_known'] = args.variant_known[0]
     vtam_run(args_dic)
 
 if __name__=='__main__':
     main()
+
 
