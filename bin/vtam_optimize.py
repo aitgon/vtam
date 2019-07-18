@@ -16,8 +16,9 @@ from wopmetabarcoding.utils.logger import logger
 
 def vtam_run(args_dic):
     #
-    wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile.yml')
-    wopfile_out_path = os.path.join(tempdir, 'Wopfile.yml')
+    wopfile_file_name = 'Wopfile_optimize.yml'
+    wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', wopfile_file_name)
+    wopfile_out_path = os.path.join(tempdir, wopfile_file_name)
     #
     #############################################################
     #
@@ -51,7 +52,7 @@ def vtam_run(args_dic):
         "file: {}; line: {}; CMD: {}".format(__file__, inspect.currentframe().f_lineno, cmd))
     if args_dic['forceall']:
         cmd = cmd + " -F"
-    if not args_dic['targetrule'] is None:
+    if 'targetrule' in args_dic:
         cmd = cmd + " -t {targetrule}".format(**args_dic)
     # import pdb; pdb.set_trace()
     # p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
@@ -82,10 +83,9 @@ def main():
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
         'params': args.params[0],
-        'targetrule': args.targetrule[0],
         'forceall': args.forceall,
         'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
-        'outtable': os.path.join(args.outdir[0], 'otutable.tsv'),
+        'variant_known': args.variant_known[0],
         'optimize_lfn_biosample_replicate': os.path.join(args.outdir[0], 'optimize_lfn_biosample_replicate.tsv'),
         'optimize_pcr_error': os.path.join(args.outdir[0], 'optimize_pcr_error.tsv'),
         'optimize_lfn_read_count_and_lfn_variant':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant.tsv'),
@@ -93,8 +93,8 @@ def main():
         'optimize_lfn_read_count_and_lfn_variant_replicate':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant_replicate.tsv'),
         'optimize_lfn_variant_replicate_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_replicate_specific.tsv'),
     }
-    if not args.variant_known is None:
-        args_dic['variant_known'] = args.variant_known[0]
+    if not args.targetrule is None:
+        args_dic['targetrule'] = args.targetrule[0]
     vtam_run(args_dic)
 
 if __name__=='__main__':
