@@ -206,3 +206,22 @@ rule TaxAssign:
         identity_threshold: {{identity_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
+
+
+rule MakeOtuTable:
+    tool: wopmetabarcoding.wrapper.MakeOtuTable
+    input:
+        table:
+            Marker: wopmetabarcoding.model.Marker
+            Run: wopmetabarcoding.model.Run
+            Biosample: wopmetabarcoding.model.Biosample
+            Replicate: wopmetabarcoding.model.Replicate
+            Variant: wopmetabarcoding.model.Variant
+            FilterChimeraBorderline: wopmetabarcoding.model.FilterChimeraBorderline
+            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+            TaxAssign: wopmetabarcoding.model.TaxAssign
+        file:
+            sample2fasta: {{fastainfo}}
+    output:
+        file:
+            OTUTable: {{outtable}}
