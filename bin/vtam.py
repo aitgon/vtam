@@ -2,14 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import inspect
 import sys
 
 import jinja2
 import yaml
 import os
-import subprocess
+# import subprocess
 
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.logger import logger
+
 
 def vtam_run(args_dic):
     #
@@ -34,7 +37,9 @@ def vtam_run(args_dic):
     with open(wopfile_out_path, "w") as fout:
         fout.write(wopfile_rendered)
     args_dic['wopfile_out_path'] = wopfile_out_path
-    print(wopfile_out_path)
+    #
+    logger.debug(
+        "file: {}; line: {}; Wopfile path: {}".format(__file__, inspect.currentframe().f_lineno, wopfile_out_path))
     #
     #############################################################
     #
@@ -42,30 +47,36 @@ def vtam_run(args_dic):
     #
     #############################################################
     cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{db} -v -p".format(**args_dic)
+    logger.debug(
+        "file: {}; line: {}; CMD: {}".format(__file__, inspect.currentframe().f_lineno, cmd))
     if args_dic['forceall']:
         cmd = cmd + " -F"
     if not args_dic['targetrule'] is None:
         cmd = cmd + " -t {targetrule}".format(**args_dic)
     # import pdb; pdb.set_trace()
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-    stdout = p.communicate()
-    p.wait()  # wait program to finish
+    # p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+    os.system(cmd)
+    # stdout = p.communicate()
+    # p.wait()  # wait program to finish
     sys.exit(0)
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--db', dest='db', nargs=1, help="SQLITE file with DB")
-    parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
-    parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
-    parser.add_argument('--outdir', nargs=1, help="Directory for output")
-    parser.add_argument('--params', nargs=1, help="YML file with parameter values")
-    parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars")
-    parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...")
+    parser.add_argument('--db', dest='db', nargs=1, help="SQLITE file with DB", required=True)
+    parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information", required=True)
+    parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files", required=True)
+    parser.add_argument('--outdir', nargs=1, help="Directory for output", required=True)
+    parser.add_argument('--params', nargs=1, help="YML file with parameter values", required=True)
+    parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
+    parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
     return parser
 
 def main():
     parser = create_parser()
     args = parser.parse_args()
+    # set taxonomy sqlite path
+    # os.environ['']
+    #
     # import pdb; pdb.set_trace()
     #
     args_dic = {
