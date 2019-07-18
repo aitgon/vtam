@@ -190,18 +190,18 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
 
         variant_keep_df = variant_read_count_df.loc[variant_read_count_df.action == 'keep']
         # variant_keep_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
-        variant_keep_df.drop_duplicates(inplace=True)
+        variant_keep_df = variant_keep_df.drop_duplicates(inplace=False)
 
         variant_delete_negative_df = variant_read_count_df.loc[(variant_read_count_df.action == 'delete') &
                                                      (variant_read_count_df.biosample_type == 'negative')]
         # variant_delete_negative_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
-        variant_delete_negative_df.drop_duplicates(inplace=True)
+        variant_delete_negative_df = variant_delete_negative_df.drop_duplicates(inplace=False)
 
 
         variant_delete_real_df = variant_read_count_df.loc[(variant_read_count_df.action == 'delete') &
                                                      (variant_read_count_df.biosample_type == 'real')]
         # variant_delete_real_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
-        variant_delete_real_df.drop_duplicates(inplace=True)
+        variant_delete_real_df = variant_delete_real_df.drop_duplicates(inplace=False)
 
         ##############
         #

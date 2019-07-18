@@ -80,7 +80,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         ##########################################################
         # positive_variant_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0,\
         #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
-
         variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
