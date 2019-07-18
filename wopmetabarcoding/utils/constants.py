@@ -89,10 +89,8 @@ def download_taxonomy_sqlite():
     taxonomy_sqlite_url = os.path.join(public_data_dir, "taxonomy.sqlite")
     taxonomy_sqlite_path = os.path.join(vtam_data_dir, 'taxonomy.sqlite')
     if not os.path.isfile(os.path.join(taxonomy_sqlite_path)):
-        import pdb; pdb.set_trace()
         urllib.request.urlretrieve(taxonomy_sqlite_url, taxonomy_sqlite_path)
     #
-    import pdb; pdb.set_trace()
     return taxonomy_sqlite_path
 
 ##########################################################
