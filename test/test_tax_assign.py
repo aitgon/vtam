@@ -47,7 +47,7 @@ class TestTaxAssign(TestCase):
         variant_df = pandas.DataFrame(data=variant_dic)
         #
         logger.debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign_bak'))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
         this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
         try:
             os.makedirs(this_tempdir)

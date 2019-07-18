@@ -69,7 +69,7 @@ class FilterRenkonen(ToolWrapper):
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
         #
         # Options
-        # TaxAssign_bak parameters
+        # TaxAssign parameters
         renkonen_threshold = float(self.option("renkonen_threshold"))
         #
         # Output table models
