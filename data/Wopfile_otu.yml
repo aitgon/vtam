@@ -64,7 +64,7 @@ rule FilterLFN:
         table:
             FilterLFN: wopmetabarcoding.model.FilterLFN
     params:
-        select_lfn_variant: {{select_lfn_variant}}
+        filter_lfn_variant: {{filter_lfn_variant}}
         lfn_variant_threshold: {{lfn_variant_threshold}}
         lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}

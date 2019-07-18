@@ -157,17 +157,17 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
         variant_read_count_df = variant_read_count_df.merge(aggregate_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        variant_read_count_df['lfn_per_sum_biosample_replicate: N_ijk/N_jk'] = variant_read_count_df['N_ijk'] / variant_read_count_df['N_jk']
+        variant_read_count_df['lfn_biosample_replicate: N_ijk/N_jk'] = variant_read_count_df['N_ijk'] / variant_read_count_df['N_jk']
 
         ##########################################################
         #
         # 5.Sort and extract the lowest value of the ration with 4 digit
         #
         ##########################################################
-        variant_read_count_df=variant_read_count_df.sort_values('lfn_per_sum_biosample_replicate: N_ijk/N_jk', ascending=True)
+        variant_read_count_df=variant_read_count_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
         round_inf_4_decimals = lambda x: int(x * 10 ** 4) / 10 ** 4
-        variant_read_count_df['round_inf'] = variant_read_count_df['lfn_per_sum_biosample_replicate: N_ijk/N_jk'].apply(round_inf_4_decimals)
+        variant_read_count_df['round_inf'] = variant_read_count_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_inf_4_decimals)
 
         ##########################################################
         #
