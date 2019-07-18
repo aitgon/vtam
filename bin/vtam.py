@@ -88,6 +88,7 @@ def main():
         'targetrule': args.targetrule[0],
         'forceall': args.forceall,
         'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
+        'outtable': os.path.join(args.outdir[0], 'otutable.tsv'),
     }
     vtam_run(args_dic)
 
