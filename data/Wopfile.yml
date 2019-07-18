@@ -137,7 +137,7 @@ rule FilterRenkonen:
             FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
     params:
         renkonen_threshold: {{renkonen_threshold}}
-#
+
 rule FilterIndel:
     tool: wopmetabarcoding.wrapper.FilterIndel
     input:
@@ -187,26 +187,22 @@ rule ReadCountAverageOverReplicates:
         table:
             ReadCountAverageOverReplicates: wopmetabarcoding.model.ReadCountAverageOverReplicates
 
-
-
-#rule TaxAssign:
-#    tool: wopmetabarcoding.wrapper.TaxAssign
-#    input:
-#        table:
-#            Marker: wopmetabarcoding.model.Marker
-#            Run: wopmetabarcoding.model.Run
-#            Biosample: wopmetabarcoding.model.Biosample
-#            Replicate: wopmetabarcoding.model.Replicate
-#            Variant: wopmetabarcoding.model.Variant
-#            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
-#        file:
-#            sample2fasta: {{fastainfo}}
-#            taxonomy: {{taxonomy}}
-#            accession2taxid: {{accession2taxid}}
-#    output:
-#        table:
-#            TaxAssign: wopmetabarcoding.model.TaxAssign
-#    params:
-#        identity_threshold: {{identity_threshold}}
-#        include_prop: {{include_prop}}
-#        min_number_of_taxa: {{min_number_of_taxa}}
+rule TaxAssign:
+    tool: wopmetabarcoding.wrapper.TaxAssign
+    input:
+        table:
+            Marker: wopmetabarcoding.model.Marker
+            Run: wopmetabarcoding.model.Run
+            Biosample: wopmetabarcoding.model.Biosample
+            Replicate: wopmetabarcoding.model.Replicate
+            Variant: wopmetabarcoding.model.Variant
+            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+        file:
+            sample2fasta: {{fastainfo}}
+    output:
+        table:
+            TaxAssign: wopmetabarcoding.model.TaxAssign
+    params:
+        identity_threshold: {{identity_threshold}}
+        include_prop: {{include_prop}}
+        min_number_of_taxa: {{min_number_of_taxa}}
