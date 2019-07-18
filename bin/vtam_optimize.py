@@ -50,6 +50,8 @@ def vtam_run(args_dic):
     cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{db} -v -p".format(**args_dic)
     logger.debug(
         "file: {}; line: {}; CMD: {}".format(__file__, inspect.currentframe().f_lineno, cmd))
+    if args_dic['dryrun']:
+        cmd = cmd + " -n"
     if args_dic['forceall']:
         cmd = cmd + " -F"
     if 'targetrule' in args_dic:
@@ -71,6 +73,7 @@ def create_parser():
     parser.add_argument('--variant_known', nargs=1, help="TSV file with known variants", required=False)
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
+    parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true', help="Only display what would have been done.")
     return parser
 
 def main():
@@ -92,6 +95,7 @@ def main():
         'optimize_lfn_variant_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_specific.tsv'),
         'optimize_lfn_read_count_and_lfn_variant_replicate':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant_replicate.tsv'),
         'optimize_lfn_variant_replicate_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_replicate_specific.tsv'),
+        'dryrun': args.dryrun,
     }
     if not args.targetrule is None:
         args_dic['targetrule'] = args.targetrule[0]

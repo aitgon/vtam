@@ -50,9 +50,11 @@ def vtam_run(args_dic):
     cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{db} -v -p".format(**args_dic)
     logger.debug(
         "file: {}; line: {}; CMD: {}".format(__file__, inspect.currentframe().f_lineno, cmd))
+    if args_dic['dryrun']:
+        cmd = cmd + " -n"
     if args_dic['forceall']:
         cmd = cmd + " -F"
-    if not args_dic['targetrule'] is None:
+    if 'targetrule' is args_dic:
         cmd = cmd + " -t {targetrule}".format(**args_dic)
     # import pdb; pdb.set_trace()
     # p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
@@ -71,6 +73,7 @@ def create_parser():
     parser.add_argument('--filter_lfn_variant', nargs=1, help="Boolean 0|1 to filter_lfn_variant (1) or filter_lfn_variant_replicate (0)", required=True)
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
+    parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true', help="Only display what would have been done.")
     return parser
 
 def main():
@@ -78,17 +81,19 @@ def main():
     args = parser.parse_args()
     #
     args_dic = {
-        'db': os.path.join(args.outdir[0], 'db.sqlite'),
+        'db': args.db[0],
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
         'filter_lfn_variant': args.filter_lfn_variant[0],
         'params': args.params[0],
-        'targetrule': args.targetrule[0],
         'forceall': args.forceall,
         'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
         'outtable': os.path.join(args.outdir[0], 'otutable.tsv'),
+        'dryrun': args.dryrun,
     }
+    if not args.targetrule is None:
+        args_dic['targetrule'] = args.targetrule[0]
     vtam_run(args_dic)
 
 if __name__=='__main__':
