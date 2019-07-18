@@ -9,13 +9,13 @@ import pandas
 from wopmetabarcoding.utils.logger import logger
 
 
-class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
+class OptimizeLFNbiosampleReplicate(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNperSumBiosampleAndReplicate"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNbiosampleReplicate"
     }
 
     # Input file
-    __input_file_positive_variants = "positive_variants"
+    __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -28,22 +28,22 @@ class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizeLFNperSumBiosampleAndReplicate.__input_file_positive_variants,
+            OptimizeLFNbiosampleReplicate.__input_file_variant_known,
         ]
 
     def specify_input_table(self):
         return [
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_marker,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_run,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_biosample,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant_read_count,
+            OptimizeLFNbiosampleReplicate.__input_table_marker,
+            OptimizeLFNbiosampleReplicate.__input_table_run,
+            OptimizeLFNbiosampleReplicate.__input_table_biosample,
+            OptimizeLFNbiosampleReplicate.__input_table_variant,
+            OptimizeLFNbiosampleReplicate.__input_table_variant_read_count,
         ]
 
 
     def specify_output_file(self):
         return [
-            OptimizeLFNperSumBiosampleAndReplicate.__output_file_optimize_lfn,
+            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn,
         ]
 
     def specify_params(self):
@@ -61,27 +61,27 @@ class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_positive_variants = self.input_file(OptimizeLFNperSumBiosampleAndReplicate.__input_file_positive_variants)
+        input_file_variant_known = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_variant_known)
         #
         # Input table models
-        run_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_run)
-        marker_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_marker)
-        biosample_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_biosample)
-        variant_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant)
-        variant_read_count_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant_read_count)
+        run_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_run)
+        marker_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_marker)
+        biosample_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_biosample)
+        variant_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant)
+        variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
         #
         # Output file path
-        output_file_optimize_lfn = self.output_file(OptimizeLFNperSumBiosampleAndReplicate.__output_file_optimize_lfn)
+        output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn)
 
         ##########################################################
         #
         # 1. Read variants_optimize to get run_id, marker_id, biosample_id, variant_id for current analysis
         #
         ##########################################################
-        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
+        # positive_variant_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0,\
         #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
 
-        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+        variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 

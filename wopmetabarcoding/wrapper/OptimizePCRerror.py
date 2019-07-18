@@ -11,14 +11,14 @@ from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.utils.logger import logger
 
 
-class OptimizePCRError(ToolWrapper):
+class OptimizePCRerror(ToolWrapper):
 
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizePCRError"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizePCRerror"
     }
 
     # Input file
-    __input_file_positive_variants = "positive_variants"
+    __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -33,22 +33,22 @@ class OptimizePCRError(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizePCRError.__input_file_positive_variants,
+            OptimizePCRerror.__input_file_variant_known,
         ]
 
     def specify_input_table(self):
         return [
-            OptimizePCRError.__input_table_marker,
-            OptimizePCRError.__input_table_run,
-            OptimizePCRError.__input_table_variant,
-            OptimizePCRError.__input_table_biosample,
-            OptimizePCRError.__input_table_variant_read_count,
+            OptimizePCRerror.__input_table_marker,
+            OptimizePCRerror.__input_table_run,
+            OptimizePCRerror.__input_table_variant,
+            OptimizePCRerror.__input_table_biosample,
+            OptimizePCRerror.__input_table_variant_read_count,
         ]
 
 
     def specify_output_file(self):
         return [
-            OptimizePCRError.__output_file_optimize_pcr_error,
+            OptimizePCRerror.__output_file_optimize_pcr_error,
         ]
 
     def specify_params(self):
@@ -66,17 +66,17 @@ class OptimizePCRError(ToolWrapper):
         ################################################################################################################
 
         # Input file paths
-        input_file_positive_variants = self.input_file(OptimizePCRError.__input_file_positive_variants)
+        input_file_variant_known = self.input_file(OptimizePCRerror.__input_file_variant_known)
         #
         # Input models
-        run_model = self.input_table(OptimizePCRError.__input_table_run)
-        marker_model = self.input_table(OptimizePCRError.__input_table_marker)
-        variant_model = self.input_table(OptimizePCRError.__input_table_variant)
-        biosample_model = self.input_table(OptimizePCRError.__input_table_biosample)
-        variant_read_count_model = self.input_table(OptimizePCRError.__input_table_variant_read_count)
+        run_model = self.input_table(OptimizePCRerror.__input_table_run)
+        marker_model = self.input_table(OptimizePCRerror.__input_table_marker)
+        variant_model = self.input_table(OptimizePCRerror.__input_table_variant)
+        biosample_model = self.input_table(OptimizePCRerror.__input_table_biosample)
+        variant_read_count_model = self.input_table(OptimizePCRerror.__input_table_variant_read_count)
         #
         # Output file paths
-        output_file_optimize_pcr_error = self.output_file(OptimizePCRError.__output_file_optimize_pcr_error)
+        output_file_optimize_pcr_error = self.output_file(OptimizePCRerror.__output_file_optimize_pcr_error)
 
         ################################################################################################################
         #
@@ -84,7 +84,7 @@ class OptimizePCRError(ToolWrapper):
         #
         ################################################################################################################
 
-        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+        variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
@@ -200,7 +200,7 @@ class OptimizePCRError(ToolWrapper):
         pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
 
         logger.debug(
-            "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRError'))
+            "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRerror'))
         ##########################################################
         #
         # 7. Write Optimize PCRError to TSV file
