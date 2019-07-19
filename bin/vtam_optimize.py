@@ -16,9 +16,6 @@ from wopmetabarcoding.utils.logger import logger
 
 def vtam_run(args_dic):
     #
-    wopfile_file_name = 'Wopfile_optimize.yml'
-    wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', wopfile_file_name)
-    wopfile_out_path = os.path.join(tempdir, wopfile_file_name)
     #
     #############################################################
     #
@@ -32,11 +29,17 @@ def vtam_run(args_dic):
     # Render Wopfile
     #
     #############################################################
-    with open(wopfile_in_path) as fin:
-        template = jinja2.Template(fin.read())
-    wopfile_rendered = template.render(args_dic)
+    #
+    wopfile_file_name = 'Wopfile_optimize.yml'
+    template_dir = os.path.join(os.path.dirname(__file__), '../data')
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
+    template = env.get_template('Wopfile_optimize.yml')
+    rendered_content = template.render(args_dic)
+    #
+    # Write to outdir
+    wopfile_out_path = os.path.join(args_dic['outdir'], wopfile_file_name)
     with open(wopfile_out_path, "w") as fout:
-        fout.write(wopfile_rendered)
+        fout.write(rendered_content)
     args_dic['wopfile_out_path'] = wopfile_out_path
     #
     logger.debug(
@@ -56,7 +59,6 @@ def vtam_run(args_dic):
         cmd = cmd + " -F"
     if 'targetrule' in args_dic:
         cmd = cmd + " -t {targetrule}".format(**args_dic)
-    # import pdb; pdb.set_trace()
     # p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     os.system(cmd)
     # stdout = p.communicate()
@@ -81,7 +83,7 @@ def main():
     args = parser.parse_args()
     #
     args_dic = {
-        'db': os.path.join(args.outdir[0], 'db.sqlite'),
+        'db': args.db[0],
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],

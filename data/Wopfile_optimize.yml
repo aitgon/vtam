@@ -1,4 +1,4 @@
-{% extends "Wopfile_otu_optimize.html" %}
+{% extends "Wopfile_base_otu_optimize.yml" %}
 {% block rule_2nd_otu_optimize %}
 
 rule OptimizeLFNbiosampleReplicate:
