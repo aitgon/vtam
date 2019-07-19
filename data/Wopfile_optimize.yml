@@ -1,54 +1,5 @@
-rule SampleInformation:
-    tool: wopmetabarcoding.wrapper.SampleInformation
-    input:
-        file:
-            sample2fasta: {{fastainfo}}
-    output:
-        table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Fasta: wopmetabarcoding.model.Fasta
-            PrimerPair: wopmetabarcoding.model.PrimerPair
-            TagPair: wopmetabarcoding.model.TagPair
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-    params:
-        fasta_dir: {{fastadir}}
-
-rule SortReads:
-    tool: wopmetabarcoding.wrapper.SortReads
-    input:
-        table:
-            Fasta: wopmetabarcoding.model.Fasta
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
-        file:
-            sample2fasta: {{fastainfo}}
-    output:
-        file:
-            sortreads: {{sortreads}}
-    params:
-        min_id: {{min_id}}
-        minseqlength: {{minseqlength}}
-        overhang: {{overhang}}
-#
-rule VariantReadCount:
-    tool: wopmetabarcoding.wrapper.VariantReadCount
-    input:
-        file:
-            sortreads: {{sortreads}}
-            sample2fasta: {{fastainfo}}
-        table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-    output:
-        table:
-            Variant: wopmetabarcoding.model.Variant
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
-
+{% extends "Wopfile_otu_optimize.html" %}
+{% block rule_2nd_otu_optimize %}
 
 rule OptimizeLFNbiosampleReplicate:
     tool: wopmetabarcoding.wrapper.OptimizeLFNbiosampleReplicate
@@ -126,3 +77,5 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
         file:
             optimize_lfn_read_count_and_lfn_variant_replicate: {{optimize_lfn_read_count_and_lfn_variant_replicate}}
             optimize_lfn_variant_replicate_specific: {{optimize_lfn_variant_replicate_specific}}
+
+{% endblock %}
