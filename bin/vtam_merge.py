@@ -12,8 +12,10 @@ from wopmetabarcoding.utils.constants import tempdir
 
 def vtam_run(args_dic):
     #
-    wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', 'Wopfile_merge.yml')
-    wopfile_out_path = os.path.join(tempdir, 'Wopfile_merge.yml')
+    wopfile_file_name = 'Wopfile_merge.yml'
+    wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', wopfile_file_name)
+    wopfile_out_path = os.path.join(tempdir, wopfile_file_name)
+    # wopfile_out_path = os.path.join(args_dic['outdir'], wopfile_file_name)
     #
     #############################################################
     #
