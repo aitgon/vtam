@@ -218,9 +218,13 @@ class FilterLFNRunner:
             df2.low_frequence_noice_per_replicate_series < lfn_variant_replicate_threshold, 'filter_delete'] = True
         if not threshold_specific_df is None:
             this_filter_id = 5
-            for variant_id in threshold_specific_df:
-                variant_id_threshold = threshold_specific_df[variant_id]
-                df2_f6_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
+            # for variant_id in threshold_specific_df:
+            for rowtuple in threshold_specific_df.itertuples():
+                variant_id = rowtuple.variant_id
+                replicate_id = rowtuple.replicate_id
+                threshold = rowtuple.threshold
+                # threshold = threshold_specific_df[variant_id]
+                df2_f6_variant_id = df2.loc[((df2.variant_id == variant_id) & (df2.replicate_id == replicate_id))].copy()
 
                 # Initialize filter: Keep everything
                 df2_f6_variant_id.loc[df2_f6_variant_id.variant_id == variant_id, 'filter_id'] = this_filter_id
@@ -228,7 +232,7 @@ class FilterLFNRunner:
 
                 # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
                 df2_f6_variant_id.loc[
-                    df2_f6_variant_id.low_frequence_noice_per_replicate_series < variant_id_threshold, 'filter_delete'] = True
+                    df2_f6_variant_id.low_frequence_noice_per_replicate_series < threshold, 'filter_delete'] = True
 
                 #  Keep important columns
                 df2_f6_variant_id = df2_f6_variant_id[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
