@@ -45,7 +45,7 @@ class FilterLFN(ToolWrapper):
 
     def specify_params(self):
         return {
-            "filter_lfn_variant": "required|bool",
+            "filter_lfn_variant": "required|int",
             "lfn_variant_threshold": "float",
             "lfn_variant_replicate_threshold": "float",
             "lfn_biosample_replicate_threshold": "required|float",
@@ -76,7 +76,7 @@ class FilterLFN(ToolWrapper):
         variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
         #
         # Options
-        filter_lfn_variant = bool(self.option("filter_lfn_variant"))
+        filter_lfn_variant = int(self.option("filter_lfn_variant"))
         lfn_variant_threshold = self.option("lfn_variant_threshold")
         lfn_variant_replicate_threshold = self.option("lfn_variant_replicate_threshold")
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
@@ -162,7 +162,7 @@ class FilterLFN(ToolWrapper):
         # Or
         # TaxAssign  3: f3_f5_lfn_delete_variant_replicate
         ############################################
-        if filter_lfn_variant:
+        if bool(filter_lfn_variant):
             lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
         else:
             lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
