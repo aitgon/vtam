@@ -86,7 +86,7 @@ def main():
         'fastainfo': args.fastainfo[0],
         'fastadir': args.fastadir[0],
         'outdir': args.outdir[0],
-        'filter_lfn_variant': args.filter_lfn_variant[0],
+        'filter_lfn_variant': int(args.filter_lfn_variant[0]),
         'params': args.params[0],
         'sortreads': os.path.join(args.outdir[0], 'sortreads.tsv'),
         'outtable': os.path.join(args.outdir[0], 'otutable.tsv'),
