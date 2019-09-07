@@ -15,20 +15,15 @@ class SampleInformation(Base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    run_id = Column(Integer, ForeignKey("Run.id"), nullable=False)
-    marker_id = Column(Integer, ForeignKey("Marker.id"), nullable=False)
+    run_id = Column(Integer, ForeignKey("Run.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    marker_id = Column(Integer, ForeignKey("Marker.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     primer_forward = Column(String(100), nullable=False)
     primer_reverse = Column(String(100), nullable=False)
     tag_forward = Column(String(100), nullable=False)
     tag_reverse = Column(String(100), nullable=False)
-    fasta_id = Column(Integer, ForeignKey("Fasta.id"), nullable=False)
-    biosample_id = Column(Integer, ForeignKey("Biosample.id"), nullable=False)
-    replicate_id = Column(Integer, ForeignKey("Replicate.id"), nullable=False)
-
-    # @validates('file_name')
-    # def validates_filename(self, key, path):
-    #     assert ' ' not in path
-    #     return path
+    fasta_id = Column(Integer, ForeignKey("Fasta.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    biosample_id = Column(Integer, ForeignKey("Biosample.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    replicate_id = Column(Integer, ForeignKey("Replicate.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
     @validates('name', 'sample_name', 'run_name')
     def validates_names(self, key, name):
