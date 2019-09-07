@@ -24,9 +24,9 @@ copyright = 'Since 2018, Thomas Dechatre, Aitor Gonzalez, Emese Meglecz'
 author = 'Thomas Dechatre, Aitor Gonzalez, Emese Meglecz'
 
 # The short X.Y version
-version = '0.2'
+version = '0.0'
 # The full version, including alpha/beta/rc tags
-release = '0.2.0'
+release = '0.0.1'
 
 
 # -- General configuration ---------------------------------------------------
