@@ -1,7 +1,10 @@
+import inspect
 import os
 import subprocess
 
 import sys
+
+from wopmetabarcoding.utils.logger import logger
 
 
 class VSearch:
@@ -14,6 +17,8 @@ class VSearch:
         cmd_args = [str(item) for item in list(sum(list(self.params.items()), ()))]
         cmd_line = ['vsearch'] + cmd_args
         with open(os.devnull, 'w') as FNULL:
+            logger.debug(
+                "file: {}; line: {}; Vsearch command: {}".format(__file__, inspect.currentframe().f_lineno, " ".join(cmd_line)))
             p = subprocess.Popen(cmd_line, stdout=FNULL, stderr=FNULL)
             p.wait()
 

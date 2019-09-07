@@ -5,6 +5,7 @@ from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterChimera import f11_filter_chimera
 import pandas
 
@@ -37,8 +38,7 @@ class TestChimera(TestCase):
                   ],
         })
 
-        self.tempdir = os.path.join(tempdir, "FilterUtilities", self.__class__.__name__)
-        PathFinder.mkdir_p(self.tempdir)
+        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
 
 
     def test_02_f11_chimera(self):
@@ -71,10 +71,10 @@ class TestChimera(TestCase):
             ###################################################################
             df_grouped_biosample_id.sort_values(by='read_count', ascending=False, inplace=True)
             #
-            chimera1_fasta = os.path.join(self.tempdir, this_filter_name, 'chimera1_biosample_id_{}.fasta'.format(biosample_id))
+            chimera1_fasta = os.path.join(self.this_step_tmp_dir, 'chimera1_biosample_id_{}.fasta'.format(biosample_id))
             #
             # Prepare 1 fasta file
-            PathFinder.mkdir_p(os.path.join(self.tempdir, this_filter_name))
+            # PathFinder.mkdir_p(os.path.join(self.tempdir, this_filter_name))
             with open(chimera1_fasta, 'w') as fasta_fout:
                 for variant_id in df_grouped_biosample_id.variant_id.unique():
                     variant_sequence = self.variant_df.loc[self.variant_df.id == variant_id,'sequence'].values[0]
@@ -86,9 +86,9 @@ class TestChimera(TestCase):
             # 3. Run uchime_denovo
             #
             ###################################################################
-            chimear2_borderline_fasta = os.path.join(self.tempdir, this_filter_name,'chimear2_biosample_id_{}_borderline.fasta'.format(biosample_id))
-            chimear2_nonchimeras_fasta = os.path.join(self.tempdir, this_filter_name,'chimear2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
-            chimear2_chimeras_fasta = os.path.join(self.tempdir, this_filter_name,'chimear2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
+            chimear2_borderline_fasta = os.path.join(self.this_step_tmp_dir, 'chimear2_biosample_id_{}_borderline.fasta'.format(biosample_id))
+            chimear2_nonchimeras_fasta = os.path.join(self.this_step_tmp_dir, 'chimear2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
+            chimear2_chimeras_fasta = os.path.join(self.this_step_tmp_dir, 'chimear2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
             #
             vsearch_chimera_args = {
                 "uchime_denovo": chimera1_fasta,
@@ -117,27 +117,27 @@ class TestChimera(TestCase):
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 6)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 11),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 11),
                                                                         'filter_delete'].values[0])
         #
         self.assertTrue(not filter_output_df.loc[(filter_output_df.run_id == 1)
                                                                          & (filter_output_df.marker_id == 1)
                                                                          & (filter_output_df.variant_id == 1)
                                                                          & (filter_output_df.biosample_id == 1)
-                                                                         & (filter_output_df.replicate_id == 1)
-                                                                         & (filter_output_df.filter_id == 11),
+                                                                         & (filter_output_df.replicate_id == 1),
+                                                                         # & (filter_output_df.filter_id == 11),
                                                                         'filter_delete'].values[0])
 
         #
-        df_output,df_output_borderline = f11_filter_chimera(self.variant_read_count_df, self.variant_df)
+        df_output,df_output_borderline = f11_filter_chimera(self.variant_read_count_df, self.variant_df, this_step_tmp_dir=self.this_step_tmp_dir)
 
         self.assertTrue(df_output.loc[(df_output.run_id == 1)
                                              & (df_output.marker_id == 1)
                                              & (df_output.variant_id == 6)
                                              & (df_output.biosample_id == 1)
-                                             & (df_output.replicate_id == 1)
-                                             & (df_output.filter_id == 11),
+                                             & (df_output.replicate_id == 1),
+                                             # & (df_output.filter_id == 11),
                                              'filter_delete'].values[0])
         #
 
@@ -145,8 +145,8 @@ class TestChimera(TestCase):
                                                  & (df_output.marker_id == 1)
                                                  & (df_output.variant_id == 1)
                                                  & (df_output.biosample_id == 1)
-                                                 & (df_output.replicate_id == 1)
-                                                 & (df_output.filter_id == 11),
+                                                 & (df_output.replicate_id == 1),
+                                                 # & (df_output.filter_id == 11),
                                                  'filter_delete'].values[0])
 
         #
