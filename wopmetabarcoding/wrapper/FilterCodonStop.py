@@ -9,6 +9,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
 class FilterCodonStop(ToolWrapper):
@@ -54,7 +55,7 @@ class FilterCodonStop(ToolWrapper):
 
     def specify_params(self):
         return {
-            "number_genetic_table": "int",
+            "genetic_table_number": "int",
 
         }
 
@@ -65,7 +66,7 @@ class FilterCodonStop(ToolWrapper):
 
         ##########################################################
         #
-        # 0. Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
@@ -80,7 +81,7 @@ class FilterCodonStop(ToolWrapper):
         replicate_model = self.input_table(FilterCodonStop.__input_table_replicate)
         variant_model = self.input_table(FilterCodonStop.__input_table_Variant)
         #options
-        number_genetic_table = int(self.option("number_genetic_table"))
+        genetic_table_number = int(self.option("genetic_table_number"))
         #
         # Output table models
         filter_codon_stop_model = self.output_table(FilterCodonStop.__output_table_filter_codon_stop)
@@ -138,7 +139,6 @@ class FilterCodonStop(ToolWrapper):
                                           indel_model_table.c.biosample_id,
                                           indel_model_table.c.replicate_id,
                                           indel_model_table.c.read_count])\
-            .where(indel_model_table.c.filter_id == 13)\
             .where(indel_model_table.c.filter_delete == 0)
         # Select to DataFrame
         variant_filter_lfn_passed_list = []
@@ -153,7 +153,7 @@ class FilterCodonStop(ToolWrapper):
                 "file: {}; line: {}; No data input for this filter.".format(__file__,
                                                                       inspect.currentframe().f_lineno,'CodonStop'))
         else:
-            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_id, filter_delete
+            # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
             variant_model_table = variant_model.__table__
             stmt_variant = select([variant_model_table.c.id,
                                    variant_model_table.c.sequence])
@@ -170,7 +170,7 @@ class FilterCodonStop(ToolWrapper):
             # 4. Run Filter
             #
             ##########################################################
-            df_out = f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_table)
+            df_out = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
 
             ##########################################################
             #
@@ -185,13 +185,12 @@ class FilterCodonStop(ToolWrapper):
             #
 
 
-def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_table=5):
+def f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number=5):
     """
     filter chimera
     """
     df = variant_df.copy()
     df2 = variant_read_count_df.copy()
-    df2['filter_id'] = 14
     df2['filter_delete'] = False
     #
     df['orf1_codon_stop_nb'] = 0
@@ -211,20 +210,20 @@ def f14_filter_codon_stop(variant_read_count_df, variant_df, number_genetic_tabl
         sequence_orf1 = sequence[orf_frame_index - 1:] # get 1st orf sequence
         sequence_orf1 = sequence_orf1[0:len(sequence_orf1) - (len(sequence_orf1) % 3)] # trimming for module 3
         orf1_nb_codon_stop = str(Seq(sequence_orf1, IUPAC.unambiguous_dna).translate(
-            Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
+            Bio.Data.CodonTable.generic_by_id[genetic_table_number])).count('*')
         df.loc[df.id == id, 'orf1_codon_stop_nb'] = orf1_nb_codon_stop
         #
         sequence_orf2 = sequence[orf_frame_index:] # get 2nd orf sequence
         sequence_orf2 = sequence_orf2[0:len(sequence_orf2) - (len(sequence_orf2) % 3)] # trimming for module 3
         orf2_nb_codon_stop = str(Seq(sequence_orf2, IUPAC.unambiguous_dna).translate(
-            Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
+            Bio.Data.CodonTable.generic_by_id[genetic_table_number])).count('*')
         df.loc[df.id == id, 'orf2_codon_stop_nb'] = orf2_nb_codon_stop
         #
         #
         sequence_orf3 = sequence[orf_frame_index + 1:] # get 2nd orf sequence
         sequence_orf3 = sequence_orf3[0:len(sequence_orf3) - (len(sequence_orf3) % 3)] # trimming for module 3
         orf3_nb_codon_stop = str(Seq(sequence_orf3, IUPAC.unambiguous_dna).translate(
-            Bio.Data.CodonTable.generic_by_id[number_genetic_table])).count('*')
+            Bio.Data.CodonTable.generic_by_id[genetic_table_number])).count('*')
         df.loc[df.id == id, 'orf3_codon_stop_nb'] = orf3_nb_codon_stop
         # if min_nb_codon_stop =0 so the variant is OK
         minimum = min(orf1_nb_codon_stop, orf2_nb_codon_stop, orf3_nb_codon_stop)
