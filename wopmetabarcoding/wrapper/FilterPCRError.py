@@ -288,9 +288,6 @@ def f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_outpu
 
 def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     # Output of filter pcr_error
-    # filter_output_df = variant_read_count_df.copy()
-    # filter_output_df['filter_id'] = 10
-    # filter_output_df['filter_delete'] = False
     #
     # Aggregate by biosample
     variant_read_count_grouped_df = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
@@ -298,15 +295,16 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     # Compute sum mismatch and gap
     vsearch_output_df['sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
     # Keep when sum mismatch and gap equals 1
-    pcr_error_df = vsearch_output_df.loc[vsearch_output_df.sum_mism_gaps == 1, ['target', 'query']]  # todo i changed the orther of target query and let it the same for the todo2 down
+    # todo i changed the orther of target query and let it the same for the todo2 down
+    pcr_error_df = vsearch_output_df.loc[vsearch_output_df.sum_mism_gaps == 1, ['target', 'query']]
     #########
     #
     # Merge variant read count to query
     #
     #########
-    # import pdb;pdb.set_trace()
     # Add two colum the first for the variant id sequence query and the second for the target sequance variant id
-    pcr_error_df = variant_read_count_grouped_df.merge(pcr_error_df, left_on=['variant_id'], right_on=['query']) #  TODO (todo2) VERIFY AITOR WAS  'query' ARGS REPLACED BY 'target'
+    #  TODO (todo2) VERIFY AITOR WAS  'query' ARGS REPLACED BY 'target'
+    pcr_error_df = variant_read_count_grouped_df.merge(pcr_error_df, left_on=['variant_id'], right_on=['query'])
     pcr_error_df.drop(columns=['variant_id'], inplace = True)
     pcr_error_df.rename(columns={'query': 'variant_id_unexpected'}, inplace=True)
     pcr_error_df.rename(columns={'read_count': 'read_count_unexpected'}, inplace=True)
@@ -316,16 +314,17 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     #
     #########
 
-    pcr_error_df = pcr_error_df.merge(variant_read_count_grouped_df,left_on=['run_id', 'marker_id', 'biosample_id', 'target'],right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+    pcr_error_df = pcr_error_df.merge(variant_read_count_grouped_df, left_on=['run_id', 'marker_id', 'biosample_id',
+                                            'target'], right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+    pcr_error_df.drop_duplicates(inplace=True)
     pcr_error_df.drop(columns=['variant_id'], inplace = True)
     pcr_error_df.rename(columns={'target': 'variant_id_expected'}, inplace=True)
-    pcr_error_df.rename(columns={'read_count': 'read_count_expected'}, inplace=True)
-    # check_read_count_df['read_count_unexpected_expected_ratio'] = check_read_count_df.read_count_unexpected / check_read_count_df.read_count_expected # TODO verify
-    pcr_error_df['read_count_unexpected_expected_ratio'] = pcr_error_df.N_ijk_x / pcr_error_df.N_ijk_y
-    pcr_error_df.sort_values(by='read_count_unexpected_expected_ratio', ascending=False, inplace=True)
-    # check_read_count_df = check_read_count_df.head(1)
-    # read_count_unexpected_expected_ratio_max = check_read_count_df.read_count_unexpected_expected_ratio.values[0]
-    # return read_count_unexpected_expected_ratio_max
-    pcr_error_df.rename(columns={'N_ijk_x': 'N_ijk_expected'}, inplace=True)
-    pcr_error_df.rename(columns={'N_ijk_y': 'N_ijk_unexpected'}, inplace=True)
+    pcr_error_df.rename(columns={'N_ijk_y': 'N_ijk_expected'}, inplace=True)
+    pcr_error_df.rename(columns={'N_ijk_x': 'N_ijk_unexpected'}, inplace=True)
+    pcr_error_df['N_ijk_unexpected_expected_ratio'] = pcr_error_df.N_ijk_unexpected / pcr_error_df.N_ijk_expected
+    pcr_error_df.sort_values(by='N_ijk_unexpected_expected_ratio', ascending=False, inplace=True)
+    # reorganize output columns
+    pcr_error_df = pcr_error_df[
+        ['run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ijk_expected', 'variant_id_unexpected',
+         'N_ijk_unexpected', 'N_ijk_unexpected_expected_ratio']]
     return pcr_error_df
