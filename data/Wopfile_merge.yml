@@ -9,12 +9,12 @@ rule Merge:
   params:
       fastq_directory: {{fastqdir}}
       fasta_dir: {{fastadir}}
-      fastq_minovlen: 50
-      fastq_maxmergelen: 300
-      fastq_minmergelen: 100
-      fastq_minlen: 50
-      fastq_maxee: 1
-      fastq_truncqual: 10
-      fastq_maxns: 0
-      threads: 8
-      fastq_ascii: 33
+      fastq_minovlen: {{fastq_minovlen}}
+      fastq_maxmergelen: {{fastq_maxmergelen}}
+      fastq_minmergelen: {{fastq_minmergelen}}
+      fastq_minlen: {{fastq_minlen}}
+      fastq_maxee: {{fastq_maxee}}
+      fastq_truncqual: {{fastq_truncqual}}
+      fastq_maxns: {{fastq_maxns}}
+      threads: {{threads}}
+      fastq_ascii: {{fastq_ascii}}

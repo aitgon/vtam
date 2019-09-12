@@ -8,14 +8,23 @@ import jinja2
 import os
 import subprocess
 
+import yaml
+
 from wopmetabarcoding.utils.constants import tempdir
 
 def vtam_run(args_dic):
     #
+    #
+    #############################################################
+    #
+    # Read parameter values from param_yml file
+    #
+    #############################################################
+    args_dic.update(yaml.load(open(args_dic['params'])))
+    #
     wopfile_file_name = 'Wopfile_merge.yml'
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', wopfile_file_name)
     wopfile_out_path = os.path.join(tempdir, wopfile_file_name)
-    # wopfile_out_path = os.path.join(args_dic['outdir'], wopfile_file_name)
     #
     #############################################################
     #
@@ -29,7 +38,6 @@ def vtam_run(args_dic):
     with open(wopfile_out_path, "w") as fout:
         fout.write(wopfile_rendered)
     args_dic['wopfile_out_path'] = wopfile_out_path
-    print(wopfile_out_path)
     #
     #############################################################
     #
@@ -54,6 +62,7 @@ def create_parser():
     parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
     parser.add_argument('--fastqdir', dest='fastqdir', nargs=1, help="Directory with FASTQ files")
     parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
+    parser.add_argument('--params', nargs=1, help="YML file with parameter values", required=True)
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars")
     parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true', help="Only display what would have been done.")
     return parser
@@ -70,6 +79,7 @@ def main():
         'fastadir': args.fastadir[0],
         'forceall': args.forceall,
         'dryrun': args.dryrun,
+        'params': args.params[0],
     }
     # vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0], args.forceall)
     vtam_run(args_dic)
