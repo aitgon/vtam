@@ -10,7 +10,6 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 # Define/create VTAM_TMP_DIR
 #
 ##########################################################
-from wopmetabarcoding.utils.logger import logger
 
 VTAM_TMP_DIR = None
 if 'VTAM_TMP_DIR' in os.environ:

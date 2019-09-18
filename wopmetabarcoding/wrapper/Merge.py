@@ -1,6 +1,6 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 import os
-from wopmars.utils.Logger import Logger
+
 import subprocess
 import errno
 
@@ -38,7 +38,6 @@ class Merge(ToolWrapper):
         sample2fastq = self.input_file(Merge.__input_sample2fastq)
         # output files
         sample2fasta = self.output_file(Merge.__output_sample2fasta)
-
         try:
             # Opening the file to get all the lines stocked in the list csv_content
             with open(sample2fastq, 'r') as csv_file:

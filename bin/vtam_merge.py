@@ -10,7 +10,12 @@ import subprocess
 
 import yaml
 
+from pathlib import Path
+
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.PathFinder import PathFinder
+
 
 def vtam_run(args_dic):
     #
@@ -20,8 +25,7 @@ def vtam_run(args_dic):
     # Read parameter values from param_yml file
     #
     #############################################################
-    args_dic.update(yaml.load(open(args_dic['params'])))
-    #
+    args_dic.update(yaml.load(open(args_dic['params']), Loader=yaml.SafeLoader))    #
     wopfile_file_name = 'Wopfile_merge.yml'
     wopfile_in_path = os.path.join(os.path.dirname(__file__), '../data', wopfile_file_name)
     wopfile_out_path = os.path.join(tempdir, wopfile_file_name)
@@ -45,11 +49,17 @@ def vtam_run(args_dic):
     #
     #############################################################
     # cmd = "wopmars -w {} -D sqlite:///{} -v -p".format(wopfile_out_path, wopdb)
-    cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{wopdb} -v -p".format(**args_dic)
+    cmd = "wopmars -w {wopfile_out_path} -D sqlite:///{wopdb} -p -v".format(**args_dic)
     if args_dic['dryrun']:
         cmd = cmd + " -n"
     if args_dic['forceall']:
         cmd = cmd + " -F"
+    if not args_dic['log'] is None:
+        PathFinder.mkdir_p(os.path.dirname(args_dic['log']))
+        Path(args_dic['log']).touch() # touch log
+    #     cmd = cmd + " --log " + args_dic['log']
+    from wopmetabarcoding.utils.logger import logger
+    logger.info(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     stdout = p.communicate()
     p.wait()  # wait program to finish
@@ -57,14 +67,22 @@ def vtam_run(args_dic):
 
 def create_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--wopdb', dest='wopdb', nargs=1, help="SQLITE file with WopMars DB")
-    parser.add_argument('--fastqinfo', dest='fastqinfo', nargs=1, help="TSV file with FASTQ sample information")
-    parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information")
-    parser.add_argument('--fastqdir', dest='fastqdir', nargs=1, help="Directory with FASTQ files")
-    parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files")
+    parser.add_argument('--wopdb', dest='wopdb', nargs=1, help="SQLITE file with WopMars DB", required=True)
+    parser.add_argument('--fastqinfo', dest='fastqinfo', nargs=1, help="TSV file with FASTQ sample information",
+                        required=True, type=os.path.abspath)
+    parser.add_argument('--fastainfo', dest='fastainfo', nargs=1, help="TSV file with FASTA sample information",
+                        required=True, type=os.path.abspath)
+    parser.add_argument('--fastqdir', dest='fastqdir', nargs=1, help="Directory with FASTQ files", required=True,
+                        type=os.path.abspath)
+    parser.add_argument('--fastadir', dest='fastadir', nargs=1, help="Directory with FASTA files", required=True,
+                        type=os.path.abspath)
     parser.add_argument('--params', nargs=1, help="YML file with parameter values", required=True)
-    parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars")
-    parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true', help="Only display what would have been done.")
+    parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
+    parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true',
+                        help="Only display what would have been done.")
+    parser.add_argument('--log', nargs=1, dest='log',
+                        help="Write logs in FILE file [default: $HOME/.wopmars/wopmars.log].", required=False,
+                        type=os.path.abspath)
     return parser
 
 def main():
@@ -80,8 +98,11 @@ def main():
         'forceall': args.forceall,
         'dryrun': args.dryrun,
         'params': args.params[0],
+        'log': None,
     }
-    # vtam_run(args.wopdb[0], args.fastqinfo[0], args.fastainfo[0], args.fastqdir[0], args.fastadir[0], args.forceall)
+    if not args.log is None:
+        OptionManager.instance()['--log'] = args.log[0]
+        args_dic['log'] = args.log[0]
     vtam_run(args_dic)
 
 if __name__=='__main__':

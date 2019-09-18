@@ -4,12 +4,13 @@
 import argparse
 import inspect
 import sys
+from pathlib import Path
 
 import jinja2
 import yaml
 import os
 # import subprocess
-
+from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.logger import logger
 
@@ -59,7 +60,10 @@ def vtam_run(args_dic):
         cmd = cmd + " -F"
     if 'targetrule' in args_dic:
         cmd = cmd + " -t {targetrule}".format(**args_dic)
-    # p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
+    if not args_dic['log'] is None:
+        PathFinder.mkdir_p(os.path.dirname(args_dic['log']))
+        Path(args_dic['log']).touch() # touch log
+        cmd = cmd + " --log " + args_dic['log']
     os.system(cmd)
     # stdout = p.communicate()
     # p.wait()  # wait program to finish
@@ -76,6 +80,8 @@ def create_parser():
     parser.add_argument('-F', '--forceall', action='store_true', help="Force argument of WopMars", required=False)
     parser.add_argument('-t', '--targetrule', nargs=1, help="Execute the workflow to the given RULE: SampleInformation, ...", required=False)
     parser.add_argument('-n', '--dry-run', dest='dryrun', action='store_true', help="Only display what would have been done.")
+    parser.add_argument('--log', nargs=1, dest='log',
+                        help="Write logs in FILE file [default: $HOME/.wopmars/wopmars.log].", required=False)
     return parser
 
 def main():
@@ -98,9 +104,12 @@ def main():
         'optimize_lfn_read_count_and_lfn_variant_replicate':  os.path.join(args.outdir[0], 'optimize_lfn_read_count_and_lfn_variant_replicate.tsv'),
         'optimize_lfn_variant_replicate_specific': os.path.join(args.outdir[0], 'optimize_lfn_variant_replicate_specific.tsv'),
         'dryrun': args.dryrun,
+        'log': None,
     }
     if not args.targetrule is None:
         args_dic['targetrule'] = args.targetrule[0]
+    if not args.log is None:
+        args_dic['log'] = args.log[0]
     vtam_run(args_dic)
 
 if __name__=='__main__':
