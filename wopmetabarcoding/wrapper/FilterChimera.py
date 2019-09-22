@@ -5,13 +5,12 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
 from Bio import SeqIO
 import os
-from wopmetabarcoding.utils.constants import tempdir
 
 from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 
 
 class FilterChimera(ToolWrapper):

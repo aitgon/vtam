@@ -13,7 +13,7 @@ import yaml
 from pathlib import Path
 
 from wopmetabarcoding.utils.OptionManager import OptionManager
-from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.utilities import tempdir
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
 

@@ -11,21 +11,6 @@ from wopmetabarcoding.utils.VTAMexception import VTAMexception
 
 class PathFinder:
 
-
-    """
-    Static class for finding paths
-    """
-    @staticmethod
-    def get_module_path():
-        """
-        Find the Src directory of the project
-
-        :return: the path leading to the src file of the project
-        """
-
-        module_path = os.path.join(os.path.dirname(__file__), "../..")
-        return module_path
-
     @staticmethod
     def get_wopfile_test_path():
         """

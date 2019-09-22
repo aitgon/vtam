@@ -5,7 +5,8 @@ import sqlite3
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
-from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list, download_taxonomy_sqlite
+from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list
+from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
 from wopmetabarcoding.utils.constants import rank_hierarchy_otu_table

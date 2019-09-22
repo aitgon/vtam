@@ -4,8 +4,7 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
-from wopmetabarcoding.utils.constants import tempdir
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 from wopmetabarcoding.wrapper.FilterChimera import f11_filter_chimera
 import pandas
 

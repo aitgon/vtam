@@ -10,7 +10,7 @@ import errno, pandas, urllib
 import os
 
 # from wopmetabarcoding.utils.constants import VTAM_DATA_DIR
-from wopmetabarcoding.utils.constants import create_vtam_data_dir
+from wopmetabarcoding.utils.utilities import create_vtam_data_dir
 from wopmetabarcoding.utils.logger import logger
 
 from sqlalchemy import create_engine

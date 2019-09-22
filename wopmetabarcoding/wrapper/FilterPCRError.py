@@ -7,10 +7,9 @@ from math import floor
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.constants import tempdir
 from wopmetabarcoding.utils.PathFinder import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
+from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 
 
 class FilterPCRError(ToolWrapper):
