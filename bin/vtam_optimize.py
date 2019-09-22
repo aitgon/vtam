@@ -11,7 +11,7 @@ import yaml
 import os
 # import subprocess
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.utilities import tempdir
 from wopmetabarcoding.utils.logger import logger
 
 

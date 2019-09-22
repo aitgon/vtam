@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.constants import download_taxonomy_sqlite
+from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 

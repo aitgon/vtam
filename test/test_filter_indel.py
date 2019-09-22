@@ -3,7 +3,7 @@ from unittest import TestCase
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
 import os
-from wopmetabarcoding.utils.constants import tempdir
+from wopmetabarcoding.utils.utilities import tempdir
 import pandas
 
 from wopmetabarcoding.wrapper.FilterIndel import f13_filter_indel
