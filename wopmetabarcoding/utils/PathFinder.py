@@ -6,6 +6,8 @@ multiple-lined
 import errno
 import os
 
+from wopmetabarcoding.utils.VTAMexception import VTAMexception
+
 
 class PathFinder:
 
@@ -38,9 +40,9 @@ class PathFinder:
     @staticmethod
     def get_module_test_path():
         """
-        Find the Src directory of the project
+        Find the test path of the project
 
-        :return: the path leading to the src file of the project
+        :return: the path leading to the test path of the project
         """
 
         test_dir_path = os.path.join(os.path.dirname(__file__), "../../test")
@@ -55,4 +57,32 @@ class PathFinder:
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
+
+
+    @staticmethod
+    def check_file_exists_and_is_nonempty(path, exception_message=None):
+        """Checks if file exists and is not empty
+
+        :param exception_message: Optional message to help debug the problem
+        :return: void
+        """
+        try:
+            if os.stat(path).st_size > 0:
+                return os.path.abspath(path)
+        except OSError as err:
+            raise VTAMexception("{}: {}".format(err, exception_message))
+
+
+    @staticmethod
+    def check_dir_exists_and_is_nonempty(path, exception_message=None):
+        """Checks if directory exists and is not empty
+
+        :param exception_message: Optional message to help debug the problem
+        :return: void
+        """
+        try:
+            if len([name for name in os.listdir(path) if os.path.isfile(name)]) > 0:
+                return os.path.abspath(path)
+        except NotADirectoryError as err:
+            raise VTAMexception("{}: {}".format(err, exception_message))
 

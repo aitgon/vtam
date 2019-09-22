@@ -4,6 +4,7 @@ from unittest import TestCase
 from wopmetabarcoding.utils.PathFinder import PathFinder
 
 class TestWopMetabarcoding(TestCase):
+
     def setUp(self):
         self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
         self.__db_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "db.sqlite")
