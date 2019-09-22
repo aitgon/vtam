@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from wopmetabarcoding.utils.ArgParser import ArgParser
+from wopmetabarcoding.utils.OptionManager import OptionManager
 
 
 class VTAM(object):
@@ -16,21 +17,21 @@ class VTAM(object):
         getattr(self, args.command)()
 
     def merge(self):
-        # parser = argparse.ArgumentParser(
-        #     description='Record changes to the repository')
-        # # prefixing the argument with -- means it's optional
-        # parser.add_argument('--amend', action='store_true')
         # now that we're inside a subcommand, ignore the first
-        # TWO argvs, ie the command (git) and the subcommand (commit)
+        # TWO argvs, ie the command (vtam) and the subcommand (merge)
         parser = ArgParser.get_arg_parser_merge()
-        # import pdb; pdb.set_trace()
         args = parser.parse_args(self.sys_argv[1:])
         ##################################
         #
-        # Store in OptionsManager
+        # Store arguments in OptionsManager
         #
         ##################################
-        print('Running: {}'.format(" ".join(self.sys_argv[0:])))
+        for k in vars(args):
+            if not k is 'command':
+                try:
+                    OptionManager.instance()[k] = vars(args)[k][0]
+                except TypeError:
+                    OptionManager.instance()[k] = vars(args)[k]
 
     def otu(self):
         parser = argparse.ArgumentParser(
@@ -43,7 +44,12 @@ class VTAM(object):
         # Store in OptionsManager
         #
         ##################################
-        print('Running: {}'.format(" ".join(self.sys_argv[0:])))
+        for k in vars(args):
+            if not k is 'command':
+                try:
+                    OptionManager.instance()[k] = vars(args)[k][0]
+                except TypeError:
+                    OptionManager.instance()[k] = vars(args)[k]
 
 if __name__ == '__main__':
     VTAM()

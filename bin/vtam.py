@@ -12,7 +12,6 @@ _libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../')
 if os.path.isfile(os.path.join(_libdir, 'wopmetabarcoding', '__init__.py')):
     sys.path.insert(0, _libdir)
 
-# import pdb; pdb.set_trace()
 from wopmetabarcoding import VTAM
 
 if __name__ == "__main__":

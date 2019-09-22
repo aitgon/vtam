@@ -8,7 +8,8 @@ import pandas
 from unittest import TestCase
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.constants import tempdir, public_data_dir, create_vtam_data_dir, download_taxonomy_sqlite
+from wopmetabarcoding.utils.constants import public_data_dir
+from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite, tempdir, create_vtam_data_dir
 from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id

@@ -8,7 +8,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.utils.constants import tempdir, download_coi_db, download_taxonomy_sqlite
+from wopmetabarcoding.utils.utilities import download_coi_db, download_taxonomy_sqlite, tempdir
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
