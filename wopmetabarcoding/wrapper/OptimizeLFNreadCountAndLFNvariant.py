@@ -100,10 +100,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         ##########################################################
         # positive_variant_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0,\
         #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
-
-        variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
+        # TODO test engine=python
+        variant_known_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
-                                                     'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
+                                                     'variant_id', 'action', 'variant_sequence', 'note'], index_col=False, engine='python')
 
         ########################
         #
@@ -111,7 +111,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ########################
 
-        variant_control_df = variants_optimize_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        variant_control_df = variant_known_df[['variant_id', 'variant_sequence']].drop_duplicates()
         variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
         with engine.connect() as conn:
             for row in variant_control_df.itertuples():
@@ -147,7 +147,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 .format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_list = []
         with engine.connect() as conn:
-            for row in variants_optimize_df.itertuples():
+            # TODO variant_read_count_df must be computed for the whole marker/run without regard of variant_known.tsv
+            for row in variant_known_df.itertuples():
                 run_name = row.run_name
                 marker_name = row.marker_name
                 biosample_name = row.biosample_name
@@ -203,12 +204,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # variant_delete_real_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
         variant_delete_real_df = variant_delete_real_df.drop_duplicates(inplace=False)
 
-        ##############
+        ##################################################################################################
         #
-        # Set maximal value of lfn_read_count_threshold
+        # This code
+        # Depends on variant_know.tsv file input with header
+        # marker	run	biosample_name	biosample_type	variant_id	action	variant_sequence
         #
-        ##############
+        # Look for maximal value of lfn_read_count_threshold,
+        # such that no "action=keep" variants in the specified marker, run and biosample_name
+        # is lost
         #
+        ##################################################################################################
         #
         count_keep = 0
         count_keep_max = 0
@@ -234,12 +240,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         lfn_read_count_threshold_max = lfn_read_count_threshold_previous # upper border of lfn_read_count_threshold
 
-        ##############
+        ##################################################################################################
         #
-        # Set maximal value of lfn_variant_threshold
+        # This code
+        # Depends on variant_know.tsv file input with header
+        # marker	run	biosample_name	biosample_type	variant_id	action	variant_sequence
         #
-        ##############
+        # Look for maximal value of lfn_variant_threshold,
+        # such that no "action=keep" variants in the specified marker, run and biosample_name
+        # is lost
         #
+        ##################################################################################################
 
         count_keep = 0
         count_keep_max = 0
@@ -267,7 +278,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         ##############
         #
-        # Optimize together two parameters to previous define borders
+        # From the previous two code sections, we have found maximal lfn_read_count_threshold and lfn_variant_threshold
+        # values.
+        # Now iterate between default values and the maximal values
         #
         ##############
         #
@@ -285,18 +298,27 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_threshold: {} ============="
                         .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, lfn_variant_threshold))
 
+                ##########################################################
+                #
+                # Take filter parameter, filter all variants and returned filtered variants and count keep
+                #
+                ##########################################################
+
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_variant_threshold,
                                                lfn_biosample_replicate_threshold,
                                                lfn_read_count_threshold, min_replicate_number)
 
                 ##########################################################
                 #
-                # Count delete
+                # Take filtered variants and count delete
                 #
                 ##########################################################
 
+                # TODO count delete in variant mock that are not defined as action=keep or action=tolerate
+                # count delete in variant negative
                 variant_read_count_remained_delete_negative_df = variant_read_count_remained_df.merge(
                     variant_delete_negative_df, on=['run_id', 'marker_id', 'biosample_id']).drop_duplicates()
+                # count delete in variant real
                 variant_read_count_remained_delete_real_df = variant_read_count_remained_df.merge(
                     variant_delete_real_df, on=['run_id', 'marker_id', 'variant_id', 'biosample_id']).drop_duplicates()
                 count_delete = variant_read_count_remained_delete_negative_df.shape[0] \
@@ -343,7 +365,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ##########################################################
 
+        # TODO we need to add action!=keep and action!=tolerate in biosample_type=mock
         variant_delete_df = pandas.concat([variant_delete_negative_df, variant_delete_real_df], axis=0)
+        # TODO here we are calculating N_i relative to delete variant, but actually N_i must be calcuate relative to all variants
         lfn_variant_specific_threshold_df = variant_delete_df.copy()
         lfn_variant_specific_threshold_df.drop(['action', 'biosample_type'], axis=1, inplace=True)
         N_i_df = lfn_variant_specific_threshold_df.groupby(by=['run_id', 'marker_id', 'variant_id'])\
@@ -360,6 +384,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_variant_specific_threshold_df = lfn_variant_specific_threshold_df.merge(variant_delete_df[
                                            ['run_id', 'marker_id', 'variant_id', 'biosample_type',
                                             'action']].drop_duplicates(), on=['run_id', 'marker_id', 'variant_id'])
+        # TODO sort by N_ijk_max
         lfn_variant_specific_threshold_df.sort_values(by=["variant_id", "biosample_type"], inplace=True)
         lfn_variant_specific_threshold_df = lfn_variant_specific_threshold_df.groupby(by=['run_id',
             'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold', 'action'])['biosample_type']\
@@ -390,7 +415,7 @@ def lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_v
 
     ###################
     #
-    # Filter absolute read count
+    # Filter absolute_read count
     #
     ####################
 
@@ -429,7 +454,7 @@ def lfn_read_count_and_lfn_variant(variant_read_count_df, variant_keep_df, lfn_v
 
     variant_read_count_remained_df = variant_read_count_remained_df[['run_id', 'marker_id', 'variant_id', 'biosample_id']]
     variant_read_count_remained_df.drop_duplicates(inplace=True)
-    variant_read_count_remained_keep_df = variant_read_count_remained_df.merge(variant_keep_df,
+    variant_read_count_remained_keep_df = variant_read_count_remained_df.merg+e(variant_keep_df,
                                                                                on=['run_id', 'marker_id', 'variant_id',
                                                                                    'biosample_id'])
     variant_read_count_remained_keep_df = variant_read_count_remained_keep_df[
