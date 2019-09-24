@@ -67,11 +67,11 @@ class TaxAssign(ToolWrapper):
 
         #########################################################
         #
-        # 1. Wrapper inputs, outputs and parameters
+        # 1. Wrapper inputs, outputs and parameters_numerical
         #
         #########################################################
         logger.debug(
-            "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
+            "file: {}; line: {}; Wrapper inputs, outputs and parameters_numerical.".format(__file__,
                                                                       inspect.currentframe().f_lineno,))
         #
         # Input file path

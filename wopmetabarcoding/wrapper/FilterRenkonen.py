@@ -54,7 +54,7 @@ class FilterRenkonen(ToolWrapper):
 
         ##########################################################
         #
-        # Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters_numerical
         #
         ##########################################################
         #
@@ -69,7 +69,7 @@ class FilterRenkonen(ToolWrapper):
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
         #
         # Options
-        # TaxAssign parameters
+        # TaxAssign parameters_numerical
         renkonen_threshold = float(self.option("renkonen_threshold"))
         #
         # Output table models
