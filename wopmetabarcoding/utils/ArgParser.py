@@ -12,7 +12,7 @@ class ArgParser():
         # create the top-level parser
         parser_vtam = argparse.ArgumentParser(add_help=False)
 
-        parser_vtam.add_argument('--db', action='store', help="SQLITE file with DB", required=False,
+        parser_vtam.add_argument('--db', action='store', default="db.sqlite", help="SQLITE file with DB", required=False,
                             type=os.path.abspath)
         parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true',
                             help="Only display what would have been done.", required=False)

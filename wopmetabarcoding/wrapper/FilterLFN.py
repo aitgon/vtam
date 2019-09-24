@@ -58,7 +58,7 @@ class FilterLFN(ToolWrapper):
 
         ##########################################################
         #
-        # Wrapper inputs, outputs and parameters
+        # Wrapper inputs, outputs and parameters_numerical
         #
         ##########################################################
         #
