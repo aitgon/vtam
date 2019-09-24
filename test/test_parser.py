@@ -57,3 +57,26 @@ class TestParser(TestCase):
                 os.path.dirname(__file__))
         parser = ArgParser.get_arg_parser()
         parser.parse_args(args_str.split())
+
+    def test_wopfile_merge(self):
+        """rule Merge:
+  tool: wopmetabarcoding.wrapper.Merge
+  input:
+      file:
+          sample2fastq: /home/gonzalez/Software/repositories/wopmetabarcodin/test/test_parser.py
+  output:
+      file:
+          sample2fasta: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
+  params:
+      fastq_directory: /home/gonzalez/Software/repositories/wopmetabarcodin/test
+      fasta_dir: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
+      fastq_minovlen: 50
+      fastq_maxmergelen: 300
+      fastq_minmergelen: 100
+      fastq_minlen: 50
+      fastq_maxee: 1
+      fastq_truncqual: 10
+      fastq_maxns: 0
+      threads: 8
+      fastq_ascii: 33
+      """

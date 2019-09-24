@@ -19,7 +19,6 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 
 def vtam_run(args_dic):
     #
-    #
     #############################################################
     #
     # Read parameter values from param_yml file
