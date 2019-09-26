@@ -61,7 +61,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         ##########################################################
         #
-        # Wrapper inputs, outputs and parameters_numerical
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #

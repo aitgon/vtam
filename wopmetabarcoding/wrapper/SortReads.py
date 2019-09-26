@@ -66,7 +66,7 @@ class SortReads(ToolWrapper):
 
         ##########################################################
         #
-        # Wrapper inputs, outputs and parameters_numerical
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
@@ -138,7 +138,7 @@ class SortReads(ToolWrapper):
             ############################################
             # Run vsearch (Trim)
             # 
-            # 1. Define vsearch parameters_numerical
+            # 1. Define vsearch parameters
             # 2. Run vsearch: output written to 'vsearch_output_tsv'
             ############################################
             vsearch_params = {'db': primer_tag_fasta,

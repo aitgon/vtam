@@ -1,82 +1,62 @@
 import os
 from unittest import TestCase
-from wopmetabarcoding.utils.ArgParser import ArgParser
 
 from wopmetabarcoding import VTAM
-
+from wopmetabarcoding.utils.ArgParser import ArgParser
 from wopmetabarcoding.utils.OptionManager import OptionManager
 
 
 class TestParser(TestCase):
 
+    def setUp(self):
+        pass
+
+    def test_parser_base(self):
+        args_str = 'command --db test '
+        #
+        # Base parser
+        parser = ArgParser.get_arg_parser_base()
+        args = parser.parse_args(args_str.split())
+        self.assertTrue(hasattr(args, 'db'))
+
     def test_parser_merge(self):
+        args_str = 'merge --db test --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(__file__,
+                os.path.dirname(__file__))
         #
-        # Minimal merge command
-        args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(__file__,
-                os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
+        # Base parser
+        parser = ArgParser.get_arg_parser_merge()
+        args = parser.parse_args(args_str.split())
+        self.assertTrue(hasattr(args, 'fastqinfo'))
 
-        # Merge command with some wopmars arguments
-        args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo -n'.format(__file__,
-                os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
-
-        # Run VTAM and store OptionManager
+    def test_cli(self):
+        args_str = 'vtam merge --db test --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(__file__,
+                                                                                                  os.path.dirname(
+                                                                                                      __file__))
         VTAM(args_str.split())
-        self.assertTrue(sorted(list(OptionManager.instance().keys())) == ['db', 'dryrun', 'fastadir', 'fastainfo', 'fastqdir',
-                                                          'fastqinfo', 'forceall', 'log', 'params', 'targetrule',
-                                                          'verbose'])
 
+    def test_1(self):
+        OptionManager.instance()['test2'] = 'test2'
+        print(OptionManager.instance())
+        OptionManager.instance()['test'] = 'test3'
+        print(OptionManager.instance())
 
-    def test_parser_otu(self):
-        #
-        # Minimal otu command
-        args_str = 'otu'.format(__file__,
+    def test_merge_args_to_optionsmanager(self):
+        args_str = 'merge --db test --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(__file__,
                 os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
         #
-        # Typical otu command
-        args_str = 'otu --outdir test2'.format(__file__,
-                os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
-
-    def test_parser_optimize(self):
+        # Base parser
+        parser = ArgParser.get_arg_parser_merge()
+        args = parser.parse_args(args_str.split())
+        for k in vars(args):
+            if k is 'command':
+                OptionManager.instance()[k] = vars(args)[k]
+                continue
+            try:
+                OptionManager.instance()[k] = vars(args)[k][0]
+            except TypeError:
+                OptionManager.instance()[k] = vars(args)[k]
         #
-        # Minimal optimize command
-        args_str = 'optimize --variant_known test'.format(__file__,
-                os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
+        # assert
         #
-        # Typical optimize command
-        args_str = 'optimize --variant_known test --outdir test2'.format(__file__,
-                os.path.dirname(__file__))
-        parser = ArgParser.get_arg_parser()
-        parser.parse_args(args_str.split())
-
-    def test_wopfile_merge(self):
-        """rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
-  input:
-      file:
-          sample2fastq: /home/gonzalez/Software/repositories/wopmetabarcodin/test/test_parser.py
-  output:
-      file:
-          sample2fasta: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
-  params:
-      fastq_directory: /home/gonzalez/Software/repositories/wopmetabarcodin/test
-      fasta_dir: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
-      fastq_minovlen: 50
-      fastq_maxmergelen: 300
-      fastq_minmergelen: 100
-      fastq_minlen: 50
-      fastq_maxee: 1
-      fastq_truncqual: 10
-      fastq_maxns: 0
-      threads: 8
-      fastq_ascii: 33
-      """
+        self.assertTrue(sorted(list(OptionManager.instance().keys())) == sorted(['command', 'dryrun', 'forceall',
+                'log', 'params', 'targetrule', 'verbose', 'db', 'fastqinfo', 'fastainfo', 'fastqdir', 'fastadir']))

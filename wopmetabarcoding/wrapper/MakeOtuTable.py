@@ -65,7 +65,7 @@ class MakeOtuTable(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Wrapper inputs, outputs and parameters_numerical
+        # 1. Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
