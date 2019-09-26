@@ -20,11 +20,12 @@ logger.setLevel(LOGGER_LEVEL)
 # Logger file
 #
 #####################
-s_path_log_file = OptionManager.instance()["--log"]
-loggerHandlerFile = logging.FileHandler(s_path_log_file)
-file_formatter = logging.Formatter('%(levelname)s :: %(asctime)s :: %(name)s :: %(message)s')
-loggerHandlerFile.setFormatter(file_formatter)
-logger.addHandler(loggerHandlerFile)
+if "--log" in OptionManager.instance():
+    s_path_log_file = OptionManager.instance()["--log"]
+    loggerHandlerFile = logging.FileHandler(s_path_log_file)
+    file_formatter = logging.Formatter('%(levelname)s :: %(asctime)s :: %(name)s :: %(message)s')
+    loggerHandlerFile.setFormatter(file_formatter)
+    logger.addHandler(loggerHandlerFile)
 
 #####################
 #
