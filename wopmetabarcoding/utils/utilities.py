@@ -4,7 +4,7 @@ import tempfile
 import urllib
 
 from wopmetabarcoding.utils.PathFinder import PathFinder
-from wopmetabarcoding.utils.constants import public_data_dir
+from wopmetabarcoding.utils.constants import public_data_dir, VTAM_TMP_DIR
 from wopmetabarcoding.utils.logger import logger
 
 

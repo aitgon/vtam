@@ -66,7 +66,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
 
         ##########################################################
         #
-        # Wrapper inputs, outputs and parameters_numerical
+        # Wrapper inputs, outputs and parameters
         #
         ##########################################################
         #
@@ -267,7 +267,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
 
         ##############
         #
-        # Optimize together two parameters_numerical to previous define borders
+        # Optimize together two parameters to previous define borders
         #
         ##############
         #
