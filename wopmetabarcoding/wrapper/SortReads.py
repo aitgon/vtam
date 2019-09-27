@@ -5,7 +5,7 @@ import shutil
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.utils.logger import logger

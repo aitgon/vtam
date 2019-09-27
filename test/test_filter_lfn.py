@@ -3,7 +3,7 @@ import os
 import pandas
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner, f1_lfn_delete_singleton
 
 

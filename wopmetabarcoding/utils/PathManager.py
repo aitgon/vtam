@@ -9,7 +9,7 @@ import os
 from wopmetabarcoding.utils.VTAMexception import VTAMexception
 
 
-class PathFinder:
+class PathManager:
 
     @staticmethod
     def get_wopfile_test_path():
@@ -19,8 +19,19 @@ class PathFinder:
         :return: the path leading to the src file of the project
         """
 
-        wopfile_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile_merge.yml")
-        return wopfile_path
+        wopfile_test_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile_merge.yml")
+        return wopfile_test_path
+
+    @staticmethod
+    def get_package_path():
+        """
+        Find the path of the package
+
+        :return: the path leading to the package path
+        """
+
+        test_dir_path = os.path.join(os.path.dirname(__file__), "../..")
+        return test_dir_path
 
     @staticmethod
     def get_module_test_path():
@@ -45,30 +56,36 @@ class PathFinder:
 
 
     @staticmethod
-    def check_file_exists_and_is_nonempty(path, error_message=None):
+    def check_file_exists_and_is_nonempty(path, error_message=None, abspath=False):
         """Checks if file exists and is not empty
 
         :param error_message: Optional message to help debug the problem
+        :param abspath: If True, returns abspath
         :return: void
         """
         try:
-            if os.stat(path).st_size > 0:
-                return os.path.abspath(path)
-        except OSError as err:
+            assert os.stat(path).st_size > 0
+        except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
+        if abspath:
+            return abspath(path)
+        return path
 
 
     @staticmethod
-    def check_dir_exists_and_is_nonempty(path, error_message=None):
+    def check_dir_exists_and_is_nonempty(path, error_message=None, abspath=False):
         """Checks if directory exists and is not empty
 
         :param error_message: Optional message to help debug the problem
+        :param abspath: If True, returns abspath
         :return: void
         """
         try:
             assert len(os.listdir(path)) > 0
             # assert True
-        except NotADirectoryError as err:
+        except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
-        return os.path.abspath(path)
+        if abspath:
+            return abspath(path)
+        return path
 

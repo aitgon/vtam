@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number

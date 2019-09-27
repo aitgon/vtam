@@ -14,7 +14,7 @@ from pathlib import Path
 
 from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.utilities import tempdir
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 
 
 def vtam_run(args_dic):
