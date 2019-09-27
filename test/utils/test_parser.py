@@ -16,14 +16,16 @@ class TestParser(TestCase):
                 os.path.dirname(__file__))
         parser = ArgParser.get_arg_parser()
         parser.parse_args(args_str.split())
+        # import pdb; pdb.set_trace()
 
         # Merge command with some wopmars arguments
         args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo -n'.format(__file__,
                 os.path.dirname(__file__))
         parser = ArgParser.get_arg_parser()
         parser.parse_args(args_str.split())
-
+        #
         # Run VTAM and store OptionManager
+        # import pdb; pdb.set_trace()
         VTAM(args_str.split())
         self.assertTrue(sorted(list(OptionManager.instance().keys())) == ['db', 'dryrun', 'fastadir', 'fastainfo', 'fastqdir',
                                                           'fastqinfo', 'forceall', 'log', 'params', 'targetrule',
