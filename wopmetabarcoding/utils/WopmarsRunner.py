@@ -1,3 +1,5 @@
+import tempfile
+
 import jinja2
 import os
 
@@ -10,13 +12,13 @@ from wopmetabarcoding.utils.utilities import tempdir
 
 class WopmarsRunner(Singleton):
 
-    def __init__(self, tool, parameters):
+    def __init__(self, subcommand, parameters):
         """
 
-        :param tool: takes one of three values: merge, otu or optimize
+        :param subcommand: takes one of three values: merge, otu or optimize
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
-        self.tool = tool
+        self.subcommand = subcommand
         ##################################
         #
         # Load default numerical parameters and overwrite with custom parameters
@@ -29,27 +31,32 @@ class WopmarsRunner(Singleton):
         self.wopfile_path = None
 
 
-    def get_wopfile(self, wopfile_path=None):
+    def create_wopfile(self, path=None):
         """
 
         :param wopfile_path: Path of output wopfile
-        :return: string with either wopfile content (wopfile_path=None) or path to the wopfile
+        :return: tuple (wopfile_path, wopfile_content)
         """
-        wopfile_file_name = 'Wopfile_{}.yml'.format(self.tool)
-        wopfile_in_path = os.path.join(os.path.dirname(__file__), '../../data', wopfile_file_name)
-        with open(wopfile_in_path) as fin:
+        # Create path
+        wopfile_path = path
+        if wopfile_path is None:
+            wopfile_path = tempfile.NamedTemporaryFile().name
+        self.wopfile_path = wopfile_path
+        #
+        # wopfile_file_name = 'Wopfile_{}.yml'.format(self.subcommand)
+        wopfile_template_path\
+            = os.path.join(os.path.dirname(__file__), '../../data/Wopfile_{subcommand}.yml'.format(subcommand=self.subcommand))
+        with open(wopfile_template_path) as fin:
             template = jinja2.Template(fin.read())
-        wopfile_rendered = template.render(self.parameters)
+        wopfile_content = template.render(self.parameters)
         ################
         #
         # return
         #
         ################
-        if wopfile_path is None:
-            return wopfile_rendered
         with open(wopfile_path, "w") as fout:
-            fout.write(wopfile_rendered)
-        return wopfile_path
+            fout.write(wopfile_content)
+        return (wopfile_path, wopfile_content)
 
 
     def get_wopmars_command(self):
@@ -65,11 +72,11 @@ class WopmarsRunner(Singleton):
         #
         ###################
         if self.wopfile_path is None:
-            self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.tool))
-            self.wopfile_path = self.get_wopfile(wopfile_path=self.wopfile_path)
-        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v"
-        wopmars_command = wopmars_command_template.format(wopfile_path=self.wopfile_path, **self.parameters)
-        # wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v".format(**self.parameters)
+            self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.subcommand))
+            self.wopfile_path = self.create_wopfile(path=self.wopfile_path)
+        wopmars_command_template = "wopmars {subcommand} -w {wopfile_path} -D sqlite:///{db} -p -v"
+        wopmars_command = wopmars_command_template\
+            .format(subcommand=self.subcommand, wopfile_path=self.wopfile_path, **self.parameters)
         if self.parameters['dryrun']:
             wopmars_command += " -n"
         if self.parameters['forceall']:
@@ -83,7 +90,7 @@ class WopmarsRunner(Singleton):
         # Wopmars command options of merge, otu and optimize
         #
         ###################
-        if self.tool == 'merge':
+        if self.subcommand == 'merge':
             wopmars_command += " --fastainfo {fastainfo} --fastadir {fastqdir}"
         else:
             sys.exit(1)

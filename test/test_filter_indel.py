@@ -1,6 +1,6 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 
 import os
 from wopmetabarcoding.utils.utilities import tempdir

@@ -7,7 +7,7 @@ import numpy
 import pandas
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.constants import public_data_dir
 from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite, tempdir, create_vtam_data_dir
 from wopmetabarcoding.utils.logger import logger

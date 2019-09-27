@@ -3,7 +3,7 @@ import os
 import tempfile
 import urllib
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.constants import public_data_dir
 from wopmetabarcoding.utils.logger import logger
 
@@ -20,7 +20,7 @@ def get_or_create(session, model, **kwargs):
 
 def create_step_tmp_dir(file):
     this_step_tmp_dir = os.path.join(tempdir, os.path.basename(file))
-    PathFinder.mkdir_p(this_step_tmp_dir)
+    PathManager.mkdir_p(this_step_tmp_dir)
     return this_step_tmp_dir
 
 

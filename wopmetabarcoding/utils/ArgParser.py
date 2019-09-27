@@ -3,17 +3,22 @@
 import argparse
 import os
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 
 class ArgParser():
 
     @staticmethod
-    def get_arg_parser():
+    def get_arg_parser(abspath=False):
+        """
+
+        :param abspath: If True, return absolute paths
+        :return:
+        """
         # create the top-level parser
         parser_vtam = argparse.ArgumentParser(add_help=False)
 
         parser_vtam.add_argument('--db', action='store', default='db.sqlite', help="SQLITE file with DB", required=False,
-                            type=os.path.abspath)
+                            type = lambda x: os.path.abspath(x) if abspath else x)
         parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true',
                             help="Only display what would have been done.", required=False)
         parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
@@ -21,7 +26,7 @@ class ArgParser():
                             required=False)
         parser_vtam.add_argument('--log', action='store',
                             help="Write log to file.", required=False,
-                            type=os.path.abspath)
+                            type=lambda x, abspath: os.path.abspath(x) if abspath else x)
         parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values", required=False)
         parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None, help="Execute the workflow to the given target "
                                                                 "RULE: SampleInformation, ...", required=False)
@@ -37,17 +42,17 @@ class ArgParser():
         #############################################
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True, parents=[parser_vtam])
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
-                                       required=True, type=lambda x:
-                            PathFinder.check_file_exists_and_is_nonempty(x,
-                                                                 error_message="Verify the '--fastqinfo' argument"))
+                                       required=True,
+                                       type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
+                                                 error_message="Verify the '--fastqinfo' argument", abspath=abspath))
         parser_vtam_merge.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-                            required=True, type=os.path.abspath)
+                            required=True, type = lambda x: os.path.abspath(x) if abspath else x)
         parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
                                        type=lambda x:
-                            PathFinder.check_dir_exists_and_is_nonempty(os.path.abspath(x),
-                                                                    error_message="Verify the '--fastqdir' argument"))
+                                            PathManager.check_dir_exists_and_is_nonempty(x,
+                                            error_message="Verify the '--fastqdir' argument", abspath=abspath))
         parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
-                            type=os.path.abspath)
+                                       type=lambda x: os.path.abspath(x) if abspath else x)
 
         #############################################
         #
@@ -57,12 +62,12 @@ class ArgParser():
         parser_vtam_otu = subparsers.add_parser('otu', add_help=True, parents=[parser_vtam])
         parser_vtam_otu.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
                                        required=True, type=lambda x:
-                            PathFinder.check_file_exists_and_is_nonempty(x,
-                                                                 error_message="Verify the '--fastainfo' argument"))
+                                            PathManager.check_file_exists_and_is_nonempty(x,
+                                             error_message="Verify the '--fastainfo' argument", abspath=abspath))
         parser_vtam_otu.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
                                        type=lambda x:
-                                       PathFinder.check_file_exists_and_is_nonempty(x,
-                                                                    error_message="Verify the '--fastadir' argument"))
+                                            PathManager.check_file_exists_and_is_nonempty(x,
+                                            error_message="Verify the '--fastadir' argument", abspath=abspath))
         parser_vtam_otu.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                      required=False)
         parser_vtam_otu.add_argument('--filter_lfn_variant', default=False, action='store_true', required=False,
@@ -78,11 +83,11 @@ class ArgParser():
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True, parents=[parser_vtam])
         parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
                                        required=True, type=lambda x:
-                            PathFinder.check_file_exists_and_is_nonempty(x,
+                            PathManager.check_file_exists_and_is_nonempty(x,
                                                                  error_message="Verify the '--fastainfo' argument"))
         parser_vtam_optimize.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
                                        type=lambda x:
-                                       PathFinder.check_file_exists_and_is_nonempty(x,
+                                       PathManager.check_file_exists_and_is_nonempty(x,
                                                                     error_message="Verify the '--fastadir' argument"))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                      required=False)

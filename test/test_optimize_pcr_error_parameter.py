@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_run_vsearch, f10_get_maximal_pcr_error_value
 
