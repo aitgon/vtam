@@ -81,8 +81,8 @@ class WopmarsRunner(Singleton):
             wopmars_command += " -n"
         if self.parameters['forceall']:
             wopmars_command += " -F"
-        if not self.parameters['params'] is None:
-            wopmars_command += " --params {params}".format(**self.parameters)
+        # if not self.parameters['params'] is None:
+        #     wopmars_command += " --params {params}".format(**self.parameters)
         if not self.parameters['targetrule'] is None:
             wopmars_command += " --targetrule {targetrule}".format(**self.parameters)
         ###################
