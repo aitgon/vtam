@@ -1,3 +1,4 @@
+import inspect
 import os
 import tempfile
 import urllib
@@ -9,6 +10,8 @@ from wopmetabarcoding.utils.PathFinder import PathFinder
 # Define/create VTAM_TMP_DIR
 #
 ##########################################################
+from wopmetabarcoding.utils.logger import logger
+
 VTAM_TMP_DIR = None
 if 'VTAM_TMP_DIR' in os.environ:
     VTAM_TMP_DIR = os.environ['VTAM_TMP_DIR']
@@ -70,6 +73,9 @@ def download_taxonomy_sqlite():
         Returns:
             String: The path to the taxonomy.sqlite database
     """
+    logger.debug(
+        "file: {}; line: {}; download_taxonomy_sqlite()".format(__file__,
+                                                                  inspect.currentframe().f_lineno,))
     if 'TAXONOMY_SQLITE' in os.environ:
         return os.environ['TAXONOMY_SQLITE']
     ####
@@ -93,6 +99,7 @@ def download_taxonomy_sqlite():
 #
 ##########################################################
 def download_coi_db():
+    print("dfqdsfqfqsfqsfqsfqsfsqdfsdqfsqfqsdf")
     """
     These function is used to define and return the path of the COI Blast database directory and map_taxids.tsv file.
 

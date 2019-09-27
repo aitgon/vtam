@@ -6,13 +6,14 @@ from sqlalchemy import select
 import pandas
 
 
-class FilterLFN(ToolWrapper):
+class FilterLFNthresholdspecific(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterLFN"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.FilterLFNthresholdspecific"
     }
 
     # Input file
     __input_file_sample2fasta = "sample2fasta"
+    __input_file_threshold_specific = "threshold_specific"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -25,22 +26,23 @@ class FilterLFN(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterLFN.__input_file_sample2fasta,
+            FilterLFNthresholdspecific.__input_file_sample2fasta,
+            FilterLFNthresholdspecific.__input_file_threshold_specific,
         ]
 
     def specify_input_table(self):
         return [
-            FilterLFN.__input_table_marker,
-            FilterLFN.__input_table_run,
-            FilterLFN.__input_table_biosample,
-            FilterLFN.__input_table_replicate,
-            FilterLFN.__input_table_variant_read_count,
+            FilterLFNthresholdspecific.__input_table_marker,
+            FilterLFNthresholdspecific.__input_table_run,
+            FilterLFNthresholdspecific.__input_table_biosample,
+            FilterLFNthresholdspecific.__input_table_replicate,
+            FilterLFNthresholdspecific.__input_table_variant_read_count,
         ]
 
 
     def specify_output_table(self):
         return [
-            FilterLFN.__output_table_filter_lfn,
+            FilterLFNthresholdspecific.__output_table_filter_lfn,
         ]
 
     def specify_params(self):
@@ -63,17 +65,19 @@ class FilterLFN(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterLFN.__input_file_sample2fasta)
+        input_file_sample2fasta = self.input_file(FilterLFNthresholdspecific.__input_file_sample2fasta)
+        input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
+
         #
         # Input table models
-        run_model = self.input_table(FilterLFN.__input_table_run)
-        marker_model = self.input_table(FilterLFN.__input_table_marker)
-        biosample_model = self.input_table(FilterLFN.__input_table_biosample)
-        replicate_model = self.input_table(FilterLFN.__input_table_replicate)
-        variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
+        run_model = self.input_table(FilterLFNthresholdspecific.__input_table_run)
+        marker_model = self.input_table(FilterLFNthresholdspecific.__input_table_marker)
+        biosample_model = self.input_table(FilterLFNthresholdspecific.__input_table_biosample)
+        replicate_model = self.input_table(FilterLFNthresholdspecific.__input_table_replicate)
+        variant_read_count_model = self.input_table(FilterLFNthresholdspecific.__input_table_variant_read_count)
         #
         # Output table models
-        variant_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
+        variant_filter_lfn_model = self.output_table(FilterLFNthresholdspecific.__output_table_filter_lfn)
         #
         # Options
         filter_lfn_variant = int(self.option("filter_lfn_variant"))
@@ -81,6 +85,13 @@ class FilterLFN(ToolWrapper):
         lfn_variant_replicate_threshold = self.option("lfn_variant_replicate_threshold")
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
         lfn_read_count_threshold = self.option("lfn_read_count_threshold")
+        #
+        if bool(filter_lfn_variant):
+            threshold_specific_df_columns = ['variant_id', 'threshold']
+        else:
+            threshold_specific_df_columns = ['variant_id', 'replicate_id', 'threshold']
+        threshold_specific_df = pandas.read_csv(input_file_threshold_specific, sep="\t", header=0,
+                                                names=threshold_specific_df_columns)
         #
         ##########################################################
         #
@@ -162,11 +173,14 @@ class FilterLFN(ToolWrapper):
         # Or
         # TaxAssign  3: f3_f5_lfn_delete_variant_replicate
         ############################################
+        import pdb;
         if bool(filter_lfn_variant):
-            lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+            lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold, threshold_specific_df=threshold_specific_df)
         else:
-            lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
+            lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold, threshold_specific_df=threshold_specific_df)
         #
+        lfn_filter_runner.delete_variant_df.sort_values(by=['variant_id', 'biosample_id', 'replicate_id'], inplace=True)
+        lfn_filter_runner.delete_variant_df.head()
 
         ############################################
         # TaxAssign 6:  f6_lfn_delete_biosample_replicate_delete

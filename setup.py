@@ -10,7 +10,7 @@ install_requires = [
 
 setup(
     name='wopmetabarcoding',
-    version='0.2.0',
+    version='0.0.1',
     license='MIT',
     author='Thomas Dechatre, Aitor Gonzalez',
     author_email='aitor.gonzalez@univ-amu.fr',
@@ -21,8 +21,9 @@ setup(
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
     entry_points={
-        'console_scripts': ['vtam=bin.vtam:main',
+        'console_scripts': ['vtam_otu=bin.vtam_otu:main',
                             'vtam_merge=bin.vtam_merge:main',
+                            'vtam_optimize=bin.vtam_optimize:main',
                             'create_db_taxonomy=bin.create_db_taxonomy:main',
                             'create_db_accession2taxid=bin.create_db_accession2taxid:main']
     },
