@@ -45,29 +45,30 @@ class PathFinder:
 
 
     @staticmethod
-    def check_file_exists_and_is_nonempty(path, exception_message=None):
+    def check_file_exists_and_is_nonempty(path, error_message=None):
         """Checks if file exists and is not empty
 
-        :param exception_message: Optional message to help debug the problem
+        :param error_message: Optional message to help debug the problem
         :return: void
         """
         try:
             if os.stat(path).st_size > 0:
                 return os.path.abspath(path)
         except OSError as err:
-            raise VTAMexception("{}: {}".format(err, exception_message))
+            raise VTAMexception("{}: {}".format(err, error_message))
 
 
     @staticmethod
-    def check_dir_exists_and_is_nonempty(path, exception_message=None):
+    def check_dir_exists_and_is_nonempty(path, error_message=None):
         """Checks if directory exists and is not empty
 
-        :param exception_message: Optional message to help debug the problem
+        :param error_message: Optional message to help debug the problem
         :return: void
         """
         try:
-            if len([name for name in os.listdir(path) if os.path.isfile(name)]) > 0:
-                return os.path.abspath(path)
+            assert len(os.listdir(path)) > 0
+            # assert True
         except NotADirectoryError as err:
-            raise VTAMexception("{}: {}".format(err, exception_message))
+            raise VTAMexception("{}: {}".format(err, error_message))
+        return os.path.abspath(path)
 
