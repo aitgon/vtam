@@ -20,7 +20,14 @@ class ArgParser():
         :return:
         """
         # create the top-level parser
-        parser_vtam = argparse.ArgumentParser(add_help=False)
+        parser_vtam = argparse.ArgumentParser(usage="""usage: vtam <command> [<args>]
+        
+        These are the VTAM commands:
+
+   merge      Merge FASTQ files
+   otu        Carry out the whole pipeline, including sort and count reads, filter variants, tax assign and create OTU table
+   optimize   Show different variant characteristics to help select filter parameters
+""", add_help=False)
 
         parser_vtam.add_argument('--db', action='store', default='db.sqlite', help="SQLITE file with DB", required=False,
                             type = lambda x: os.path.abspath(x) if abspath else x)
@@ -58,7 +65,7 @@ class ArgParser():
                                             error_message="Verify the '--fastqdir' argument", abspath=abspath))
         parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
                                        type=lambda x: os.path.abspath(x) if abspath else x)
-        parser_vtam_merge.set_defaults(subcommand='merge') # I use it to get the command
+        parser_vtam_merge.set_defaults(command='merge') # This attribute will trigget the good command
 
         #############################################
         #
