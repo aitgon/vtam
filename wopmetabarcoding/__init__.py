@@ -6,20 +6,19 @@ import sys
 from wopmetabarcoding.utils.ArgParser import ArgParser
 from wopmetabarcoding.utils.OptionManager import OptionManager
 
-
 class VTAM(object):
 
     def __init__(self, sys_argv):
         self.sys_argv = sys_argv
-        parser = ArgParser.get_arg_parser_base()
-        args = parser.parse_args(sys_argv[1:2])
+        parser = ArgParser.get_arg_parser()
+        args = parser.parse_args(sys_argv)
         # use dispatch pattern to invoke method with same name
-        getattr(self, args.command)()
+        getattr(self, args.subcommand)()
 
     def merge(self):
         # now that we're inside a subcommand, ignore the first
         # TWO argvs, ie the command (vtam) and the subcommand (merge)
-        parser = ArgParser.get_arg_parser_merge()
+        parser = ArgParser.get_arg_parser()
         args = parser.parse_args(self.sys_argv[1:])
         ##################################
         #
@@ -51,5 +50,5 @@ class VTAM(object):
                 except TypeError:
                     OptionManager.instance()[k] = vars(args)[k]
 
-if __name__ == '__main__':
-    VTAM()
+# if __name__ == '__main__':
+#     VTAM()
