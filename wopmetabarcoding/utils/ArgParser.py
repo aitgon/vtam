@@ -4,6 +4,11 @@ import argparse
 import os
 
 from wopmetabarcoding.utils.PathManager import PathManager
+from wopmetabarcoding.utils.WopmarsRunner import WopmarsRunner
+
+def run_merge():
+    import pdb; pdb.set_trace()
+    print('run merge..dfqsfsqdfdfsSSSSSSSSSSSSSSSSSSSSSSSS.')
 
 class ArgParser():
 
@@ -53,6 +58,7 @@ class ArgParser():
                                             error_message="Verify the '--fastqdir' argument", abspath=abspath))
         parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
                                        type=lambda x: os.path.abspath(x) if abspath else x)
+        parser_vtam_merge.set_defaults(subcommand='merge') # I use it to get the command
 
         #############################################
         #

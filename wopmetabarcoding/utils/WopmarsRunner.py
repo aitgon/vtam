@@ -96,3 +96,7 @@ class WopmarsRunner(Singleton):
             sys.exit(1)
         wopmars_command = wopmars_command.format(**self.parameters)
         return wopmars_command
+
+
+    def merge(self):
+        return "merge"
