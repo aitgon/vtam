@@ -73,10 +73,10 @@ class WopmarsRunner(Singleton):
         ###################
         if self.wopfile_path is None:
             self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.subcommand))
-            self.wopfile_path = self.create_wopfile(path=self.wopfile_path)
-        wopmars_command_template = "wopmars {subcommand} -w {wopfile_path} -D sqlite:///{db} -p -v"
+            (self.wopfile_path, wopfile_content) = self.create_wopfile(path=self.wopfile_path)
+        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v"
         wopmars_command = wopmars_command_template\
-            .format(subcommand=self.subcommand, wopfile_path=self.wopfile_path, **self.parameters)
+            .format(wopfile_path=self.wopfile_path, **self.parameters)
         if self.parameters['dryrun']:
             wopmars_command += " -n"
         if self.parameters['forceall']:
@@ -90,10 +90,11 @@ class WopmarsRunner(Singleton):
         # Wopmars command options of merge, otu and optimize
         #
         ###################
-        if self.subcommand == 'merge':
-            wopmars_command += " --fastainfo {fastainfo} --fastadir {fastqdir}"
-        else:
-            sys.exit(1)
+        # if self.subcommand == 'merge':
+        #     wopmars_command += " --fastqinfo {fastqinfo} --fastqdir {fastqdir}"
+        #     wopmars_command += " --fastainfo {fastainfo} --fastqdir {fastqdir}"
+        # else:
+        #     sys.exit(1)
         wopmars_command = wopmars_command.format(**self.parameters)
         return wopmars_command
 
