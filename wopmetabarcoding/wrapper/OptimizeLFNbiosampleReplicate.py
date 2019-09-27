@@ -9,13 +9,13 @@ import pandas
 from wopmetabarcoding.utils.logger import logger
 
 
-class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
+class OptimizeLFNbiosampleReplicate(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNperSumBiosampleAndReplicate"
+        "polymorphic_identity": "wopmetabarcoding.wrapper.OptimizeLFNbiosampleReplicate"
     }
 
     # Input file
-    __input_file_positive_variants = "positive_variants"
+    __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -28,22 +28,22 @@ class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizeLFNperSumBiosampleAndReplicate.__input_file_positive_variants,
+            OptimizeLFNbiosampleReplicate.__input_file_variant_known,
         ]
 
     def specify_input_table(self):
         return [
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_marker,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_run,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_biosample,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant,
-            OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant_read_count,
+            OptimizeLFNbiosampleReplicate.__input_table_marker,
+            OptimizeLFNbiosampleReplicate.__input_table_run,
+            OptimizeLFNbiosampleReplicate.__input_table_biosample,
+            OptimizeLFNbiosampleReplicate.__input_table_variant,
+            OptimizeLFNbiosampleReplicate.__input_table_variant_read_count,
         ]
 
 
     def specify_output_file(self):
         return [
-            OptimizeLFNperSumBiosampleAndReplicate.__output_file_optimize_lfn,
+            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn,
         ]
 
     def specify_params(self):
@@ -61,27 +61,26 @@ class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_positive_variants = self.input_file(OptimizeLFNperSumBiosampleAndReplicate.__input_file_positive_variants)
+        input_file_variant_known = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_variant_known)
         #
         # Input table models
-        run_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_run)
-        marker_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_marker)
-        biosample_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_biosample)
-        variant_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant)
-        variant_read_count_model = self.input_table(OptimizeLFNperSumBiosampleAndReplicate.__input_table_variant_read_count)
+        run_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_run)
+        marker_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_marker)
+        biosample_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_biosample)
+        variant_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant)
+        variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
         #
         # Output file path
-        output_file_optimize_lfn = self.output_file(OptimizeLFNperSumBiosampleAndReplicate.__output_file_optimize_lfn)
+        output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn)
 
         ##########################################################
         #
         # 1. Read variants_optimize to get run_id, marker_id, biosample_id, variant_id for current analysis
         #
         ##########################################################
-        # positive_variant_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0,\
+        # positive_variant_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0,\
         #     names=['marker_name', 'run_name', 'biosample_name', 'variant_id', 'variant_sequence'], index_col=False)
-
-        variants_optimize_df = pandas.read_csv(input_file_positive_variants, sep="\t", header=0, \
+        variants_optimize_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
@@ -158,17 +157,17 @@ class OptimizeLFNperSumBiosampleAndReplicate(ToolWrapper):
             by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
         variant_read_count_df = variant_read_count_df.merge(aggregate_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        variant_read_count_df['lfn_per_sum_biosample_replicate: N_ijk/N_jk'] = variant_read_count_df['N_ijk'] / variant_read_count_df['N_jk']
+        variant_read_count_df['lfn_biosample_replicate: N_ijk/N_jk'] = variant_read_count_df['N_ijk'] / variant_read_count_df['N_jk']
 
         ##########################################################
         #
         # 5.Sort and extract the lowest value of the ration with 4 digit
         #
         ##########################################################
-        variant_read_count_df=variant_read_count_df.sort_values('lfn_per_sum_biosample_replicate: N_ijk/N_jk', ascending=True)
+        variant_read_count_df=variant_read_count_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
         round_inf_4_decimals = lambda x: int(x * 10 ** 4) / 10 ** 4
-        variant_read_count_df['round_inf'] = variant_read_count_df['lfn_per_sum_biosample_replicate: N_ijk/N_jk'].apply(round_inf_4_decimals)
+        variant_read_count_df['round_inf'] = variant_read_count_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_inf_4_decimals)
 
         ##########################################################
         #

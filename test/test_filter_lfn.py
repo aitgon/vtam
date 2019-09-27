@@ -115,7 +115,7 @@ class TestFilterLFN(TestCase):
 
     def test_02_f2_f4_lfn_delete_per_sum_variant(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_variant_threshold=lfn_per_variant_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 22)
                                                                      & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
@@ -145,7 +145,7 @@ class TestFilterLFN(TestCase):
         # pdb.set_trace()
 
 
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_var_threshold, lfn_per_sum_variant_threshold_specific=lfn_var_threshold_specific)
+        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_var_threshold, lfn_variant_threshold_specific=lfn_var_threshold_specific)
         #import pdb; pdb.set_trace()
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 9)
@@ -168,7 +168,7 @@ class TestFilterLFN(TestCase):
     def test_04_f3_f5_lfn_delete_per_sum_variant_replicate(self):
         lfn_per_replicate_threshold = 0.005
         self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(
-            lfn_per_sum_variant_replicate_threshold=lfn_per_replicate_threshold)
+            lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[
                             (self.filter_lfn_runner.delete_variant_df.variant_id == 12)
@@ -277,10 +277,10 @@ class TestFilterLFN(TestCase):
 
     def test_08_f8_lfn_delete_do_not_pass_all_filters(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_variant_threshold=lfn_per_variant_threshold)
         lfn_per_replicate_threshold = 0.005
         self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(
-            lfn_per_sum_variant_replicate_threshold=lfn_per_replicate_threshold)
+            lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
         #
         self.filter_lfn_runner.f8_lfn_delete_do_not_pass_all_filters()
         #

@@ -51,17 +51,17 @@ class TestOptimizeF7(TestCase):
         #
         ##############
         #
-        out_lfn_per_sum_variant_list = []
+        out_lfn_variant_list = []
         #
         min_repln = 2
-        lfn_per_sum_biosample_replicate_threshold = 0.001
+        lfn_biosample_replicate_threshold = 0.001
         #
-        lfn_per_sum_variant_threshold = 0.001 # default value
-        lfn_per_sum_variant_threshold_range = [i / 10000 for i in range(1, 1000)]
+        lfn_variant_threshold = 0.001 # default value
+        lfn_variant_threshold_range = [i / 10000 for i in range(1, 1000)]
         lfn_read_count_threshold = 10
         lfn_read_count_threshold_range = [10*i for i in range(1, 1000)]
-        # lfn_per_sum_variant_threshold_max = lfn_per_sum_variant_threshold_min * 1000
-        # lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold_min
+        # lfn_variant_threshold_max = lfn_variant_threshold_min * 1000
+        # lfn_variant_threshold = lfn_variant_threshold_min
         #
         count_keep = 0
         count_keep_max = 0
@@ -78,19 +78,19 @@ class TestOptimizeF7(TestCase):
 
             ###################
             #
-            # Filter lfn_per_sum_variant
+            # Filter lfn_variant
             #
             ####################
 
-            lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_per_sum_variant_threshold)
+            lfn_filter_runner.f2_f4_lfn_delete_per_sum_variant(lfn_variant_threshold)
 
             ###################
             #
-            # Filter lfn_per_sum_biosample_replicate
+            # Filter lfn_biosample_replicate
             #
             ####################
 
-            lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_per_sum_biosample_replicate_threshold)
+            lfn_filter_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_biosample_replicate_threshold)
 
             ###################
             #
@@ -162,13 +162,13 @@ class TestOptimizeF7(TestCase):
             # count_keep = len([v for v in variant_keep_list if v in variant_remained_list])
             # count_delete = len([v for v in variant_delete_list if v in variant_remained_list])
             # #
-            out_lfn_per_sum_variant_row_dic = {"lfn_per_sum_variant_threshold": lfn_per_sum_variant_threshold,
+            out_lfn_variant_row_dic = {"lfn_variant_threshold": lfn_variant_threshold,
                        "lfn_read_count_threshold": lfn_read_count_threshold,
                        "count_keep": count_keep, "count_delete": count_delete}
-            out_lfn_per_sum_variant_list.append(out_lfn_per_sum_variant_row_dic)
+            out_lfn_variant_list.append(out_lfn_variant_row_dic)
             del (lfn_filter_runner)
             #
-            print(out_lfn_per_sum_variant_row_dic, count_keep_max)
+            print(out_lfn_variant_row_dic, count_keep_max)
             # if count_keep < count_keep_max:
             #     break
             if count_keep > count_keep_max:
@@ -176,10 +176,10 @@ class TestOptimizeF7(TestCase):
             #
             # Increase
             lfn_read_count_threshold = lfn_read_count_threshold + 5
-            lfn_per_sum_variant_threshold = lfn_per_sum_variant_threshold + 0.0005
+            lfn_variant_threshold = lfn_variant_threshold + 0.0005
         # import pdb; pdb.set_trace()
-        self.assertTrue(out_lfn_per_sum_variant_list[0]
-                        == {'lfn_per_sum_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 12,
+        self.assertTrue(out_lfn_variant_list[0]
+                        == {'lfn_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 12,
                             'count_delete': 3})
-        out_lfn_per_sum_variant_df = pandas.DataFrame(out_lfn_per_sum_variant_list) # output
-        # print(pandas.DataFrame(out_lfn_per_sum_variant_list))
+        out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list) # output
+        # print(pandas.DataFrame(out_lfn_variant_list))

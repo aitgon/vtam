@@ -65,11 +65,14 @@ class TaxAssign(ToolWrapper):
         session = self.session()
         engine = session._WopMarsSession__session.bind
 
-        ##########################################################
+        #########################################################
         #
         # 1. Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        #########################################################
+        logger.debug(
+            "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
+                                                                      inspect.currentframe().f_lineno,))
         #
         # Input file path
         input_file_sample2fasta = self.input_file(TaxAssign.__input_file_sample2fasta)
@@ -89,11 +92,9 @@ class TaxAssign(ToolWrapper):
         include_prop = float(self.option("include_prop")) # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa")) # count
 
-
-        #################        taxonomy_sqlite_path = download_taxonomy_sqlite()
-#########################################
+        ##########################################################
         #
-        # 2. Read sample2f  asta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 2. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
         sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\

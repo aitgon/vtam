@@ -100,7 +100,11 @@ def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False
     lineage_dic = {}
     lineage_dic['tax_id'] = tax_id
     while tax_id != 1:
+        # try to use taxonomy_db_df.tax_id
         tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.tax_id == tax_id,]
+        # row empty, try to use old_tax_id
+        if tax_id_row.shape[0] == 0:
+            tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.old_tax_id == tax_id,]
         rank = tax_id_row['rank'].values[0]
         parent_tax_id = tax_id_row['parent_tax_id'].values[0]
         lineage_dic[rank] = tax_id
