@@ -16,11 +16,9 @@ vtam/discussion_reda_aitor/example_filter.ods
 
 """
 
-import inspect
-
-import pandas
-
 from wopmetabarcoding.utils.logger import logger
+import inspect
+import pandas
 
 
 def f1_lfn_delete_singleton(run_biosample_replicate_variant_read_count_df):
@@ -46,6 +44,7 @@ def f1_lfn_delete_singleton(run_biosample_replicate_variant_read_count_df):
     return passed_lfn_delete_singleton_df
 
 
+
 class FilterLFNRunner:
 
 
@@ -68,7 +67,7 @@ class FilterLFNRunner:
                                                                (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
 
 
-    def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, lfn_variant_threshold_specific=None):
+    def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, threshold_specific_df=None):
         """
         This filter deletes the variant i in biosample j and replicate k
         if the ratio of its read count N_ijk to the total read_count N_i of variant i
@@ -91,7 +90,7 @@ class FilterLFNRunner:
 
         Args:
             lfn_variant_threshold (float): Default deletion threshold
-            lfn_variant_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
+            threshold_specific_df (:obj:`dict`, optional): Variant-specific deletion threshold
 
         Returns:
             None: The output of this filter is added to the 'self.delete_variant_df'
@@ -128,12 +127,13 @@ class FilterLFNRunner:
             df2.low_frequence_noice_per_variant < lfn_variant_threshold, 'filter_delete'] = True
 
         ####################################################
-        # LFN_var_dep if there are variant specific thresholds: lfn_variant_threshold_specific not None
+        # LFN_var_dep if there are variant specific thresholds: threshold_specific_df not None
         ####################################################
-        if not lfn_variant_threshold_specific is None:
+        if not threshold_specific_df is None:
             this_filter_id = 4
-            for variant_id in lfn_variant_threshold_specific:
-                variant_id_threshold = lfn_variant_threshold_specific[variant_id]
+            for rowtuple in threshold_specific_df.itertuples():
+                variant_id = rowtuple.variant_id
+                threshold = rowtuple.threshold
 
                 #
                 df2_f4_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
@@ -144,7 +144,7 @@ class FilterLFNRunner:
                 #
                 # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_variant_threshold
                 df2_f4_variant_id.loc[
-                    df2_f4_variant_id.low_frequence_noice_per_variant < variant_id_threshold, 'filter_delete'] = True
+                    df2_f4_variant_id.low_frequence_noice_per_variant < threshold, 'filter_delete'] = True
 
                 #
                 # Keep important columns
@@ -164,7 +164,7 @@ class FilterLFNRunner:
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
 
 
-    def f3_f5_lfn_delete_variant_replicate(self, lfn_variant_replicate_threshold, lfn_per_replicate_threshold_specific=None):
+    def f3_f5_lfn_delete_variant_replicate(self, lfn_variant_replicate_threshold, threshold_specific_df=None):
         """
         This filter deletes the variant i in biosample j and replicate k
         if the ratio of its read count N_ijk to the replicate read_count N_ik
@@ -184,7 +184,7 @@ class FilterLFNRunner:
 
         Args:
             lfn_variant_replicate_threshold (float): Default deletion threshold
-            lfn_per_replicate_threshold_specific (:obj:`dict`, optional): Variant-specific deletion threshold
+            threshold_specific_df (:obj:`dict`, optional): Variant-specific deletion threshold
 
 
         Returns:
@@ -216,11 +216,15 @@ class FilterLFNRunner:
         df2['filter_delete'] = False
         df2.loc[
             df2.low_frequence_noice_per_replicate_series < lfn_variant_replicate_threshold, 'filter_delete'] = True
-        if not lfn_per_replicate_threshold_specific is None:
+        if not threshold_specific_df is None:
             this_filter_id = 5
-            for variant_id in lfn_per_replicate_threshold_specific:
-                variant_id_threshold = lfn_per_replicate_threshold_specific[variant_id]
-                df2_f6_variant_id = df2.loc[(df2.variant_id == variant_id)].copy()
+            # for variant_id in threshold_specific_df:
+            for rowtuple in threshold_specific_df.itertuples():
+                variant_id = rowtuple.variant_id
+                replicate_id = rowtuple.replicate_id
+                threshold = rowtuple.threshold
+                # threshold = threshold_specific_df[variant_id]
+                df2_f6_variant_id = df2.loc[((df2.variant_id == variant_id) & (df2.replicate_id == replicate_id))].copy()
 
                 # Initialize filter: Keep everything
                 df2_f6_variant_id.loc[df2_f6_variant_id.variant_id == variant_id, 'filter_id'] = this_filter_id
@@ -228,7 +232,7 @@ class FilterLFNRunner:
 
                 # Mark for deletion all filters with low_frequence_noice_per_variant<lfn_per_variant_threshold
                 df2_f6_variant_id.loc[
-                    df2_f6_variant_id.low_frequence_noice_per_replicate_series < variant_id_threshold, 'filter_delete'] = True
+                    df2_f6_variant_id.low_frequence_noice_per_replicate_series < threshold, 'filter_delete'] = True
 
                 #  Keep important columns
                 df2_f6_variant_id = df2_f6_variant_id[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
