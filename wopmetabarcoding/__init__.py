@@ -56,7 +56,6 @@ class VTAM(object):
         ###############################################################
         os.system(wopmars_command)
         sys.exit(0)
-        import pdb; pdb.set_trace()
 
     def otu(self):
         parser = argparse.ArgumentParser(
