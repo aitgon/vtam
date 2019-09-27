@@ -10,7 +10,7 @@ import jinja2
 import yaml
 import os
 
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.logger import logger
 
 

@@ -1,6 +1,6 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os

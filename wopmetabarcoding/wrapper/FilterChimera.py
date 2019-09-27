@@ -1,7 +1,7 @@
 import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.utils.PathFinder import PathFinder
+from wopmetabarcoding.utils.PathManager import PathFinder
 from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
 from Bio import SeqIO
 import os
