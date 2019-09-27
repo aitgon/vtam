@@ -113,9 +113,9 @@ class TestFilterLFN(TestCase):
         #
         self.filter_lfn_runner = FilterLFNRunner(self.variant_read_count_df)
 
-    def test_02_f2_f4_lfn_delete_per_sum_variant(self):
+    def test_02_f2_f4_lfn_delete_variant(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 22)
                                                                      & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
@@ -133,20 +133,18 @@ class TestFilterLFN(TestCase):
                                                                      & (self.filter_lfn_runner.delete_variant_df.filter_id == 2),
                                                                         'filter_delete'].values[0])
 
-    def test_03_f2_f4_lfn_delete_per_sum_variant_threshold_specific(self):
+    def test_03_f2_f4_lfn_delete_variant_threshold_specific(self):
         lfn_var_threshold = 0.001
         # lfn_var_threshold_specific = {9: 0.05, 22: 0.01}
         # input tsv file of threshold specific and create a dictionnary
         lfn_var_threshold_specific_df = pandas.read_csv(self.lfn_var_threshold_specific, sep='\t', header=0)
-        lfn_var_threshold_specific={}
-        for  row in lfn_var_threshold_specific_df.itertuples():
-           lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold)
+        # lfn_var_threshold_specific={}
+        # for  row in lfn_var_threshold_specific_df.itertuples():
+        #    lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold)
         # import pdb;
         # pdb.set_trace()
 
-
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_var_threshold, lfn_variant_threshold_specific=lfn_var_threshold_specific)
-        #import pdb; pdb.set_trace()
+        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_var_threshold, threshold_specific_df=lfn_var_threshold_specific_df)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 9)
                                                                      & (self.filter_lfn_runner.delete_variant_df.biosample_id == 1)
@@ -167,7 +165,7 @@ class TestFilterLFN(TestCase):
 
     def test_04_f3_f5_lfn_delete_per_sum_variant_replicate(self):
         lfn_per_replicate_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(
+        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(
             lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[
@@ -187,8 +185,9 @@ class TestFilterLFN(TestCase):
 
     def test_05_f3_f5_lfn_delete_per_sum_variant_replicate_threshold_specific(self):
         lfn_var_threshold = 0.0005
-        lfn_per_replicate_series_threshold_specific = {9: 0.02, 22: 0.005}
-        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(lfn_var_threshold, lfn_per_replicate_threshold_specific=lfn_per_replicate_series_threshold_specific)
+        # lfn_per_replicate_series_threshold_specific = {9: 0.02, 22: 0.005}
+        lfn_var_threshold_specific_df = pandas.read_csv(self.lfn_var_threshold_specific, sep='\t', header=0)
+        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(lfn_var_threshold, threshold_specific_df=lfn_var_threshold_specific_df)
         #import pdb; pdb.set_trace()
         #
         self.assertTrue(self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 22)
@@ -241,7 +240,7 @@ class TestFilterLFN(TestCase):
     def test_07_f6_lfn_delete_per_sum_biosample_replicate(self):
         lfn_per_replicate_threshold = 0.001
 
-        self.filter_lfn_runner.f6_lfn_delete_per_sum_biosample_replicate(lfn_per_replicate_threshold)
+        self.filter_lfn_runner.f6_lfn_delete_biosample_replicate(lfn_per_replicate_threshold)
         #import pdb; pdb.set_trace()
         #
         self.assertTrue(not self.filter_lfn_runner.delete_variant_df.loc[(self.filter_lfn_runner.delete_variant_df.variant_id == 9)
@@ -277,9 +276,9 @@ class TestFilterLFN(TestCase):
 
     def test_08_f8_lfn_delete_do_not_pass_all_filters(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_per_sum_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
         lfn_per_replicate_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_per_sum_variant_replicate(
+        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(
             lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
         #
         self.filter_lfn_runner.f8_lfn_delete_do_not_pass_all_filters()
