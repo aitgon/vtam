@@ -4,6 +4,10 @@ import os
 import subprocess
 import errno
 
+from wopmetabarcoding.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+
+
 class Merge(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.Merge"
@@ -20,20 +24,36 @@ class Merge(ToolWrapper):
 
     def specify_params(self):
         return{
-            "fastq_directory":"str",
-            "fasta_dir":"str",
-            "fastq_minovlen":"int",
-            "fastq_maxmergelen":"int",
-            "fastq_minmergelen":"int",
-            "fastq_minlen":"int",
-            "fastq_maxee":"int",
-            "fastq_truncqual":"int",
-            "fastq_maxns":"int",
-            "threads":"int",
-            "fastq_ascii":"int"
+            "fastq_directory": "str",
+            "fasta_dir": "str",
+            "fastq_minovlen": "int",
+            "fastq_maxmergelen": "int",
+            "fastq_minmergelen": "int",
+            "fastq_minlen": "int",
+            "fastq_maxee": "int",
+            "fastq_truncqual": "int",
+            "fastq_maxns": "int",
+            "threads": "int",
+            "fastq_ascii": "int",
+            "log_verbosity": "int"
         }
 
     def run(self):
+        session = self.session()
+        engine = session._WopMarsSession__session.bind
+
+        ##########################################################
+        #
+        # Wrapper inputs, outputs and parameters
+        #
+        ##########################################################
+        #
+        # Options
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # import pdb; pdb.set_trace()
+        # from wopmetabarcoding.utils.Logger import Logger
+        Logger.instance().info("merge: infooooooooooooooooooooo")
+        Logger.instance().warning("merge: warningggggggggggggggggg")
         # input files
         sample2fastq = self.input_file(Merge.__input_sample2fastq)
         # output files
