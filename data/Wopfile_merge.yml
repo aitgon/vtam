@@ -18,3 +18,4 @@ rule Merge:
       fastq_maxns: {{fastq_maxns}}
       threads: {{threads}}
       fastq_ascii: {{fastq_ascii}}
+      log_verbosity: {{log_verbosity}}
