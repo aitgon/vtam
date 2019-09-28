@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import argparse
+import logging
 import sys
 
 import os
 
 from wopmetabarcoding.utils.ArgParser import ArgParser
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.VTAMexception import VTAMexception
 from wopmetabarcoding.utils.WopmarsRunner import WopmarsRunner
@@ -16,11 +17,17 @@ class VTAM(object):
     def __init__(self, sys_argv):
         self.sys_argv = sys_argv
         parser = ArgParser.get_arg_parser()
-        args = parser.parse_args(sys_argv)
-        # use dispatch pattern to invoke method with same name
+        self.args = parser.parse_args(sys_argv)
+        #####################
+        #
+        # Add argparser attributes to optionmanager
+        #
+        #####################
+        for k in vars(self.args):
+            OptionManager.instance()[k] = vars(self.args)[k]
         try:
-            getattr(self, vars(args)['command'])()
-        except AttributeError:
+            getattr(self, vars(self.args)['command'])()
+        except KeyError:
             print(VTAMexception(message="""usage: vtam <command> [<args>]
         
         These are the VTAM commands:
@@ -31,17 +38,6 @@ class VTAM(object):
 """))
 
     def merge(self):
-        # now that we're inside a subcommand, ignore the first
-        # argvs, ie the command (vtam) and the subcommand (merge)
-        parser = ArgParser.get_arg_parser()
-        args = parser.parse_args(self.sys_argv)
-        #####################
-        #
-        # Add argparser attributes to optionmanager
-        #
-        #####################
-        for k in vars(args):
-            OptionManager.instance()[k] = vars(args)[k]
         ###############################################################
         #
         # Create wopmars command and implicitely wopfile
@@ -55,22 +51,37 @@ class VTAM(object):
         #
         ###############################################################
         os.system(wopmars_command)
+        Logger.instance().info("Wopmars command: " +  wopmars_command)
         sys.exit(0)
 
     def otu(self):
-        parser = argparse.ArgumentParser(
-            description='Download objects and refs from another repository')
-        # NOT prefixing the argument with -- means it's not optional
-        parser.add_argument('repository')
-        args = parser.parse_args(sys.argv[2:])
-        ##################################
+        ###############################################################
         #
-        # Store in OptionsManager
+        # Create wopmars command and implicitely wopfile
         #
-        ##################################
-        for k in vars(args):
-            if not k is 'command':
-                try:
-                    OptionManager.instance()[k] = vars(args)[k][0]
-                except TypeError:
-                    OptionManager.instance()[k] = vars(args)[k]
+        ###############################################################
+        wopmars_runner = WopmarsRunner(subcommand='otu', parameters=OptionManager.instance())
+        wopmars_command = wopmars_runner.get_wopmars_command()
+        ###############################################################
+        #
+        # Create wopmars command and implicitely wopfile
+        #
+        ###############################################################
+        os.system(wopmars_command)
+        sys.exit(0)
+
+    def optimize(self):
+        ###############################################################
+        #
+        # Create wopmars command and implicitely wopfile
+        #
+        ###############################################################
+        wopmars_runner = WopmarsRunner(subcommand='optimize', parameters=OptionManager.instance())
+        wopmars_command = wopmars_runner.get_wopmars_command()
+        ###############################################################
+        #
+        # Create wopmars command and implicitely wopfile
+        #
+        ###############################################################
+        os.system(wopmars_command)
+        sys.exit(0)

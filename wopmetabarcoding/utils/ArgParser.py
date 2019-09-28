@@ -4,11 +4,6 @@ import argparse
 import os
 
 from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.WopmarsRunner import WopmarsRunner
-
-def run_merge():
-    import pdb; pdb.set_trace()
-    print('run merge..dfqsfsqdfdfsSSSSSSSSSSSSSSSSSSSSSSSS.')
 
 class ArgParser():
 
@@ -26,15 +21,18 @@ class ArgParser():
         parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true',
                             help="Only display what would have been done.", required=False)
         parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
-                                 help="Force argument of WopMars",
-                            required=False)
+                                 help="Force argument of WopMars", required=False)
+        parser_vtam.add_argument('-l', action='store_true',
+                                 help="Force argument of WopMars", required=False)
         parser_vtam.add_argument('--log', action='store',
                             help="Write log to file.", required=False,
-                            type=lambda x, abspath: os.path.abspath(x) if abspath else x)
-        parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values", required=False)
-        parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None, help="Execute the workflow to the given target "
-                                                                "RULE: SampleInformation, ...", required=False)
-        parser_vtam.add_argument('-v', dest='verbose', action='count',
+                            type=lambda x: os.path.abspath(x) if abspath else x)
+        parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values",
+                                 required=False)
+        parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
+                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
+                                 required=False)
+        parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0,
                             help="Set verbosity level, eg. None (Error level) -v (Info level) or -vv (Debug level)",
                             required=False)
         subparsers = parser_vtam.add_subparsers()
