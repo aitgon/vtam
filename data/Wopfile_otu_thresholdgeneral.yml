@@ -11,7 +11,7 @@ rule FilterLFN:
             Replicate: wopmetabarcoding.model.Replicate
             VariantReadCount: wopmetabarcoding.model.VariantReadCount
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterLFN: wopmetabarcoding.model.FilterLFN

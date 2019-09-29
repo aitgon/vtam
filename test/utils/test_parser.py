@@ -68,7 +68,7 @@ class TestParser(TestCase):
           sample2fastq: /home/gonzalez/Software/repositories/wopmetabarcodin/test/test_parser.py
   output:
       file:
-          sample2fasta: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
+          fastainfo: /home/gonzalez/Software/repositories/wopmetabarcodin/foo
   params:
       fastq_directory: /home/gonzalez/Software/repositories/wopmetabarcodin/test
       fasta_dir: /home/gonzalez/Software/repositories/wopmetabarcodin/foo

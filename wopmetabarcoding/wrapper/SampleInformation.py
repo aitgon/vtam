@@ -10,7 +10,7 @@ class SampleInformation(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "wopmetabarcoding.wrapper.SampleInformation"
     }
-    __input_file_csv = "sample2fasta"
+    __input_file_csv = "fastainfo"
     #
     __output_table_biosample = "Biosample"
     __output_table_fasta = "Fasta"

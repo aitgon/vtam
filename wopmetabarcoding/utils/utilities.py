@@ -127,7 +127,7 @@ def download_taxonomy_sqlite():
         Returns:
             String: The path to the taxonomy.sqlite database
     """
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; download_taxonomy_sqlite()".format(__file__,
                                                                   inspect.currentframe().f_lineno,))
     if 'TAXONOMY_SQLITE' in os.environ:

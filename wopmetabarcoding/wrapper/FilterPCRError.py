@@ -24,14 +24,14 @@ class FilterPCRError(ToolWrapper):
     __input_table_replicate = "Replicate"
     __input_table_variant = "Variant"
     __input_table_filter_min_replicate_number = "FilterMinReplicateNumber"
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     # Output table
     __output_table_filter_pcr_error = "FilterPCRError"
 
 
     def specify_input_file(self):
         return[
-            FilterPCRError.__input_file_sample2fasta,
+            FilterPCRError.__input_file_fastainfo,
 
         ]
 
@@ -73,7 +73,7 @@ class FilterPCRError(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterPCRError.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(FilterPCRError.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterPCRError.__input_table_marker)
@@ -91,14 +91,14 @@ class FilterPCRError(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name

@@ -42,7 +42,7 @@ class TestWorpmarsRunner(TestCase):
           sample2fastq: test/utils/test_wopmars_runner.py
   output:
       file:
-          sample2fasta: foo
+          fastainfo: foo
   params:
       fastq_directory: test/utils
       fasta_dir: foo

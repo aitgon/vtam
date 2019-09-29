@@ -8,9 +8,9 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.OptionManager import OptionManager
+from wopmetabarcoding import VTAMexception
 from wopmetabarcoding.utils.Logger import Logger
-
+from wopmetabarcoding.utils.OptionManager import OptionManager
 
 class FilterMinReplicateNumber(ToolWrapper):
     __mapper_args__ = {
@@ -24,14 +24,14 @@ class FilterMinReplicateNumber(ToolWrapper):
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant_filter_lfn = "FilterLFN"
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     # Output table
     __output_table_filter_min_replicate_number = "FilterMinReplicateNumber"
 
 
     def specify_input_file(self):
         return[
-            FilterMinReplicateNumber.__input_file_sample2fasta,
+            FilterMinReplicateNumber.__input_file_fastainfo,
 
         ]
 
@@ -54,8 +54,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         return {
             "min_replicate_number": "int",
             "log_verbosity": "int",
-            "log_file": "str"
-
+            "log_file": "str",
         }
 
     def run(self):
@@ -71,7 +70,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterMinReplicateNumber.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
@@ -88,14 +87,14 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
@@ -177,9 +176,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         try:
             assert not df_filter_output.filter_delete.all()
         except AssertionError:
-            sys.stderr.write("Error: This filter has deleted all the variants: {}".format(os.path.basename(__file__)))
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
-
 
 
 def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2):

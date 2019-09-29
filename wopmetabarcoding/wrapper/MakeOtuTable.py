@@ -15,7 +15,7 @@ class MakeOtuTable(ToolWrapper):
         "polymorphic_identity": "wopmetabarcoding.wrapper.MakeOtuTable"}
 
     # Input file
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     __input_file_taxonomy = "taxonomy"
     # Input table
     __input_table_marker = "Marker"
@@ -32,7 +32,7 @@ class MakeOtuTable(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            MakeOtuTable.__input_file_sample2fasta,
+            MakeOtuTable.__input_file_fastainfo,
         ]
 
     def specify_input_table(self):
@@ -72,7 +72,7 @@ class MakeOtuTable(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(MakeOtuTable.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(MakeOtuTable.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(MakeOtuTable.__input_table_marker)

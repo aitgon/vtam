@@ -8,8 +8,7 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.Logger import Logger
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
-
+from wopmetabarcoding.utils.OptionManager import OptionManager
 
 class FilterIndel(ToolWrapper):
     __mapper_args__ = {
@@ -22,7 +21,7 @@ class FilterIndel(ToolWrapper):
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     __input_table_filter_renkonen = "FilterRenkonen"
     __input_table_Variant = "Variant"
     # Output table
@@ -32,7 +31,7 @@ class FilterIndel(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterIndel.__input_file_sample2fasta,
+            FilterIndel.__input_file_fastainfo,
 
         ]
 
@@ -50,14 +49,21 @@ class FilterIndel(ToolWrapper):
     def specify_output_table(self):
         return [
             FilterIndel.__output_table_filter_indel,
-
         ]
+
+    def specify_params(self):
+        return {
+            "log_verbosity": "int",
+            "log_file": "str",
+        }
 
 
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -66,7 +72,7 @@ class FilterIndel(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterIndel.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(FilterIndel.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterIndel.__input_table_marker)
@@ -81,14 +87,14 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # 2. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
