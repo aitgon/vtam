@@ -16,7 +16,7 @@ class Logger(Singleton):
 
     def __init__(self):
         self.__logger = logging.getLogger("VTAM")
-        self.__formatter = logging.Formatter('%(levelname)s :: %(asctime)s :: %(name)s :: %(message)s')
+        self.__formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s')
         #####################
         #
         # Logger stdout
@@ -32,8 +32,8 @@ class Logger(Singleton):
         #####################
         # log file in append mode of size 1 Mo and 1 backup
         # handler equivalent to stream_handler in term of logging level but write to .log file
-        if "log" in OptionManager.instance():
-            log_file_path = OptionManager.instance()["log"]
+        if "log_file" in OptionManager.instance():
+            log_file_path = OptionManager.instance()["log_file"]
             self.__file_handler = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
             self.__file_handler.setFormatter(self.__formatter)
             self.__logger.addHandler(self.__file_handler)

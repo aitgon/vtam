@@ -35,13 +35,15 @@ class Merge(ToolWrapper):
             "fastq_maxns": "int",
             "threads": "int",
             "fastq_ascii": "int",
-            "log_verbosity": "int"
+            "log_verbosity": "int",
+            "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
