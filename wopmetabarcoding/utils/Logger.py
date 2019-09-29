@@ -1,10 +1,10 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
-from wopmars.utils.ColorPrint import ColorPrint
-
 from wopmetabarcoding.utils.Singleton import Singleton
 from wopmetabarcoding.utils.OptionManager import OptionManager
+
+from termcolor import colored
 
 class Logger(Singleton):
     """
@@ -16,14 +16,14 @@ class Logger(Singleton):
 
     def __init__(self):
         self.__logger = logging.getLogger("VTAM")
-        self.__formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s')
+        self.__formatter_str = '%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s'
+        self.__formatter = logging.Formatter(self.__formatter_str)
         #####################
         #
         # Logger stdout
         #
         #####################
         self.__stream_handler = logging.StreamHandler()
-        self.__stream_handler.setFormatter(self.__formatter)
         self.__logger.addHandler(self.__stream_handler)
         #####################
         #
@@ -51,13 +51,25 @@ class Logger(Singleton):
             self.__logger.setLevel(logging.DEBUG)
 
     def debug(self, msg):
+        formatter_stream_str = colored(self.__formatter_str, 'yellow', attrs=['bold'])
+        formatter_stream = logging.Formatter(formatter_stream_str)
+        self.__stream_handler.setFormatter(formatter_stream)
         self.__logger.debug(msg)
 
     def info(self, msg):
+        formatter_stream_str = colored(self.__formatter_str, 'blue', attrs=['bold'])
+        formatter_stream = logging.Formatter(formatter_stream_str)
+        self.__stream_handler.setFormatter(formatter_stream)
         self.__logger.info(msg)
 
     def warning(self, msg):
+        formatter_stream_str = colored(self.__formatter_str, 'magenta', attrs=['bold'])
+        formatter_stream = logging.Formatter(formatter_stream_str)
+        self.__stream_handler.setFormatter(formatter_stream)
         self.__logger.warning(msg)
 
     def error(self, msg):
+        formatter_stream_str = colored(self.__formatter_str, 'red', attrs=['bold'])
+        formatter_stream = logging.Formatter(formatter_stream_str)
+        self.__stream_handler.setFormatter(formatter_stream)
         self.__logger.error(msg)
