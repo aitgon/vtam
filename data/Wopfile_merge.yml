@@ -2,12 +2,12 @@ rule Merge:
   tool: wopmetabarcoding.wrapper.Merge
   input:
       file:
-          sample2fastq: {{fastqinfo}}
+          fastqinfo: {{fastqinfo}}
   output:
       file:
-          sample2fasta: {{fastainfo}}
+          fastainfo: {{fastainfo}}
   params:
-      fastq_directory: {{fastqdir}}
+      fastq_dir: {{fastqdir}}
       fasta_dir: {{fastadir}}
       fastq_minovlen: {{fastq_minovlen}}
       fastq_maxmergelen: {{fastq_maxmergelen}}

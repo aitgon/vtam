@@ -32,7 +32,7 @@ class Logger(Singleton):
         #####################
         # log file in append mode of size 1 Mo and 1 backup
         # handler equivalent to stream_handler in term of logging level but write to .log file
-        if "log_file" in OptionManager.instance():
+        if not OptionManager.instance()["log_file"] is None:
             log_file_path = OptionManager.instance()["log_file"]
             self.__file_handler = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
             self.__file_handler.setFormatter(self.__formatter)
