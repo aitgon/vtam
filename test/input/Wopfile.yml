@@ -5,7 +5,7 @@ rule Merge:
           sample2fastq: data/sample2fastq.tsv
   output:
       file:
-          sample2fasta: data/sample2fasta.csv
+          fastainfo: data/fastainfo.csv
   params:
       fastq_directory: data/input/fastq
       fasta_dir: data/output/fasta/
@@ -23,7 +23,7 @@ rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: {{SAMPLE_INFORMATION_TSV}}
+            fastainfo: {{SAMPLE_INFORMATION_TSV}}
     output:
         table:
             File: wopmetabarcoding.model.File

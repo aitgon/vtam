@@ -17,7 +17,7 @@ class TestWopMetabarcoding(TestCase):
 
     # def test_02sample_information(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
     #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
@@ -48,7 +48,7 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_02sample_information_error(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta_error.tsv")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo_error.tsv")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
     #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
@@ -80,7 +80,7 @@ class TestWopMetabarcoding(TestCase):
     #     :return:
     #     """
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
     #     test_indir = os.path.join(PathManager.get_module_test_path(), "input", "03sort_reads")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output

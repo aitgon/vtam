@@ -10,12 +10,14 @@ rule FilterMinReplicateNumber:
             Replicate: wopmetabarcoding.model.Replicate
             FilterLFN: wopmetabarcoding.model.FilterLFN
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
     params:
         min_replicate_number: {{min_replicate_number}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 #
 rule FilterPCRError:
     tool: wopmetabarcoding.wrapper.FilterPCRError
@@ -28,12 +30,14 @@ rule FilterPCRError:
             Variant: wopmetabarcoding.model.Variant
             FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterPCRError: wopmetabarcoding.model.FilterPCRError
     params:
         pcr_error_var_prop: {{pcr_error_var_prop}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 #
 rule FilterChimera:
     tool: wopmetabarcoding.wrapper.FilterChimera
@@ -46,11 +50,14 @@ rule FilterChimera:
             Variant: wopmetabarcoding.model.Variant
             FilterPCRError: wopmetabarcoding.model.FilterPCRError
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterChimera: wopmetabarcoding.model.FilterChimera
             FilterChimeraBorderline: wopmetabarcoding.model.FilterChimeraBorderline
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterRenkonen:
     tool: wopmetabarcoding.wrapper.FilterRenkonen
@@ -62,12 +69,14 @@ rule FilterRenkonen:
             Replicate: wopmetabarcoding.model.Replicate
             FilterChimera: wopmetabarcoding.model.FilterChimera
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
     params:
         renkonen_threshold: {{renkonen_threshold}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterIndel:
     tool: wopmetabarcoding.wrapper.FilterIndel
@@ -80,10 +89,13 @@ rule FilterIndel:
             Variant: wopmetabarcoding.model.Variant
             FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterIndel: wopmetabarcoding.model.FilterIndel
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterCodonStop:
     tool: wopmetabarcoding.wrapper.FilterCodonStop
@@ -96,12 +108,14 @@ rule FilterCodonStop:
             Variant: wopmetabarcoding.model.Variant
             FilterIndel: wopmetabarcoding.model.FilterIndel
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
     params:
         genetic_table_number: {{genetic_table_number}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule ReadCountAverageOverReplicates:
     tool: wopmetabarcoding.wrapper.ReadCountAverageOverReplicates
@@ -113,10 +127,13 @@ rule ReadCountAverageOverReplicates:
             Replicate: wopmetabarcoding.model.Replicate
             FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             ReadCountAverageOverReplicates: wopmetabarcoding.model.ReadCountAverageOverReplicates
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule TaxAssign:
     tool: wopmetabarcoding.wrapper.TaxAssign
@@ -129,7 +146,7 @@ rule TaxAssign:
             Variant: wopmetabarcoding.model.Variant
             FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             TaxAssign: wopmetabarcoding.model.TaxAssign
@@ -137,6 +154,8 @@ rule TaxAssign:
         identity_threshold: {{identity_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 rule MakeOtuTable:
@@ -152,9 +171,12 @@ rule MakeOtuTable:
             FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
             TaxAssign: wopmetabarcoding.model.TaxAssign
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         file:
             OTUTable: {{otutable}}
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 {% endblock %}

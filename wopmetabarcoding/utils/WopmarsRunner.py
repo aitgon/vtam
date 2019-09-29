@@ -58,19 +58,34 @@ class WopmarsRunner(Singleton):
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
         if self.command == 'merge':
             template = jinja2_env.get_template('Wopfile_merge.yml')
-        elif self.command == 'otu':
+        elif self.command in ['otu', 'optimize']:
             # Add path to sortreads file
             self.parameters['sortreads'] = os.path.abspath(os.path.join(self.parameters['outdir'], "sortreads.tsv"))
-            self.parameters['otutable'] = os.path.abspath(os.path.join(self.parameters['outdir'], "otutable.tsv"))
-            if self.parameters['threshold_specific']: # threshold variant specific
-                template = jinja2_env.get_template('Wopfile_otu_thresholdspecific.yml')
-            else:
-                template = jinja2_env.get_template('Wopfile_otu_thresholdgeneral.yml')
-            # Create wopfile
-            wopfile_file_name = 'Wopfile_otu.yml'
-            wopfile_path = os.path.join(self.parameters['outdir'], wopfile_file_name)
-        elif self.command == 'optimize':
-            template = jinja2_env.get_template('Wopfile_optimize.yml')
+            if self.command == 'otu':
+                self.parameters['otutable'] = os.path.abspath(os.path.join(self.parameters['outdir'], "otutable.tsv"))
+                if self.parameters['threshold_specific']: # threshold variant specific
+                    template = jinja2_env.get_template('Wopfile_otu_thresholdspecific.yml')
+                else:
+                    template = jinja2_env.get_template('Wopfile_otu_thresholdgeneral.yml')
+                # Create wopfile
+                wopfile_path = os.path.join(self.parameters['outdir'], 'Wopfile_otu.yml')
+            elif self.command == 'optimize':
+                #
+                self.parameters['optimize_lfn_biosample_replicate'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_lfn_biosample_replicate.tsv"))
+                self.parameters['optimize_lfn_read_count_and_lfn_variant'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_lfn_read_count_and_lfn_variant.tsv"))
+                self.parameters['optimize_lfn_variant_specific'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_lfn_variant_specific.tsv"))
+                self.parameters['optimize_pcr_error'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_pcr_error.tsv"))
+                self.parameters['optimize_lfn_read_count_and_lfn_variant_replicate'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_lfn_read_count_and_lfn_variant_replicate.tsv"))
+                self.parameters['optimize_lfn_variant_replicate_specific'] \
+                    = os.path.abspath(os.path.join(self.parameters['outdir'], "optimize_lfn_variant_replicate_specific.tsv"))
+                #
+                template = jinja2_env.get_template('Wopfile_optimize.yml')
+                wopfile_path = os.path.join(self.parameters['outdir'], 'Wopfile_optimize.yml')
         wopfile_content = template.render(self.parameters)
         ################
         #
@@ -110,16 +125,6 @@ class WopmarsRunner(Singleton):
         #     wopmars_command += " --params {params}".format(**self.parameters)
         if not self.parameters['targetrule'] is None:
             wopmars_command += " --targetrule {targetrule}".format(**self.parameters)
-        ###################
-        #
-        # Wopmars command options of merge, otu and optimize
-        #
-        ###################
-        # if self.command == 'merge':
-        #     wopmars_command += " --fastqinfo {fastqinfo} --fastqdir {fastqdir}"
-        #     wopmars_command += " --fastainfo {fastainfo} --fastqdir {fastqdir}"
-        # else:
-        #     sys.exit(1)
         wopmars_command = wopmars_command.format(**self.parameters)
         return wopmars_command
 

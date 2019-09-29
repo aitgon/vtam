@@ -19,7 +19,7 @@ class VariantReadCount(ToolWrapper):
     # Input
     # Input file
     __input_file_sort_reads = 'sortreads'
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -42,7 +42,7 @@ class VariantReadCount(ToolWrapper):
     def specify_input_file(self):
         return[
             VariantReadCount.__input_file_sort_reads,
-            VariantReadCount.__input_file_sample2fasta,
+            VariantReadCount.__input_file_fastainfo,
         ]
 
     def specify_output_table(self):
@@ -78,7 +78,7 @@ class VariantReadCount(ToolWrapper):
         #
         # Input file
         sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
-        input_file_sample2fasta = self.input_file(VariantReadCount.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(VariantReadCount.__input_file_fastainfo)
         #
         # Input table models
         run_model = self.input_table(VariantReadCount.__input_table_run)
@@ -93,7 +93,7 @@ class VariantReadCount(ToolWrapper):
 
         ################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
@@ -108,11 +108,12 @@ class VariantReadCount(ToolWrapper):
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
+            Logger.instance().debug(row)
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name

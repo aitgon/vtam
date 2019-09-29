@@ -10,7 +10,7 @@ class FilterRenkonen(ToolWrapper):
     }
 
     # Input file
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -22,7 +22,7 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_input_file(self):
         return [
-            FilterRenkonen.__input_file_sample2fasta,
+            FilterRenkonen.__input_file_fastainfo,
 
         ]
 
@@ -60,7 +60,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterRenkonen.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(FilterRenkonen.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterRenkonen.__input_table_marker)
@@ -78,15 +78,15 @@ class FilterRenkonen(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None, \
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
                                           names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
                                                  'marker_name', 'biosample_name', \
                                                  'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name

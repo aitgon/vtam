@@ -14,7 +14,7 @@ rule OptimizeLFNbiosampleReplicate:
             variant_known: {{variant_known}}
     output:
         file:
-            optimize_lfn: {{optimize_lfn_biosample_replicate}}
+            optimize_lfn_biosample_replicate: {{optimize_lfn_biosample_replicate}}
     params:
         log_verbosity: {{log_verbosity}}
         log_file: {{log_file}}

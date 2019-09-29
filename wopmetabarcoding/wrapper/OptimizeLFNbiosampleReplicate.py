@@ -22,7 +22,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
-    __output_file_optimize_lfn = "optimize_lfn"
+    __output_file_optimize_lfn_biosample_replicate = "optimize_lfn_biosample_replicate"
 
 
     def specify_input_file(self):
@@ -42,7 +42,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     def specify_output_file(self):
         return [
-            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn,
+            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate,
         ]
 
     def specify_params(self):
@@ -74,7 +74,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
         #
         # Output file path
-        output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn)
+        output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate)
 
         ##########################################################
         #

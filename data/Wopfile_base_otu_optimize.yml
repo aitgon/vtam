@@ -2,7 +2,7 @@ rule SampleInformation:
     tool: wopmetabarcoding.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
             Run: wopmetabarcoding.model.Run
@@ -26,7 +26,7 @@ rule SortReads:
             SampleInformation: wopmetabarcoding.model.SampleInformation
             Marker: wopmetabarcoding.model.Marker
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         file:
             sortreads: {{sortreads}}
@@ -42,7 +42,7 @@ rule VariantReadCount:
     input:
         file:
             sortreads: {{sortreads}}
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
         table:
             Run: wopmetabarcoding.model.Run
             Marker: wopmetabarcoding.model.Marker
