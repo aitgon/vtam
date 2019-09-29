@@ -41,6 +41,7 @@ class Merge(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
 
         ##########################################################
         #
@@ -49,11 +50,8 @@ class Merge(ToolWrapper):
         ##########################################################
         #
         # Options
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         # import pdb; pdb.set_trace()
         # from wopmetabarcoding.utils.Logger import Logger
-        Logger.instance().info("merge: infooooooooooooooooooooo")
-        Logger.instance().warning("merge: warningggggggggggggggggg")
         # input files
         sample2fastq = self.input_file(Merge.__input_sample2fastq)
         # output files

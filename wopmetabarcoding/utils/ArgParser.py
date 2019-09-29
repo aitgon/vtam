@@ -16,25 +16,22 @@ class ArgParser():
         """
         # create the top-level parser
         parser_vtam = argparse.ArgumentParser(add_help=False)
-        parser_vtam.add_argument('--db', action='store', default='db.sqlite', help="SQLITE file with DB", required=False,
-                            type = lambda x: os.path.abspath(x) if abspath else x)
-        parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true',
-                            help="Only display what would have been done.", required=False)
+        parser_vtam.add_argument('--db', action='store', default='db.sqlite', required=False,
+                                 type=lambda x: os.path.abspath(x) if abspath else x, help="SQLITE file with DB")
+        parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
+                                 help="Only display what would have been done.")
         parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
                                  help="Force argument of WopMars", required=False)
-        parser_vtam.add_argument('-l', action='store_true',
-                                 help="Force argument of WopMars", required=False)
-        parser_vtam.add_argument('--log', action='store',
-                            help="Write log to file.", required=False,
-                            type=lambda x: os.path.abspath(x) if abspath else x)
+        parser_vtam.add_argument('--log', action='store', help="Write log to file.", required=False,
+                                 type=lambda x: os.path.abspath(x) if abspath else x)
         parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values",
                                  required=False)
         parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
                                  help="Execute the workflow to the given target RULE: SampleInformation, ...",
                                  required=False)
-        parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0,
-                            help="Set verbosity level, eg. None (Error level) -v (Info level) or -vv (Debug level)",
-                            required=False)
+        parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0, required=False,
+                                 help="Set verbosity level, eg. None (Error level) -v (Info level) or -vv (Debug level)"
+                            )
         subparsers = parser_vtam.add_subparsers()
 
         #############################################
