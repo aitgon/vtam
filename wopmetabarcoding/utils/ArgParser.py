@@ -22,7 +22,7 @@ class ArgParser():
                                  help="Only display what would have been done.")
         parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
                                  help="Force argument of WopMars", required=False)
-        parser_vtam.add_argument('--log', action='store', help="Write log to file.", required=False,
+        parser_vtam.add_argument('--log', dest='log_file', action='store', help="Write log to file.", required=False,
                                  type=lambda x: os.path.abspath(x) if abspath else x)
         parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values",
                                  required=False)
