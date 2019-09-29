@@ -85,10 +85,6 @@ class ArgParser():
                                        required=True, type=lambda x:
                             PathManager.check_file_exists_and_is_nonempty(x,
                                                                  error_message="Verify the '--fastainfo' argument"))
-        parser_vtam_optimize.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
-                                       type=lambda x:
-                                       PathManager.check_file_exists_and_is_nonempty(x,
-                                                                    error_message="Verify the '--fastadir' argument"))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                      required=False)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",

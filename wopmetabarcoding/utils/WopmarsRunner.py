@@ -127,7 +127,3 @@ class WopmarsRunner(Singleton):
             wopmars_command += " --targetrule {targetrule}".format(**self.parameters)
         wopmars_command = wopmars_command.format(**self.parameters)
         return wopmars_command
-
-
-    def merge(self):
-        return "merge"
