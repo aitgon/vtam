@@ -68,7 +68,7 @@ class PathManager:
         except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
         if abspath:
-            return abspath(path)
+            return os.path.abspath(path)
         return path
 
 
@@ -86,6 +86,6 @@ class PathManager:
         except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
         if abspath:
-            return abspath(path)
+            return os.path.abspath(path)
         return path
 

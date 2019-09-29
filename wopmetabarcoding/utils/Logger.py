@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import RotatingFileHandler
 
 from wopmars.utils.ColorPrint import ColorPrint
 
@@ -15,19 +16,34 @@ class Logger(Singleton):
 
     def __init__(self):
         self.__logger = logging.getLogger("VTAM")
-        self.__formatter = logging.Formatter(ColorPrint.blue('%(levelname)s :: %(asctime)s :: %(name)s :: %(message)s'))
+        self.__formatter = logging.Formatter('%(levelname)s :: %(asctime)s :: %(name)s :: %(message)s')
+        #####################
         #
-        self.__handler = logging.StreamHandler()
-        self.__handler.setFormatter(self.__formatter)
-        self.__logger.addHandler(self.__handler)
-        self.seen = False
+        # Logger stdout
+        #
+        #####################
+        self.__stream_handler = logging.StreamHandler()
+        self.__stream_handler.setFormatter(self.__formatter)
+        self.__logger.addHandler(self.__stream_handler)
+        #####################
+        #
+        # Logger file
+        #
+        #####################
+        # log file in append mode of size 1 Mo and 1 backup
+        # handler equivalent to stream_handler in term of logging level but write to .log file
+        if "log" in OptionManager.instance():
+            log_file_path = OptionManager.instance()["log"]
+            self.__file_handler = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
+            self.__file_handler.setFormatter(self.__formatter)
+            self.__logger.addHandler(self.__file_handler)
 
         #####################
         #
         # Set logger level
         #
         #####################
-        if OptionManager.instance()['log_verbosity'] == 0:
+        if OptionManager.instance()['log_verbosity'] <= 0:
             self.__logger.setLevel(logging.WARNING)
         elif OptionManager.instance()['log_verbosity'] == 1:
             self.__logger.setLevel(logging.INFO)
