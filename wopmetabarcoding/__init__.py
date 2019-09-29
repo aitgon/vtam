@@ -33,6 +33,7 @@ class VTAM(object):
             #
             ###############################################################
             Logger.instance().info(wopmars_command)
+            import pdb; pdb.set_trace()
             os.system(wopmars_command)
             sys.exit(0)
         except KeyError:
