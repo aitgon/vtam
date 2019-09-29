@@ -26,7 +26,7 @@ class SortReads(ToolWrapper):
     __input_table_fasta = "Fasta"
     __input_table_marker = "Marker"
     #Input file
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     # Output
     # Output file
     # Output table
@@ -42,7 +42,7 @@ class SortReads(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            SortReads.__input_file_sample2fasta,
+            SortReads.__input_file_fastainfo,
         ]
 
     def specify_output_file(self):

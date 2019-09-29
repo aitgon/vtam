@@ -13,7 +13,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
     }
 
     # Input file
-    __input_file_sample2fasta = "sample2fasta"
+    __input_file_fastainfo = "fastainfo"
     __input_file_threshold_specific = "threshold_specific"
     # Input table
     __input_table_run = "Run"
@@ -27,7 +27,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterLFNthresholdspecific.__input_file_sample2fasta,
+            FilterLFNthresholdspecific.__input_file_fastainfo,
             FilterLFNthresholdspecific.__input_file_threshold_specific,
         ]
 
@@ -70,7 +70,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
         ##########################################################
         #
         # Input file path
-        input_file_sample2fasta = self.input_file(FilterLFNthresholdspecific.__input_file_sample2fasta)
+        input_file_fastainfo = self.input_file(FilterLFNthresholdspecific.__input_file_fastainfo)
         input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
 
         #
@@ -100,7 +100,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
         #
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         # 4. Apply filters
@@ -110,14 +110,14 @@ class FilterLFNthresholdspecific(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read sample2fasta to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=None,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
-        for row in sample2fasta_df.itertuples():
+        for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
