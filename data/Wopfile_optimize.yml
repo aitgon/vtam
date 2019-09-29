@@ -15,6 +15,9 @@ rule OptimizeLFNbiosampleReplicate:
     output:
         file:
             optimize_lfn: {{optimize_lfn_biosample_replicate}}
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 
@@ -32,6 +35,9 @@ rule OptimizePCRerror:
     output:
         file:
             optimize_pcr_error: {{optimize_pcr_error}}
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -45,15 +51,17 @@ rule OptimizeLFNreadCountAndLFNvariant:
             VariantReadCount: wopmetabarcoding.model.VariantReadCount
         file:
             variant_known: {{variant_known}}
+    output:
+        file:
+            optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}
+            optimize_lfn_variant_specific: {{optimize_lfn_variant_specific}}
     params:
         lfn_variant_threshold: {{lfn_variant_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}
-    output:
-        file:
-            optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}
-            optimize_lfn_variant_specific: {{optimize_lfn_variant_specific}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 
@@ -68,14 +76,16 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
             VariantReadCount: wopmetabarcoding.model.VariantReadCount
         file:
             variant_known: {{variant_known}}
+    output:
+        file:
+            optimize_lfn_read_count_and_lfn_variant_replicate: {{optimize_lfn_read_count_and_lfn_variant_replicate}}
+            optimize_lfn_variant_replicate_specific: {{optimize_lfn_variant_replicate_specific}}
     params:
         lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}
-    output:
-        file:
-            optimize_lfn_read_count_and_lfn_variant_replicate: {{optimize_lfn_read_count_and_lfn_variant_replicate}}
-            optimize_lfn_variant_replicate_specific: {{optimize_lfn_variant_replicate_specific}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 {% endblock %}

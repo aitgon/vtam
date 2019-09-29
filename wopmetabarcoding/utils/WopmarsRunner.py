@@ -12,13 +12,13 @@ from wopmetabarcoding.utils.utilities import tempdir
 
 class WopmarsRunner(Singleton):
 
-    def __init__(self, subcommand, parameters):
+    def __init__(self, command, parameters):
         """
 
-        :param subcommand: takes one of three values: merge, otu or optimize
+        :param command: takes one of three values: merge, otu or optimize
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
-        self.subcommand = subcommand
+        self.command = command
         ##################################
         #
         # Load default numerical parameters and overwrite with custom parameters
@@ -37,26 +37,49 @@ class WopmarsRunner(Singleton):
         :param wopfile_path: Path of output wopfile
         :return: tuple (wopfile_path, wopfile_content)
         """
-        # Create path
+        #####################
+        #
+        # Get Wopfile template path
+        # Create Wopfile path
+        #
+        #####################
         wopfile_path = path
         if wopfile_path is None:
             wopfile_path = tempfile.NamedTemporaryFile().name
         self.wopfile_path = wopfile_path
+        # wopfile_template_path\
+        #     = os.path.join(os.path.dirname(__file__), '../../data/Wopfile_{}.yml'.format(self.command))
+        #####################
         #
-        # wopfile_file_name = 'Wopfile_{}.yml'.format(self.subcommand)
-        wopfile_template_path\
-            = os.path.join(os.path.dirname(__file__), '../../data/Wopfile_{subcommand}.yml'.format(subcommand=self.subcommand))
-        with open(wopfile_template_path) as fin:
-            template = jinja2.Template(fin.read())
+        # Create Wopfile content
+        #
+        #####################
+        template_dir = os.path.join(os.path.dirname(__file__), '../../data')
+        jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
+        if self.command == 'merge':
+            template = jinja2_env.get_template('Wopfile_merge.yml')
+        elif self.command == 'otu':
+            # Add path to sortreads file
+            self.parameters['sortreads'] = os.path.abspath(os.path.join(self.parameters['outdir'], "sortreads.tsv"))
+            self.parameters['otutable'] = os.path.abspath(os.path.join(self.parameters['outdir'], "otutable.tsv"))
+            if self.parameters['threshold_specific']: # threshold variant specific
+                template = jinja2_env.get_template('Wopfile_otu_thresholdspecific.yml')
+            else:
+                template = jinja2_env.get_template('Wopfile_otu_thresholdgeneral.yml')
+            # Create wopfile
+            wopfile_file_name = 'Wopfile_otu.yml'
+            wopfile_path = os.path.join(self.parameters['outdir'], wopfile_file_name)
+        elif self.command == 'optimize':
+            template = jinja2_env.get_template('Wopfile_optimize.yml')
         wopfile_content = template.render(self.parameters)
         ################
         #
-        # return
+        # Write to wopfile
         #
         ################
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
-        return (wopfile_path, wopfile_content)
+        return wopfile_path, wopfile_content
 
 
     def get_wopmars_command(self):
@@ -72,7 +95,7 @@ class WopmarsRunner(Singleton):
         #
         ###################
         if self.wopfile_path is None:
-            self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.subcommand))
+            self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.command))
             (self.wopfile_path, wopfile_content) = self.create_wopfile(path=self.wopfile_path)
         wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v"
         wopmars_command = wopmars_command_template\
@@ -92,7 +115,7 @@ class WopmarsRunner(Singleton):
         # Wopmars command options of merge, otu and optimize
         #
         ###################
-        # if self.subcommand == 'merge':
+        # if self.command == 'merge':
         #     wopmars_command += " --fastqinfo {fastqinfo} --fastqdir {fastqdir}"
         #     wopmars_command += " --fastainfo {fastainfo} --fastqdir {fastqdir}"
         # else:

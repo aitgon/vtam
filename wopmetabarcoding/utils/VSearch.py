@@ -2,9 +2,7 @@ import inspect
 import os
 import subprocess
 
-import sys
-
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 
 
 class VSearch:
@@ -17,7 +15,7 @@ class VSearch:
         cmd_args = [str(item) for item in list(sum(list(self.params.items()), ()))]
         cmd_line = ['vsearch'] + cmd_args
         with open(os.devnull, 'w') as FNULL:
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; Vsearch command: {}".format(__file__, inspect.currentframe().f_lineno, " ".join(cmd_line)))
             p = subprocess.Popen(cmd_line, stdout=FNULL, stderr=FNULL)
             p.wait()
@@ -40,13 +38,6 @@ class VSearch1(VSearch):
         if not userfields is None: self.params['--userfields'] = userfields
         if not query_cov is None: self.params['--query_cov'] = query_cov
 
-
-class Vsearch2(VSearch):
-
-    def __init__(self, sortbysize, output):
-        VSearch.__init__(self)
-        self.params["--sortbysize"] = sortbysize
-        self.params["--output"] = output
 
 
 class Vsearch3(VSearch):

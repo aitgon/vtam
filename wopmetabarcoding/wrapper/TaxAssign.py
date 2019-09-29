@@ -1,15 +1,15 @@
 import errno
 import inspect
 import os
-import sqlite3
 
 from Bio.Blast.Applications import NcbiblastnCommandline
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.utilities import download_coi_db, download_taxonomy_sqlite, tempdir
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
+from wopmetabarcoding.utils.OptionManager import OptionManager
 
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 
@@ -56,21 +56,25 @@ class TaxAssign(ToolWrapper):
 
     def specify_params(self):
         return {
-        "identity_threshold":"float",  #  percentage
-        "include_prop" : "float",  # percentage
-        "min_number_of_taxa" : "int",  #  count
+            "identity_threshold":"float",  #  percentage
+            "include_prop" : "float",  # percentage
+            "min_number_of_taxa" : "int",  #  count
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         #########################################################
         #
         # 1. Wrapper inputs, outputs and parameters
         #
         #########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
                                                                       inspect.currentframe().f_lineno,))
         #
@@ -157,7 +161,7 @@ class TaxAssign(ToolWrapper):
         # Get variants that passed the filter
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
@@ -179,7 +183,7 @@ class TaxAssign(ToolWrapper):
         # 2 Create FASTA file with Variants
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
         this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
         try:
@@ -196,7 +200,7 @@ class TaxAssign(ToolWrapper):
         # 3 Run local blast
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Running local blast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
         #
         # Run and read local blast result
@@ -235,7 +239,7 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         # blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
-        # logger.debug(
+        # Logger.instance().debug(
         #     "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
         # lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
         #                                   names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
@@ -255,21 +259,21 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         #
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Open taxonomy.sqlite DB".format(__file__, inspect.currentframe().f_lineno))
         lblast_output_df.target_tax_id = pandas.to_numeric(lblast_output_df.target_tax_id)
         # getting the taxonomy_db to df
         taxonomy_sqlite_path = download_taxonomy_sqlite()
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(__file__, inspect.currentframe().f_lineno))
         lineage_list = []
         for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
             lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
         tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         #
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__, inspect.currentframe().f_lineno))
         # Merge local blast output with tax_id_to_lineage_df
         variantid_identity_lineage_df = lblast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
@@ -283,7 +287,7 @@ class TaxAssign(ToolWrapper):
         #  6 test_f05_select_ltg_identity
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Main loop over variant and identity to"
             "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
             "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
@@ -291,14 +295,14 @@ class TaxAssign(ToolWrapper):
         # f07_blast_result_to_ltg_tax_id(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
         #
-        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=identity_threshold,
-                                                include_prop=include_prop, min_number_of_taxa=min_number_of_taxa)
+        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=int(identity_threshold),
+                                                include_prop=int(include_prop), min_number_of_taxa=min_number_of_taxa)
         ##########################################################
         #
         # 6. Insert Filter data
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
                 conn.execute(tax_assign_model.__table__.insert(), ltg_df.to_dict('records'))
 

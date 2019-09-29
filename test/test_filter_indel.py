@@ -1,6 +1,6 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 
 import os
 from wopmetabarcoding.utils.utilities import tempdir
@@ -42,7 +42,7 @@ class TestIndel(TestCase):
         })
 
         self.tempdir = os.path.join(tempdir, "FilterUtilities", self.__class__.__name__)
-        PathFinder.mkdir_p(self.tempdir)
+        PathManager.mkdir_p(self.tempdir)
 
 
     def test_01_f13_indel(self):

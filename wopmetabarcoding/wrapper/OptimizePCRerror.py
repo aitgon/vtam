@@ -3,12 +3,15 @@ import inspect
 import os
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.wrapper.FilterPCRError import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
+
 from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+
 
 
 class OptimizePCRerror(ToolWrapper):
@@ -53,11 +56,15 @@ class OptimizePCRerror(ToolWrapper):
 
     def specify_params(self):
         return {
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ################################################################################################################
         #
@@ -104,7 +111,7 @@ class OptimizePCRerror(ToolWrapper):
                     .where(variant_model.__table__.c.id == variant_id)\
                     .where(variant_model.__table__.c.sequence == variant_sequence)
                 if conn.execute(stmt_select).first() is None:
-                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   Logger.instance().error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
                    os.mknod(output_file_optimize_pcr_error)
                    exit()
 
@@ -199,7 +206,7 @@ class OptimizePCRerror(ToolWrapper):
 
         pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
 
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; pcr error optimize parameter succefully counted : #: {} ".format(__file__,inspect.currentframe().f_lineno, output_file_optimize_pcr_error,'OptimizePCRerror'))
         ##########################################################
         #

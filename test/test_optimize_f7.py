@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
@@ -13,10 +13,10 @@ from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_repl
 class TestOptimizeF7(TestCase):
 
     def setUp(self):
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.variant_read_count_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.variant_read_count_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_read_count.tsv")
-        self.variants_optimize_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+        self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variants_optimize.tsv")
         self.this_step_tmp_dir = create_step_tmp_dir(__file__)
         #

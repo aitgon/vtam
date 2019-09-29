@@ -81,7 +81,7 @@ class Merge(ToolWrapper):
             with open(fastainfo, 'w') as fastainfo_fout:
                 next(csv_file) # skip header of fastqinfo
                 fastainfo_header = "TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 " \
-                                   "Biosample	Replicate	Run	Fastq_fw	Fastq_rv\n"
+                                   "Biosample	Replicate	Run	Fastq_fw	Fastq_rv	Fasta\n"
                 fastainfo_fout.write(fastainfo_header) # write header of fastainfo
                 for line in csv_file:
                     sample_info = line.strip().split("\t")
@@ -99,7 +99,7 @@ class Merge(ToolWrapper):
                         sys.exit(1)
                     fout_name = sample_info[7] + "_" + sample_info[4] + "_" +sample_info[6] + ".fasta"
                     PathManager.mkdir_p(fasta_dir)
-                    fastainfo_line = '\t'.join(line.strip()) + '\n'
+                    fastainfo_line = line.strip() + '\t' + fout_name + '\n'
                     fastainfo_fout.write(fastainfo_line) # write fastainfo line
                     fasta_abspath = os.path.join(fasta_dir, fout_name)
                     if not (fastq_fw_abspath, fastq_rv_abspath, fasta_abspath) in fastq_and_fasta_list:
@@ -124,11 +124,11 @@ class Merge(ToolWrapper):
             Logger.instance().info(command)
             run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
             Logger.instance().info(run_result.stdout)
-            Logger.instance().error(run_result.stderr)
             try:
                 assert run_result.returncode == 0 # vsearch exited correctly?
             except Exception:
                 msg = "Vsearch error: The program has exited due to an error." \
                       "Verify the command and the input and output files."
+                Logger.instance().error(run_result.stderr)
                 Logger.instance().error(VTAMexception(msg))
                 sys.exit(1)

@@ -15,6 +15,8 @@ rule SampleInformation:
             SampleInformation: wopmetabarcoding.model.SampleInformation
     params:
         fasta_dir: {{fastadir}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule SortReads:
     tool: wopmetabarcoding.wrapper.SortReads
@@ -32,6 +34,8 @@ rule SortReads:
         min_id: {{min_id}}
         minseqlength: {{minseqlength}}
         overhang: {{overhang}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 #
 rule VariantReadCount:
     tool: wopmetabarcoding.wrapper.VariantReadCount
@@ -48,6 +52,9 @@ rule VariantReadCount:
         table:
             Variant: wopmetabarcoding.model.Variant
             VariantReadCount: wopmetabarcoding.model.VariantReadCount
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 {% block rule_2nd_otu_optimize %}{% endblock %}

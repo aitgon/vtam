@@ -1,12 +1,11 @@
 import os
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmars.utils.Logger import Logger
 
-# from wopmetabarcoding.wrapper.OptimizeLFNutilities import OptimizeLFNRunner
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 
 
 class OptimizeLFNbiosampleReplicate(ToolWrapper):
@@ -48,11 +47,15 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     def specify_params(self):
         return {
+            "log_verbosity": "int",
+            "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -99,7 +102,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
                     .where(variant_model.__table__.c.id == variant_id)\
                     .where(variant_model.__table__.c.sequence == variant_sequence)
                 if conn.execute(stmt_select).first() is None:
-                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   Logger.instance().error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
                    os.mknod(output_file_optimize_lfn)
                    exit()
 

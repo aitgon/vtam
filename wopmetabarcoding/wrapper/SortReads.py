@@ -4,11 +4,13 @@ import os
 import shutil
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmars.utils.Logger import Logger
-from wopmetabarcoding.utils.PathManager import PathFinder
+
+from wopmetabarcoding.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+from wopmetabarcoding.utils.PathManager import PathManager
+
 
 from wopmetabarcoding.utils.VSearch import VSearch1
-from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
@@ -56,13 +58,17 @@ class SortReads(ToolWrapper):
         return {
             "min_id": "float",
             "minseqlength": "int",
-            "overhang": "int"
+            "overhang": "int",
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         this_step_tmp_dir = create_step_tmp_dir(__file__)
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -85,7 +91,6 @@ class SortReads(ToolWrapper):
         primer_tag_fasta = os.path.join(this_step_tmp_dir, 'primer_tag.fasta')
         checked_vsearch_output_tsv = os.path.join(this_step_tmp_dir, 'checked_vsearch_output.tsv')
         #
-        marker2fasta2readannotationtsv_dict = {} # Dict of dicts, where for each marker, there are fasta and readannotationtsv
         ############################################
         #
         # For each fasta file path in the DB (Table Fasta)
@@ -98,13 +103,13 @@ class SortReads(ToolWrapper):
         for fasta_obj in session.query(fasta_model).order_by('name').all():
             fasta_id = fasta_obj.id
             fasta_name = fasta_obj.name
-            PathFinder.mkdir_p(os.path.join(this_step_tmp_dir, os.path.basename(fasta_name)))
+            PathManager.mkdir_p(os.path.join(this_step_tmp_dir, os.path.basename(fasta_name)))
             # Get marker of this fasta file
             marker_id = session.query(sample_information_model).filter(
                 sample_information_model.fasta_id == fasta_id).first().marker_id
             marker_name = session.query(marker_model).filter(
                 marker_model.id == marker_id).first().name
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name))
             # file_id = fasta_obj.id
             sample_information_obj = session.query(sample_information_model).filter(sample_information_model.fasta_id==fasta_id).all()
@@ -121,17 +126,19 @@ class SortReads(ToolWrapper):
             # Vsearch --db primer_tag_fasta --usearch_global merged_fasta
             # Vsearch --db primer_tag_fasta --usearch_global merged_fasta
             ############################################
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; FASTA for forward trimming: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, primer_tag_fasta))
+            Logger.instance().debug("file: {}; line: {}; FASTA {} {}; forward {}".format(__file__,
+                                             inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; FASTA for forward trimming: {}".format(__file__,
+                             inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, primer_tag_fasta))
             #
             # This create the primer + tag fasta file
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; VSearch forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; VSearch forward trimming".format(__file__,
+                                            inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             vsearch_output_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), "vsearch_output_fwd.tsv")
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; vsearch_output_tsv: {}".format(__file__,
                         inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, vsearch_output_tsv))
             #
@@ -158,19 +165,22 @@ class SortReads(ToolWrapper):
             ############################################
             # discard_tag_primer_alignment_with_low_sequence_quality
             ############################################
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; Eliminating non SRS conforms reads for forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; Eliminating non SRS conforms reads for forward trimming"
+                    .format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             discard_tag_primer_alignment_with_low_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv, self.option("overhang"))
             #
             ############################################
             # Trim reads and write to sqlite
             ############################################
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming".format(__file__,
+                                          inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             trimmed_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'trimmed_fwd.tsv')
             temp_db_sqlite = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'trimmed_fwd.sqlite')
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, temp_db_sqlite))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for forward trimming: {}"
+            .format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, temp_db_sqlite))
             trim_reads(checked_vsearch_output_tsv, fasta_name, trimmed_tsv, temp_db_sqlite)
             #
             ############################################
@@ -178,8 +188,9 @@ class SortReads(ToolWrapper):
             ############################################
             Logger.instance().info("Writing fasta file for forward trimming.")
             trimmed_fasta = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'trimmed_fwd.fasta')
-            logger.debug(
-                "file: {}; line: {}; FASTA {} {}; forward {}; Writing fasta file for trimming.: {}".format(__file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, trimmed_fasta))
+            Logger.instance().debug(
+                "file: {}; line: {}; FASTA {} {}; forward {}; Writing fasta file for trimming.: {}".format(__file__,
+                               inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, trimmed_fasta))
             convert_trimmed_tsv_to_fasta(trimmed_tsv, trimmed_fasta)
             #
             ############################################
@@ -193,20 +204,16 @@ class SortReads(ToolWrapper):
             ############################################
             # Vsearch --db primer_tag_fasta --usearch_global merged_fasta
             ############################################
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}".format(__file__, inspect.currentframe().f_lineno,
                                                                      fasta_id, fasta_name, is_forward_strand))
-            # Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for forward trimming.")
-            logger.debug(
+            Logger.instance().info("Creating a fasta query file to align on the merged reads fasta for forward trimming.")
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; FASTA for forward trimming: {}".format(__file__,
-                                                                                                  inspect.currentframe().f_lineno,
-                                                                                                     fasta_id,
-                                                                                                     fasta_name,
-                                                                                                  is_forward_strand,
-                                                                                                  primer_tag_fasta))
+                          inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand, primer_tag_fasta))
             create_primer_tag_fasta_for_vsearch(sample_information_obj, is_forward_strand, primer_tag_fasta)
             # Logger.instance().info("Processing Vsearch for forward trimming.")
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; VSearch forward trimming".format(__file__,
                                                                                             inspect.currentframe().f_lineno,
                                                                                                fasta_id, fasta_name,
@@ -215,7 +222,7 @@ class SortReads(ToolWrapper):
             # self.vsearch_subprocess(merged_fasta, is_forward_strand, primer_tag_fasta, vsearch_output_tsv)
             vsearch_output_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), "vsearch_output_rev.tsv")
 
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; vsearch_output_tsv".format(__file__,
                                                                                       inspect.currentframe().f_lineno,
                                                                                          fasta_id, fasta_name, is_forward_strand))
@@ -236,7 +243,7 @@ class SortReads(ToolWrapper):
             ############################################
             # discard_tag_primer_alignment_with_low_sequence_quality
             ############################################
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Eliminating non SRS conforms reads for forward trimming".format(
                     __file__, inspect.currentframe().f_lineno, fasta_id, fasta_name, is_forward_strand))
             discard_tag_primer_alignment_with_low_sequence_quality(vsearch_output_tsv, checked_vsearch_output_tsv,
@@ -245,7 +252,7 @@ class SortReads(ToolWrapper):
             ############################################
             # Trim reads in reverse strand and write to sqlite
             ############################################
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for reverse trimming".format(__file__,
                                                                                                        inspect.currentframe().f_lineno,
                                                                                                           fasta_id,
@@ -253,7 +260,7 @@ class SortReads(ToolWrapper):
                                                                                                        is_forward_strand))
             trimmed_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'trimmed_rev.tsv')
             temp_db_sqlite = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'trimmed_rev.sqlite')
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; FASTA {} {}; forward {}; Trimming reads for reverse trimming: {}".format(__file__,
                                                                                                            inspect.currentframe().f_lineno,
                                                                                                               fasta_id,
@@ -267,14 +274,12 @@ class SortReads(ToolWrapper):
             read_annotation_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'read_annotation.tsv')
             tsv_file_list_with_read_annotations.append(read_annotation_tsv)
             # run_list[read_annotation_tsv] = fasta_obj.run_id
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; trimmed_tsv {}".format(__file__, inspect.currentframe().f_lineno, trimmed_tsv))
             ################################################################
             # Count number of times a given variant (Sequence unique) is observed in fasta file
             # In other words, store in 'VariantReadCount' for each 'variant_id' -> 'read count'
             ################################################################
-            # marker2fasta2readannotationtsv_dict[marker_name] = {}
-            # marker2fasta2readannotationtsv_dict[marker_name][fasta_name] = read_annotation_tsv
             fasta_sort_reads_tsv = os.path.join(this_step_tmp_dir, os.path.basename(fasta_name), 'sortreads.tsv')
             fasta_sort_reads_tsv_list.append(fasta_sort_reads_tsv)
             annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id=fasta_id, out_tsv=fasta_sort_reads_tsv)

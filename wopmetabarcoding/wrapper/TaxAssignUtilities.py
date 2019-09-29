@@ -3,7 +3,6 @@ import pandas
 import sqlite3
 
 from wopmetabarcoding.utils.constants import rank_hierarchy
-from wopmetabarcoding.utils.logger import logger
 
 from wopmetabarcoding.utils.constants import identity_list
 

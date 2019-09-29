@@ -1,15 +1,17 @@
 import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.utils.PathManager import PathFinder
-from wopmetabarcoding.utils.VSearch import VSearch1, Vsearch2, Vsearch3
+
+from wopmetabarcoding import OptionManager
+from wopmetabarcoding.utils.PathManager import PathManager
+from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
 
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 
 
@@ -55,12 +57,20 @@ class FilterChimera(ToolWrapper):
             FilterChimera.__output_table_filter_chimera_borderline,
         ]
 
+    def specify_params(self):
+        return{
+            "log_verbosity": "int",
+            "log_file": "str"
+        }
+
 
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         this_step_tmp_dir = create_step_tmp_dir(__file__)
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -181,7 +191,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
     filter chimera
     """
 
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     filter_output_df = variant_read_count_df.copy()

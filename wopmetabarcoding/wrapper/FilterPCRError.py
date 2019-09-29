@@ -7,7 +7,7 @@ from math import floor
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.VSearch import VSearch1
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 
@@ -54,6 +54,8 @@ class FilterPCRError(ToolWrapper):
     def specify_params(self):
         return {
             "pcr_error_var_prop": "float",
+            "log_verbosity": "int",
+            "log_file": "str"
 
         }
 
@@ -61,6 +63,8 @@ class FilterPCRError(ToolWrapper):
         session = self.session()
         engine = session._WopMarsSession__session.bind
         this_step_tmp_dir = create_step_tmp_dir(__file__)
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
