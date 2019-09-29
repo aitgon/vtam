@@ -155,6 +155,6 @@ rule MakeOtuTable:
             sample2fasta: {{fastainfo}}
     output:
         file:
-            OTUTable: {{outtable}}
+            OTUTable: {{otutable}}
 
 {% endblock %}

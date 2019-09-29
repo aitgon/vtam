@@ -5,7 +5,9 @@ import sqlalchemy
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
 
@@ -57,12 +59,16 @@ class VariantReadCount(ToolWrapper):
         return {
             "min_id": "float",
             "minseqlength": "int",
-            "overhang": "int"
+            "overhang": "int",
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -101,7 +107,7 @@ class VariantReadCount(ToolWrapper):
         # 1. Read sample information to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         sample2fasta_df = pandas.read_csv(input_file_sample2fasta, sep="\t", header=None,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
             'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
@@ -132,7 +138,7 @@ class VariantReadCount(ToolWrapper):
         # 2. Remove marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Remove marker/run/biosample/replicate".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Remove marker/run/biosample/replicate".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
 
@@ -141,7 +147,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
                              header=None,
                              names=['read_id', 'fasta_id', 'run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence'])
@@ -151,7 +157,7 @@ class VariantReadCount(ToolWrapper):
         # 4. Group by read sequence
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_df = read_annotation_df.groupby(['fasta_id', 'run_id', 'marker_id', 'biosample_id',
                                     'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
 
@@ -160,7 +166,7 @@ class VariantReadCount(ToolWrapper):
         # 5. Remove singleton
         #
         ##########################################################
-        logger.debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
 
         ################################
@@ -168,7 +174,7 @@ class VariantReadCount(ToolWrapper):
         # 6. Insert into Variant and VariantReadCount tables
         #
         ################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Insert variants".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
         sample_instance_list = []
@@ -195,7 +201,7 @@ class VariantReadCount(ToolWrapper):
         ############################################
         # Write variant_read_count table
         ############################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {};  Insert variant read count".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)

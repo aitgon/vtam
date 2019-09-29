@@ -2,8 +2,7 @@ import inspect
 
 import pandas
 import sqlalchemy
-from wopmars.utils.Logger import Logger
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from Bio import SeqIO
@@ -222,7 +221,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
     :param merged_fasta_file_name: Name of the original merged fasta file
     :return: void
     """
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; function annotate_reads".format(__file__, inspect.currentframe().f_lineno))
     # # Creating a merged_fasta_file_name for the output csv file
     # out_tsv = trimmed_tsv.replace('_forward_trimmed_output_reverse_trimmed.csv', '_combination.tsv')
@@ -409,7 +408,7 @@ def insert_variant(con, count_reads_marker, variant_model):
         try:
             stmt = variant_table.insert().values(variant_id=row[0], marker_id=row[1], sequence=row[2], readcount=row[3])
             con.execute(stmt)
-            # logger.debug(
+            # Logger.instance().debug(
             #     "file: {}; line: {}; variant_id {} insert".format(__file__, inspect.currentframe().f_lineno, row[0]))
         except sqlalchemy.exc.IntegrityError:
             stmt = variant_table.update().where(variant_table.c.sequence==row[2]).values(readcount=row[3])

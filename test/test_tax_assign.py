@@ -7,10 +7,10 @@ import numpy
 import pandas
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.constants import public_data_dir
 from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite, tempdir, create_vtam_data_dir
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
 
@@ -32,11 +32,11 @@ class TestTaxAssign(TestCase):
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.lblast_output_var3_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
-        self.lblast_output_var7_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
-        self.lblast_output_var9_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
-        self.tax_lineage_variant13_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.lblast_output_var3_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
+        self.lblast_output_var7_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
+        self.lblast_output_var9_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
+        self.tax_lineage_variant13_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
 
 
     def test_f02_variant_df_to_fasta(self):
@@ -47,7 +47,7 @@ class TestTaxAssign(TestCase):
         }
         variant_df = pandas.DataFrame(data=variant_dic)
         #
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
         this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
         try:

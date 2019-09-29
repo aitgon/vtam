@@ -3,7 +3,7 @@ import os
 import pandas
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner, f1_lfn_delete_singleton
 
 
@@ -62,8 +62,8 @@ class TestFilterLFN(TestCase):
 
     def setUp(self):
         #
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.lfn_var_threshold_specific = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lfn_var_threshold_specific.tsv")
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.lfn_var_threshold_specific = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lfn_var_threshold_specific.tsv")
 
         #
         self.variant_df = pandas.DataFrame({

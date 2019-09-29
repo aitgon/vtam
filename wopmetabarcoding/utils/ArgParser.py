@@ -74,7 +74,7 @@ class ArgParser():
                     help="Boolean 0|1 to filter_lfn_variant (1) or filter_lfn_variant_replicate (0)")
         parser_vtam_otu.add_argument('--threshold_specific', default=False, action='store_true', required=False,
                                      help="Variant or variant-replicate specific threshold")
-
+        parser_vtam_otu.set_defaults(command='otu') # This attribute will trigget the good command
         #############################################
         #
         # create the parser for the "optimize" command
@@ -93,6 +93,7 @@ class ArgParser():
                                      required=False)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
                                           required=True)
+        parser_vtam_optimize.set_defaults(command='optimize') # This attribute will trigget the good command
 
 
         return parser_vtam

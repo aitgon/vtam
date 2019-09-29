@@ -16,7 +16,7 @@ vtam/discussion_reda_aitor/example_filter.ods
 
 """
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 import inspect
 import pandas
 
@@ -49,7 +49,7 @@ class FilterLFNRunner:
 
 
     def __init__(self, variant_read_count_df):
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; FilterNonLFNRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         # self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df[['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
@@ -62,7 +62,7 @@ class FilterLFNRunner:
         # Output df with deleted variants
         ################################
         self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'read_count':[], 'filter_id':[], 'filter_delete':[]}, dtype='int')
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
 
@@ -101,7 +101,7 @@ class FilterLFNRunner:
         """
         this_filter_id = 2
         # Write log
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         ######################
         # Calculating the total of reads by variant
@@ -196,7 +196,7 @@ class FilterLFNRunner:
         this_filter_id = 3
         # Get function
         # Write log
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         ######################
         df2 = self.variant_read_count_df.copy()
@@ -274,7 +274,7 @@ class FilterLFNRunner:
         """
 
         this_filter_id = 6
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         # Calculating the total number of reads by sample replicates
 
@@ -343,7 +343,7 @@ class FilterLFNRunner:
 
         """
         this_filter_id = 7
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         # Selecting all the indexes where the ratio is below the minimal readcount
         df2 = self.variant_read_count_df.copy()
@@ -365,7 +365,7 @@ class FilterLFNRunner:
 
 
         self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
                                                                (self.delete_variant_df.sum(axis=1) ==
                                                                 self.delete_variant_df.shape[1]).sum()))

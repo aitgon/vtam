@@ -1,15 +1,15 @@
 import os
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 
 class TestWopMetabarcoding(TestCase):
 
     def setUp(self):
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.__db_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "db.sqlite")
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.__db_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "db.sqlite")
         self.__db_url = "sqlite:///" + self.__db_path
-        self.__wopfile_test_path = PathFinder.get_wopfile_test_path()
+        self.__wopfile_test_path = PathManager.get_wopfile_test_path()
         self.__wopfile_test_str = ""
         with open(self.__wopfile_test_path, 'r') as fin:
             self.__wopfile_test_str = fin.read()
@@ -17,11 +17,11 @@ class TestWopMetabarcoding(TestCase):
 
     # def test_02sample_information(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathFinder.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
     #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
-    #     PathFinder.mkdir_p(test_outdir)
+    #     PathManager.mkdir_p(test_outdir)
     #     db_path = os.path.join(test_outdir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
     #     #
@@ -48,11 +48,11 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_02sample_information_error(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathFinder.get_module_test_path(), "input", "02sample_information", "sample2fasta_error.tsv")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta_error.tsv")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
     #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
-    #     PathFinder.mkdir_p(test_outdir)
+    #     PathManager.mkdir_p(test_outdir)
     #     # db
     #     db_path = os.path.join(test_outdir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
@@ -80,12 +80,12 @@ class TestWopMetabarcoding(TestCase):
     #     :return:
     #     """
     #     # input
-    #     sample_info_tsv = os.path.join(PathFinder.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
-    #     test_indir = os.path.join(PathFinder.get_module_test_path(), "input", "03sort_reads")
+    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "sample2fasta.tsv")
+    #     test_indir = os.path.join(PathManager.get_module_test_path(), "input", "03sort_reads")
     #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
     #     test_outdir = os.path.join(self.__testdir_path, "output", "03sort_reads")
-    #     PathFinder.mkdir_p(test_outdir)
+    #     PathManager.mkdir_p(test_outdir)
     #     # db
     #     db_path = os.path.join(test_indir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
@@ -132,8 +132,8 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_04filter_store_index_below_lfn1_per_replicate(self):
     #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-    #     PathFinder.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     PathManager.mkdir_p(test_outdir)
+    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
@@ -150,8 +150,8 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_04filter_store_index_below_lfn2_per_variant(self):
     #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-    #     PathFinder.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     PathManager.mkdir_p(test_outdir)
+    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
@@ -169,8 +169,8 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_04filter_store_index_below_lfn2_per_replicate_series(self):
     #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
-    #     PathFinder.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathFinder.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     PathManager.mkdir_p(test_outdir)
+    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
