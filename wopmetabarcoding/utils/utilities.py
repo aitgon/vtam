@@ -5,7 +5,7 @@ import urllib
 
 from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.constants import public_data_dir
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 
 
 def get_or_create(session, model, **kwargs):
@@ -52,7 +52,7 @@ def download_coi_db():
     ####
     vtam_data_dir = create_vtam_data_dir()
     coi_blast_db_dir = os.path.join(vtam_data_dir, 'coi_blast_db')
-    PathFinder.mkdir_p(os.path.join(coi_blast_db_dir))
+    PathManager.mkdir_p(os.path.join(coi_blast_db_dir))
     ####
     # map_taxids.tsv
     ####
@@ -136,7 +136,7 @@ def download_taxonomy_sqlite():
     # vtam_data_dir and coi_blast_db dir
     ####
     vtam_data_dir = create_vtam_data_dir()
-    PathFinder.mkdir_p(os.path.join(vtam_data_dir))
+    PathManager.mkdir_p(os.path.join(vtam_data_dir))
     ####
     # taxonomy.sqlite
     ####
@@ -157,7 +157,7 @@ def download_taxonomy_sqlite():
 VTAM_TMP_DIR = None
 if 'VTAM_TMP_DIR' in os.environ:
     VTAM_TMP_DIR = os.environ['VTAM_TMP_DIR']
-    PathFinder.mkdir_p(VTAM_TMP_DIR)
+    PathManager.mkdir_p(VTAM_TMP_DIR)
 tempdir = tempfile.mkdtemp(dir=VTAM_TMP_DIR)
 
 
@@ -189,7 +189,7 @@ def create_vtam_data_dir():
     """
     if 'VTAM_DATA_DIR' in os.environ:
         VTAM_DATA_DIR = os.environ['VTAM_DATA_DIR']
-        PathFinder.mkdir_p(VTAM_DATA_DIR)
+        PathManager.mkdir_p(VTAM_DATA_DIR)
         return VTAM_DATA_DIR
     else:
         return os.environ['PWD']

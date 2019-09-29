@@ -1,7 +1,9 @@
 import inspect
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+
 
 from sqlalchemy import select
 import pandas
@@ -51,11 +53,19 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         ]
 
+    def specify_params(self):
+        return {
+            "log_verbosity": "int",
+            "log_file": "str",
+        }
+
 
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
         #
         # Input file path
         input_file_sample2fasta = self.input_file(ReadCountAverageOverReplicates.__input_file_sample2fasta)
@@ -138,7 +148,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
         if variant_read_count_df.shape[0] == 0:
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; No data input for this filter.".format(__file__,
                                                                       inspect.currentframe().f_lineno,
                                                                       'Consensus'))

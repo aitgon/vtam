@@ -11,7 +11,7 @@ import os
 
 # from wopmetabarcoding.utils.constants import VTAM_DATA_DIR
 from wopmetabarcoding.utils.utilities import create_vtam_data_dir
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 
 from sqlalchemy import create_engine
 
@@ -26,7 +26,7 @@ def download():
     # Download files
     remotefile = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
     new_taxdump_path = os.path.join(VTAM_DATA_DIR, os.path.basename(remotefile))
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; Downloading NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     if not os.path.isfile(new_taxdump_path): # TODO verify MD5
         urllib.request.urlretrieve(remotefile, new_taxdump_path)
@@ -35,7 +35,7 @@ def download():
 
 def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
     new_taxdump_path = download()
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; Extracting NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     if not (os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "nodes.dmp"))\
           and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "names.dmp"))\
@@ -43,7 +43,7 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
         tar = tarfile.open(new_taxdump_path, "r:gz")
         tar.extractall(path=VTAM_DATA_DIR)
         tar.close()
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; Reading and processing NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
     #
     nodes_dmp = os.path.join(VTAM_DATA_DIR, "nodes.dmp")
@@ -66,7 +66,7 @@ def f_create_taxonomy_db(path_taxonomy_db_sqlite_path):
     #
     taxonomy_df = taxonomy_df.merge(merged_dmp_df, on='tax_id', how='left')
     #
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
     engine = create_engine('sqlite:///{}'.format(path_taxonomy_db_sqlite_path), echo=False)
     try:

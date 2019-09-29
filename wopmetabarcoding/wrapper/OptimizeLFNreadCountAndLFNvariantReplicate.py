@@ -4,12 +4,12 @@ import os
 import math
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.logger import logger
 from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
@@ -58,11 +58,15 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
             "lfn_biosample_replicate_threshold": "float",
             "lfn_read_count_threshold": "float",
             "min_replicate_number": "int",
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self, f7_lfn_delete_absolute_read_count=None):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -121,7 +125,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
                     .where(variant_model.__table__.c.id == variant_id)\
                     .where(variant_model.__table__.c.sequence == variant_sequence)
                 if conn.execute(stmt_select).first() is None:
-                   logger.error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
+                   Logger.instance().error("Variant {} and its sequence are not coherent with the VTAM database".format(variant_id))
                    os.mknod(output_file_optimize_lfn_tsv)
                    exit()
 
@@ -131,7 +135,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         # Select "keep" variants
         #
         ##########################################################
-        # logger.debug(
+        # Logger.instance().debug(
         #     "file: {}; line: {}; Extract some columns and 'keep' variants"
         #         .format(__file__, inspect.currentframe().f_lineno))
         # variants_keep_df = variants_optimize_df[variants_optimize_df["action"].isin(["keep"])]
@@ -142,7 +146,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         # Keep: Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in variant_known_df
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Select run_id, marker_id, variant_id, biosample, replicate, N_ijk where variant, biosample, etc in variant_known_df"
                 .format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_list = []
@@ -218,7 +222,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         lfn_read_count_threshold_previous = 10
         #  loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; lfn_read_count_threshold: {} ----------------------"
                     .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold))
 
@@ -249,7 +253,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         lfn_variant_replicate_threshold_previous = 0.001 # is divided by 1000
         # loop over lfn_variant_replicate_threshold: 0.001, 0.002, ...
         for lfn_variant_replicate_threshold in [i/1000 for i in range(int(lfn_variant_replicate_threshold_previous*1000), 101, 1)]:
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; lfn_variant_replicate_threshold: {} ----------------------"
                     .format(__file__, inspect.currentframe().f_lineno, lfn_variant_replicate_threshold))
 
@@ -281,7 +285,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max+1, 10)): # loop over lfn_read_count_threshold
             # loop over lfn_variant_replicate_threshold: 0.001, 0.002, ...
             for lfn_variant_replicate_threshold in [i/1000 for i in range(1, int(lfn_variant_replicate_threshold_max*1000)+1, 1)]:
-                logger.debug(
+                Logger.instance().debug(
                     "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_replicate_threshold: {} ============="
                         .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, lfn_variant_replicate_threshold))
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant_replicate(variant_read_count_df, variant_keep_df, lfn_variant_replicate_threshold,

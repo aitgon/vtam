@@ -7,7 +7,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 
 
@@ -141,7 +141,7 @@ class FilterIndel(ToolWrapper):
         variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                     columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
         if variant_read_count_df.shape[0] == 0:
-            logger.debug(
+            Logger.instance().debug(
                 "file: {}; line: {}; No data input for this filter.".format(__file__,
                                                                       inspect.currentframe().f_lineno,
                                                                       'Indel'))

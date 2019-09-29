@@ -1,7 +1,7 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
-# from wopmetabarcoding.wrapper.OptimizeLFNutilities import OptimizeLFNRunner
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
 
@@ -43,11 +43,15 @@ class OptimizeLFN(ToolWrapper):
 
     def specify_params(self):
         return {
+            "log_verbosity": "int",
+            "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #

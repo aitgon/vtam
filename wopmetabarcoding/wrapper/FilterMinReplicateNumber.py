@@ -8,7 +8,8 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.OptionManager import OptionManager
+from wopmetabarcoding.utils.Logger import Logger
 
 
 class FilterMinReplicateNumber(ToolWrapper):
@@ -52,12 +53,16 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
+            "log_verbosity": "int",
+            "log_file": "str"
 
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -211,7 +216,7 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
 
     """
     # this_filter_id = 9
-    logger.debug(
+    Logger.instance().debug(
         "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     df_filter_output=variant_read_count_df.copy()

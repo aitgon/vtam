@@ -1,13 +1,11 @@
-import errno
 import inspect
-import os
-import sqlite3
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
-from wopmetabarcoding.utils.constants import rank_hierarchy, identity_list
+
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite
-from wopmetabarcoding.utils.logger import logger
+from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
 from wopmetabarcoding.utils.constants import rank_hierarchy_otu_table
 
@@ -57,11 +55,15 @@ class MakeOtuTable(ToolWrapper):
 
     def specify_params(self):
         return {
+            "log_verbosity": "int",
+            "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -92,7 +94,7 @@ class MakeOtuTable(ToolWrapper):
         # Get also chimera borderline information
         #
         ##########################################################
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__

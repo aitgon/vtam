@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_run_vsearch, f10_get_maximal_pcr_error_value
 
@@ -12,8 +12,8 @@ from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_run_vsearch, f
 class TestOptimizePcrErrorParameter(TestCase):
 
     def setUp(self):
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.optimize_variant_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "optimize_variants.tsv")
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.optimize_variant_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "optimize_variants.tsv")
         # self.db_opt_path = os.path.join(os.environ['DIR_DATA_NON_GIT'], 'wopmetabarcodin/test/test_files/db_opt.sqlite')
         self.this_step_tmp_dir = create_step_tmp_dir(__file__)
         #

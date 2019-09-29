@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import itertools
 
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 import os
 from wopmetabarcoding.utils.utilities import tempdir
 import pandas
@@ -27,7 +27,7 @@ class TestFilterRenkonen(TestCase):
         })
 
         self.tempdir = os.path.join(tempdir, "FilterUtilities", self.__class__.__name__)
-        PathFinder.mkdir_p(self.tempdir)
+        PathManager.mkdir_p(self.tempdir)
 
     def test_f12_delete_filter_renkonen(self):
         #

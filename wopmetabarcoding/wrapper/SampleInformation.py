@@ -1,6 +1,8 @@
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from wopmetabarcoding.utils.utilities import get_or_create, create_step_tmp_dir
+from wopmetabarcoding.utils.utilities import get_or_create
+from wopmetabarcoding.utils.OptionManager import OptionManager
+
 
 import os
 
@@ -36,12 +38,16 @@ class SampleInformation(ToolWrapper):
 
     def specify_params(self):
         return{
-            "fasta_dir": "str"
+            "fasta_dir": "str",
+            "log_verbosity": "int",
+            "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
+        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -63,6 +69,7 @@ class SampleInformation(ToolWrapper):
         tagpair_model = self.output_table(SampleInformation.__output_table_tagpair)
 
         with open(csv_path, 'r') as fin:
+            next(fin) # skip header
             for line in fin:
                 tag_forward = line.strip().split('\t')[0]
                 primer_forward = line.strip().split('\t')[1]

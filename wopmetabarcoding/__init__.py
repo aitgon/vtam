@@ -25,7 +25,7 @@ class VTAM(object):
         for k in vars(self.args):
             OptionManager.instance()[k] = vars(self.args)[k]
         try:
-            wopmars_runner = WopmarsRunner(subcommand=vars(self.args)['command'], parameters=OptionManager.instance())
+            wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
             ###############################################################
             #

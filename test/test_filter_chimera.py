@@ -1,6 +1,6 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathManager import PathFinder
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
@@ -73,7 +73,7 @@ class TestChimera(TestCase):
             chimera1_fasta = os.path.join(self.this_step_tmp_dir, 'chimera1_biosample_id_{}.fasta'.format(biosample_id))
             #
             # Prepare 1 fasta file
-            # PathFinder.mkdir_p(os.path.join(self.tempdir, this_filter_name))
+            # PathManager.mkdir_p(os.path.join(self.tempdir, this_filter_name))
             with open(chimera1_fasta, 'w') as fasta_fout:
                 for variant_id in df_grouped_biosample_id.variant_id.unique():
                     variant_sequence = self.variant_df.loc[self.variant_df.id == variant_id,'sequence'].values[0]
