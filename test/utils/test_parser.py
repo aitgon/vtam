@@ -16,8 +16,8 @@ class TestParser(TestCase):
     def test_parser_otu(self):
         #
         # Minimal otu command
-        args_str = 'otu --fastainfo {} --fastadir {} --outdir foo -n'.format(__file__,
-                os.path.dirname(__file__))
+        args_str = 'otu --fastainfo {input} --fastadir {dirname} --taxonomy {input} --outdir foo -n'.format(input=__file__,
+                dirname=os.path.dirname(__file__))
         parser = ArgParser.get_arg_parser()
         parser.parse_args(args_str.split())
 
