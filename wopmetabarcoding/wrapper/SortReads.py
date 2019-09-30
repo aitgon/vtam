@@ -9,9 +9,7 @@ from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.PathManager import PathManager
 
-
 from wopmetabarcoding.utils.VSearch import VSearch1
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads
@@ -66,9 +64,10 @@ class SortReads(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        this_step_tmp_dir = create_step_tmp_dir(__file__)
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_step_tmp_dir)
 
         ##########################################################
         #

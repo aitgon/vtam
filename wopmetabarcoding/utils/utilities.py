@@ -1,9 +1,7 @@
 import inspect
 import os
-import tempfile
 import urllib
 
-from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.constants import public_data_dir
 from wopmetabarcoding.utils.Logger import Logger
@@ -18,11 +16,6 @@ def get_or_create(session, model, **kwargs):
         session.add(instance)
         session.commit()
         return instance
-
-def create_step_tmp_dir(file):
-    this_step_tmp_dir = os.path.join(tempdir, os.path.basename(file))
-    PathManager.mkdir_p(this_step_tmp_dir)
-    return this_step_tmp_dir
 
 
 ##########################################################

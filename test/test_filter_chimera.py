@@ -4,7 +4,6 @@ from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
 from wopmetabarcoding.wrapper.FilterChimera import f11_filter_chimera
 import pandas
 
@@ -36,8 +35,9 @@ class TestChimera(TestCase):
                 25, 25, 350, 360, 335, 325, 350, 350, 325, 325, 35, 25
                   ],
         })
+        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(self.this_step_tmp_dir)
 
-        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
 
 
     def test_02_f11_chimera(self):

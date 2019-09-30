@@ -10,8 +10,6 @@ import pandas
 
 from wopmetabarcoding import OptionManager
 from wopmetabarcoding.utils.Logger import Logger
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
-
 
 class FilterCodonStop(ToolWrapper):
     __mapper_args__ = {

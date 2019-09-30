@@ -1,11 +1,9 @@
 import os
-import sqlite3
 from unittest import TestCase
 
 import pandas
 
 from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
 from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
@@ -18,7 +16,8 @@ class TestOptimizeF7(TestCase):
                                                   "optimize_f7", "variant_read_count.tsv")
         self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variants_optimize.tsv")
-        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
+        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(self.this_step_tmp_dir)
         #
 
     def test_01(self):
