@@ -6,8 +6,10 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
+
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.Logger import Logger
-from wopmetabarcoding.utils.utilities import download_coi_db, download_taxonomy_sqlite, tempdir
+from wopmetabarcoding.utils.utilities import download_coi_db, download_taxonomy_sqlite
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
 from wopmetabarcoding.utils.OptionManager import OptionManager
 
@@ -22,6 +24,7 @@ class TaxAssign(ToolWrapper):
 
     # Input file
     __input_file_fastainfo = "fastainfo"
+    __input_file_taxonomy = "taxonomy"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -187,7 +190,8 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
-        this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
+        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_tempdir)
         try:
             os.makedirs(this_tempdir)
         except OSError as exception:

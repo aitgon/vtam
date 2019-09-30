@@ -5,11 +5,27 @@ multiple-lined
 
 import errno
 import os
+import tempfile
 
+from wopmetabarcoding.utils.Singleton import Singleton
 from wopmetabarcoding.utils.VTAMexception import VTAMexception
 
 
-class PathManager:
+class PathManager(Singleton):
+
+    def __init__(self):
+        self.tempdir = None
+
+    def get_tempdir(self):
+        """
+        Find the Src directory of the project
+
+        :return: the path leading to the src file of the project
+        """
+        if self.tempdir is None:
+            self.tempdir = tempfile.mkdtemp()
+        return self.tempdir
+
 
     @staticmethod
     def get_wopfile_test_path():
@@ -88,4 +104,3 @@ class PathManager:
         if abspath:
             return os.path.abspath(path)
         return path
-
