@@ -60,16 +60,24 @@ class ArgParser():
         #
         #############################################
         parser_vtam_otu = subparsers.add_parser('otu', add_help=True, parents=[parser_vtam])
-        parser_vtam_otu.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
+        parser_vtam_otu.add_argument('--fastainfo', action='store', help="(Required) TSV file with FASTA sample information",
                                        required=True, type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                              error_message="Verify the '--fastainfo' argument", abspath=abspath))
-        parser_vtam_otu.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
+        parser_vtam_otu.add_argument('--fastadir', action='store', help="(Required) Directory with FASTA files", required=True,
                                        type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                             error_message="Verify the '--fastadir' argument", abspath=abspath))
-        parser_vtam_otu.add_argument('--outdir', action='store', help="Directory for output", default="out",
-                                     required=False)
+        parser_vtam_otu.add_argument('--outdir', action='store', help="(Required) Directory for output", default="out",
+                                     required=True)
+        parser_vtam_otu.add_argument('--taxonomy', dest='taxonomy', action='store', help="""(Required) SQLITE DB with taxonomy information.
+        
+        This database is create with the command: create_db_taxonomy. For instance
+        
+        create_db_taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
+                                       required=True,
+                                       type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
+                                                 error_message="Verify the '--taxonomy' argument", abspath=abspath))
         parser_vtam_otu.add_argument('--filter_lfn_variant', default=False, action='store_true', required=False,
                     help="Boolean 0|1 to filter_lfn_variant (1) or filter_lfn_variant_replicate (0)")
         parser_vtam_otu.add_argument('--threshold_specific', default=False, action='store_true', required=False,

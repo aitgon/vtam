@@ -147,6 +147,7 @@ rule TaxAssign:
             FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
         file:
             fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
     output:
         table:
             TaxAssign: wopmetabarcoding.model.TaxAssign

@@ -3,6 +3,7 @@ import os
 import tempfile
 import urllib
 
+from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.constants import public_data_dir
 from wopmetabarcoding.utils.Logger import Logger
@@ -148,48 +149,3 @@ def download_taxonomy_sqlite():
     return taxonomy_sqlite_path
 
 
-
-##########################################################
-#
-# Define/create VTAM_TMP_DIR
-#
-##########################################################
-VTAM_TMP_DIR = None
-if 'VTAM_TMP_DIR' in os.environ:
-    VTAM_TMP_DIR = os.environ['VTAM_TMP_DIR']
-    PathManager.mkdir_p(VTAM_TMP_DIR)
-tempdir = tempfile.mkdtemp(dir=VTAM_TMP_DIR)
-
-
-##########################################################
-#
-# Define/create VTAM_DATA_DIR
-#
-##########################################################
-def create_vtam_data_dir():
-    """
-    This function creates a VTAM data directory, where all data of VTAM will be downloaded.
-
-    If the VTAM_DATA_DIR environment variable is passed, then that value will be the VTAM data directory.
-    Otherwise the PWD environment will be used.
-    Currently these data sets will be downloaded
-
-    - The taxonomy sqlite database
-    - The COI Blast database
-    - The map_taxids.tsv will the link between accession and taxids
-
-        Updated:
-            May 31, 2019
-
-        Args:
-            None
-
-        Returns:
-            String: The path to the VTAM data directory
-    """
-    if 'VTAM_DATA_DIR' in os.environ:
-        VTAM_DATA_DIR = os.environ['VTAM_DATA_DIR']
-        PathManager.mkdir_p(VTAM_DATA_DIR)
-        return VTAM_DATA_DIR
-    else:
-        return os.environ['PWD']

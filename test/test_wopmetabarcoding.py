@@ -180,7 +180,6 @@ class TestWopMetabarcoding(TestCase):
     #     variant2sample2replicate2count = Variant2Sample2Replicate2Count(variant2sample2replicate2count_df)
     #     variant2sample2replicate2count.store_index_below_lfn2_per_replicate_series(lfn2_per_variant_threshold)
     #     indices_to_drop = variant2sample2replicate2count.indices_to_drop
-    #     # print(indices_to_drop)
     #     indices_to_drop_bak = [27, 36, 46, 53, 88, 92, 104, 122, 209]
     #     self.assertTrue(indices_to_drop == indices_to_drop_bak)
     #     #
