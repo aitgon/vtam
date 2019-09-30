@@ -168,7 +168,6 @@ class TestOptimizeF7(TestCase):
             out_lfn_variant_list.append(out_lfn_variant_row_dic)
             del (lfn_filter_runner)
             #
-            print(out_lfn_variant_row_dic, count_keep_max)
             # if count_keep < count_keep_max:
             #     break
             if count_keep > count_keep_max:
@@ -182,4 +181,4 @@ class TestOptimizeF7(TestCase):
                         == {'lfn_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 12,
                             'count_delete': 3})
         out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list) # output
-        # print(pandas.DataFrame(out_lfn_variant_list))
+

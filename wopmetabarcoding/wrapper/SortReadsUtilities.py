@@ -272,7 +272,7 @@ def annotate_reads(session, sample_information_model, trimmed_tsv, fasta_id, out
                         #     + read_sequence + "\n"
                         # )
                     except AttributeError:
-                        print(sampleinformation_instance.tag_forward, sampleinformation_instance.tag_reverse, sampleinformation_instance.marker_id)
+                        pass
                 else:
                     i += 1
                     incoherent_list.append(read_id)

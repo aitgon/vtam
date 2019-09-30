@@ -319,11 +319,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                "lfn_read_count_threshold": lfn_read_count_threshold,
                                "variant_nb_keep": count_keep, "variant_nb_delete": count_delete}
                     out_lfn_variant_list.append(out_lfn_variant_row_dic)
-                # print(len(out_lfn_variant_list))
-
-                #
-                # if count_keep < count_keep_max:
-                #     break
+                    
                 if count_keep > count_keep_max:
                     count_keep_max = count_keep
 

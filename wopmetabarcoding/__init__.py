@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-
 import os
+import sys
 
 from wopmetabarcoding.utils.ArgParser import ArgParser
 from wopmetabarcoding.utils.Logger import Logger
@@ -33,11 +32,10 @@ class VTAM(object):
             #
             ###############################################################
             Logger.instance().info(wopmars_command)
-            import pdb; pdb.set_trace()
             os.system(wopmars_command)
             sys.exit(0)
         except KeyError:
-            print(VTAMexception(message="""usage: vtam <command> [<args>]
+            sys.stdout(VTAMexception(message="""usage: vtam <command> [<args>]
 
         These are the VTAM commands:
 

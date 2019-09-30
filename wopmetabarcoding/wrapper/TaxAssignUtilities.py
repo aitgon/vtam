@@ -202,7 +202,6 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
     #
     for variant_id in variant_id_list:  #  Loop sorted each variant
         for identity in identity_list:  # For each variant, loop each decreasing identity
-            # print(variant_id, identity, variant_id_list)
             tax_lineage_by_variant_id_df = variantid_identity_lineage_df.loc[
                 ((variantid_identity_lineage_df['variant_id'] == variant_id) & (variantid_identity_lineage_df['identity'] >= identity))].copy()
             ###########
