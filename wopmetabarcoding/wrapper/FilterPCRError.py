@@ -9,7 +9,7 @@ import pandas
 
 from wopmetabarcoding.utils.OptionManager import OptionManager
 from wopmetabarcoding.utils.VSearch import VSearch1
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir, tempdir
+from wopmetabarcoding.utils.PathManager import PathManager
 
 
 class FilterPCRError(ToolWrapper):
@@ -62,9 +62,10 @@ class FilterPCRError(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        this_step_tmp_dir = create_step_tmp_dir(__file__)
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_step_tmp_dir)
 
         ##########################################################
         #

@@ -7,7 +7,7 @@ from wopmetabarcoding.wrapper.FilterPCRError import f10_get_maximal_pcr_error_va
 from sqlalchemy import select
 import pandas
 
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
+from wopmetabarcoding.utils.PathManager import PathManager
 
 from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.OptionManager import OptionManager
@@ -65,6 +65,8 @@ class OptimizePCRerror(ToolWrapper):
         engine = session._WopMarsSession__session.bind
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_step_tmp_dir)
 
         ################################################################################################################
         #
@@ -202,7 +204,7 @@ class OptimizePCRerror(ToolWrapper):
 
         vsearch_output_df = f10_pcr_error_run_vsearch(
             variant_db_df=variant_vsearch_db_df, variant_usearch_global_df=variant_df,
-            tmp_dir=create_step_tmp_dir(__file__))
+            tmp_dir=this_step_tmp_dir)
 
         pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
 

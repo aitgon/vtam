@@ -5,9 +5,9 @@ import os
 
 import sys
 
+from wopmetabarcoding.utils.PathManager import PathManager
 from wopmetabarcoding.utils.Singleton import Singleton
 from wopmetabarcoding.utils.constants import parameters_numerical
-# from wopmetabarcoding.utils.utilities import tempdir
 
 
 class WopmarsRunner(Singleton):
@@ -29,6 +29,7 @@ class WopmarsRunner(Singleton):
             self.parameters[k] = parameters[k]
         #
         self.wopfile_path = None
+        self.tempdir = PathManager.instance().get_tempdir()
 
 
     def create_wopfile(self, path=None):
@@ -110,8 +111,8 @@ class WopmarsRunner(Singleton):
         #
         ###################
         if self.wopfile_path is None:
-            self.wopfile_path = os.path.join(tempdir, 'Wopfile_{}.yml'.format(self.command))
-            (self.wopfile_path, wopfile_content) = self.create_wopfile(path=self.wopfile_path)
+            self.wopfile_path = os.path.join(self.tempdir, 'Wopfile_{}.yml'.format(self.command))
+            self.wopfile_path, wopfile_content = self.create_wopfile(path=self.wopfile_path)
         wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v"
         wopmars_command = wopmars_command_template\
             .format(wopfile_path=self.wopfile_path, **self.parameters)

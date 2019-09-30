@@ -8,7 +8,6 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.utils.OptionManager import OptionManager
 
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
 from wopmetabarcoding.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
 
 
