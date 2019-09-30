@@ -7,7 +7,7 @@ import sys
 
 from wopmetabarcoding.utils.Singleton import Singleton
 from wopmetabarcoding.utils.constants import parameters_numerical
-from wopmetabarcoding.utils.utilities import tempdir
+# from wopmetabarcoding.utils.utilities import tempdir
 
 
 class WopmarsRunner(Singleton):
