@@ -69,6 +69,7 @@ class FilterChimera(ToolWrapper):
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
         this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_step_tmp_dir)
 
         ##########################################################
         #
