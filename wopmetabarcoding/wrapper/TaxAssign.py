@@ -269,7 +269,7 @@ class TaxAssign(ToolWrapper):
             "file: {}; line: {}; Open taxonomy.sqlite DB".format(__file__, inspect.currentframe().f_lineno))
         lblast_output_df.target_tax_id = pandas.to_numeric(lblast_output_df.target_tax_id)
         # getting the taxonomy_db to df
-        # taxonomy_sqlite_path = download_taxonomy_sqlite()
+        # taxonomy_sqlite_path = __download_taxonomy_sqlite()
         taxonomy_sqlite_path = input_file_taxonomy
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #

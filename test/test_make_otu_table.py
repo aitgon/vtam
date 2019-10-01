@@ -7,6 +7,7 @@ from unittest import TestCase
 import pandas
 
 from wopmetabarcoding import Logger
+from wopmetabarcoding.utils.TaxonomyDB import TaxonomyDB
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
 from wopmetabarcoding.wrapper.MakeOtuTable import f16_otu_table_maker
@@ -16,7 +17,9 @@ class TestMakeOtuTable(TestCase):
 
     def test_f01_make_table_out(self):
         try:
-            taxonomy_sqlite_path = os.environ['TAXONOMY_SQLITE']
+            taxonomydb = TaxonomyDB(package=True)
+            taxonomy_sqlite_path = taxonomydb.get_path()
+            # taxonomy_sqlite_path = os.environ['TAXONOMY_SQLITE']
             Path(taxonomy_sqlite_path).resolve(strict=True)
         except KeyError:
             Logger.instance().error("Set the TAXONOMY_SQLITE environment variable to run this test")
