@@ -4,7 +4,6 @@ from sqlalchemy import select
 import pandas
 
 from wopmetabarcoding.utils.OptionManager import OptionManager
-from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite
 from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
 from wopmetabarcoding.utils.constants import rank_hierarchy_otu_table
@@ -33,6 +32,7 @@ class MakeOtuTable(ToolWrapper):
     def specify_input_file(self):
         return[
             MakeOtuTable.__input_file_fastainfo,
+            MakeOtuTable.__input_file_taxonomy,
         ]
 
     def specify_input_table(self):
@@ -73,6 +73,7 @@ class MakeOtuTable(ToolWrapper):
         #
         # Input file path
         input_file_fastainfo = self.input_file(MakeOtuTable.__input_file_fastainfo)
+        input_file_taxonomy = self.input_file(MakeOtuTable.__input_file_taxonomy)
         #
         # Input table models
         marker_model = self.input_table(MakeOtuTable.__input_table_marker)
@@ -176,7 +177,8 @@ class MakeOtuTable(ToolWrapper):
         # taxonomy_db to df
         #
         #####
-        taxonomy_sqlite_path = download_taxonomy_sqlite()
+        # taxonomy_sqlite_path = download_taxonomy_sqlite()
+        taxonomy_sqlite_path = input_file_taxonomy
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 
         #####

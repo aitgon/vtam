@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite, tempdir, create_vtam_data_dir
+from wopmetabarcoding.utils.TaxonomyDB import TaxonomyDB
 from wopmetabarcoding.utils.Logger import Logger
 from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
@@ -21,8 +21,9 @@ class TestTaxAssign(TestCase):
         # Download taxonomy.sqlite
         #
         #####################################
-        create_vtam_data_dir()
-        taxonomy_sqlite_path = download_taxonomy_sqlite()
+        # create_vtam_data_dir()
+        taxonomydb = TaxonomyDB(package=True)
+        taxonomy_sqlite_path = taxonomydb.get_path()
         #
         self.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
@@ -47,7 +48,7 @@ class TestTaxAssign(TestCase):
         #
         Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
-        this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
+        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_tempdir)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
         f02_variant_df_to_fasta(variant_df, variant_fasta)

@@ -45,10 +45,7 @@ rank_hierarchy_otu_table =['phylum', 'class', 'order', 'family', 'genus', 'speci
 wop_dir = os.path.join("{}/Software/repositories/wopmetabarcodin".format(os.environ['HOME']))
 
 public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
+url_taxonomy_sqlite = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.sqlite"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
-# # Old tax_assign parameters_numerical
-# order = [100.0, 97.0, 95.0, 90.0]
-# # order = [100.0, 97.0, 95.0, 90.0, 85.0, 80.0]
-# taxonomic_levels = {"family": 5, "order": 4, "genus": 3, "species": 2, "subspecies": 1}
