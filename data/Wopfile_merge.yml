@@ -1,5 +1,5 @@
 rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
+  tool: vtam.wrapper.Merge
   input:
       file:
           fastqinfo: {{fastqinfo}}

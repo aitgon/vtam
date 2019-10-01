@@ -10,9 +10,9 @@ import jinja2
 import yaml
 import os
 # import subprocess
-from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.utilities import tempdir
-from wopmetabarcoding.utils.logger import logger
+from vtam.utils.PathManager import PathManager
+from vtam.utils.utilities import tempdir
+from vtam.utils.logger import logger
 
 
 def vtam_run(args_dic):

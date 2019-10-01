@@ -3,8 +3,8 @@ import os
 import pandas
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner, f1_lfn_delete_singleton
+from vtam.utils.PathManager import PathManager
+from vtam.wrapper.FilterLFNutilities import FilterLFNRunner, f1_lfn_delete_singleton
 
 
 class TestSingleton(TestCase):

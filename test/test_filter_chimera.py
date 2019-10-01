@@ -1,10 +1,10 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.VSearch import Vsearch3
+from vtam.utils.PathManager import PathManager
+from vtam.utils.VSearch import Vsearch3
 from Bio import SeqIO
 import os
-from wopmetabarcoding.wrapper.FilterChimera import f11_filter_chimera
+from vtam.wrapper.FilterChimera import f11_filter_chimera
 import pandas
 
 class TestChimera(TestCase):

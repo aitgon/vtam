@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathManager
+from vtam.utils.PathManager import PathManager
 import os
 import pandas
-from wopmetabarcoding.wrapper.FilterRenkonen import f12_filter_delete_renkonen
+from vtam.wrapper.FilterRenkonen import f12_filter_delete_renkonen
 
-from wopmetabarcoding.wrapper.FilterRenkonen import renkonen_distance
+from vtam.wrapper.FilterRenkonen import renkonen_distance
 
 
 class TestFilterRenkonen(TestCase):

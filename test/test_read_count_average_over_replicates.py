@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.wrapper.ReadCountAverageOverReplicates import read_count_average_over_replicates
+from vtam.wrapper.ReadCountAverageOverReplicates import read_count_average_over_replicates
 
 
 class TestReadCountAverageOverReplicates(TestCase):

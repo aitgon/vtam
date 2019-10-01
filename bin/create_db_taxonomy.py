@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wopmetabarcoding.utils.TaxonomyDB import TaxonomyDB
+from vtam.utils.TaxonomyDB import TaxonomyDB
 
 import argparse
 
@@ -15,7 +15,7 @@ import errno, pandas, urllib
 
 import os
 
-from wopmetabarcoding.utils.Logger import Logger
+from vtam.utils.Logger import Logger
 
 from sqlalchemy import create_engine
 
