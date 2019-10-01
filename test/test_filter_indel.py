@@ -3,7 +3,6 @@ from unittest import TestCase
 from wopmetabarcoding.utils.PathManager import PathManager
 
 import os
-from wopmetabarcoding.utils.utilities import tempdir
 import pandas
 
 from wopmetabarcoding.wrapper.FilterIndel import f13_filter_indel
@@ -41,7 +40,7 @@ class TestIndel(TestCase):
                   ],
         })
 
-        self.tempdir = os.path.join(tempdir, "FilterUtilities", self.__class__.__name__)
+        self.tempdir = os.path.join(PathManager.instance().get_tempdir(), "FilterUtilities", self.__class__.__name__)
         PathManager.mkdir_p(self.tempdir)
 
 

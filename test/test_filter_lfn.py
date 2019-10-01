@@ -63,7 +63,8 @@ class TestFilterLFN(TestCase):
     def setUp(self):
         #
         self.__testdir_path = os.path.join(PathManager.get_module_test_path())
-        self.lfn_var_threshold_specific = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lfn_var_threshold_specific.tsv")
+        self.lfn_var_threshold_specific = os.path.join(PathManager.get_module_test_path(),
+                                                       self.__testdir_path, "test_files", "lfn_var_threshold_specific.tsv")
 
         #
         self.variant_df = pandas.DataFrame({
@@ -184,9 +185,10 @@ class TestFilterLFN(TestCase):
 
 
     def test_05_f3_f5_lfn_delete_per_sum_variant_replicate_threshold_specific(self):
-        lfn_var_threshold = 0.0005
         # lfn_per_replicate_series_threshold_specific = {9: 0.02, 22: 0.005}
         lfn_var_threshold_specific_df = pandas.read_csv(self.lfn_var_threshold_specific, sep='\t', header=0)
+        lfn_var_threshold = 0.0005
+        lfn_var_threshold_specific_df = pandas.DataFrame(data={'variant_id' : [9, 22], 'threshold' : [0.02, 0.005]})
         self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(lfn_var_threshold, threshold_specific_df=lfn_var_threshold_specific_df)
         #import pdb; pdb.set_trace()
         #

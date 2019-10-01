@@ -6,6 +6,7 @@ install_requires = [
     'wopmars>y=0.0.5',
     'Jinja2>=2.10',
     'pandas==0.23.3',
+    'SQLAlchemy>=1.3.0',
     'termcolor>=1.1.0',
 ]
 

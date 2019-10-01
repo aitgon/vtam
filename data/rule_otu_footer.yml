@@ -173,6 +173,7 @@ rule MakeOtuTable:
             TaxAssign: wopmetabarcoding.model.TaxAssign
         file:
             fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
     output:
         file:
             OTUTable: {{otutable}}
