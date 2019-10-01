@@ -2,14 +2,14 @@
 {% block rule_2nd_otu_optimize %}
 
 rule OptimizeLFNbiosampleReplicate:
-    tool: wopmetabarcoding.wrapper.OptimizeLFNbiosampleReplicate
+    tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Variant: wopmetabarcoding.model.Variant
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
         file:
             variant_known: {{variant_known}}
     output:
@@ -22,14 +22,14 @@ rule OptimizeLFNbiosampleReplicate:
 
 
 rule OptimizePCRerror:
-    tool: wopmetabarcoding.wrapper.OptimizePCRerror
+    tool: vtam.wrapper.OptimizePCRerror
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
-            Variant: wopmetabarcoding.model.Variant
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.model.Variant
         file:
             variant_known: {{variant_known}}
     output:
@@ -41,14 +41,14 @@ rule OptimizePCRerror:
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
-    tool: wopmetabarcoding.wrapper.OptimizeLFNreadCountAndLFNvariant
+    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Variant: wopmetabarcoding.model.Variant
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
         file:
             variant_known: {{variant_known}}
     output:
@@ -66,14 +66,14 @@ rule OptimizeLFNreadCountAndLFNvariant:
 
 
 rule OptimizeLFNreadCountAndLFNvariantReplicate:
-    tool: wopmetabarcoding.wrapper.OptimizeLFNreadCountAndLFNvariantReplicate
+    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariantReplicate
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Variant: wopmetabarcoding.model.Variant
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
         file:
             variant_known: {{variant_known}}
     output:

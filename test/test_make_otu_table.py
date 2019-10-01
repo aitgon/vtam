@@ -6,11 +6,11 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding import Logger
-from wopmetabarcoding.utils.TaxonomyDB import TaxonomyDB
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam import Logger
+from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
-from wopmetabarcoding.wrapper.MakeOtuTable import f16_otu_table_maker
+from vtam.wrapper.MakeOtuTable import f16_otu_table_maker
 
 
 class TestMakeOtuTable(TestCase):

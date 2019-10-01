@@ -12,9 +12,9 @@ import yaml
 
 from pathlib import Path
 
-from wopmetabarcoding.utils.OptionManager import OptionManager
-from wopmetabarcoding.utils.utilities import tempdir
-from wopmetabarcoding.utils.PathManager import PathManager
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.utilities import tempdir
+from vtam.utils.PathManager import PathManager
 
 
 def vtam_run(args_dic):
@@ -58,7 +58,7 @@ def vtam_run(args_dic):
         PathFinder.mkdir_p(os.path.dirname(args_dic['log']))
         Path(args_dic['log']).touch() # touch log
     #     cmd = cmd + " --log " + args_dic['log']
-    from wopmetabarcoding.utils.logger import logger
+    from vtam.utils.logger import logger
     logger.info(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     stdout = p.communicate()

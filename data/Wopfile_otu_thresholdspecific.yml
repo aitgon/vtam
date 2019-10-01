@@ -2,20 +2,20 @@
 {% block rule_2nd_otu_optimize %}
 
 rule FilterLFN:
-    tool: wopmetabarcoding.wrapper.FilterLFNthresholdspecific
+    tool: vtam.wrapper.FilterLFNthresholdspecific
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            VariantReadCount: vtam.model.VariantReadCount
         file:
             fastainfo: {{fastainfo}}
             threshold_specific: {{threshold_specific}}
     output:
         table:
-            FilterLFN: wopmetabarcoding.model.FilterLFN
+            FilterLFN: vtam.model.FilterLFN
     params:
         filter_lfn_variant: {{filter_lfn_variant}}
         lfn_variant_threshold: {{lfn_variant_threshold}}

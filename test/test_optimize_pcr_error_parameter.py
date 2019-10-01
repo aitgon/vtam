@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathManager
+from vtam.utils.PathManager import PathManager
 
 
 class TestOptimizePcrErrorParameter(TestCase):

@@ -3,9 +3,9 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
-from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
+from vtam.utils.PathManager import PathManager
+from vtam.wrapper.FilterLFNutilities import FilterLFNRunner
+from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
 class TestOptimizeF7(TestCase):

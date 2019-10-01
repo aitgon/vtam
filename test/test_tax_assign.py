@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from wopmetabarcoding.utils.PathManager import PathManager
-from wopmetabarcoding.utils.TaxonomyDB import TaxonomyDB
-from wopmetabarcoding.utils.Logger import Logger
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
+from vtam.utils.PathManager import PathManager
+from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.utils.Logger import Logger
+from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 

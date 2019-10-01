@@ -1,5 +1,5 @@
 rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
+  tool: vtam.wrapper.Merge
   input:
       file:
           sample2fastq: data/sample2fastq.tsv
@@ -20,34 +20,34 @@ rule Merge:
       fastq_ascii: 33
 
 rule SampleInformation:
-    tool: wopmetabarcoding.wrapper.SampleInformation
+    tool: vtam.wrapper.SampleInformation
     input:
         file:
             fastainfo: {{SAMPLE_INFORMATION_TSV}}
     output:
         table:
-            File: wopmetabarcoding.model.File
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
-            PrimerPair: wopmetabarcoding.model.PrimerPair
-            Biosample: wopmetabarcoding.model.Biosample
-            TagPair: wopmetabarcoding.model.TagPair
-            Replicate: wopmetabarcoding.model.Replicate
+            File: vtam.model.File
+            SampleInformation: vtam.model.SampleInformation
+            Marker: vtam.model.Marker
+            PrimerPair: vtam.model.PrimerPair
+            Biosample: vtam.model.Biosample
+            TagPair: vtam.model.TagPair
+            Replicate: vtam.model.Replicate
     params:
         fasta_dir: {{FASTA_DIR}}
 
 rule SortReads:
-    tool: wopmetabarcoding.wrapper.VariantReadCount
+    tool: vtam.wrapper.VariantReadCount
     input:
         table:
-            File: wopmetabarcoding.model.File
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
+            File: vtam.model.File
+            SampleInformation: vtam.model.SampleInformation
+            Marker: vtam.model.Marker
     output:
         file:
             SortReads_sample_counts: {{OUTDIR}}/variant_count_detail.tsv
         table:
-            Variant: wopmetabarcoding.model.Variant
+            Variant: vtam.model.Variant
 
     params:
         sort_reads_output_dir: {{OUTDIR}}
@@ -57,12 +57,12 @@ rule SortReads:
 
 
 rule Filter:
-    tool: wopmetabarcoding.wrapper.FilterMinReplicateNumber
+    tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Variant: wopmetabarcoding.model.Variant
-            Replicate: wopmetabarcoding.model.Replicate
+            Marker: vtam.model.Marker
+            Variant: vtam.model.Variant
+            Replicate: vtam.model.Replicate
         file:
             SortReads_sample_counts: data/sortreads_samplecount.csv
             file_cutoff: data/cutoff_variant.tsv

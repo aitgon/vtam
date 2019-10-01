@@ -10,7 +10,7 @@ import jinja2
 import yaml
 import os
 
-from wopmetabarcoding.utils.logger import logger
+from vtam.utils.logger import logger
 
 
 def vtam_run(args_dic):

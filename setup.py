@@ -11,7 +11,7 @@ install_requires = [
 ]
 
 setup(
-    name='wopmetabarcoding',
+    name='vtam',
     version='0.0.1',
     license='MIT',
     author='Thomas Dechatre, Aitor Gonzalez',

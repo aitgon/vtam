@@ -1,5 +1,5 @@
 from unittest import TestCase
-from wopmetabarcoding.utils.ArgParser import ArgParser
+from vtam.utils.ArgParser import ArgParser
 
 import os
 
