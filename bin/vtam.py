@@ -2,7 +2,7 @@
 
 import sys
 
-from wopmetabarcoding import VTAM
+from vtam import VTAM
 
 def main():
     VTAM(sys.argv[1:])

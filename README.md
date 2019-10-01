@@ -6,6 +6,6 @@ To build the documentation, run these commands
 
 ~~~
 cd doc
-sphinx-apidoc -o . ../wopmetabarcoding
+sphinx-apidoc -o . ../vtam
 make html
 ~~~

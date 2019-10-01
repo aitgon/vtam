@@ -1,11 +1,11 @@
 
 from unittest import TestCase
-from wopmetabarcoding.utils.PathManager import PathManager
+from vtam.utils.PathManager import PathManager
 
 import os
 import pandas
 
-from wopmetabarcoding.wrapper.FilterIndel import f13_filter_indel
+from vtam.wrapper.FilterIndel import f13_filter_indel
 
 
 class TestIndel(TestCase):

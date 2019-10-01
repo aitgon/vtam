@@ -1,10 +1,10 @@
 import os
 from unittest import TestCase
-from wopmetabarcoding.utils.ArgParser import ArgParser
+from vtam.utils.ArgParser import ArgParser
 
-from wopmetabarcoding.utils.OptionManager import OptionManager
-from wopmetabarcoding.utils.WopmarsRunner import WopmarsRunner
-from wopmetabarcoding.utils.PathManager import PathManager
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.PathManager import PathManager
 
 
 class TestWorpmarsRunner(TestCase):
@@ -33,7 +33,7 @@ class TestWorpmarsRunner(TestCase):
         wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"), PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
         wopfile_content_bak = """rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
+  tool: vtam.wrapper.Merge
   input:
       file:
           fastqinfo: test/utils/test_wopmars_runner.py
