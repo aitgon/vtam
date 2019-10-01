@@ -6,7 +6,6 @@ from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_d
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 
-import errno
 import inspect
 import numpy
 import os
@@ -21,11 +20,6 @@ class TestTaxAssign(TestCase):
         # Download taxonomy.sqlite
         #
         #####################################
-        # create_vtam_data_dir()
-        taxonomydb = TaxonomyDB(package=True)
-        taxonomy_sqlite_path = taxonomydb.get_path()
-        #
-        self.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         self.identity_threshold = 97
         self.min_number_of_taxa = 3
@@ -36,6 +30,19 @@ class TestTaxAssign(TestCase):
         self.lblast_output_var7_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
         self.lblast_output_var9_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
         self.tax_lineage_variant13_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+
+    @classmethod
+    def setUpClass(cls):
+        """ get_some_resource() is slow, to avoid calling it for each test use setUpClass()
+            and store the result as class variable
+        """
+        super(TestTaxAssign, cls).setUpClass()
+        # create_vtam_data_dir()
+        taxonomydb = TaxonomyDB(package=True)
+        taxonomy_sqlite_path = taxonomydb.get_path()
+        #
+        cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        # cls.the_resource = get_some_resource()
 
 
     def test_f02_variant_df_to_fasta(self):
@@ -61,7 +68,7 @@ class TestTaxAssign(TestCase):
     def test_f03_1_tax_id_to_taxonomy_lineage(self):
         tax_id = 183142
         #
-        taxonomy_lineage_dic = f04_1_tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df)
+        taxonomy_lineage_dic = f04_1_tax_id_to_taxonomy_lineage(tax_id, TestTaxAssign.taxonomy_db_df)
         self.assertTrue({'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
                          'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
                          'superkingdom': 2759} == taxonomy_lineage_dic)
@@ -75,7 +82,7 @@ class TestTaxAssign(TestCase):
             'identity': [80, 80],
             'target_tax_id': [1344033, 1344033]}
         qblast_result_subset_df = pandas.DataFrame(data=qblast_out_dic)
-        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, TestTaxAssign.taxonomy_db_df)
         self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
             'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
             'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
@@ -139,7 +146,7 @@ class TestTaxAssign(TestCase):
                                                  'target_tax_id'])        #
         identity = 100
         blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_blast_result_subset(blast_output_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(blast_output_df, TestTaxAssign.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         # Outputs
@@ -161,7 +168,7 @@ class TestTaxAssign(TestCase):
                                           names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
                                                  'target_tax_id'])        #
         blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, TestTaxAssign.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         # Outputs
@@ -198,7 +205,7 @@ class TestTaxAssign(TestCase):
         # Run
         lineage_list = []
         for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
-            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, self.taxonomy_db_df))
+            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, TestTaxAssign.taxonomy_db_df))
         tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         #
         # Merge lblast output with tax_id_to_lineage_df
