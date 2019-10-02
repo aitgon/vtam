@@ -134,7 +134,6 @@ class OptimizePCRerror(ToolWrapper):
         #
         ################################################################################################################
 
-        # Todo: variant_df can be got directly from variant_read_count_df
         variant_list = []
         with engine.connect() as conn:
             for row in variants_keep_df.itertuples():
