@@ -55,7 +55,7 @@ class TaxonomyDB(object):
             "file: {}; line: {}; Extracting NCBI taxonomy dump".format(__file__, inspect.currentframe().f_lineno))
         if not (os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "nodes.dmp"))\
               and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "names.dmp"))\
-              and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "merged.dmp"))): # TODO verify MD5
+              and os.path.isfile(os.path.join(os.path.dirname(new_taxdump_path), "merged.dmp"))):
             tar = tarfile.open(new_taxdump_path, "r:gz")
             tar.extractall(path=self.tempdir)
             tar.close()

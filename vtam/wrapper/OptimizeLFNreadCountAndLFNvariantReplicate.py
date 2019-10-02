@@ -196,6 +196,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
         # variant_keep_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
         variant_keep_df = variant_keep_df.drop_duplicates(inplace=False)
 
+        # TODO 2 oct 2019: To select delete variants, we need to take
         variant_delete_negative_df = variant_read_count_df.loc[(variant_read_count_df.action == 'delete') &
                                                      (variant_read_count_df.biosample_type == 'negative')]
         # variant_delete_negative_df.drop(['replicate_id', 'read_count', 'biosample_type', 'action'], axis=1, inplace=True)
@@ -381,6 +382,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
 
 def lfn_read_count_and_lfn_variant_replicate(variant_read_count_df, variant_keep_df, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
                                    lfn_read_count_threshold, min_replicate_number):
+
     lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
 
     ###################
