@@ -94,7 +94,7 @@ class ArgParser():
                                        required=True, type=lambda x:
                             PathManager.check_file_exists_and_is_nonempty(x,
                                                                  error_message="Verify the '--fastainfo' argument"))
-        parser_vtam_optimize.add_argument('--fastadir', action='store', help="(Required) Directory with FASTA files", required=True,
+        parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED:Directory with FASTA files", required=True,
                                        type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                             error_message="Verify the '--fastadir' argument", abspath=abspath))
