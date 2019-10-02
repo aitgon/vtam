@@ -29,6 +29,9 @@ class ArgParser():
         parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
                                  help="Execute the workflow to the given target RULE: SampleInformation, ...",
                                  required=False)
+        parser_vtam.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
+                                 help="Execute the workflow from the given RULE.",
+                                 required=False)
         parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0, required=False,
                                  help="Set verbosity level, eg. None (Error level) -v (Info level) or -vv (Debug level)"
                             )
@@ -60,17 +63,17 @@ class ArgParser():
         #
         #############################################
         parser_vtam_otu = subparsers.add_parser('otu', add_help=True, parents=[parser_vtam])
-        parser_vtam_otu.add_argument('--fastainfo', action='store', help="(Required) TSV file with FASTA sample information",
+        parser_vtam_otu.add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                                        required=True, type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                              error_message="Verify the '--fastainfo' argument", abspath=abspath))
-        parser_vtam_otu.add_argument('--fastadir', action='store', help="(Required) Directory with FASTA files", required=True,
+        parser_vtam_otu.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files", required=True,
                                        type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                             error_message="Verify the '--fastadir' argument", abspath=abspath))
-        parser_vtam_otu.add_argument('--outdir', action='store', help="(Required) Directory for output", default="out",
+        parser_vtam_otu.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
                                      required=True)
-        parser_vtam_otu.add_argument('--taxonomy', dest='taxonomy', action='store', help="""(Required) SQLITE DB with taxonomy information.
+        parser_vtam_otu.add_argument('--taxonomy', dest='taxonomy', action='store', help="""REQUIRED: SQLITE DB with taxonomy information.
 
         This database is create with the command: create_db_taxonomy. For instance
 
