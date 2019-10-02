@@ -14,10 +14,8 @@ class TestOptimizePcrErrorParameter(TestCase):
         self.optimize_variant_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "optimize_variants.tsv")
         self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(self.this_step_tmp_dir)
-        #
 
     def test_01(self):
-        # TODO: Fix or remove this test
         pass
         # ####
         # #

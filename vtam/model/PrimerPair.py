@@ -2,7 +2,6 @@ from wopmars.framework.database.Base import Base
 
 from sqlalchemy import Column, String, Integer
 
-# Todo: (Opt) Create Primer model and use foreign keys?
 class PrimerPair(Base):
     __tablename__ = 'PrimerPair'
 
