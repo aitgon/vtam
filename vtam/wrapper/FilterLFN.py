@@ -134,6 +134,7 @@ class FilterLFN(ToolWrapper):
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
+
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.delete(), sample_instance_list)
 
