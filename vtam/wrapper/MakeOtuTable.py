@@ -177,7 +177,6 @@ class MakeOtuTable(ToolWrapper):
         # taxonomy_db to df
         #
         #####
-        # taxonomy_sqlite_path = download_taxonomy_sqlite()
         taxonomy_sqlite_path = input_file_taxonomy
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 

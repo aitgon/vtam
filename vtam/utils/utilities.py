@@ -43,7 +43,7 @@ def download_coi_db():
     ####
     # vtam_data_dir and coi_blast_db dir
     ####
-    tempdir = PathManager.get_tempdir()
+    tempdir = PathManager.instance().get_tempdir()
     coi_blast_db_dir = os.path.join(tempdir, 'coi_blast_db')
     PathManager.mkdir_p(os.path.join(coi_blast_db_dir))
     ####
