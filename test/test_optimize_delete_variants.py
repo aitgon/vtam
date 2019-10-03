@@ -35,6 +35,7 @@ MFZR	prerun	P1	real	7	delete"""
 1	1	3	5	1	1774
 1	1	3	5	2	1406
 1	1	3	5	3	2260
+1	1	10	2	1	2
 1	1	66	2	1	26
 1	1	66	2	2	61
 1	1	66	2	3	49
@@ -58,6 +59,19 @@ MFZR	prerun	P1	real	7	delete"""
         # Get keep variants, that is variants marked as keep in either mock or real biosamples
         #
         ##########################################################
+        variant_known_keep_df = variant_known_df.loc[variant_known_df.action=='keep']
+        variant_read_count_keep_df = variant_known_keep_df.merge(variant_read_count_df,
+                                                                 on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+        variant_read_count_keep_df = variant_read_count_keep_df[
+            ['run_id', 'marker_id', 'variant_id', 'biosample_id']].drop_duplicates(inplace=False)
+
+        ##########################################################
+        #
+        # Get delete variants, that are not keep in mock samples
+        #
+        ##########################################################
         variant_read_count_keep_df = variant_read_count_df.merge(variant_known_df,
                                                                  on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+        # variant_read_count_keep_df = variant_read_count_keep_df[
+        #     ['run_id', 'marker_id', 'variant_id', 'biosample_id']].drop_duplicates(inplace=False)
         import pdb; pdb.set_trace()
