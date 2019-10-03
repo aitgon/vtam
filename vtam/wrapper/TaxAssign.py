@@ -9,7 +9,7 @@ import pandas
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Logger import Logger
-from vtam.utils.utilities import download_coi_db, download_taxonomy_sqlite
+from vtam.utils.utilities import download_coi_db
 from vtam.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
 from vtam.utils.OptionManager import OptionManager
 
@@ -133,12 +133,12 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 3a. Select variants from this run/markerbiosample/replicate combination
-        # 3b. Delete variants from this run/markerbiosample/replicate combination
+        # 3a. Select variants from this run/marker/biosample/replicate combination
+        # 3b. Delete variants from this run/marker/biosample/replicate combination
         #
         ##########################################################
         #
-        # 3a. Select variants from this run/markerbiosample/replicate combination
+        # 3a. Select variants from this run/marker/biosample/replicate combination
         #
         variant_id_delete_list = []
         for sample_instance in sample_instance_list:
