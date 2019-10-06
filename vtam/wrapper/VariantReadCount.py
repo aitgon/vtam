@@ -8,7 +8,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 
-from vtam.wrapper.FilterLFNutilities import f1_lfn_delete_singleton
+from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
 
 
 class VariantReadCount(ToolWrapper):

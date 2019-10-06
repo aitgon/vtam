@@ -1,10 +1,13 @@
+import os
+import sys
+
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 
 
-from vtam.wrapper.FilterLFNutilities import FilterLFNRunner
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from sqlalchemy import select
 import pandas
 
@@ -142,25 +145,45 @@ class FilterLFN(ToolWrapper):
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
+
+        variant_read_count_model_table = variant_read_count_model.__table__
+
         variant_read_count_list = []
         for sample_instance in sample_instance_list:
             run_id = sample_instance['run_id']
             marker_id = sample_instance['marker_id']
             biosample_id = sample_instance['biosample_id']
             replicate_id = sample_instance['replicate_id']
-            stmt_select = select([col for col in variant_read_count_model.__table__.columns]).distinct()\
-                    .where(variant_read_count_model.__table__.c.run_id == run_id)\
-                    .where(variant_read_count_model.__table__.c.marker_id == marker_id)\
-                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_id)\
-                    .where(variant_read_count_model.__table__.c.replicate_id == replicate_id)
+            stmt_select = select([variant_read_count_model_table.c.run_id,
+                                  variant_read_count_model_table.c.marker_id,
+                                  variant_read_count_model_table.c.biosample_id,
+                                  variant_read_count_model_table.c.replicate_id,
+                                  variant_read_count_model_table.c.variant_id,
+                                  variant_read_count_model_table.c.read_count]).distinct()\
+                                    .where(variant_read_count_model.__table__.c.run_id == run_id)\
+                                    .where(variant_read_count_model.__table__.c.marker_id == marker_id)\
+                                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_id)\
+                                    .where(variant_read_count_model.__table__.c.replicate_id == replicate_id)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
                     variant_read_count_list.append(row2)
         #
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['id', 'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+            columns=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
+        ##########################################################
         #
-        lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+        #
+        ##########################################################
+
+        #
+        lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
         #
         Logger.instance().info("Launching LFN filter:")
         #
@@ -198,6 +221,6 @@ class FilterLFN(ToolWrapper):
         ############################################
         # Write all LFN Filters
         ############################################
-        records = lfn_filter_runner.delete_variant_df.to_dict('records')
+        records = lfn_filter_runner.variant_read_count_filter_delete_df.to_dict('records')
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.insert(), records)

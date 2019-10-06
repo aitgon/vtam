@@ -5,7 +5,7 @@ import math
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
-from vtam.wrapper.FilterLFNutilities import FilterLFNRunner
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
 
 from sqlalchemy import select
 import pandas
@@ -383,7 +383,7 @@ class OptimizeLFNreadCountAndLFNvariantReplicate(ToolWrapper):
 def lfn_read_count_and_lfn_variant_replicate(variant_read_count_df, variant_keep_df, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
                                    lfn_read_count_threshold, min_replicate_number):
 
-    lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+    lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
 
     ###################
     #

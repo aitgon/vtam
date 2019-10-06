@@ -44,28 +44,33 @@ def f1_lfn_delete_singleton(run_biosample_replicate_variant_read_count_df):
     return passed_lfn_delete_singleton_df
 
 
-
-class FilterLFNRunner:
-
+class FilterLFNrunner:
 
     def __init__(self, variant_read_count_df):
         Logger.instance().debug(
             "file: {}; line: {}; FilterNonLFNRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         # self.variant_df = variant_df
-        self.variant_read_count_df = variant_read_count_df[['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
+        self.variant_read_count_df = variant_read_count_df[
+            ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
         # self.marker_id = marker_id
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         #
         ################################
-        # Output df with deleted variants
+        #  Output df with deleted variants
         ################################
-        self.delete_variant_df = pandas.DataFrame(data={'variant_id':[], 'biosample_id':[], 'replicate_id':[], 'read_count':[], 'filter_id':[], 'filter_delete':[]}, dtype='int')
+        self.variant_read_count_filter_delete_df = pandas.DataFrame(data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
+                                                                          'replicate_id': [],
+                                                                          'read_count': [], 'filter_id': [],
+                                                                          'filter_delete': []},
+                                                                    dtype='uint32')
         Logger.instance().debug(
             "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.delete_variant_df.sum(axis=1) == self.delete_variant_df.shape[1]).sum()))
-
+                                                                   (self.variant_read_count_filter_delete_df.sum(
+                                                                       axis=1) ==
+                                                                    self.variant_read_count_filter_delete_df.shape[
+                                                                        1]).sum()))
 
     def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, threshold_specific_df=None):
         """
@@ -93,7 +98,7 @@ class FilterLFNRunner:
             threshold_specific_df (:obj:`dict`, optional): Variant-specific deletion threshold
 
         Returns:
-            None: The output of this filter is added to the 'self.delete_variant_df'
+            None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
             with filter_id=2 and 'filter_delete'=1 or 0 (General threshold)
             and with filter_id=4 and 'filter_delete'=1 or 0 (Variant-specific threshold)
 
@@ -106,9 +111,11 @@ class FilterLFNRunner:
         ######################
         # Calculating the total of reads by variant
         df2 = self.variant_read_count_df.copy()
-        df2 = df2[['run_id', 'marker_id', 'variant_id', 'read_count']].groupby(by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
+        df2 = df2[['run_id', 'marker_id', 'variant_id', 'read_count']].groupby(
+            by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id'], right_on=['run_id', 'marker_id', 'variant_id'])
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id'],
+                                               right_on=['run_id', 'marker_id', 'variant_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_variant'})
         # Calculate the ratio
@@ -147,22 +154,24 @@ class FilterLFNRunner:
                     df2_f4_variant_id.low_frequence_noice_per_variant < threshold, 'filter_delete'] = True
 
                 #
-                # Keep important columns
-                df2_f4_variant_id = df2_f4_variant_id[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
-                           'filter_id', 'filter_delete']]
+                #  Keep important columns
+                df2_f4_variant_id = df2_f4_variant_id[
+                    ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
+                     'filter_id', 'filter_delete']]
                 #
                 # Concatenate vertically output df
-                # Prepare output df and concatenate to self.delete_variant_df
-                self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f4_variant_id], sort=False)
+                #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+                self.variant_read_count_filter_delete_df = pandas.concat(
+                    [self.variant_read_count_filter_delete_df, df2_f4_variant_id], sort=False)
 
         #
-        # Keep important columns
+        #  Keep important columns
         df2 = df2[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
                    'filter_id', 'filter_delete']]
         # Concatenate vertically output df
-        # Prepare output df and concatenate to self.delete_variant_df
-        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
-
+        #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+        self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
+                                                                 sort=False)
 
     def f3_f5_lfn_delete_variant_replicate(self, lfn_variant_replicate_threshold, threshold_specific_df=None):
         """
@@ -188,7 +197,7 @@ class FilterLFNRunner:
 
 
         Returns:
-            None: The output of this filter is added to the 'self.delete_variant_df'
+            None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
             with filter_id=3 and 'filter_delete'=1 or 0 (General threshold)
             or with filter_id=5 and 'filter_delete'=1 or 0 (Variant-specific threshold)
 
@@ -201,17 +210,19 @@ class FilterLFNRunner:
         ######################
         df2 = self.variant_read_count_df.copy()
         # Calculating the total of reads by replicate series
-        df2 = df2[['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count']].groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
+        df2 = df2[['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count']].groupby(
+            by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).sum().reset_index()
         # Merge the column with the total reads by variant for calculate the ratio
 
-        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'], right_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'],
+                                               right_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
         df2 = df2.rename(columns={'read_count_x': 'read_count'})
         df2 = df2.rename(columns={'read_count_y': 'read_count_per_replicate_series'})
 
         # Calculate the ratio
         df2['low_frequence_noice_per_replicate_series'] = df2.read_count / df2.read_count_per_replicate_series
         #
-        df2['filter_id'] = this_filter_id # set this filter
+        df2['filter_id'] = this_filter_id  #  set this filter
         df2['filter_delete'] = False
         df2.loc[
             df2.low_frequence_noice_per_replicate_series < lfn_variant_replicate_threshold, 'filter_delete'] = True
@@ -231,18 +242,21 @@ class FilterLFNRunner:
                     df2_f6_variant_id.low_frequence_noice_per_replicate_series < threshold, 'filter_delete'] = True
 
                 #  Keep important columns
-                df2_f6_variant_id = df2_f6_variant_id[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
-                                                       'filter_id', 'filter_delete']]
+                df2_f6_variant_id = df2_f6_variant_id[
+                    ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
+                     'filter_id', 'filter_delete']]
 
                 # Concatenate vertically output df
-                #  Prepare output df and concatenate to self.delete_variant_df
-                self.delete_variant_df = pandas.concat([self.delete_variant_df, df2_f6_variant_id], sort=False)
+                #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+                self.variant_read_count_filter_delete_df = pandas.concat(
+                    [self.variant_read_count_filter_delete_df, df2_f6_variant_id], sort=False)
         df2 = df2[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
                    'filter_id', 'filter_delete']]
 
-      # Concatenate vertically output df
-      # Prepare output df and concatenate to self.delete_variant_df
-        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
+        # Concatenate vertically output df
+        #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+        self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
+                                                                 sort=False)
 
     def f6_lfn_delete_biosample_replicate(self, lfn_biosample_replicate_threshold):
         """
@@ -265,7 +279,7 @@ class FilterLFNRunner:
 
 
         Returns:
-            None: The output of this filter is added to the 'self.delete_variant_df'
+            None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
             with filter_id='f6_lfn_delete_biosample_replicate'= 1 or 0
         """
 
@@ -276,7 +290,6 @@ class FilterLFNRunner:
 
         df2 = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
             by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
         df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
@@ -295,14 +308,14 @@ class FilterLFNRunner:
         #
         # Selecting all the indexes where the ratio is below the ratio
         df2.loc[
-            df2.low_frequence_noice_per_replicate < lfn_biosample_replicate_threshold , 'filter_delete'] = True
+            df2.low_frequence_noice_per_replicate < lfn_biosample_replicate_threshold, 'filter_delete'] = True
         #
-        #Let only interest columns
+        # Let only interest columns
         df2 = df2[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
-                       'filter_id', 'filter_delete']]
+                   'filter_id', 'filter_delete']]
         #
-        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
-
+        self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
+                                                                 sort=False)
 
     def f7_lfn_delete_absolute_read_count(self, lfn_read_count_threshold):
         """
@@ -334,7 +347,7 @@ class FilterLFNRunner:
 
 
         Returns:
-           None: The output of this filter is added to the 'self.delete_variant_df'
+           None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
            with filter_id='f7_lfn_delete_absolute_read_count' and 'filter_delete'= 1 or 0
 
         """
@@ -357,28 +370,30 @@ class FilterLFNRunner:
                    'filter_id', 'filter_delete']]
         #
         # Concatenate vertically output df
-        #  Prepare output df and concatenate to self.delete_variant_df
+        #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
 
-
-        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
+        self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
+                                                                 sort=False)
         Logger.instance().debug(
             "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.delete_variant_df.sum(axis=1) ==
-                                                                self.delete_variant_df.shape[1]).sum()))
-
-
+                                                               (self.variant_read_count_filter_delete_df.sum(axis=1) ==
+                                                                self.variant_read_count_filter_delete_df.shape[
+                                                                    1]).sum()))
 
     def f8_lfn_delete_do_not_pass_all_filters(self):
         this_filter_id = 8
         # Calculating the total of reads by variant
-        df2 = self.delete_variant_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id',
-                                      'filter_delete']].groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                                 'replicate_id']).sum().reset_index()
+        df2 = self.variant_read_count_filter_delete_df[
+            ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id',
+             'filter_delete']].groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                        'replicate_id']).sum().reset_index()
         df2 = df2.rename(columns={'filter_delete': 'filter_delete_aggregate'})
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
-        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id'],
-                                               right_on=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id'])
+        df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                             'replicate_id'],
+                                               right_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                         'replicate_id'])
         #
         # Initialize
         df2['filter_id'] = this_filter_id
@@ -387,11 +402,11 @@ class FilterLFNRunner:
         #
         # Selecting all the indexes where the ratio is below the ratio
         df2.loc[
-            df2.filter_delete_aggregate>0, 'filter_delete'] = True
+            df2.filter_delete_aggregate > 0, 'filter_delete'] = True
         #
-        #Let only interest columns
+        # Let only interest columns
         df2 = df2[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
-                       'filter_id', 'filter_delete']]
+                   'filter_id', 'filter_delete']]
         #
-        self.delete_variant_df = pandas.concat([self.delete_variant_df, df2], sort=False)
-
+        self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
+                                                                 sort=False)

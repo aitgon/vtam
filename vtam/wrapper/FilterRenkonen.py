@@ -1,3 +1,6 @@
+import os
+import sys
+
 import pandas, itertools
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
@@ -126,21 +129,37 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
 
         chimera_model_table = chimera_model.__table__
-        stmt_variant_filter_lfn = select([chimera_model_table.c.run_id,
-                                          chimera_model_table.c.marker_id,
-                                          chimera_model_table.c.biosample_id,
-                                          chimera_model_table.c.replicate_id,
-                                          chimera_model_table.c.variant_id,
-                                          chimera_model_table.c.read_count]) \
-            .where(chimera_model_table.c.filter_delete == 0)
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['run_id', 'marker_id',
-                                                                       'biosample_id', 'replicate_id', 'variant_id', 'read_count',])
+
+        variant_read_count_list = []
+        for sample_instance in sample_instance_list:
+            run_id = sample_instance['run_id']
+            marker_id = sample_instance['marker_id']
+            biosample_id = sample_instance['biosample_id']
+            replicate_id = sample_instance['replicate_id']
+            stmt_select = select([chimera_model_table.c.run_id,
+                                  chimera_model_table.c.marker_id,
+                                  chimera_model_table.c.biosample_id,
+                                  chimera_model_table.c.replicate_id,
+                                  chimera_model_table.c.variant_id,
+                                  chimera_model_table.c.read_count]).distinct()\
+                                    .where(chimera_model_table.__table__.c.run_id == run_id)\
+                                    .where(chimera_model_table.__table__.c.marker_id == marker_id)\
+                                    .where(chimera_model_table.__table__.c.biosample_id == biosample_id)\
+                                    .where(chimera_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(chimera_model_table.c.filter_delete == 0)
+            with engine.connect() as conn:
+                for row2 in conn.execute(stmt_select).fetchall():
+                    variant_read_count_list.append(row2)
+        #
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
 
         ##########################################################
         #
