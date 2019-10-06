@@ -8,9 +8,11 @@ rule OptimizeLFNbiosampleReplicate:
             Run: vtam.model.Run
             Marker: vtam.model.Marker
             Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
             VariantReadCount: vtam.model.VariantReadCount
         file:
+            fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}
     output:
         file:
@@ -28,9 +30,11 @@ rule OptimizePCRerror:
             Run: vtam.model.Run
             Marker: vtam.model.Marker
             Biosample: vtam.model.Biosample
-            VariantReadCount: vtam.model.VariantReadCount
+            Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
         file:
+            fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}
     output:
         file:

@@ -1,10 +1,14 @@
 import inspect
+import os
+import sys
+
 import pandas
 
 from sqlalchemy import select, literal
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
@@ -118,21 +122,21 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
-        ##########################################################
+        ################################################################################################
         #
         # Read "variants_optimize" to get run_id, marker_id, biosample_id, variant_id for current analysis
         #
-        ##########################################################
+        ################################################################################################
 
         variant_known_df = pandas.read_csv(input_file_variant_known, sep="\t", header=0, \
                                            names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                   'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
 
-        ########################
+        ################################################################################################
         #
         # Control if known variants and sequence are consistent in the database
         #
-        ########################
+        ################################################################################################
 
         variant_control_df = variant_known_df[['variant_id', 'variant_sequence']].drop_duplicates()
         variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
@@ -148,11 +152,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                             .format(variant_id))
                     exit(1)
 
-        ##########################################################
+        ################################################################################################
         #
         # Read variant known df and get IDs from database
         #
-        ##########################################################
+        ################################################################################################
         sample_instance_list = []
         for row in variant_known_df.itertuples():
             marker_name = row.marker_name
@@ -183,52 +187,99 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         ##########################################################
         #
+        # Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        #
+        ##########################################################
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
+            names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+        sample_instance_list = []
+        for row in fastainfo_df.itertuples():
+            marker_name = row.marker_name
+            run_name = row.run_name
+            biosample_name = row.biosample_name
+            replicate_name = row.replicate_name
+            with engine.connect() as conn:
+                # get run_id ###########
+                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
+                run_id = conn.execute(stmt_select_run_id).first()[0]
+                # get marker_id ###########
+                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name==marker_name)
+                marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                # get biosample_id ###########
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
+                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                # get replicate_id ###########
+                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
+                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
+                # add this sample_instance ###########
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+
+        ##########################################################
+        #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-        variant_read_count_model = variant_read_count_model.__table__
-        stmt_variant_filter_lfn = select([variant_read_count_model.c.marker_id,
-                                          variant_read_count_model.c.run_id,
-                                          variant_read_count_model.c.variant_id,
-                                          variant_read_count_model.c.biosample_id,
-                                          variant_read_count_model.c.replicate_id,
-                                          variant_read_count_model.c.read_count])
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['marker_id', 'run_id', 'variant_id',
+        variant_read_count_model_table = variant_read_count_model.__table__
+
+        variant_read_count_list = []
+        for sample_instance in sample_instance_list:
+            run_id = sample_instance['run_id']
+            marker_id = sample_instance['marker_id']
+            biosample_id = sample_instance['biosample_id']
+            replicate_id = sample_instance['replicate_id']
+            stmt_select = select([variant_read_count_model_table.c.run_id,
+                                  variant_read_count_model_table.c.marker_id,
+                                  variant_read_count_model_table.c.biosample_id,
+                                  variant_read_count_model_table.c.replicate_id,
+                                  variant_read_count_model_table.c.variant_id,
+                                  variant_read_count_model_table.c.read_count]).distinct() \
+                .where(variant_read_count_model.__table__.c.run_id == run_id) \
+                .where(variant_read_count_model.__table__.c.marker_id == marker_id) \
+                .where(variant_read_count_model.__table__.c.biosample_id == biosample_id) \
+                .where(variant_read_count_model.__table__.c.replicate_id == replicate_id)
+            with engine.connect() as conn:
+                for row2 in conn.execute(stmt_select).fetchall():
+                    variant_read_count_list.append(row2)
+        #
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+                                                              columns=['run_id', 'marker_id', 'variant_id',
                                                                        'biosample_id', 'replicate_id', 'read_count'])
 
-        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            Logger.info(VTAMexception("Error: No variants available for this filter: {}".format(os.path.basename(__file__))))
+            sys.exit(1)
+
+        ################################################################################################
         #
         # Get keep variants, that is variants marked as keep in either mock or real biosamples
         #
-        ##########################################################
+        ################################################################################################
         known_variant_analyzer = KnownVariantAnalyzer(variant_known_df=variant_known_df,
                                                       variant_read_count_df=variant_read_count_df)
 
         # These columns: run_id  marker_id  biosample_id  variant_id
         variant_keep_df = known_variant_analyzer.get_variant_keep_df()
 
-        ##########################################################
+        ################################################################################################
         #
         # Get delete variants, that are not keep in mock samples
         #
-        ##########################################################
+        ################################################################################################
 
         # These columns: run_id  marker_id  biosample_id  variant_id
         variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df, variant_delete_df \
             = known_variant_analyzer.get_variant_delete_df()
 
-        ##############
+        ################################################################################################
         #
         # Search maximal value of lfn_read_count_threshold
         #
-        ##############
+        ################################################################################################
         #
         #
         count_keep = 0
@@ -255,11 +306,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         lfn_read_count_threshold_max = lfn_read_count_threshold_previous  # upper border of lfn_read_count_threshold
         #
-        ##############
+        ################################################################################################
         #
         # Set maximal value of lfn_variant_or_variant_replicate
         #
-        ##############
+        ################################################################################################
         #
 
         count_keep = 0
@@ -288,11 +339,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         lfn_variant_or_variant_replicate_max = lfn_variant_or_variant_replicate_previous  # upper border of lfn_read_count_threshold
 
-        ##############
+        ################################################################################################
         #
         # Optimize together two parameters to previous define borders
         #
-        ##############
+        ################################################################################################
         #
         out_lfn_variant_list = []
 
