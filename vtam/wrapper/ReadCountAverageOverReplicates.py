@@ -1,4 +1,6 @@
 import inspect
+import os
+import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from vtam.utils.Logger import Logger
@@ -132,42 +134,58 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ##########################################################
 
         codon_stop_model_table = codon_stop_model.__table__
-        stmt_variant_filter_lfn = select([codon_stop_model_table.c.marker_id,
-                                          codon_stop_model_table.c.run_id,
-                                          codon_stop_model_table.c.variant_id,
-                                          codon_stop_model_table.c.biosample_id,
-                                          codon_stop_model_table.c.replicate_id,
-                                          codon_stop_model_table.c.read_count])\
-            .where(codon_stop_model_table.c.filter_delete == 0)
 
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
-        if variant_read_count_df.shape[0] == 0:
-            Logger.instance().debug(
-                "file: {}; line: {}; No data input for this filter.".format(__file__,
-                                                                      inspect.currentframe().f_lineno,
-                                                                      'Consensus'))
-        else:
-            ##########################################################
-            #
-            # 4. Run Filter
-            #
-            ##########################################################
-            df_out = read_count_average_over_replicates(variant_read_count_df)
-
-            ##########################################################
-            #
-            # 5. Insert Filter data
-            #
-            ##########################################################
-            records = df_out.to_dict('records')
+        variant_read_count_list = []
+        for sample_instance in sample_instance_list:
+            run_id = sample_instance['run_id']
+            marker_id = sample_instance['marker_id']
+            biosample_id = sample_instance['biosample_id']
+            replicate_id = sample_instance['replicate_id']
+            stmt_select = select([codon_stop_model_table.c.run_id,
+                                  codon_stop_model_table.c.marker_id,
+                                  codon_stop_model_table.c.biosample_id,
+                                  codon_stop_model_table.c.replicate_id,
+                                  codon_stop_model_table.c.variant_id,
+                                  codon_stop_model_table.c.read_count]).distinct()\
+                                    .where(codon_stop_model_table.__table__.c.run_id == run_id)\
+                                    .where(codon_stop_model_table.__table__.c.marker_id == marker_id)\
+                                    .where(codon_stop_model_table.__table__.c.biosample_id == biosample_id)\
+                                    .where(codon_stop_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(codon_stop_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
-                    conn.execute(consensus_model.__table__.insert(), records)
+                for row2 in conn.execute(stmt_select).fetchall():
+                    variant_read_count_list.append(row2)
+        #
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
+
+        ##########################################################
+        #
+        #
+        ##########################################################
+        # else:
+        ##########################################################
+        #
+        # 4. Run Filter
+        #
+        ##########################################################
+        df_out = read_count_average_over_replicates(variant_read_count_df)
+
+        ##########################################################
+        #
+        # 5. Insert Filter data
+        #
+        ##########################################################
+        records = df_out.to_dict('records')
+        with engine.connect() as conn:
+                conn.execute(consensus_model.__table__.insert(), records)
 
 
 

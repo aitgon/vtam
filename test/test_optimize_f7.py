@@ -4,7 +4,7 @@ from unittest import TestCase
 import pandas
 
 from vtam.utils.PathManager import PathManager
-from vtam.wrapper.FilterLFNutilities import FilterLFNRunner
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
@@ -73,7 +73,7 @@ class TestOptimizeF7(TestCase):
             #
             # while lfn_read_count_threshold <= lfn_read_count_threshold_max and count_keep >= count_keep_max:
                 #
-            lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+            lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
 
             ###################
             #
@@ -107,7 +107,7 @@ class TestOptimizeF7(TestCase):
 
             lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
-            variant_read_count_remained_df = lfn_filter_runner.delete_variant_df
+            variant_read_count_remained_df = lfn_filter_runner.variant_read_count_filter_delete_df
 
             variant_read_count_remained_df = variant_read_count_remained_df.loc[
                 (variant_read_count_remained_df.filter_id == 8) &
