@@ -118,7 +118,7 @@ class FilterMinReplicateNumber(ToolWrapper):
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
                 sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                             'replicate_id':replicate_id})
+                                             'replicate_id': replicate_id})
 
         ##########################################################
         #
@@ -133,23 +133,55 @@ class FilterMinReplicateNumber(ToolWrapper):
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
-
         variant_filter_lfn_model_table = variant_filter_lfn_model.__table__
-        stmt_variant_filter_lfn = select([variant_filter_lfn_model_table.c.marker_id,
-                                          variant_filter_lfn_model_table.c.run_id,
-                                          variant_filter_lfn_model_table.c.variant_id,
-                                          variant_filter_lfn_model_table.c.biosample_id,
-                                          variant_filter_lfn_model_table.c.replicate_id,
-                                          variant_filter_lfn_model_table.c.read_count])\
-            .where(variant_filter_lfn_model_table.c.filter_id == 8)\
-            .where(variant_filter_lfn_model_table.c.filter_delete == 0)
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                    columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+        variant_read_count_list = []
+        for sample_instance in sample_instance_list:
+            run_id = sample_instance['run_id']
+            marker_id = sample_instance['marker_id']
+            biosample_id = sample_instance['biosample_id']
+            replicate_id = sample_instance['replicate_id']
+            stmt_select = select([variant_filter_lfn_model_table.c.run_id,
+                                  variant_filter_lfn_model_table.c.marker_id,
+                                  variant_filter_lfn_model_table.c.biosample_id,
+                                  variant_filter_lfn_model_table.c.replicate_id,
+                                  variant_filter_lfn_model_table.c.variant_id,
+                                  variant_filter_lfn_model_table.c.read_count]).distinct()\
+                                    .where(variant_filter_lfn_model_table.__table__.c.run_id == run_id)\
+                                    .where(variant_filter_lfn_model_table.__table__.c.marker_id == marker_id)\
+                                    .where(variant_filter_lfn_model_table.__table__.c.biosample_id == biosample_id)\
+                                    .where(variant_filter_lfn_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(variant_filter_lfn_model_table.c.filter_id == 8)\
+                                    .where(variant_filter_lfn_model_table.c.filter_delete == 0)
+            with engine.connect() as conn:
+                for row2 in conn.execute(stmt_select).fetchall():
+                    variant_read_count_list.append(row2)
+        #
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+
+        # Exit if no variants for analysis
+        try:
+            assert variant_read_count_df.shape[0] > 0
+        except AssertionError:
+            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.exit(1)
+        # ################ OLD
+        # variant_filter_lfn_model_table = variant_filter_lfn_model.__table__
+        # stmt_variant_filter_lfn = select([variant_filter_lfn_model_table.c.marker_id,
+        #                                   variant_filter_lfn_model_table.c.run_id,
+        #                                   variant_filter_lfn_model_table.c.variant_id,
+        #                                   variant_filter_lfn_model_table.c.biosample_id,
+        #                                   variant_filter_lfn_model_table.c.replicate_id,
+        #                                   variant_filter_lfn_model_table.c.read_count])\
+        #     .where(variant_filter_lfn_model_table.c.filter_id == 8)\
+        #     .where(variant_filter_lfn_model_table.c.filter_delete == 0)
+        # # Select to DataFrame
+        # variant_filter_lfn_passed_list = []
+        # with engine.connect() as conn:
+        #     for row in conn.execute(stmt_variant_filter_lfn).fetchall():
+        #         variant_filter_lfn_passed_list.append(row)
+        # variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
+        #             columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
 
         ##########################################################
         #
@@ -208,7 +240,7 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
 
 
     Returns:
-        None: The output of this filter is added to the 'self.delete_variant_df'
+        None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
         with filter_id='9' and 'filter_delete'=1 or 0
 
 

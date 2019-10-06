@@ -2,7 +2,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
 from vtam.utils.OptionManager import OptionManager
-from vtam.wrapper.FilterLFNutilities import FilterLFNRunner
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from sqlalchemy import select
 import pandas
 
@@ -169,7 +169,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
             columns=['id', 'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
         #
-        lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+        lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
         #
         Logger.instance().info("Launching LFN filter:")
         #
@@ -178,14 +178,13 @@ class FilterLFNthresholdspecific(ToolWrapper):
         # Or
         # TaxAssign  3: f3_f5_lfn_delete_variant_replicate
         ############################################
-        import pdb;
         if bool(filter_lfn_variant):
             lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold, threshold_specific_df=threshold_specific_df)
         else:
             lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold, threshold_specific_df=threshold_specific_df)
         #
-        lfn_filter_runner.delete_variant_df.sort_values(by=['variant_id', 'biosample_id', 'replicate_id'], inplace=True)
-        lfn_filter_runner.delete_variant_df.head()
+        lfn_filter_runner.variant_read_count_filter_delete_df.sort_values(by=['variant_id', 'biosample_id', 'replicate_id'], inplace=True)
+        lfn_filter_runner.variant_read_count_filter_delete_df.head()
 
         ############################################
         # TaxAssign 6:  f6_lfn_delete_biosample_replicate_delete
@@ -210,6 +209,6 @@ class FilterLFNthresholdspecific(ToolWrapper):
         ############################################
         # Write all LFN Filters
         ############################################
-        records = lfn_filter_runner.delete_variant_df.to_dict('records')
+        records = lfn_filter_runner.variant_read_count_filter_delete_df.to_dict('records')
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.insert(), records)

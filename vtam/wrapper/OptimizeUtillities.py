@@ -25,7 +25,8 @@ class KnownVariantAnalyzer(object):
                                                                  on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
         variant_keep_df = variant_keep_df[
             ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
-        variant_keep_df.variant_id = variant_keep_df.variant_id.astype(int)
+        # Change types to int
+        variant_keep_df.variant_id = variant_keep_df.variant_id.astype('uint32')
         return variant_keep_df
 
 
@@ -62,9 +63,9 @@ class KnownVariantAnalyzer(object):
         # Get delete variants, that are marked so in any (real) samples
         #
         ##########################################################
-        variant_delete_known_df = self.variant_known_df.loc[self.variant_known_df.action == 'delete']
-        variant_delete_known_df = variant_delete_known_df[~variant_delete_known_df.variant_id.isnull()]
-        variant_delete_known_df = variant_delete_known_df[
+        variant_delete_real_df = self.variant_known_df.loc[self.variant_known_df.action == 'delete']
+        variant_delete_real_df = variant_delete_real_df[~variant_delete_real_df.variant_id.isnull()]
+        variant_delete_real_df = variant_delete_real_df[
             ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
 
         ##########################################################
@@ -72,9 +73,9 @@ class KnownVariantAnalyzer(object):
         # Merge (Vertically) the three classes of delete variants
         #
         ##########################################################
-        variant_delete_df = pandas.concat([variant_delete_mock_df, variant_delete_negative_df, variant_delete_known_df])
+        variant_delete_df = pandas.concat([variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df])
         variant_delete_df = variant_delete_df.drop_duplicates(inplace=False)
         variant_delete_df.variant_id = variant_delete_df.variant_id.astype(int)
         variant_delete_df = variant_delete_df.reset_index(drop=True)
 
-        return variant_delete_df
+        return variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df, variant_delete_df

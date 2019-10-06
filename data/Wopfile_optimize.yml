@@ -58,7 +58,8 @@ rule OptimizeLFNreadCountAndLFNvariant:
             optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}
             optimize_lfn_variant_specific: {{optimize_lfn_variant_specific}}
     params:
-        lfn_variant_threshold: {{lfn_variant_threshold}}
+        is_optimize_lfn_variant_replicate: 0
+        lfn_variant_or_variant_replicate_threshold: {{lfn_variant_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}
@@ -66,28 +67,32 @@ rule OptimizeLFNreadCountAndLFNvariant:
         log_file: {{log_file}}
 
 
+rule OptimizeLFNreadCountAndLFNvariantReplicate:
+    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
+    input:
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
+        file:
+            fastainfo: {{fastainfo}}
+            variant_known: {{variant_known}}
+    output:
+        file:
+            optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant_replicate}}
+            optimize_lfn_variant_specific: {{optimize_lfn_variant_replicate_specific}}
+    params:
+        is_optimize_lfn_variant_replicate: 1
+        lfn_variant_or_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
+        lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
+        lfn_read_count_threshold: {{lfn_read_count_threshold}}
+        min_replicate_number: {{min_replicate_number}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
-#rule OptimizeLFNreadCountAndLFNvariantReplicate:
-#    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariantReplicate
-#    input:
-#        table:
-#            Run: vtam.model.Run
-#            Marker: vtam.model.Marker
-#            Biosample: vtam.model.Biosample
-#            Variant: vtam.model.Variant
-#            VariantReadCount: vtam.model.VariantReadCount
-#        file:
-#            variant_known: {{variant_known}}
-#    output:
-#        file:
-#            optimize_lfn_read_count_and_lfn_variant_replicate: {{optimize_lfn_read_count_and_lfn_variant_replicate}}
-#            optimize_lfn_variant_replicate_specific: {{optimize_lfn_variant_replicate_specific}}
-#    params:
-#        lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
-#        lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
-#        lfn_read_count_threshold: {{lfn_read_count_threshold}}
-#        min_replicate_number: {{min_replicate_number}}
-#        log_verbosity: {{log_verbosity}}
-#        log_file: {{log_file}}
+
 
 {% endblock %}
