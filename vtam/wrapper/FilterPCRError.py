@@ -309,7 +309,6 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     # Compute sum mismatch and gap
     vsearch_output_df['sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
     # Keep when sum mismatch and gap equals 1
-    # todo i changed the orther of target query and let it the same for the todo2 down
     pcr_error_df = vsearch_output_df.loc[vsearch_output_df.sum_mism_gaps == 1, ['target', 'query']]
     #########
     #
@@ -317,7 +316,6 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     #
     #########
     # Add two colum the first for the variant id sequence query and the second for the target sequance variant id
-    #  TODO (todo2) VERIFY AITOR WAS  'query' ARGS REPLACED BY 'target'
     pcr_error_df = variant_read_count_grouped_df.merge(pcr_error_df, left_on=['variant_id'], right_on=['query'])
     pcr_error_df.drop(columns=['variant_id'], inplace = True)
     pcr_error_df.rename(columns={'query': 'variant_id_unexpected'}, inplace=True)
