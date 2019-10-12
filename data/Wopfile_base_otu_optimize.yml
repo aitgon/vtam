@@ -18,6 +18,7 @@ rule SampleInformation:
         log_verbosity: {{log_verbosity}}
         log_file: {{log_file}}
 
+
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
@@ -36,7 +37,8 @@ rule SortReads:
         overhang: {{overhang}}
         log_verbosity: {{log_verbosity}}
         log_file: {{log_file}}
-#
+
+
 rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:

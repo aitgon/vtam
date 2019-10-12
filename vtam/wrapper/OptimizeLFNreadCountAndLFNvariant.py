@@ -75,7 +75,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         1. Read file with known variants (Mock, delete and real)
         2. Control if user variants and sequence are consistent in the database
         3. Get variant_read_count of the known variants
-        4. Get variant read count of keep, delete-negative and delete-real
+        4. Get variant read count of keep, delete-negativariant_read_count_dfve and delete-real
         5. Compute maximal lfn_read_count_threshold that keeps all 'keep' variants with the 'lfn_read_count_and_lfn_variant' algorithm
         6. Compute maximal lfn_variant_threshold that keeps all 'keep' variants with the 'lfn_read_count_and_lfn_variant' algorithm (See below)
         7. Compute nb of keep and delete variants until for different values of lfn_read_count_threshold and lfn_variant_threshold with the 'lfn_read_count_and_lfn_variant' algorithm
@@ -243,10 +243,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 for row2 in conn.execute(stmt_select).fetchall():
                     variant_read_count_list.append(row2)
         #
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                              columns=['run_id', 'marker_id', 'variant_id',
-                                                                       'biosample_id', 'replicate_id', 'read_count'])
 
+        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
+                                                              columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id',
+                                                                       'variant_id', 'read_count'])
         # Exit if no variants for analysis
         try:
             assert variant_read_count_df.shape[0] > 0
@@ -291,8 +291,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #  loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
             Logger.instance().debug(
-                "file: {}; line: {}; lfn_read_count_threshold: {} ----------------------"
-                    .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold))
+                "file: {}; line: {}; lfn_read_count_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
+                    .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, count_keep_max, count_keep))
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                 is_optimize_lfn_variant_replicate, variant_read_count_df, variant_keep_df,
@@ -305,7 +305,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             lfn_read_count_threshold_previous = lfn_read_count_threshold
 
         lfn_read_count_threshold_max = lfn_read_count_threshold_previous  # upper border of lfn_read_count_threshold
-        #
+
         ################################################################################################
         #
         # Set maximal value of lfn_variant_or_variant_replicate
@@ -323,8 +323,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # loop over lfn_variant_or_variant_replicate: 0.001, 0.002, ...
         for lfn_variant_or_variant_replicate in [i / 1000 for i in range(int(lfn_variant_or_variant_replicate_previous * 1000), 101, 1)]:
             Logger.instance().debug(
-                "file: {}; line: {}; lfn_variant_or_variant_replicate: {} ----------------------"
-                    .format(__file__, inspect.currentframe().f_lineno, lfn_variant_or_variant_replicate))
+                "file: {}; line: {}; lfn_variant_or_variant_replicate_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
+                    .format(__file__, inspect.currentframe().f_lineno, lfn_variant_or_variant_replicate, count_keep_max, count_keep))
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                 is_optimize_lfn_variant_replicate,
@@ -350,17 +350,15 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         variant_read_count_df = variant_read_count_df[
             ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']].drop_duplicates(
             inplace=False)
-        # lfn_read_count_threshold_default = lfn_read_count_threshold
-        # lfn_variant_or_variant_replicate_default = lfn_variant_or_variant_replicate
-        # while count_keep >= count_keep_max:
         # loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max + 1, 5)):
             # loop over lfn_variant_or_variant_replicate_threshold: 0.001, 0.002, ...
             for lfn_variant_or_variant_replicate_threshold in [i / 1000 for i in range(1, int(lfn_variant_or_variant_replicate_max * 1000) + 1, 1)]:
                 Logger.instance().debug(
-                    "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_or_variant_replicate_threshold: {} ============="
+                    "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_or_variant_replicate_threshold: {}; "
+                    "count_keep_max: {}; count_keep: {} ============="
                         .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold,
-                                lfn_variant_or_variant_replicate_threshold))
+                                lfn_variant_or_variant_replicate_threshold, count_keep_max, count_keep))
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                     is_optimize_lfn_variant_replicate, variant_read_count_df, variant_keep_df,
@@ -393,6 +391,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
                 if count_keep > count_keep_max:
                     count_keep_max = count_keep
+
 
         ##########################################################
         #
@@ -640,6 +639,5 @@ def lfn_read_count_and_lfn_variant(is_optimize_lfn_variant_replicate, variant_re
     count_keep = variant_read_count_remained_keep_df.shape[0]
 
     # Delete object
-
     del (lfn_filter_runner)
     return variant_read_count_remained_df, count_keep
