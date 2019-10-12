@@ -227,8 +227,9 @@ class OptimizePCRerror(ToolWrapper):
                     variant_read_count_list.append(row2)
         #
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-                                                              columns=['run_id', 'marker_id', 'variant_id',
-                                                                       'biosample_id', 'replicate_id', 'read_count'])
+                                                              columns=['run_id', 'marker_id', 'biosample_id',
+                                                                       'replicate_id', 'variant_id',
+                                                                       'read_count'])
 
         # Exit if no variants for analysis
         try:

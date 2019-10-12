@@ -47,8 +47,8 @@ def f1_lfn_delete_singleton(run_biosample_replicate_variant_read_count_df):
 class FilterLFNrunner:
 
     def __init__(self, variant_read_count_df):
-        Logger.instance().debug(
-            "file: {}; line: {}; FilterNonLFNRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
+        # Logger.instance().debug(
+        #     "file: {}; line: {}; FilterNonLFNRunner.__init__".format(__file__, inspect.currentframe().f_lineno))
         # self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df[
             ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
@@ -65,12 +65,12 @@ class FilterLFNrunner:
                                                                           'read_count': [], 'filter_id': [],
                                                                           'filter_delete': []},
                                                                     dtype='uint32')
-        Logger.instance().debug(
-            "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
-                                                                   (self.variant_read_count_filter_delete_df.sum(
-                                                                       axis=1) ==
-                                                                    self.variant_read_count_filter_delete_df.shape[
-                                                                        1]).sum()))
+        # Logger.instance().debug(
+        #     "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
+        #                                                            (self.variant_read_count_filter_delete_df.sum(
+        #                                                                axis=1) ==
+        #                                                             self.variant_read_count_filter_delete_df.shape[
+        #                                                                 1]).sum()))
 
     def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, threshold_specific_df=None):
         """
@@ -106,8 +106,8 @@ class FilterLFNrunner:
         """
         this_filter_id = 2
         # Write log
-        Logger.instance().debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
+        # Logger.instance().debug(
+        #     "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         ######################
         # Calculating the total of reads by variant
         df2 = self.variant_read_count_df.copy()
@@ -284,8 +284,8 @@ class FilterLFNrunner:
         """
 
         this_filter_id = 6
-        Logger.instance().debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
+        # Logger.instance().debug(
+        #     "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         # Calculating the total number of reads by sample replicates
 
         df2 = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
@@ -352,8 +352,6 @@ class FilterLFNrunner:
 
         """
         this_filter_id = 7
-        Logger.instance().debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
         # Selecting all the indexes where the ratio is below the minimal readcount
         df2 = self.variant_read_count_df.copy()
         do_not_pass_variant_id_list = self.variant_read_count_df.loc[
@@ -374,11 +372,6 @@ class FilterLFNrunner:
 
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, df2],
                                                                  sort=False)
-        Logger.instance().debug(
-            "file: {}; line: {}; Nb variants passed {}".format(__file__, inspect.currentframe().f_lineno,
-                                                               (self.variant_read_count_filter_delete_df.sum(axis=1) ==
-                                                                self.variant_read_count_filter_delete_df.shape[
-                                                                    1]).sum()))
 
     def f8_lfn_delete_do_not_pass_all_filters(self):
         this_filter_id = 8
