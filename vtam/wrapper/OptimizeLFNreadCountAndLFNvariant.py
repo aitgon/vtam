@@ -467,7 +467,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                            / lfn_variant_or_variant_replicate_specific_threshold_df.N_i
             # TODO 20191006 Discuss with Emese with ascending=True or ascending=False
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by='lfn_variant_threshold',
-                                                                               ascending=True, inplace=True)
+                                                                               ascending=False, inplace=True)
             lfn_variant_or_variant_replicate_specific_threshold_df.drop_duplicates('variant_id', keep='first',
                                                                                    inplace=True)
             lfn_variant_or_variant_replicate_specific_threshold_df = (
@@ -491,7 +491,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                                      / lfn_variant_or_variant_replicate_specific_threshold_df.N_ik
             # TODO Discuss with Emese with ascending=True or ascending=False
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by='lfn_variant_replicate_threshold',
-                                                                               ascending=True, inplace=True)
+                                                                               ascending=False, inplace=True)
             lfn_variant_or_variant_replicate_specific_threshold_df.drop_duplicates(['variant_id', 'replicate_id'],
                                                                                    keep='first', inplace=True)
             lfn_variant_or_variant_replicate_specific_threshold_df = (
@@ -556,10 +556,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                  'biosample_type']].groupby(
                 by=['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count', 'N_ik', 'lfn_variant_replicate_threshold'])[
                 'biosample_type'].apply(lambda x: ','.join(set(x))).reset_index()
-            lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.rename(
-                columns={'read_count': 'N_ijk_max'})
-            lfn_variant_or_variant_replicate_specific_threshold_df.to_csv(
-                output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False)
+        lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.rename(
+            columns={'read_count': 'N_ijk_max'})
+        lfn_variant_or_variant_replicate_specific_threshold_df.to_csv(
+            output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False)
 
 
 def lfn_read_count_and_lfn_variant(is_optimize_lfn_variant_replicate, variant_read_count_df, variant_keep_df,
