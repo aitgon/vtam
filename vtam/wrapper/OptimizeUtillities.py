@@ -77,5 +77,4 @@ class KnownVariantAnalyzer(object):
         variant_delete_df = variant_delete_df.drop_duplicates(inplace=False)
         variant_delete_df.variant_id = variant_delete_df.variant_id.astype(int)
         variant_delete_df = variant_delete_df.reset_index(drop=True)
-
         return variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df, variant_delete_df

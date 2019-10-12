@@ -73,6 +73,7 @@ class TestSingleton(TestCase):
         ##########################################################
 
         #
-        variant_delete_df = known_variant_analyzer.get_variant_delete_df()
+        variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df, variant_delete_df \
+            = known_variant_analyzer.get_variant_delete_df()
         #
         self.assertTrue(result_delete_df.equals(variant_delete_df))

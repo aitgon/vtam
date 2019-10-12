@@ -165,23 +165,6 @@ class FilterMinReplicateNumber(ToolWrapper):
         except AssertionError:
             sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
             sys.exit(1)
-        # ################ OLD
-        # variant_filter_lfn_model_table = variant_filter_lfn_model.__table__
-        # stmt_variant_filter_lfn = select([variant_filter_lfn_model_table.c.marker_id,
-        #                                   variant_filter_lfn_model_table.c.run_id,
-        #                                   variant_filter_lfn_model_table.c.variant_id,
-        #                                   variant_filter_lfn_model_table.c.biosample_id,
-        #                                   variant_filter_lfn_model_table.c.replicate_id,
-        #                                   variant_filter_lfn_model_table.c.read_count])\
-        #     .where(variant_filter_lfn_model_table.c.filter_id == 8)\
-        #     .where(variant_filter_lfn_model_table.c.filter_delete == 0)
-        # # Select to DataFrame
-        # variant_filter_lfn_passed_list = []
-        # with engine.connect() as conn:
-        #     for row in conn.execute(stmt_variant_filter_lfn).fetchall():
-        #         variant_filter_lfn_passed_list.append(row)
-        # variant_read_count_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-        #             columns=['marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
 
         ##########################################################
         #
@@ -245,19 +228,13 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
 
 
     """
-    # this_filter_id = 9
-    Logger.instance().debug(
-        "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
     #
     df_filter_output=variant_read_count_df.copy()
     # replicate count
     df_grouped = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
     df_grouped = df_grouped[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id']] # keep columns
     df_grouped = df_grouped.rename(columns={'replicate_id': 'replicate_count'})
-    # import pdb; pdb.set_trace()
-    # df_grouped.columns = ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_count']
     #
-    # df_filter_output['filter_id'] = this_filter_id
     df_filter_output['filter_delete'] = False
     df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
     df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
