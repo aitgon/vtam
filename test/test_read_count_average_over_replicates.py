@@ -3,10 +3,10 @@ from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.wrapper.ReadCountAverageOverReplicates import read_count_average_over_replicates
+from vtam.wrapper.ReadCountAverageOverReplicates import read_count_average_over_replicates
 
 
-class TestFilterConsensus(TestCase):
+class TestReadCountAverageOverReplicates(TestCase):
 
     def setUp(self):
         # Input from min_replicate_number
@@ -44,4 +44,3 @@ class TestFilterConsensus(TestCase):
                                               & (filter_output_df.variant_id == 2)
                                               & (filter_output_df.biosample_id == 1),
                                               'read_count_average'].values[0]) == 116.0)
-

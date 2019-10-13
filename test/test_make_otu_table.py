@@ -1,20 +1,32 @@
 # -*- coding: utf-8 -*-
+import os
+import sys
+from pathlib import Path
 from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite
+from vtam import Logger
+from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
-
-from wopmetabarcoding.wrapper.MakeOtuTable import f16_otu_table_maker
+from vtam.wrapper.MakeOtuTable import f16_otu_table_maker
 
 
 class TestMakeOtuTable(TestCase):
 
     def test_f01_make_table_out(self):
-        taxonomy_sqlite_path = download_taxonomy_sqlite()
-
+        try:
+            taxonomydb = TaxonomyDB(package=True)
+            taxonomy_sqlite_path = taxonomydb.get_path()
+            # taxonomy_sqlite_path = os.environ['TAXONOMY_SQLITE']
+            Path(taxonomy_sqlite_path).resolve(strict=True)
+        except KeyError:
+            Logger.instance().error("Set the TAXONOMY_SQLITE environment variable to run this test")
+            sys.exit(1)
+        except FileNotFoundError:
+            Logger.instance().error("Set the TAXONOMY_SQLITE environment variable to run this test")
+            sys.exit(1)
         run_dic = {
             'id': [1],
             'name': ['prerun']
@@ -48,7 +60,6 @@ class TestMakeOtuTable(TestCase):
         biosample_df = pandas.DataFrame(biosample_dic, index=None)
         filter_codon_stop_df = pandas.DataFrame(filter_codon_stop_dic, index=None)
         ltg_tax_assign_df = pandas.DataFrame(ltg_tax_assign_dic, index=None)
-        #
         #
         # getting the taxonomy_db to df
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)

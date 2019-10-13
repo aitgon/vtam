@@ -6,7 +6,7 @@ import pandas
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 
-from wopmetabarcoding.wrapper.FilterCodonStop import f14_filter_codon_stop
+from vtam.wrapper.FilterCodonStop import f14_filter_codon_stop
 
 
 class TestFilterChimera(TestCase):
