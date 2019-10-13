@@ -1,6 +1,6 @@
 dist
 output
-wopmetabarcoding.egg-info
+vtam.egg-info
 __pycache__
 .idea
 db.sqlite

@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
-import errno
-import inspect
-import os
-
-import numpy
-import pandas
+from vtam.utils.PathManager import PathManager
+from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.utils.Logger import Logger
+from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
+    f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 
-from wopmetabarcoding.utils.PathManager import PathFinder
-from wopmetabarcoding.utils.constants import public_data_dir
-from wopmetabarcoding.utils.utilities import download_taxonomy_sqlite, tempdir, create_vtam_data_dir
-from wopmetabarcoding.utils.logger import logger
-from wopmetabarcoding.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
-    f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
+import inspect
+import numpy
+import os
+import pandas
 
 
 class TestTaxAssign(TestCase):
@@ -23,20 +20,29 @@ class TestTaxAssign(TestCase):
         # Download taxonomy.sqlite
         #
         #####################################
-        create_vtam_data_dir()
-        taxonomy_sqlite_path = download_taxonomy_sqlite()
-        #
-        self.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         self.identity_threshold = 97
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.lblast_output_var3_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
-        self.lblast_output_var7_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
-        self.lblast_output_var9_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
-        self.tax_lineage_variant13_tsv = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.lblast_output_var3_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
+        self.lblast_output_var7_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
+        self.lblast_output_var9_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
+        self.tax_lineage_variant13_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+
+    @classmethod
+    def setUpClass(cls):
+        """ get_some_resource() is slow, to avoid calling it for each test use setUpClass()
+            and store the result as class variable
+        """
+        super(TestTaxAssign, cls).setUpClass()
+        # create_vtam_data_dir()
+        taxonomydb = TaxonomyDB(package=True)
+        taxonomy_sqlite_path = taxonomydb.get_path()
+        #
+        cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        # cls.the_resource = get_some_resource()
 
 
     def test_f02_variant_df_to_fasta(self):
@@ -47,14 +53,10 @@ class TestTaxAssign(TestCase):
         }
         variant_df = pandas.DataFrame(data=variant_dic)
         #
-        logger.debug(
+        Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
-        this_tempdir = os.path.join(tempdir, os.path.basename(__file__))
-        try:
-            os.makedirs(this_tempdir)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise
+        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(this_tempdir)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
         f02_variant_df_to_fasta(variant_df, variant_fasta)
         #
@@ -66,7 +68,7 @@ class TestTaxAssign(TestCase):
     def test_f03_1_tax_id_to_taxonomy_lineage(self):
         tax_id = 183142
         #
-        taxonomy_lineage_dic = f04_1_tax_id_to_taxonomy_lineage(tax_id, self.taxonomy_db_df)
+        taxonomy_lineage_dic = f04_1_tax_id_to_taxonomy_lineage(tax_id, TestTaxAssign.taxonomy_db_df)
         self.assertTrue({'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
                          'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
                          'superkingdom': 2759} == taxonomy_lineage_dic)
@@ -80,7 +82,7 @@ class TestTaxAssign(TestCase):
             'identity': [80, 80],
             'target_tax_id': [1344033, 1344033]}
         qblast_result_subset_df = pandas.DataFrame(data=qblast_out_dic)
-        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, TestTaxAssign.taxonomy_db_df)
         self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
             'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
             'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
@@ -144,7 +146,7 @@ class TestTaxAssign(TestCase):
                                                  'target_tax_id'])        #
         identity = 100
         blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_blast_result_subset(blast_output_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(blast_output_df, TestTaxAssign.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         # Outputs
@@ -166,7 +168,7 @@ class TestTaxAssign(TestCase):
                                           names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
                                                  'target_tax_id'])        #
         blast_result_subset_df = blast_output_df.loc[blast_output_df.identity >= identity, ['target_id', 'target_tax_id']]
-        tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, self.taxonomy_db_df)
+        tax_lineage_df = f05_blast_result_subset(blast_result_subset_df, TestTaxAssign.taxonomy_db_df)
         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         # Outputs
@@ -203,7 +205,7 @@ class TestTaxAssign(TestCase):
         # Run
         lineage_list = []
         for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
-            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, self.taxonomy_db_df))
+            lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, TestTaxAssign.taxonomy_db_df))
         tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         #
         # Merge lblast output with tax_id_to_lineage_df

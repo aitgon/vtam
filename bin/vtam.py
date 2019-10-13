@@ -1,8 +1,8 @@
-# #!/usr/bin/env python
+#!/usr/bin/env python
 
 import sys
 
-from wopmetabarcoding import VTAM
+from vtam import VTAM
 
 def main():
     VTAM(sys.argv[1:])

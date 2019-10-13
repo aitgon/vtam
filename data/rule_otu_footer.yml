@@ -1,160 +1,184 @@
 {% block footer %}
 
 rule FilterMinReplicateNumber:
-    tool: wopmetabarcoding.wrapper.FilterMinReplicateNumber
+    tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            FilterLFN: wopmetabarcoding.model.FilterLFN
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterLFN: vtam.model.FilterLFN
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
+            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
     params:
         min_replicate_number: {{min_replicate_number}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 #
 rule FilterPCRError:
-    tool: wopmetabarcoding.wrapper.FilterPCRError
+    tool: vtam.wrapper.FilterPCRError
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterMinReplicateNumber: wopmetabarcoding.model.FilterMinReplicateNumber
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterPCRError: wopmetabarcoding.model.FilterPCRError
+            FilterPCRError: vtam.model.FilterPCRError
     params:
         pcr_error_var_prop: {{pcr_error_var_prop}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 #
 rule FilterChimera:
-    tool: wopmetabarcoding.wrapper.FilterChimera
+    tool: vtam.wrapper.FilterChimera
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterPCRError: wopmetabarcoding.model.FilterPCRError
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterPCRError: vtam.model.FilterPCRError
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterChimera: wopmetabarcoding.model.FilterChimera
-            FilterChimeraBorderline: wopmetabarcoding.model.FilterChimeraBorderline
+            FilterChimera: vtam.model.FilterChimera
+            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterRenkonen:
-    tool: wopmetabarcoding.wrapper.FilterRenkonen
+    tool: vtam.wrapper.FilterRenkonen
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            FilterChimera: wopmetabarcoding.model.FilterChimera
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterChimera: vtam.model.FilterChimera
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
+            FilterRenkonen: vtam.model.FilterRenkonen
     params:
         renkonen_threshold: {{renkonen_threshold}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterIndel:
-    tool: wopmetabarcoding.wrapper.FilterIndel
+    tool: vtam.wrapper.FilterIndel
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterRenkonen: wopmetabarcoding.model.FilterRenkonen
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterRenkonen: vtam.model.FilterRenkonen
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterIndel: wopmetabarcoding.model.FilterIndel
+            FilterIndel: vtam.model.FilterIndel
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule FilterCodonStop:
-    tool: wopmetabarcoding.wrapper.FilterCodonStop
+    tool: vtam.wrapper.FilterCodonStop
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterIndel: wopmetabarcoding.model.FilterIndel
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterIndel: vtam.model.FilterIndel
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+            FilterCodonStop: vtam.model.FilterCodonStop
     params:
         genetic_table_number: {{genetic_table_number}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule ReadCountAverageOverReplicates:
-    tool: wopmetabarcoding.wrapper.ReadCountAverageOverReplicates
+    tool: vtam.wrapper.ReadCountAverageOverReplicates
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterCodonStop: vtam.model.FilterCodonStop
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            ReadCountAverageOverReplicates: wopmetabarcoding.model.ReadCountAverageOverReplicates
+            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 rule TaxAssign:
-    tool: wopmetabarcoding.wrapper.TaxAssign
+    tool: vtam.wrapper.TaxAssign
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterCodonStop: vtam.model.FilterCodonStop
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
     output:
         table:
-            TaxAssign: wopmetabarcoding.model.TaxAssign
+            TaxAssign: vtam.model.TaxAssign
     params:
         identity_threshold: {{identity_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 rule MakeOtuTable:
-    tool: wopmetabarcoding.wrapper.MakeOtuTable
+    tool: vtam.wrapper.MakeOtuTable
     input:
         table:
-            Marker: wopmetabarcoding.model.Marker
-            Run: wopmetabarcoding.model.Run
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Variant: wopmetabarcoding.model.Variant
-            FilterChimeraBorderline: wopmetabarcoding.model.FilterChimeraBorderline
-            FilterCodonStop: wopmetabarcoding.model.FilterCodonStop
-            TaxAssign: wopmetabarcoding.model.TaxAssign
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterCodonStop: vtam.model.FilterCodonStop
+            TaxAssign: vtam.model.TaxAssign
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
     output:
         file:
-            OTUTable: {{outtable}}
+            OTUTable: {{otutable}}
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 {% endblock %}

@@ -1,13 +1,13 @@
 rule Merge:
-  tool: wopmetabarcoding.wrapper.Merge
+  tool: vtam.wrapper.Merge
   input:
       file:
-          sample2fastq: {{fastqinfo}}
+          fastqinfo: {{fastqinfo}}
   output:
       file:
-          sample2fasta: {{fastainfo}}
+          fastainfo: {{fastainfo}}
   params:
-      fastq_directory: {{fastqdir}}
+      fastq_dir: {{fastqdir}}
       fasta_dir: {{fastadir}}
       fastq_minovlen: {{fastq_minovlen}}
       fastq_maxmergelen: {{fastq_maxmergelen}}
@@ -18,3 +18,5 @@ rule Merge:
       fastq_maxns: {{fastq_maxns}}
       threads: {{threads}}
       fastq_ascii: {{fastq_ascii}}
+      log_verbosity: {{log_verbosity}}
+      log_file: {{log_file}}

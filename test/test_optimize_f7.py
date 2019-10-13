@@ -1,24 +1,23 @@
 import os
-import sqlite3
 from unittest import TestCase
 
 import pandas
 
-from wopmetabarcoding.utils.PathManager import PathFinder
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
-from wopmetabarcoding.wrapper.FilterLFNutilities import FilterLFNRunner
-from wopmetabarcoding.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
+from vtam.utils.PathManager import PathManager
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
+from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 
 class TestOptimizeF7(TestCase):
 
     def setUp(self):
-        self.__testdir_path = os.path.join(PathFinder.get_module_test_path())
-        self.variant_read_count_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
+        self.variant_read_count_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_read_count.tsv")
-        self.variants_optimize_path = os.path.join(PathFinder.get_module_test_path(), self.__testdir_path, "test_files",
+        self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variants_optimize.tsv")
-        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
+        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(self.this_step_tmp_dir)
         #
 
     def test_01(self):
@@ -74,7 +73,7 @@ class TestOptimizeF7(TestCase):
             #
             # while lfn_read_count_threshold <= lfn_read_count_threshold_max and count_keep >= count_keep_max:
                 #
-            lfn_filter_runner = FilterLFNRunner(variant_read_count_df)
+            lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
 
             ###################
             #
@@ -108,7 +107,7 @@ class TestOptimizeF7(TestCase):
 
             lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
-            variant_read_count_remained_df = lfn_filter_runner.delete_variant_df
+            variant_read_count_remained_df = lfn_filter_runner.variant_read_count_filter_delete_df
 
             variant_read_count_remained_df = variant_read_count_remained_df.loc[
                 (variant_read_count_remained_df.filter_id == 8) &
@@ -168,7 +167,6 @@ class TestOptimizeF7(TestCase):
             out_lfn_variant_list.append(out_lfn_variant_row_dic)
             del (lfn_filter_runner)
             #
-            print(out_lfn_variant_row_dic, count_keep_max)
             # if count_keep < count_keep_max:
             #     break
             if count_keep > count_keep_max:
@@ -182,4 +180,4 @@ class TestOptimizeF7(TestCase):
                         == {'lfn_variant_threshold': 0.001, 'lfn_read_count_threshold': 10, 'count_keep': 12,
                             'count_delete': 3})
         out_lfn_variant_df = pandas.DataFrame(out_lfn_variant_list) # output
-        # print(pandas.DataFrame(out_lfn_variant_list))
+
