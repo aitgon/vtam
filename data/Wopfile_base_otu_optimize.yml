@@ -1,30 +1,33 @@
 rule SampleInformation:
-    tool: wopmetabarcoding.wrapper.SampleInformation
+    tool: vtam.wrapper.SampleInformation
     input:
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
-            Fasta: wopmetabarcoding.model.Fasta
-            PrimerPair: wopmetabarcoding.model.PrimerPair
-            TagPair: wopmetabarcoding.model.TagPair
-            SampleInformation: wopmetabarcoding.model.SampleInformation
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Fasta: vtam.model.Fasta
+            PrimerPair: vtam.model.PrimerPair
+            TagPair: vtam.model.TagPair
+            SampleInformation: vtam.model.SampleInformation
     params:
         fasta_dir: {{fastadir}}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
+
 
 rule SortReads:
-    tool: wopmetabarcoding.wrapper.SortReads
+    tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: wopmetabarcoding.model.Fasta
-            SampleInformation: wopmetabarcoding.model.SampleInformation
-            Marker: wopmetabarcoding.model.Marker
+            Fasta: vtam.model.Fasta
+            SampleInformation: vtam.model.SampleInformation
+            Marker: vtam.model.Marker
         file:
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
     output:
         file:
             sortreads: {{sortreads}}
@@ -32,22 +35,28 @@ rule SortReads:
         min_id: {{min_id}}
         minseqlength: {{minseqlength}}
         overhang: {{overhang}}
-#
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
+
+
 rule VariantReadCount:
-    tool: wopmetabarcoding.wrapper.VariantReadCount
+    tool: vtam.wrapper.VariantReadCount
     input:
         file:
             sortreads: {{sortreads}}
-            sample2fasta: {{fastainfo}}
+            fastainfo: {{fastainfo}}
         table:
-            Run: wopmetabarcoding.model.Run
-            Marker: wopmetabarcoding.model.Marker
-            Biosample: wopmetabarcoding.model.Biosample
-            Replicate: wopmetabarcoding.model.Replicate
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
     output:
         table:
-            Variant: wopmetabarcoding.model.Variant
-            VariantReadCount: wopmetabarcoding.model.VariantReadCount
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
+    params:
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}
 
 
 {% block rule_2nd_otu_optimize %}{% endblock %}

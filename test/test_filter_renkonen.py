@@ -1,15 +1,11 @@
-from itertools import tee
 from unittest import TestCase
 
-import itertools
-
-from wopmetabarcoding.utils.PathManager import PathFinder
+from vtam.utils.PathManager import PathManager
 import os
-from wopmetabarcoding.utils.utilities import tempdir
 import pandas
-from wopmetabarcoding.wrapper.FilterRenkonen import f12_filter_delete_renkonen
+from vtam.wrapper.FilterRenkonen import f12_filter_delete_renkonen
 
-from wopmetabarcoding.wrapper.FilterRenkonen import renkonen_distance
+from vtam.wrapper.FilterRenkonen import renkonen_distance
 
 
 class TestFilterRenkonen(TestCase):
@@ -26,8 +22,8 @@ class TestFilterRenkonen(TestCase):
             ],
         })
 
-        self.tempdir = os.path.join(tempdir, "FilterUtilities", self.__class__.__name__)
-        PathFinder.mkdir_p(self.tempdir)
+        self.tempdir = os.path.join(PathManager.instance().get_tempdir(), "FilterUtilities", self.__class__.__name__)
+        PathManager.mkdir_p(self.tempdir)
 
     def test_f12_delete_filter_renkonen(self):
         #

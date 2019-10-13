@@ -1,7 +1,8 @@
+import os
 import pandas
 from unittest import TestCase
-from wopmetabarcoding.utils.utilities import create_step_tmp_dir
-from wopmetabarcoding.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
+from vtam.utils.PathManager import PathManager
+from vtam.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
 
 
 class TestFilterPCRError(TestCase):
@@ -39,7 +40,9 @@ class TestFilterPCRError(TestCase):
             'gaps' : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         })
 
-        self.this_step_tmp_dir = create_step_tmp_dir(__file__)
+        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        PathManager.mkdir_p(self.this_step_tmp_dir)
+
 
 
     def test_02_f10_pcr_error(self):
