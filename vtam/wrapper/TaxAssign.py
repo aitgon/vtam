@@ -82,7 +82,7 @@ class TaxAssign(ToolWrapper):
             "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
                                                                       inspect.currentframe().f_lineno,))
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
         #

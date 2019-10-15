@@ -1,8 +1,10 @@
 import os
 import sys
 
+import sqlalchemy
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 
@@ -10,6 +12,8 @@ from vtam.utils.OptionManager import OptionManager
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from sqlalchemy import select
 import pandas
+
+from vtam.utils.utilities import filter_delete_df_to_dict
 
 
 class FilterLFN(ToolWrapper):
@@ -72,7 +76,7 @@ class FilterLFN(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterLFN.__input_file_fastainfo)
         #
         # Input table models
@@ -130,7 +134,8 @@ class FilterLFN(ToolWrapper):
                 stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
+                                             'replicate_id':replicate_id})
 
         ##########################################################
         #
@@ -160,16 +165,16 @@ class FilterLFN(ToolWrapper):
                                   variant_read_count_model_table.c.replicate_id,
                                   variant_read_count_model_table.c.variant_id,
                                   variant_read_count_model_table.c.read_count]).distinct()\
-                                    .where(variant_read_count_model.__table__.c.run_id == run_id)\
-                                    .where(variant_read_count_model.__table__.c.marker_id == marker_id)\
-                                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_id)\
-                                    .where(variant_read_count_model.__table__.c.replicate_id == replicate_id)
+                                    .where(variant_read_count_model_table.c.run_id == run_id)\
+                                    .where(variant_read_count_model_table.c.marker_id == marker_id)\
+                                    .where(variant_read_count_model_table.c.biosample_id == biosample_id)\
+                                    .where(variant_read_count_model_table.c.replicate_id == replicate_id)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
                     variant_read_count_list.append(row2)
         #
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count'])
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
 
         # Exit if no variants for analysis
         try:
@@ -215,12 +220,23 @@ class FilterLFN(ToolWrapper):
         lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
         ############################################
-        # Delete current sample in TaxAssign
+        # Write to DB
         ############################################
-
-        ############################################
-        # Write all LFN Filters
-        ############################################
-        records = lfn_filter_runner.variant_read_count_filter_delete_df.to_dict('records')
+        filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert filter_output_df.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
+
+

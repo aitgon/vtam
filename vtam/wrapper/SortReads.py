@@ -92,7 +92,7 @@ class SortReads(ToolWrapper):
         #
         ############################################
         #
-        # For each fasta file path in the DB (Table Fasta)
+        # For each fasta file output in the DB (Table Fasta)
         #
         # 1. Trimming (Forward and reverse): Remove primer and tag sequence from each read sequence (Each sequence in Fasta)
         # 2. Store read count of each variant in table 'VariantReadCount'

@@ -69,7 +69,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterLFNthresholdspecific.__input_file_fastainfo)
         input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
 

@@ -71,7 +71,7 @@ class MakeOtuTable(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(MakeOtuTable.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(MakeOtuTable.__input_file_taxonomy)
         #

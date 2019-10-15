@@ -17,18 +17,18 @@ class TestWopMetabarcoding(TestCase):
 
     # def test_02sample_information(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
-    #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
+    #     sample_info_tsv = os.output.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
+    #     fasta_dir = os.output.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "02sample_information")
     #     PathManager.mkdir_p(test_outdir)
-    #     db_path = os.path.join(test_outdir, "db.sqlite")
+    #     db_path = os.output.join(test_outdir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
     #     #
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
+    #     wopfile_path = os.output.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
@@ -48,19 +48,19 @@ class TestWopMetabarcoding(TestCase):
     #
     # def test_02sample_information_error(self):
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo_error.tsv")
-    #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
+    #     sample_info_tsv = os.output.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo_error.tsv")
+    #     fasta_dir = os.output.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "02sample_information")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "02sample_information")
     #     PathManager.mkdir_p(test_outdir)
     #     # db
-    #     db_path = os.path.join(test_outdir, "db.sqlite")
+    #     db_path = os.output.join(test_outdir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
     #     #
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
+    #     wopfile_path = os.output.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
@@ -80,20 +80,20 @@ class TestWopMetabarcoding(TestCase):
     #     :return:
     #     """
     #     # input
-    #     sample_info_tsv = os.path.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
-    #     test_indir = os.path.join(PathManager.get_module_test_path(), "input", "03sort_reads")
-    #     fasta_dir = os.path.join(self.__testdir_path, "input", "02sample_information", "fasta")
+    #     sample_info_tsv = os.output.join(PathManager.get_module_test_path(), "input", "02sample_information", "fastainfo.tsv")
+    #     test_indir = os.output.join(PathManager.get_module_test_path(), "input", "03sort_reads")
+    #     fasta_dir = os.output.join(self.__testdir_path, "input", "02sample_information", "fasta")
     #     # output
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "03sort_reads")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "03sort_reads")
     #     PathManager.mkdir_p(test_outdir)
     #     # db
-    #     db_path = os.path.join(test_indir, "db.sqlite")
+    #     db_path = os.output.join(test_indir, "db.sqlite")
     #     db_url = "sqlite:///" + db_path
     #     #
     #     # Create wopfile
     #     template = Template(self.__wopfile_test_str)
     #     wopfile_str = template.render(SAMPLE_INFORMATION_TSV=sample_info_tsv, OUTDIR=test_outdir, FASTA_DIR=fasta_dir)
-    #     wopfile_path = os.path.join(test_outdir, "Wopfile_merge.yml")
+    #     wopfile_path = os.output.join(test_outdir, "Wopfile_merge.yml")
     #     with open(wopfile_path, 'w') as fout:
     #         self.__wopfile_test_str = fout.write(wopfile_str)
     #     #
@@ -111,8 +111,8 @@ class TestWopMetabarcoding(TestCase):
     #     cur.close()
     #     #
     #     # # Assert variant_count_detail.tsv
-    #     # variant_count_detail_tsv = os.path.join(self.__testdir_path, "output", "03sort_reads", "variant_count_detail.tsv")
-    #     # variant_count_detail_bak_tsv = os.path.join(self.__testdir_path, "output_bak", "03sort_reads", "variant_count_detail.tsv")
+    #     # variant_count_detail_tsv = os.output.join(self.__testdir_path, "output", "03sort_reads", "variant_count_detail.tsv")
+    #     # variant_count_detail_bak_tsv = os.output.join(self.__testdir_path, "output_bak", "03sort_reads", "variant_count_detail.tsv")
     #     # assert filecmp.cmp(variant_count_detail_tsv, variant_count_detail_bak_tsv)
     #     #
     #     # reset output variant table
@@ -131,9 +131,9 @@ class TestWopMetabarcoding(TestCase):
     #     """
     #
     # def test_04filter_store_index_below_lfn1_per_replicate(self):
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "04filter")
     #     PathManager.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     variant2sample2replicate2count_df_pkl_path = os.output.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
@@ -149,9 +149,9 @@ class TestWopMetabarcoding(TestCase):
     #     shutil.rmtree(test_outdir)
     #
     # def test_04filter_store_index_below_lfn2_per_variant(self):
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "04filter")
     #     PathManager.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     variant2sample2replicate2count_df_pkl_path = os.output.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
@@ -168,9 +168,9 @@ class TestWopMetabarcoding(TestCase):
     #     shutil.rmtree(test_outdir)
     #
     # def test_04filter_store_index_below_lfn2_per_replicate_series(self):
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "04filter")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "04filter")
     #     PathManager.mkdir_p(test_outdir)
-    #     variant2sample2replicate2count_df_pkl_path = os.path.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
+    #     variant2sample2replicate2count_df_pkl_path = os.output.join(PathManager.get_module_test_path(), "input", "04filter", "variant2sample2replicate2count_df.pkl")
     #     #
     #     # Input
     #     variant2sample2replicate2count_df = pandas.read_pickle(variant2sample2replicate2count_df_pkl_path)
@@ -186,5 +186,5 @@ class TestWopMetabarcoding(TestCase):
     #     shutil.rmtree(test_outdir)
     #
     # def test05_taxassign_vsearch(self):
-    #     test_outdir = os.path.join(self.__testdir_path, "output", "05taxassign")
+    #     test_outdir = os.output.join(self.__testdir_path, "output", "05taxassign")
 

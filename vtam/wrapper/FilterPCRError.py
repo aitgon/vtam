@@ -7,9 +7,11 @@ from math import floor
 from sqlalchemy import select
 import pandas
 
+from vtam import Logger, VTAMexception
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VSearch import VSearch1
 from vtam.utils.PathManager import PathManager
+from vtam.utils.utilities import filter_delete_df_to_dict
 
 
 class FilterPCRError(ToolWrapper):
@@ -73,7 +75,7 @@ class FilterPCRError(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterPCRError.__input_file_fastainfo)
         #
         # Input table models
@@ -148,10 +150,10 @@ class FilterPCRError(ToolWrapper):
                                   filter_min_replicate_number_table.c.replicate_id,
                                   filter_min_replicate_number_table.c.variant_id,
                                   filter_min_replicate_number_table.c.read_count]).distinct()\
-                                    .where(filter_min_replicate_number_table.__table__.c.run_id == run_id)\
-                                    .where(filter_min_replicate_number_table.__table__.c.marker_id == marker_id)\
-                                    .where(filter_min_replicate_number_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(filter_min_replicate_number_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(filter_min_replicate_number_table.c.run_id == run_id)\
+                                    .where(filter_min_replicate_number_table.c.marker_id == marker_id)\
+                                    .where(filter_min_replicate_number_table.c.biosample_id == biosample_id)\
+                                    .where(filter_min_replicate_number_table.c.replicate_id == replicate_id)\
                                     .where(filter_min_replicate_number_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -196,15 +198,34 @@ class FilterPCRError(ToolWrapper):
         ##########################################################
         df_filter_output = f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop)
 
-        ##########################################################
-        #
-        # 7. Insert Filter data
-        #
-        ##########################################################
-        df_filter_output
-        records = df_filter_output.to_dict('records')
+        # ##########################################################
+        # #
+        # # 7. Insert Filter data
+        # #
+        # ##########################################################
+        # df_filter_output
+        # records = df_filter_output.to_dict('records')
+        # with engine.connect() as conn:
+        #     conn.execute(filter_pcr_error_model.__table__.insert(), records)
+
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df_filter_output)
         with engine.connect() as conn:
             conn.execute(filter_pcr_error_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analys
+        try:
+            assert df_filter_output.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
 
 def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_df, tmp_dir):
     """
