@@ -70,17 +70,28 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
     def run(self, f7_lfn_delete_absolute_read_count=None):
         """
-        Algorithm
+        Algorithm (Updated Oct 13, 2019)
 
         1. Read file with known variants (Mock, delete and real)
         2. Control if user variants and sequence are consistent in the database
-        3. Get variant_read_count of the known variants
-        4. Get variant read count of keep, delete-negativariant_read_count_dfve and delete-real
+        3. Get variant_read_count of this run-marker-biosample-replicate experiment
         5. Compute maximal lfn_read_count_threshold that keeps all 'keep' variants with the 'lfn_read_count_and_lfn_variant' algorithm
         6. Compute maximal lfn_variant_threshold that keeps all 'keep' variants with the 'lfn_read_count_and_lfn_variant' algorithm (See below)
-        7. Compute nb of keep and delete variants until for different values of lfn_read_count_threshold and lfn_variant_threshold with the 'lfn_read_count_and_lfn_variant' algorithm
+        7. Loop between default and lfn_read_count_threshold and lfn_read_count_and_lfn_variant parameters
+            7.1 Compute number of keep variants. Should be always maximal.
+            7.2 Compute number of delete variants Should decrease.
+        8. Compute variant(-replicate) specific threshold for delete variants
+            TODO Confirm
+            8.1 For each variant i (Or variant-replicate i-k ),
+                get N_ijk_max and use it to computer variant specific threshold
 
         Description of the 'lfn_read_count_and_lfn_variant' algorithm
+
+        1. Remove if does not pass these filter
+            1.1 Filter lfn_variant (Or lfn_variant_replicate)
+            1.2 Filter lfn_biosample_replicate
+            1.3 Filter absolute read count
+        2. Filter if not min replicate number
 
         """
         session = self.session()
@@ -232,7 +243,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             stmt_select = select([variant_read_count_model_table.c.run_id,
                                   variant_read_count_model_table.c.marker_id,
                                   variant_read_count_model_table.c.biosample_id,
-                                  variant_read_count_model_table.c.replicate_id,
+                        # Filter lfn_variant
+              variant_read_count_model_table.c.replicate_id,
                                   variant_read_count_model_table.c.variant_id,
                                   variant_read_count_model_table.c.read_count]).distinct() \
                 .where(variant_read_count_model.__table__.c.run_id == run_id) \
