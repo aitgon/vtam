@@ -9,7 +9,7 @@ import os
 parameters_numerical = {
     'fastq_ascii': 33,
     'fastq_maxee': 1,
-    'fastq_maxmergelen': 300,
+    'fastq_maxmergelen': 500,
     'fastq_maxns': 0,
     'fastq_minlen': 50,
     'fastq_minmergelen': 100,

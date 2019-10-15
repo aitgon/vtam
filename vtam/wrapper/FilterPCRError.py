@@ -174,6 +174,7 @@ class FilterPCRError(ToolWrapper):
         #
         ##########################################################
         variant_model_table = variant_model.__table__
+        # TODO: select where variant_id in variant_read_count.id
         stmt_variant = select([variant_model_table.c.id,
                                variant_model_table.c.sequence])
         # Select to DataFrame
