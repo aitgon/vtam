@@ -225,9 +225,9 @@ class FilterPCRError(ToolWrapper):
         ##########################################################
         # Exit if no variants for analys
         try:
-            assert not filter_output_df.shape[0] == 0
+            assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
         except AssertionError:
-            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            Logger.instance().warning(VTAMexception("Warning. This filter has deleted all the variants"))
             sys.exit(1)
 
 def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_df, tmp_dir):
