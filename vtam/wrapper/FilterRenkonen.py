@@ -5,7 +5,10 @@ import pandas, itertools
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam import Logger, VTAMexception
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.utilities import filter_delete_df_to_dict
+
 
 class FilterRenkonen(ToolWrapper):
     __mapper_args__ = {
@@ -62,7 +65,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterRenkonen.__input_file_fastainfo)
         #
         # Input table models
@@ -142,10 +145,10 @@ class FilterRenkonen(ToolWrapper):
                                   chimera_model_table.c.replicate_id,
                                   chimera_model_table.c.variant_id,
                                   chimera_model_table.c.read_count]).distinct()\
-                                    .where(chimera_model_table.__table__.c.run_id == run_id)\
-                                    .where(chimera_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(chimera_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(chimera_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(chimera_model_table.c.run_id == run_id)\
+                                    .where(chimera_model_table.c.marker_id == marker_id)\
+                                    .where(chimera_model_table.c.biosample_id == biosample_id)\
+                                    .where(chimera_model_table.c.replicate_id == replicate_id)\
                                     .where(chimera_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -169,16 +172,33 @@ class FilterRenkonen(ToolWrapper):
 
         df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
 
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
+        # ##########################################################
+        # #
+        # # 5. Insert Filter data
+        # #
+        # ##########################################################
+        # with engine.connect() as conn:
+        #         conn.execute(filter_renkonen_model.__table__.insert(), df.to_dict('records'))
+
+
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df)
         with engine.connect() as conn:
-                conn.execute(filter_renkonen_model.__table__.insert(), df.to_dict('records'))
+            conn.execute(filter_renkonen_model.__table__.insert(), records)
 
-
-
+        ##########################################################
+        #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert df.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
 
 
 def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):

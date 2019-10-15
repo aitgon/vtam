@@ -17,7 +17,7 @@ class TestMakeOtuTable(TestCase):
 
     def test_f01_make_table_out(self):
         try:
-            taxonomydb = TaxonomyDB(package=True)
+            taxonomydb = TaxonomyDB(precomputed=True)
             taxonomy_sqlite_path = taxonomydb.get_path()
             # taxonomy_sqlite_path = os.environ['TAXONOMY_SQLITE']
             Path(taxonomy_sqlite_path).resolve(strict=True)

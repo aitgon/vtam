@@ -17,25 +17,25 @@ from vtam.utils.constants import url_taxonomy_sqlite
 
 class TaxonomyDB(object):
 
-    def __init__(self, path=None, package=True):
+    def __init__(self, output=None, precomputed=True):
         #
-        # Download the package database. The alternative to create a new DB with the create_db_taxonomy executable
-        self.package = package
+        # Download the precomputed database. The alternative to create a new DB with the create_db_taxonomy executable
+        self.precomputed = precomputed
         #
-        # path to the taxonomy.sqlite file
-        self.path = os.path.join(os.getcwd(), "taxonomy.sqlite")
-        if not path is None:
-            self.path = path
+        # output to the taxonomy.sqlite file
+        self.output = os.path.join(os.getcwd(), "taxonomy.sqlite")
+        if not output is None:
+            self.output = output
         #
         self.tempdir = PathManager.instance().get_tempdir()
 
     def get_path(self):
-        if not os.path.isfile(self.path):
-            if self.package:
+        if not os.path.isfile(self.output):
+            if self.precomputed:
                 self.__download_taxonomy_sqlite()
             else:
                 self.create_taxonomy_db()
-        return self.path
+        return self.output
 
 
     def __download_ncbi_taxonomy_dump(self):
@@ -82,7 +82,7 @@ class TaxonomyDB(object):
         #
         Logger.instance().debug(
             "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
-        engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.path), echo=False)
+        engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.output), echo=False)
         try:
             taxonomy_df.to_sql('taxonomy', con=engine, index = False)
         except ValueError as valerr:
@@ -92,16 +92,16 @@ class TaxonomyDB(object):
 
     ##########################################################
     #
-    # Define/create taxonomy.sqlite path
+    # Define/create taxonomy.sqlite output
     #
     ##########################################################
     def __download_taxonomy_sqlite(self):
         """
         Copy the online SQLITE taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.sqlite"
-        to the pathname path
+        to the pathname output
         """
         Logger.instance().debug(
             "file: {}; line: {}; __download_taxonomy_sqlite()".format(__file__,
                                                                     inspect.currentframe().f_lineno, ))
-        if not os.path.isfile(self.path):
-            urllib.request.urlretrieve(url_taxonomy_sqlite, self.path)
+        if not os.path.isfile(self.output):
+            urllib.request.urlretrieve(url_taxonomy_sqlite, self.output)

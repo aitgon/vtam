@@ -94,7 +94,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_variant_known = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_variant_known)
         input_file_fastainfo = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_fastainfo)
         #
@@ -107,7 +107,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         variant_read_count_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count)
         #
-        # Output file path
+        # Output file output
         output_file_optimize_lfn_tsv = self.output_file(
             OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_read_count_and_lfn_variant)
         output_file_lfn_variant_specific_threshold_tsv = self.output_file(

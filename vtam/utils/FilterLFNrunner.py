@@ -65,12 +65,8 @@ class FilterLFNrunner:
                                                                           'read_count': [], 'filter_id': [],
                                                                           'filter_delete': []},
                                                                     dtype='uint32')
-        # Logger.instance().debug(
-        #     "file: {}; line: {}; Initial nb of variants {}".format(__file__, inspect.currentframe().f_lineno,
-        #                                                            (self.variant_read_count_filter_delete_df.sum(
-        #                                                                axis=1) ==
-        #                                                             self.variant_read_count_filter_delete_df.shape[
-        #                                                                 1]).sum()))
+
+
 
     def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, threshold_specific_df=None):
         """

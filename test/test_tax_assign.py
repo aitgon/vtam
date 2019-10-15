@@ -38,7 +38,7 @@ class TestTaxAssign(TestCase):
         """
         super(TestTaxAssign, cls).setUpClass()
         # create_vtam_data_dir()
-        taxonomydb = TaxonomyDB(package=True)
+        taxonomydb = TaxonomyDB(precomputed=True)
         taxonomy_sqlite_path = taxonomydb.get_path()
         #
         cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)

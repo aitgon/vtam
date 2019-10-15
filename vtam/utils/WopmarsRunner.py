@@ -40,8 +40,8 @@ class WopmarsRunner(Singleton):
         """
         #####################
         #
-        # Get Wopfile template path
-        # Create Wopfile path
+        # Get Wopfile template output
+        # Create Wopfile output
         #
         #####################
         wopfile_path = path
@@ -49,7 +49,7 @@ class WopmarsRunner(Singleton):
             wopfile_path = tempfile.NamedTemporaryFile().name
         self.wopfile_path = wopfile_path
         # wopfile_template_path\
-        #     = os.path.join(os.path.dirname(__file__), '../../data/Wopfile_{}.yml'.format(self.command))
+        #     = os.output.join(os.output.dirname(__file__), '../../data/Wopfile_{}.yml'.format(self.command))
         #####################
         #
         # Create Wopfile content
@@ -60,7 +60,7 @@ class WopmarsRunner(Singleton):
         if self.command == 'merge':
             template = jinja2_env.get_template('Wopfile_merge.yml')
         elif self.command in ['otu', 'optimize']:
-            # Add path to sortreads file
+            # Add output to sortreads file
             self.parameters['sortreads'] = os.path.abspath(os.path.join(self.parameters['outdir'], "sortreads.tsv"))
             if self.command == 'otu':
                 self.parameters['otutable'] = os.path.abspath(os.path.join(self.parameters['outdir'], "otutable.tsv"))
@@ -102,7 +102,7 @@ class WopmarsRunner(Singleton):
         """
 
         :param wopfile_out_path: Path of output wopfile
-        :return: string with output path of wopfile
+        :return: string with output output of wopfile
         """
 
         ###################

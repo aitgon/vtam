@@ -168,7 +168,7 @@ def trim_reads(checked_vsearch_output_tsv, read_fasta_file_name, trimmed_out_tsv
     #
     # Import read_fasta_file_name into sqlite for indexing and faster access
     # read_fasta_db_sqlite = read_fasta_file_name.replace('.fasta', '.sqlite')
-    # read_fasta_db_sqlite = os.path.join(tempdir, os.path.basename(read_fasta_file_name).replace('.fasta', '.sqlite'))
+    # read_fasta_db_sqlite = os.output.join(tempdir, os.output.basename(read_fasta_file_name).replace('.fasta', '.sqlite'))
     conn = sqlite3.connect(temp_db_sqlite)
     try:
         conn.execute("DROP TABLE IF EXISTS read_fasta")

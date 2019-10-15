@@ -8,8 +8,11 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
+from vtam import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.utilities import filter_delete_df_to_dict
+
 
 class FilterIndel(ToolWrapper):
     __mapper_args__ = {
@@ -72,7 +75,7 @@ class FilterIndel(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterIndel.__input_file_fastainfo)
         #
         # Input table models
@@ -146,10 +149,10 @@ class FilterIndel(ToolWrapper):
                                   renkonen_model_table.c.replicate_id,
                                   renkonen_model_table.c.variant_id,
                                   renkonen_model_table.c.read_count]).distinct()\
-                                    .where(renkonen_model_table.__table__.c.run_id == run_id)\
-                                    .where(renkonen_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(renkonen_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(renkonen_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(renkonen_model_table.c.run_id == run_id)\
+                                    .where(renkonen_model_table.c.marker_id == marker_id)\
+                                    .where(renkonen_model_table.c.biosample_id == biosample_id)\
+                                    .where(renkonen_model_table.c.replicate_id == replicate_id)\
                                     .where(renkonen_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -190,15 +193,34 @@ class FilterIndel(ToolWrapper):
         ##########################################################
         df_out = f13_filter_indel(variant_read_count_df, variant_df)
 
-        ##########################################################
+        # ##########################################################
+        # #
+        # # 6. Insert Filter data
+        # #
+        # ##########################################################
         #
-        # 6. Insert Filter data
-        #
-        ##########################################################
+        # records = df_out.to_dict('records')
+        # with engine.connect() as conn:
+        #         conn.execute(indel_model.__table__.insert(), records)
 
-        records = df_out.to_dict('records')
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
-                conn.execute(indel_model.__table__.insert(), records)
+            conn.execute(indel_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert df_out.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
 
 
 
