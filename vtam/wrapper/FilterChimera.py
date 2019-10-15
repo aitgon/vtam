@@ -221,7 +221,7 @@ class FilterChimera(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert not filter_chimera_df.shape[0] == 0
+            assert not filter_chimera_df.filter_delete.sum() == filter_chimera_df.shape[0]
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
