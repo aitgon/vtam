@@ -26,6 +26,6 @@ class TestParser(TestCase):
         # Minimal optimize command
         args_str = 'optimize --fastainfo {input} --fastadir {dirname} --variant_known {input} --outdir foo -n'.format(input=__file__,
                 dirname=os.path.dirname(__file__))
-        # args_str = 'optimize --variant_known test'.format(__file__, os.path.dirname(__file__))
+        # args_str = 'optimize --variant_known test'.format(__file__, os.output.dirname(__file__))
         parser = ArgParser.get_arg_parser()
         parser.parse_args(args_str.split())

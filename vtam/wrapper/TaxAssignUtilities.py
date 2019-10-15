@@ -29,7 +29,7 @@ def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
 
 def f02_variant_df_to_fasta(variant_df, fasta_path):
     """
-    Takes variant DF with two columns (variant_id, variant_sequence) and return FASTA file path
+    Takes variant DF with two columns (variant_id, variant_sequence) and return FASTA file output
 
     Args:
         variant_df (pandas.DataFrame): DF with two columns (variant_id, variant_sequence)

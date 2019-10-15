@@ -195,8 +195,9 @@ class VariantReadCount(ToolWrapper):
                 with engine.connect() as conn:
                     variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
-                'variant_id':variant_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id, 'read_count':read_count})
-            sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate_id': replicate_id, 'read_count': read_count})
+            sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                         'replicate_id': replicate_id})
             #
         ############################################
         # Write variant_read_count table

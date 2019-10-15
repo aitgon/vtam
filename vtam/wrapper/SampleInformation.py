@@ -85,7 +85,7 @@ class SampleInformation(ToolWrapper):
                 else:
                     raise IndexError("{} error. Verify nb of columns in this input file: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), csv_path)))
                 if not os.path.isfile(os.path.join(os.getcwd(), file_name)):
-                    raise FileNotFoundError("{} error. Verify this file path: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
+                    raise FileNotFoundError("{} error. Verify this file output: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), file_name)))
                 run_name = line.strip().split('\t')[7]
                 #
                 # Insert run
@@ -108,7 +108,7 @@ class SampleInformation(ToolWrapper):
                 replicate_instance = get_or_create(session, replicate_model, **replicate_obj)
                 replicate_id = replicate_instance.id
                 #
-                # Insert file path
+                # Insert file output
                 is_trimmed = False # Default
                 fasta_obj = {'name': file_name, 'is_trimmed': is_trimmed}
                 fasta_instance = get_or_create(session, fasta_model, **fasta_obj)

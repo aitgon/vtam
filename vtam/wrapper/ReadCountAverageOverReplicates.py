@@ -10,6 +10,7 @@ from vtam.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
 
+from vtam.utils.utilities import filter_delete_df_to_dict
 
 
 class ReadCountAverageOverReplicates(ToolWrapper):
@@ -69,7 +70,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         OptionManager.instance()['log_file'] = str(self.option("log_file"))
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(ReadCountAverageOverReplicates.__input_file_fastainfo)
         #
         # Input table models
@@ -147,10 +148,10 @@ class ReadCountAverageOverReplicates(ToolWrapper):
                                   codon_stop_model_table.c.replicate_id,
                                   codon_stop_model_table.c.variant_id,
                                   codon_stop_model_table.c.read_count]).distinct()\
-                                    .where(codon_stop_model_table.__table__.c.run_id == run_id)\
-                                    .where(codon_stop_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(codon_stop_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(codon_stop_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(codon_stop_model_table.c.run_id == run_id)\
+                                    .where(codon_stop_model_table.c.marker_id == marker_id)\
+                                    .where(codon_stop_model_table.c.biosample_id == biosample_id)\
+                                    .where(codon_stop_model_table.c.replicate_id == replicate_id)\
                                     .where(codon_stop_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -178,14 +179,21 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ##########################################################
         df_out = read_count_average_over_replicates(variant_read_count_df)
 
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
-        records = df_out.to_dict('records')
+        # ##########################################################
+        # #
+        # # 5. Insert Filter data
+        # #
+        # ##########################################################
+        # records = df_out.to_dict('records')
+        # with engine.connect() as conn:
+        #         conn.execute(consensus_model.__table__.insert(), records)
+
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
-                conn.execute(consensus_model.__table__.insert(), records)
+            conn.execute(consensus_model.__table__.insert(), records)
 
 
 

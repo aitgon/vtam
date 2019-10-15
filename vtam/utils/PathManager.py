@@ -20,7 +20,7 @@ class PathManager(Singleton):
         """
         Find the Src directory of the project
 
-        :return: the path leading to the src file of the project
+        :return: the output leading to the src file of the project
         """
         if self.tempdir is None:
             self.tempdir = tempfile.mkdtemp()
@@ -32,7 +32,7 @@ class PathManager(Singleton):
         """
         Find the Src directory of the project
 
-        :return: the path leading to the src file of the project
+        :return: the output leading to the src file of the project
         """
 
         wopfile_test_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile_merge.yml")
@@ -41,9 +41,9 @@ class PathManager(Singleton):
     @staticmethod
     def get_package_path():
         """
-        Find the path of the package
+        Find the output of the precomputed
 
-        :return: the path leading to the package path
+        :return: the output leading to the precomputed output
         """
 
         test_dir_path = os.path.join(os.path.dirname(__file__), "../..")
@@ -52,9 +52,9 @@ class PathManager(Singleton):
     @staticmethod
     def get_module_test_path():
         """
-        Find the test path of the project
+        Find the test output of the project
 
-        :return: the path leading to the test path of the project
+        :return: the output leading to the test output of the project
         """
 
         test_dir_path = os.path.join(os.path.dirname(__file__), "../../test")

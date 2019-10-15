@@ -11,8 +11,10 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from vtam import OptionManager
+from vtam import OptionManager, VTAMexception
 from vtam.utils.Logger import Logger
+from vtam.utils.utilities import filter_delete_df_to_dict
+
 
 class FilterCodonStop(ToolWrapper):
     __mapper_args__ = {
@@ -76,7 +78,7 @@ class FilterCodonStop(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterCodonStop.__input_file_fastainfo)
         #
         # Input table models
@@ -152,10 +154,10 @@ class FilterCodonStop(ToolWrapper):
                                   indel_model_table.c.replicate_id,
                                   indel_model_table.c.variant_id,
                                   indel_model_table.c.read_count]).distinct()\
-                                    .where(indel_model_table.__table__.c.run_id == run_id)\
-                                    .where(indel_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(indel_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(indel_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(indel_model_table.c.run_id == run_id)\
+                                    .where(indel_model_table.c.marker_id == marker_id)\
+                                    .where(indel_model_table.c.biosample_id == biosample_id)\
+                                    .where(indel_model_table.c.replicate_id == replicate_id)\
                                     .where(indel_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -196,17 +198,37 @@ class FilterCodonStop(ToolWrapper):
         ##########################################################
         df_out = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
 
-        ##########################################################
+        # ##########################################################
+        # #
+        # # 5. Insert Filter data
+        # #
+        # ##########################################################
+        # records = df_out.to_dict('records')
+        # with engine.connect() as conn:
+        #         conn.execute(filter_codon_stop_model.__table__.insert(), df_out.to_dict('records'))
         #
-        # 5. Insert Filter data
+        # # df_out.to_sql(name='FilterCodonStop', con=engine.connect(), if_exists='replace')
         #
-        ##########################################################
-        records = df_out.to_dict('records')
-        with engine.connect() as conn:
-                conn.execute(filter_codon_stop_model.__table__.insert(), df_out.to_dict('records'))
 
-        # df_out.to_sql(name='FilterCodonStop', con=engine.connect(), if_exists='replace')
+
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df_out)
+        with engine.connect() as conn:
+            conn.execute(filter_codon_stop_model.__table__.insert(), records)
+
+        ##########################################################
         #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert df_out.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
 
 
 def f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number=5):

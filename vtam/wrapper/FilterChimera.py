@@ -3,7 +3,8 @@ import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam import OptionManager
+from vtam.utils.OptionManager import  OptionManager
+from vtam.utils.VTAMexception import  VTAMexception
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import Vsearch3
 from Bio import SeqIO
@@ -13,6 +14,8 @@ from sqlalchemy import select
 import pandas
 
 from vtam.utils.Logger import Logger
+from vtam.utils.utilities import filter_delete_df_to_dict
+
 
 class FilterChimera(ToolWrapper):
     __mapper_args__ = {
@@ -78,7 +81,7 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterChimera.__input_file_fastainfo)
         #
         # Input table models
@@ -154,10 +157,10 @@ class FilterChimera(ToolWrapper):
                                   pcr_error_model_table.c.replicate_id,
                                   pcr_error_model_table.c.variant_id,
                                   pcr_error_model_table.c.read_count]).distinct()\
-                                    .where(pcr_error_model_table.__table__.c.run_id == run_id)\
-                                    .where(pcr_error_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(pcr_error_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(pcr_error_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(pcr_error_model_table.c.run_id == run_id)\
+                                    .where(pcr_error_model_table.c.marker_id == marker_id)\
+                                    .where(pcr_error_model_table.c.biosample_id == biosample_id)\
+                                    .where(pcr_error_model_table.c.replicate_id == replicate_id)\
                                     .where(pcr_error_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
@@ -198,17 +201,40 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
         df_chimera, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir)
-        # df_filter_output = df_filter.copy()
+
+        # ##########################################################
+        # #
+        # # 5. Insert Filter data
+        # #
+        # ##########################################################
+        # with engine.connect() as conn:
+        #         conn.execute(filter_chimera_model.__table__.insert(), df_chimera.to_dict('records'))
+        # #
+        # with engine.connect() as conn:
+        #         conn.execute(filter_chimera_borderline_model.__table__.insert(), df_chimera_borderline.to_dict('records'))
+
+        ############################################
+        # Write to DB
+        ############################################
+        records_chimera = filter_delete_df_to_dict(df_chimera)
+        with engine.connect() as conn:
+            conn.execute(filter_chimera_model.__table__.insert(), records_chimera)
+
+        records_chimera_borderline = filter_delete_df_to_dict(df_chimera)
+        with engine.connect() as conn:
+            conn.execute(filter_chimera_borderline_model.__table__.insert(), records_chimera_borderline)
+
         ##########################################################
         #
-        # 5. Insert Filter data
+        # 6. Exit vtam if all variants delete
         #
         ##########################################################
-        with engine.connect() as conn:
-                conn.execute(filter_chimera_model.__table__.insert(), df_chimera.to_dict('records'))
-        #
-        with engine.connect() as conn:
-                conn.execute(filter_chimera_borderline_model.__table__.insert(), df_chimera_borderline.to_dict('records'))
+        # Exit if no variants for analysis
+        try:
+            assert not df_chimera.filter_delete.all()
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)
 
 
 def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):

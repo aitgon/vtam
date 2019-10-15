@@ -69,7 +69,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_variant_known = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_variant_known)
         input_file_fastainfo = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_fastainfo)
         #
@@ -81,7 +81,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         variant_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant)
         variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
         #
-        # Output file path
+        # Output file output
         output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate)
 
         ##########################################################

@@ -11,6 +11,8 @@ import pandas
 from vtam import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.utilities import filter_delete_df_to_dict
+
 
 class FilterMinReplicateNumber(ToolWrapper):
     __mapper_args__ = {
@@ -69,7 +71,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file path
+        # Input file output
         input_file_fastainfo = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
         #
         # Input table models
@@ -146,10 +148,10 @@ class FilterMinReplicateNumber(ToolWrapper):
                                   variant_filter_lfn_model_table.c.replicate_id,
                                   variant_filter_lfn_model_table.c.variant_id,
                                   variant_filter_lfn_model_table.c.read_count]).distinct()\
-                                    .where(variant_filter_lfn_model_table.__table__.c.run_id == run_id)\
-                                    .where(variant_filter_lfn_model_table.__table__.c.marker_id == marker_id)\
-                                    .where(variant_filter_lfn_model_table.__table__.c.biosample_id == biosample_id)\
-                                    .where(variant_filter_lfn_model_table.__table__.c.replicate_id == replicate_id)\
+                                    .where(variant_filter_lfn_model_table.c.run_id == run_id)\
+                                    .where(variant_filter_lfn_model_table.c.marker_id == marker_id)\
+                                    .where(variant_filter_lfn_model_table.c.biosample_id == biosample_id)\
+                                    .where(variant_filter_lfn_model_table.c.replicate_id == replicate_id)\
                                     .where(variant_filter_lfn_model_table.c.filter_id == 8)\
                                     .where(variant_filter_lfn_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
@@ -173,12 +175,19 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         df_filter_output = f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number)
 
-        ##########################################################
-        #
-        # 5. Insert Filter data
-        #
-        ##########################################################
-        records = df_filter_output.to_dict('records')
+        # ##########################################################
+        # #
+        # # 5. Insert Filter data
+        # #
+        # ##########################################################
+        # records = df_filter_output.to_dict('records')
+        # with engine.connect() as conn:
+        #     conn.execute(filter_min_replicate_number_model.__table__.insert(), records)
+
+        ############################################
+        # Write to DB
+        ############################################
+        records = filter_delete_df_to_dict(df_filter_output)
         with engine.connect() as conn:
             conn.execute(filter_min_replicate_number_model.__table__.insert(), records)
 
@@ -189,7 +198,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert not df_filter_output.filter_delete.all()
+            assert df_filter_output.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
