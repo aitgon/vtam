@@ -8,9 +8,9 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from vtam import VTAMexception
-from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.Logger import Logger
 from vtam.utils.utilities import filter_delete_df_to_dict
 
 
@@ -20,12 +20,12 @@ class FilterIndel(ToolWrapper):
     }
 
     # Input file
+    __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_file_fastainfo = "fastainfo"
     __input_table_filter_renkonen = "FilterRenkonen"
     __input_table_Variant = "Variant"
     # Output table
@@ -191,7 +191,7 @@ class FilterIndel(ToolWrapper):
         # 5. Run Filter
         #
         ##########################################################
-        df_out = f13_filter_indel(variant_read_count_df, variant_df)
+        filter_output_df = f13_filter_indel(variant_read_count_df, variant_df)
 
         # ##########################################################
         # #
@@ -206,7 +206,7 @@ class FilterIndel(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df_out)
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(indel_model.__table__.insert(), records)
 
@@ -217,7 +217,7 @@ class FilterIndel(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert df_out.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)

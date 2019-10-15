@@ -1,7 +1,9 @@
+import sys
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from sqlalchemy import select
 import pandas
@@ -203,12 +205,21 @@ class FilterLFNthresholdspecific(ToolWrapper):
         lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
         ############################################
-        # Delete current sample in TaxAssign
+        # Write to DB
         ############################################
-
-        ############################################
-        # Write all LFN Filters
-        ############################################
-        records = lfn_filter_runner.variant_read_count_filter_delete_df.to_dict('records')
+        filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
+        records = filter_output_df(filter_output_df)
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.insert(), records)
+
+        ##########################################################
+        #
+        # 6. Exit vtam if all variants delete
+        #
+        ##########################################################
+        # Exit if no variants for analysis
+        try:
+            assert not filter_output_df.shape[0] == 0
+        except AssertionError:
+            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
+            sys.exit(1)

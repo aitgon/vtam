@@ -7,8 +7,9 @@ from math import floor
 from sqlalchemy import select
 import pandas
 
-from vtam import Logger, VTAMexception
+from vtam import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.VSearch import VSearch1
 from vtam.utils.PathManager import PathManager
 from vtam.utils.utilities import filter_delete_df_to_dict
@@ -20,13 +21,14 @@ class FilterPCRError(ToolWrapper):
     }
 
     # Input file
+    __input_file_fastainfo = "fastainfo"
+    # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant = "Variant"
     __input_table_filter_min_replicate_number = "FilterMinReplicateNumber"
-    __input_file_fastainfo = "fastainfo"
     # Output table
     __output_table_filter_pcr_error = "FilterPCRError"
 
@@ -197,7 +199,7 @@ class FilterPCRError(ToolWrapper):
         # 6. Analyze vsearch output
         #
         ##########################################################
-        df_filter_output = f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop)
+        filter_output_df = f10_pcr_error_analyze_vsearch_output_df(variant_read_count_df, vsearch_output_df, pcr_error_var_prop)
 
         # ##########################################################
         # #
@@ -212,7 +214,7 @@ class FilterPCRError(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df_filter_output)
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(filter_pcr_error_model.__table__.insert(), records)
 
@@ -223,7 +225,7 @@ class FilterPCRError(ToolWrapper):
         ##########################################################
         # Exit if no variants for analys
         try:
-            assert df_filter_output.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)

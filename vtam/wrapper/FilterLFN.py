@@ -4,9 +4,9 @@ import sys
 import sqlalchemy
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam import VTAMexception
-from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.Logger import Logger
 
 
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
@@ -234,7 +234,7 @@ class FilterLFN(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert filter_output_df.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
