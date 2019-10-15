@@ -5,8 +5,9 @@ import pandas, itertools
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam import Logger, VTAMexception
+from vtam import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.utilities import filter_delete_df_to_dict
 
 
@@ -170,7 +171,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
+        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
 
         # ##########################################################
         # #
@@ -184,7 +185,7 @@ class FilterRenkonen(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df)
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(filter_renkonen_model.__table__.insert(), records)
 
@@ -195,7 +196,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert df.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
