@@ -3,8 +3,9 @@ import sys
 
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam.utils.OptionManager import  OptionManager
-from vtam.utils.VTAMexception import  VTAMexception
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
+
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import Vsearch3
 from Bio import SeqIO
@@ -23,12 +24,12 @@ class FilterChimera(ToolWrapper):
     }
 
     # Input file
+    __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_file_fastainfo = "fastainfo"
     __input_table_filter_pcr_error = "FilterPCRError"
     __input_table_Variant = "Variant"
     # Output table
@@ -200,27 +201,16 @@ class FilterChimera(ToolWrapper):
         # 4. Run Filter
         #
         ##########################################################
-        df_chimera, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir)
-
-        # ##########################################################
-        # #
-        # # 5. Insert Filter data
-        # #
-        # ##########################################################
-        # with engine.connect() as conn:
-        #         conn.execute(filter_chimera_model.__table__.insert(), df_chimera.to_dict('records'))
-        # #
-        # with engine.connect() as conn:
-        #         conn.execute(filter_chimera_borderline_model.__table__.insert(), df_chimera_borderline.to_dict('records'))
+        filter_chimera_df, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir)
 
         ############################################
         # Write to DB
         ############################################
-        records_chimera = filter_delete_df_to_dict(df_chimera)
+        records_chimera = filter_delete_df_to_dict(filter_chimera_df)
         with engine.connect() as conn:
             conn.execute(filter_chimera_model.__table__.insert(), records_chimera)
 
-        records_chimera_borderline = filter_delete_df_to_dict(df_chimera)
+        records_chimera_borderline = filter_delete_df_to_dict(filter_chimera_df)
         with engine.connect() as conn:
             conn.execute(filter_chimera_borderline_model.__table__.insert(), records_chimera_borderline)
 
@@ -231,7 +221,7 @@ class FilterChimera(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert not df_chimera.filter_delete.all()
+            assert not filter_chimera_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)

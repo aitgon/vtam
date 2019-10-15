@@ -2,8 +2,6 @@ import os
 import sys
 
 import Bio
-import inspect
-
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
@@ -11,7 +9,8 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from vtam import OptionManager, VTAMexception
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.utilities import filter_delete_df_to_dict
 
@@ -196,7 +195,7 @@ class FilterCodonStop(ToolWrapper):
         # 4. Run Filter
         #
         ##########################################################
-        df_out = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
+        filter_output_df = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
 
         # ##########################################################
         # #
@@ -214,7 +213,7 @@ class FilterCodonStop(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df_out)
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(filter_codon_stop_model.__table__.insert(), records)
 
@@ -225,7 +224,7 @@ class FilterCodonStop(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert df_out.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)

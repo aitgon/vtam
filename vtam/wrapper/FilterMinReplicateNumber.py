@@ -8,9 +8,9 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
-from vtam import VTAMexception
-from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.Logger import Logger
 from vtam.utils.utilities import filter_delete_df_to_dict
 
 
@@ -20,13 +20,13 @@ class FilterMinReplicateNumber(ToolWrapper):
     }
 
     # Input file
+    __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant_filter_lfn = "FilterLFN"
-    __input_file_fastainfo = "fastainfo"
     # Output table
     __output_table_filter_min_replicate_number = "FilterMinReplicateNumber"
 
@@ -173,7 +173,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         # 4. Run Filter
         #
         ##########################################################
-        df_filter_output = f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number)
+        filter_output_df = f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number)
 
         # ##########################################################
         # #
@@ -187,7 +187,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df_filter_output)
+        records = filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(filter_min_replicate_number_model.__table__.insert(), records)
 
@@ -198,7 +198,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         # Exit if no variants for analysis
         try:
-            assert df_filter_output.shape[0] == 0
+            assert not filter_output_df.shape[0] == 0
         except AssertionError:
             Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
             sys.exit(1)
