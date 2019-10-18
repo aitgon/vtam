@@ -1,14 +1,12 @@
-import os
-import sys
-
-import pandas, itertools
-from sqlalchemy import select
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-
 from vtam import Logger
+from vtam.utils.FilterCommon import FilterCommon
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.utilities import filter_delete_df_to_dict
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+
+import itertools
+import pandas
+import sys
 
 
 class FilterRenkonen(ToolWrapper):
@@ -72,98 +70,44 @@ class FilterRenkonen(ToolWrapper):
         # Input table models
         marker_model = self.input_table(FilterRenkonen.__input_table_marker)
         run_model = self.input_table(FilterRenkonen.__input_table_run)
-        chimera_model = self.input_table(FilterRenkonen.__input_table_chimera)
         biosample_model = self.input_table(FilterRenkonen.__input_table_biosample)
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
+        input_filter_model = self.input_table(FilterRenkonen.__input_table_chimera)
         #
         # Options
         # TaxAssign parameters
         renkonen_threshold = float(self.option("renkonen_threshold"))
         #
         # Output table models
-        filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
+        output_filter_models = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
 
         ##########################################################
         #
         # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
-                                          names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
-                                                 'marker_name', 'biosample_name', \
-                                                 'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
-        sample_instance_list = []
-        for row in fastainfo_df.itertuples():
-            marker_name = row.marker_name
-            run_name = row.run_name
-            biosample_name = row.biosample_name
-            replicate_name = row.replicate_name
-            with engine.connect() as conn:
-                # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
-                # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(
-                    marker_model.__table__.c.name == marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
-                    biosample_model.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(
-                    replicate_model.__table__.c.name == replicate_name)
-                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
-                # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                             'replicate_id': replicate_id})
+
+        filter_various = FilterCommon(engine, run_model, marker_model, biosample_model, replicate_model,
+                                      input_filter_model,
+                                      output_filter_models=output_filter_models)
+        fastainfo_instance_list = filter_various.get_fastainfo_instance_list_with_ids(input_file_fastainfo)
 
         ##########################################################
         #
         # 2. Delete /run/markerbiosample/replicate from this filter table
         #
         ##########################################################
-        with engine.connect() as conn:
-            conn.execute(filter_renkonen_model.__table__.delete(), sample_instance_list)
+
+        filter_various.delete_output_filter_model(fastainfo_instance_list)
+
 
         ##########################################################
         #
-        # 3. Select marker/run/biosample/replicate from variant_read_count_model
+        # 3. Select variant_read_count_model
         #
         ##########################################################
 
-        chimera_model_table = chimera_model.__table__
-
-        variant_read_count_list = []
-        for sample_instance in sample_instance_list:
-            run_id = sample_instance['run_id']
-            marker_id = sample_instance['marker_id']
-            biosample_id = sample_instance['biosample_id']
-            replicate_id = sample_instance['replicate_id']
-            stmt_select = select([chimera_model_table.c.run_id,
-                                  chimera_model_table.c.marker_id,
-                                  chimera_model_table.c.biosample_id,
-                                  chimera_model_table.c.replicate_id,
-                                  chimera_model_table.c.variant_id,
-                                  chimera_model_table.c.read_count]).distinct()\
-                                    .where(chimera_model_table.c.run_id == run_id)\
-                                    .where(chimera_model_table.c.marker_id == marker_id)\
-                                    .where(chimera_model_table.c.biosample_id == biosample_id)\
-                                    .where(chimera_model_table.c.replicate_id == replicate_id)\
-                                    .where(chimera_model_table.c.filter_delete == 0)
-            with engine.connect() as conn:
-                for row2 in conn.execute(stmt_select).fetchall():
-                    variant_read_count_list.append(row2)
-        #
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
-
-        # Exit if no variants for analysis
-        try:
-            assert variant_read_count_df.shape[0] > 0
-        except AssertionError:
-            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
-            sys.exit(1)
+        variant_read_count_df = filter_various.get_variant_read_count_model(fastainfo_instance_list)
 
         ##########################################################
         #
@@ -173,33 +117,28 @@ class FilterRenkonen(ToolWrapper):
 
         filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
 
-        # ##########################################################
-        # #
-        # # 5. Insert Filter data
-        # #
-        # ##########################################################
-        # with engine.connect() as conn:
-        #         conn.execute(filter_renkonen_model.__table__.insert(), df.to_dict('records'))
 
-
-        ############################################
+        ##########################################################
+        #
         # Write to DB
-        ############################################
-        records = filter_delete_df_to_dict(filter_output_df)
+        #
+        ##########################################################
+
+        records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(filter_renkonen_model.__table__.insert(), records)
+            conn.execute(output_filter_models.__table__.insert(), records)
 
         ##########################################################
         #
-        # 6. Exit vtam if all variants delete
+        # Exit vtam if all variants delete
         #
         ##########################################################
-        # Exit if no variants for analysis
+
         try:
             assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
         except AssertionError:
-            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
-            sys.exit(1)
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+            sys.exit(0)
 
 
 def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
