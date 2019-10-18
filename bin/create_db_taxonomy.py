@@ -5,10 +5,6 @@ from vtam.utils.TaxonomyDB import TaxonomyDB
 
 import argparse
 
-
-
-
-
 def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', dest='output', action='store', help="Path to sqlite DB with taxonomy information",

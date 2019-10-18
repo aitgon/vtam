@@ -13,7 +13,7 @@ import urllib.request
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import url_taxonomy_sqlite
-
+from sqlalchemy.exc import OperationalError
 
 class TaxonomyDB(object):
 
@@ -86,9 +86,10 @@ class TaxonomyDB(object):
         try:
             taxonomy_df.to_sql('taxonomy', con=engine, index = False)
         except ValueError as valerr:
-            Logger.instance().error(VTAMexception("Error during the creation of the taxonomy DB"))
-        # #
-        # return path_taxonomy_db_sqlite_path
+            Logger.instance().error(VTAMexception("{}. Error during the creation of the taxonomy DB".format(valerr)))
+        except sqlalchemy.exc.OperationalError as opererr:
+            Logger.instance().error(
+                VTAMexception("{}. Please, verify the output argument: {}".format(opererr, self.output)))
 
     ##########################################################
     #
