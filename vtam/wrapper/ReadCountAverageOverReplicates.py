@@ -1,16 +1,12 @@
-import inspect
-import os
-import sys
-
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
-
-
 from sqlalchemy import select
-import pandas
 
-from vtam.utils.utilities import filter_delete_df_to_dict
+from vtam.utils.FilterCommon import FilterCommon
+from vtam.utils.OptionManager import OptionManager
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+
+import os
+import pandas
+import sys
 
 
 class ReadCountAverageOverReplicates(ToolWrapper):
@@ -26,8 +22,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     __input_table_replicate = "Replicate"
     __input_file_fastainfo = "fastainfo"
     __input_table_filter_codon_stop = "FilterCodonStop"
-
-
     # Output table
     __output_table_filter_consensus = "ReadCountAverageOverReplicates"
 
@@ -191,7 +185,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = filter_delete_df_to_dict(df_out)
+        records = FilterCommon.filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
             conn.execute(consensus_model.__table__.insert(), records)
 
