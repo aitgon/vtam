@@ -3,7 +3,6 @@ import urllib
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import public_data_dir
-from vtam.utils.Logger import Logger
 
 
 def get_or_create(session, model, **kwargs):
@@ -97,33 +96,3 @@ def download_coi_db():
         urllib.request.urlretrieve(coi_db_url, coi_db_path)
     #
     return map_taxids_tsv_path, coi_blast_db_dir
-
-
-##########################################################
-#
-# Convert DF to list of dictionaries to use in an sqlalchemy core insert
-#
-##########################################################
-def filter_delete_df_to_dict(filter_df):
-    """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
-    records = []
-    for row in filter_df.itertuples():
-        run_id = row.run_id
-        marker_id = row.marker_id
-        biosample_id = row.biosample_id
-        replicate_id = row.replicate_id
-        variant_id = row.variant_id
-        read_count = row.read_count
-        filter_delete = row.filter_delete
-        if not 'filter_id' in dir(row): # Default not filter
-            records.append({'run_id': run_id, 'marker_id': marker_id,
-                                                     'variant_id': variant_id, 'biosample_id': biosample_id,
-                                                     'replicate_id': replicate_id, 'read_count': read_count,
-                                                     'filter_delete': filter_delete})
-        else: # Only used for filterlfn where fil
-            filter_id = row.filter_id
-            records.append({'run_id': run_id, 'marker_id': marker_id,
-                                                     'variant_id': variant_id, 'biosample_id': biosample_id,
-                                                     'replicate_id': replicate_id, 'read_count': read_count,
-                                                     'filter_id': filter_id, 'filter_delete': filter_delete})
-    return records

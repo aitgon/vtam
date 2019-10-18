@@ -44,7 +44,7 @@ class TestWorpmarsRunner(TestCase):
       fastq_dir: test/utils
       fasta_dir: foo
       fastq_minovlen: 50
-      fastq_maxmergelen: 300
+      fastq_maxmergelen: 500
       fastq_minmergelen: 100
       fastq_minlen: 50
       fastq_maxee: 1
@@ -54,6 +54,7 @@ class TestWorpmarsRunner(TestCase):
       fastq_ascii: 33
       log_verbosity: 0
       log_file: None"""
+        # import pdb; pdb.set_trace()
         self.assertTrue(wopfile_content == wopfile_content_bak)
         ###############################################################
         #

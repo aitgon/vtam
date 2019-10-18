@@ -9,6 +9,7 @@ import pandas
 
 class TestChimera(TestCase):
 
+
     def setUp(self):
         # Input from min_replicate_number
         # Variants 1 and 2 are ok but 3-5 are chimeras

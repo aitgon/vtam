@@ -1,19 +1,15 @@
-import os
-import sys
-
-import sqlalchemy
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-
+from sqlalchemy import select
+from vtam.utils.FilterLFNrunner import FilterLFNrunner
+from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.Logger import Logger
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-
-from vtam.utils.FilterLFNrunner import FilterLFNrunner
-from sqlalchemy import select
+import os
 import pandas
+import sys
 
-from vtam.utils.utilities import filter_delete_df_to_dict
+from vtam.utils.FilterCommon import FilterCommon
 
 
 class FilterLFN(ToolWrapper):
@@ -223,20 +219,20 @@ class FilterLFN(ToolWrapper):
         # Write to DB
         ############################################
         filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
-        records = filter_delete_df_to_dict(filter_output_df)
+        records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
             conn.execute(variant_filter_lfn_model.__table__.insert(), records)
 
         ##########################################################
         #
-        # 6. Exit vtam if all variants delete
+        # Exit vtam if all variants delete
         #
         ##########################################################
-        # Exit if no variants for analysis
+
         try:
             assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
         except AssertionError:
-            Logger.instance().info(VTAMexception("Error: This filter has deleted all the variants"))
-            sys.exit(1)
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+            sys.exit(0)
 
 
