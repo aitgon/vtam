@@ -55,6 +55,7 @@ class MakeOtuTable(ToolWrapper):
 
     def specify_params(self):
         return {
+            "foo": "int",
             "log_verbosity": "int",
             "log_file": "str"
         }

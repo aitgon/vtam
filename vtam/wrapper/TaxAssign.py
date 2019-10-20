@@ -10,7 +10,6 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.utils.utilities import download_coi_db
 from vtam.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
 from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 from vtam.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
@@ -82,8 +81,9 @@ class TaxAssign(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        if not self.option("log_verbosity") is None:
+            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+            OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         #########################################################
         #
@@ -98,6 +98,7 @@ class TaxAssign(ToolWrapper):
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
         input_file_blast_nhr = self.input_file(TaxAssign.__input_file_blast_nhr)
+        map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
         #
         # Input table models
         marker_model = self.input_table(TaxAssign.__input_table_marker)
@@ -233,51 +234,46 @@ class TaxAssign(ToolWrapper):
         #
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
-        map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
-        os.environ['BLASTDB'] = coi_blast_db_dir
+        # get blast db dir and filename prefix from NHR file
+        blast_db_dir = os.path.dirname(input_file_blast_nhr)
+        os.environ['BLASTDB'] = blast_db_dir
+        blast_db_file_prefix = os.path.basename(input_file_blast_nhr).split('.')[0]
+        if map_taxids_tsv_path is None: # run blast with full NCBI blast db
+            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_file_prefix, evalue=1e-5,
+                                                 outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+                                                 qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
+        else: # run blast with custom blast db
+            # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
+            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_file_prefix, evalue=1e-5,
+                                                 outfmt='"6 qseqid sacc pident evalue qcovhsp"', dust='yes',
+                                                 qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
         #
-        # Uncomment to run blast with full NCBI blast db)
-        #
-        # blastn_cline = NcbiblastnCommandline(query=variant_fasta, db="nt", evalue=1e-5,
-        #                                      outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-        #                                      qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
-        #
-        # Comment to run blast with full NCBI blast db)
-        #
-        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db="coi_db", evalue=1e-5,
-                                             outfmt='"6 qseqid sacc pident evalue qcovhsp"', dust='yes',
-                                             qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
+        # Run blast
         stdout, stderr = blastn_cline()
-        # import pdb; pdb.set_trace()
-        #
 
         ##########################################################
         #
-        # 3 Merge blast result with tax ids (Based on COI blast db)
+        # Process blast reults
         #
         ##########################################################
-        blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
-                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
-        map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
-                                        names=['target_id', 'target_tax_id'])
-        lblast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
-        #
-        ##########################################################
-        #
-        # Process local blast TSV result (Uncomment to run blast with full NCBI blast db)
-        #
-        ##########################################################
-        # blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
-        # Logger.instance().debug(
-        #     "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
-        # lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
-        #                                   names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
-        #                                          'target_tax_id'])
-        #
-        # remove multiple target_tax_ids, rename and convert target_tax_id to numeric
-        # lblast_output_df = (pandas.concat([lblast_output_df, lblast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],axis=1))[['variant_id', 'identity', 0]]
-        # lblast_output_df = lblast_output_df.rename(columns={0: 'target_tax_id'})
-        # import pdb; pdb.set_trace()
+        if map_taxids_tsv_path is None: # Process result from full DB
+            # Todo: Must be fixed
+            blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
+            Logger.instance().debug(
+                "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
+            lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
+                                              names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                     'target_tax_id'])
+
+            # remove multiple target_tax_ids, rename and convert target_tax_id to numeric
+            lblast_output_df = (pandas.concat([lblast_output_df, lblast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],axis=1))[['variant_id', 'identity', 0]]
+            lblast_output_df = lblast_output_df.rename(columns={0: 'target_tax_id'})
+        else: # Process result from custom DB
+            blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
+                                              names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
+            map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
+                                            names=['target_id', 'target_tax_id'])
+            lblast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
         #
         ##########################################################
         #
