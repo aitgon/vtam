@@ -1,4 +1,4 @@
-from pathlib import Path
+import argparse
 
 from vtam import VTAMexception
 from vtam.utils.Logger import Logger
@@ -15,7 +15,7 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import url_taxonomy_sqlite
 from sqlalchemy.exc import OperationalError
 
-class TaxonomyDB(object):
+class DBtaxonomy(object):
 
     def __init__(self, output=None, precomputed=True):
         #
@@ -106,3 +106,19 @@ class TaxonomyDB(object):
                                                                     inspect.currentframe().f_lineno, ))
         if not os.path.isfile(self.output):
             urllib.request.urlretrieve(url_taxonomy_sqlite, self.output)
+
+    @staticmethod
+    def create_parser():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-o', '--output', dest='output', action='store', help="Path to custom COI blast db",
+                            required=True)
+        return parser
+
+    @classmethod
+    def main(cls):
+        parser = DBtaxonomy.create_parser()
+        args = parser.parse_args()
+        taxonomydb = DBtaxonomy(output=vars(args)['output'], precomputed=vars(args)['precomputed'], )
+        taxonomydb.create_taxonomy_db()
+
+

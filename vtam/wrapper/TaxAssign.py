@@ -2,19 +2,17 @@ import errno
 import inspect
 import os
 
-from Bio.Blast.Applications import NcbiblastnCommandline
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
-from sqlalchemy import select
 import pandas
+from Bio.Blast.Applications import NcbiblastnCommandline
+from sqlalchemy import select
+from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam.utils.PathManager import PathManager
 from vtam.utils.Logger import Logger
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.PathManager import PathManager
 from vtam.utils.utilities import download_coi_db
 from vtam.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
-from vtam.utils.OptionManager import OptionManager
-
 from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
-
 from vtam.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
 
 
@@ -25,6 +23,13 @@ class TaxAssign(ToolWrapper):
     # Input file
     __input_file_fastainfo = "fastainfo"
     __input_file_taxonomy = "taxonomy"
+    __input_file_blast_nhr = "blast_nhr"
+    __input_file_blast_nin = "blast_nin"
+    __input_file_blast_nog = "blast_nog"
+    __input_file_blast_nsd = "blast_nsd"
+    __input_file_blast_nsi = "blast_nsi"
+    __input_file_blast_nsq = "blast_nsq"
+    __input_file_map_taxids = "map_taxids"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -37,9 +42,16 @@ class TaxAssign(ToolWrapper):
     __output_table_tax_assign = "TaxAssign"
 
     def specify_input_file(self):
-        return[
+        return [
             TaxAssign.__input_file_fastainfo,
             TaxAssign.__input_file_taxonomy,
+            TaxAssign.__input_file_blast_nhr,
+            TaxAssign.__input_file_blast_nin,
+            TaxAssign.__input_file_blast_nog,
+            TaxAssign.__input_file_blast_nsd,
+            TaxAssign.__input_file_blast_nsi,
+            TaxAssign.__input_file_blast_nsq,
+            TaxAssign.__input_file_map_taxids,
         ]
 
     def specify_input_table(self):
@@ -53,16 +65,16 @@ class TaxAssign(ToolWrapper):
         ]
 
     def specify_output_table(self):
-        return[
+        return [
             TaxAssign.__output_table_tax_assign,
 
         ]
 
     def specify_params(self):
         return {
-            "identity_threshold":"float",  #  percentage
-            "include_prop" : "float",  # percentage
-            "min_number_of_taxa" : "int",  #  count
+            "identity_threshold": "float",  # percentage
+            "include_prop": "float",  # percentage
+            "min_number_of_taxa": "int",  # count
             "log_verbosity": "int",
             "log_file": "str",
         }
@@ -80,11 +92,12 @@ class TaxAssign(ToolWrapper):
         #########################################################
         Logger.instance().debug(
             "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
-                                                                      inspect.currentframe().f_lineno,))
+                                                                                 inspect.currentframe().f_lineno, ))
         #
-        # Input file output
+        # Input file
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
+        input_file_blast_nhr = self.input_file(TaxAssign.__input_file_blast_nhr)
         #
         # Input table models
         marker_model = self.input_table(TaxAssign.__input_table_marker)
@@ -97,18 +110,19 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
-        identity_threshold = float(self.option("identity_threshold")) # percentage
-        include_prop = float(self.option("include_prop")) # percentage
-        min_number_of_taxa = int(self.option("min_number_of_taxa")) # count
+        identity_threshold = float(self.option("identity_threshold"))  # percentage
+        include_prop = float(self.option("include_prop"))  # percentage
+        min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
 
         ##########################################################
         #
         # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
         #
         ##########################################################
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
-            names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
+                                       names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
+                                              'marker_name', 'biosample_name', \
+                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
@@ -117,19 +131,23 @@ class TaxAssign(ToolWrapper):
             replicate_name = row.replicate_name
             with engine.connect() as conn:
                 # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
+                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name==marker_name)
+                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(
+                    marker_model.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
+                    biosample_model.__table__.c.name == biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
+                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(
+                    replicate_model.__table__.c.name == replicate_name)
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                             'replicate_id': replicate_id})
 
         ##########################################################
         #
@@ -142,10 +160,10 @@ class TaxAssign(ToolWrapper):
         #
         variant_id_delete_list = []
         for sample_instance in sample_instance_list:
-            stmt_select_variant_id_delete = select([filter_codon_stop_model.__table__.c.variant_id])\
-                .where(filter_codon_stop_model.__table__.c.run_id == sample_instance['run_id'])\
-                .where(filter_codon_stop_model.__table__.c.marker_id == sample_instance['marker_id'])\
-                .where(filter_codon_stop_model.__table__.c.biosample_id == sample_instance['biosample_id'])\
+            stmt_select_variant_id_delete = select([filter_codon_stop_model.__table__.c.variant_id]) \
+                .where(filter_codon_stop_model.__table__.c.run_id == sample_instance['run_id']) \
+                .where(filter_codon_stop_model.__table__.c.marker_id == sample_instance['marker_id']) \
+                .where(filter_codon_stop_model.__table__.c.biosample_id == sample_instance['biosample_id']) \
                 .where(filter_codon_stop_model.__table__.c.replicate_id == sample_instance['replicate_id'])
             # Select to DataFrame
             with engine.connect() as conn:
@@ -167,7 +185,9 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         Logger.instance().debug(
-            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
+            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
+                                                                                            inspect.currentframe().f_lineno,
+                                                                                            'TaxAssign'))
 
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         variant_model_table = variant_model.__table__
@@ -207,7 +227,9 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
         Logger.instance().debug(
-            "file: {}; line: {}; Running local blast with FASTA input {}".format(__file__, inspect.currentframe().f_lineno, variant_fasta))
+            "file: {}; line: {}; Running local blast with FASTA input {}".format(__file__,
+                                                                                 inspect.currentframe().f_lineno,
+                                                                                 variant_fasta))
         #
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
@@ -236,7 +258,8 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
                                           names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
-        map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t", names=['target_id', 'target_tax_id'])
+        map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
+                                        names=['target_id', 'target_tax_id'])
         lblast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
         #
         ##########################################################
@@ -274,14 +297,16 @@ class TaxAssign(ToolWrapper):
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
+                __file__, inspect.currentframe().f_lineno))
         lineage_list = []
         for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
             lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
         tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__,
+                                                                                                 inspect.currentframe().f_lineno))
         # Merge local blast output with tax_id_to_lineage_df
         variantid_identity_lineage_df = lblast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
                                                                right_on='tax_id')
@@ -302,19 +327,15 @@ class TaxAssign(ToolWrapper):
         # f07_blast_result_to_ltg_tax_id(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
         #
-        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=int(identity_threshold),
+        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df,
+                                                identity_threshold=int(identity_threshold),
                                                 include_prop=int(include_prop), min_number_of_taxa=min_number_of_taxa)
         ##########################################################
         #
         # 6. Insert Filter data
         #
         ##########################################################
-        Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__, inspect.currentframe().f_lineno))
+        Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
+                                                                                                           inspect.currentframe().f_lineno))
         with engine.connect() as conn:
-                conn.execute(tax_assign_model.__table__.insert(), ltg_df.to_dict('records'))
-
-
-
-
-
-
+            conn.execute(tax_assign_model.__table__.insert(), ltg_df.to_dict('records'))

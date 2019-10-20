@@ -63,8 +63,9 @@ class FilterLFN(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        if not self.option("log_verbosity") is None:
+            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+            OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -74,6 +75,8 @@ class FilterLFN(ToolWrapper):
         #
         # Input file output
         input_file_fastainfo = self.input_file(FilterLFN.__input_file_fastainfo)
+        # Add FilterLFNthresholdspecific
+        # input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
         #
         # Input table models
         run_model = self.input_table(FilterLFN.__input_table_run)

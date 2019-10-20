@@ -7,7 +7,7 @@ from unittest import TestCase
 import pandas
 
 from vtam import Logger
-from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
 from vtam.wrapper.MakeOtuTable import f16_otu_table_maker
@@ -17,7 +17,7 @@ class TestMakeOtuTable(TestCase):
 
     def test_f01_make_table_out(self):
         try:
-            taxonomydb = TaxonomyDB(precomputed=True)
+            taxonomydb = DBtaxonomy(precomputed=True)
             taxonomy_sqlite_path = taxonomydb.get_path()
             # taxonomy_sqlite_path = os.environ['TAXONOMY_SQLITE']
             Path(taxonomy_sqlite_path).resolve(strict=True)
