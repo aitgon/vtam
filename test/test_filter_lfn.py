@@ -142,8 +142,6 @@ class TestFilterLFN(TestCase):
         # lfn_var_threshold_specific={}
         # for  row in lfn_var_threshold_specific_df.itertuples():
         #    lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold)
-        # import pdb;
-        # pdb.set_trace()
 
         self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_var_threshold, threshold_specific_df=lfn_var_threshold_specific_df)
         #

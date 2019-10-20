@@ -1,4 +1,81 @@
-{% block footer %}
+rule SampleInformation:
+    tool: vtam.wrapper.SampleInformation
+    input:
+        file:
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+    output:
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Fasta: vtam.model.Fasta
+            PrimerPair: vtam.model.PrimerPair
+            TagPair: vtam.model.TagPair
+            SampleInformation: vtam.model.SampleInformation
+    params:
+        fasta_dir: test/utils
+
+
+rule SortReads:
+    tool: vtam.wrapper.SortReads
+    input:
+        table:
+            Fasta: vtam.model.Fasta
+            SampleInformation: vtam.model.SampleInformation
+            Marker: vtam.model.Marker
+        file:
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+    output:
+        file:
+            sortreads: test/utils/sortreads.tsv
+    params:
+        min_id: 0.8
+        minseqlength: 32
+        overhang: 0
+
+
+rule VariantReadCount:
+    tool: vtam.wrapper.VariantReadCount
+    input:
+        file:
+            sortreads: test/utils/sortreads.tsv
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+    output:
+        table:
+            Variant: vtam.model.Variant
+            VariantReadCount: vtam.model.VariantReadCount
+    params:
+        foo: 0
+
+
+rule FilterLFN:
+    tool: vtam.wrapper.FilterLFN
+    input:
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            VariantReadCount: vtam.model.VariantReadCount
+        file:
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+            threshold_specific: test/utils/test_wopmars_runner_wopfile_otu.py
+    output:
+        table:
+            FilterLFN: vtam.model.FilterLFN
+    params:
+        filter_lfn_variant: 1
+        lfn_variant_threshold: 0.001
+        lfn_variant_replicate_threshold: 0.001
+        lfn_biosample_replicate_threshold: 0.001
+        lfn_read_count_threshold: 10
+
 
 rule FilterMinReplicateNumber:
     tool: vtam.wrapper.FilterMinReplicateNumber
@@ -10,15 +87,14 @@ rule FilterMinReplicateNumber:
             Replicate: vtam.model.Replicate
             FilterLFN: vtam.model.FilterLFN
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
     params:
-        min_replicate_number: {{min_replicate_number}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
-#
+        min_replicate_number: 2
+
+
 rule FilterPCRError:
     tool: vtam.wrapper.FilterPCRError
     input:
@@ -30,15 +106,14 @@ rule FilterPCRError:
             Variant: vtam.model.Variant
             FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterPCRError: vtam.model.FilterPCRError
     params:
-        pcr_error_var_prop: {{pcr_error_var_prop}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
-#
+        pcr_error_var_prop: 0.1
+
+
 rule FilterChimera:
     tool: vtam.wrapper.FilterChimera
     input:
@@ -50,14 +125,14 @@ rule FilterChimera:
             Variant: vtam.model.Variant
             FilterPCRError: vtam.model.FilterPCRError
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterChimera: vtam.model.FilterChimera
             FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
     params:
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        foo: 0
+
 
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
@@ -69,14 +144,13 @@ rule FilterRenkonen:
             Replicate: vtam.model.Replicate
             FilterChimera: vtam.model.FilterChimera
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: {{renkonen_threshold}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        renkonen_threshold: 0.1
+
 
 rule FilterIndel:
     tool: vtam.wrapper.FilterIndel
@@ -89,13 +163,13 @@ rule FilterIndel:
             Variant: vtam.model.Variant
             FilterRenkonen: vtam.model.FilterRenkonen
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterIndel: vtam.model.FilterIndel
     params:
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        foo: 0
+
 
 rule FilterCodonStop:
     tool: vtam.wrapper.FilterCodonStop
@@ -108,14 +182,13 @@ rule FilterCodonStop:
             Variant: vtam.model.Variant
             FilterIndel: vtam.model.FilterIndel
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             FilterCodonStop: vtam.model.FilterCodonStop
     params:
-        genetic_table_number: {{genetic_table_number}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        genetic_table_number: 5
+
 
 rule ReadCountAverageOverReplicates:
     tool: vtam.wrapper.ReadCountAverageOverReplicates
@@ -127,13 +200,13 @@ rule ReadCountAverageOverReplicates:
             Replicate: vtam.model.Replicate
             FilterCodonStop: vtam.model.FilterCodonStop
         file:
-            fastainfo: {{fastainfo}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
             ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
     params:
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        foo: 0
+
 
 rule TaxAssign:
     tool: vtam.wrapper.TaxAssign
@@ -146,17 +219,21 @@ rule TaxAssign:
             Variant: vtam.model.Variant
             FilterCodonStop: vtam.model.FilterCodonStop
         file:
-            fastainfo: {{fastainfo}}
-            taxonomy: {{taxonomy}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+            taxonomy: test/utils/test_wopmars_runner_wopfile_otu.py
+            blast_nhr: test/test_files/blastdb/nt.nhr
+            blast_nin: test/test_files/blastdb/nt.nin
+            blast_nog: test/test_files/blastdb/nt.nog
+            blast_nsd: test/test_files/blastdb/nt.nsd
+            blast_nsi: test/test_files/blastdb/nt.nsi
+            blast_nsq: test/test_files/blastdb/nt.nsq
     output:
         table:
             TaxAssign: vtam.model.TaxAssign
     params:
-        identity_threshold: {{identity_threshold}}
-        include_prop: {{include_prop}}
-        min_number_of_taxa: {{min_number_of_taxa}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        identity_threshold: 97
+        include_prop: 90
+        min_number_of_taxa: 3
 
 
 rule MakeOtuTable:
@@ -172,13 +249,10 @@ rule MakeOtuTable:
             FilterCodonStop: vtam.model.FilterCodonStop
             TaxAssign: vtam.model.TaxAssign
         file:
-            fastainfo: {{fastainfo}}
-            taxonomy: {{taxonomy}}
+            fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
+            taxonomy: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         file:
-            OTUTable: {{otutable}}
+            OTUTable: test/utils/otutable.tsv
     params:
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
-
-{% endblock %}
+        foo: 0

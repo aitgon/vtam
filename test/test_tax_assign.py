@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxonomyDB import TaxonomyDB
+from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
 from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
@@ -38,11 +38,10 @@ class TestTaxAssign(TestCase):
         """
         super(TestTaxAssign, cls).setUpClass()
         # create_vtam_data_dir()
-        taxonomydb = TaxonomyDB(precomputed=True)
+        taxonomydb = DBtaxonomy(precomputed=True)
         taxonomy_sqlite_path = taxonomydb.get_path()
         #
         cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
-        # cls.the_resource = get_some_resource()
 
 
     def test_f02_variant_df_to_fasta(self):

@@ -1,4 +1,4 @@
-rule SampleInformation:
+{% from 'macros.txt' import param_log %}rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:
@@ -14,9 +14,7 @@ rule SampleInformation:
             TagPair: vtam.model.TagPair
             SampleInformation: vtam.model.SampleInformation
     params:
-        fasta_dir: {{fastadir}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        fasta_dir: {{fastadir}}{{ param_log(log_file, log_verbosity) }}
 
 
 rule SortReads:
@@ -34,9 +32,7 @@ rule SortReads:
     params:
         min_id: {{min_id}}
         minseqlength: {{minseqlength}}
-        overhang: {{overhang}}
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        overhang: {{overhang}}{{ param_log(log_file, log_verbosity) }}
 
 
 rule VariantReadCount:
@@ -55,9 +51,7 @@ rule VariantReadCount:
             Variant: vtam.model.Variant
             VariantReadCount: vtam.model.VariantReadCount
     params:
-        log_verbosity: {{log_verbosity}}
-        log_file: {{log_file}}
+        foo: 0{{ param_log(log_file, log_verbosity) }}
 
 
-{% block rule_2nd_otu_optimize %}{% endblock %}
-
+{% block wopfile_otu %}{% endblock %}{% block wopfile_optimize %}{% endblock %}
