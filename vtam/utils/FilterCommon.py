@@ -8,7 +8,8 @@ import sys
 class FilterCommon(object):
 
 
-    def __init__(self, engine, run_model, marker_model, biosample_model, replicate_model, input_filter_model, output_filter_models):
+    def __init__(self, filter_name, engine, run_model, marker_model, biosample_model, replicate_model, input_filter_model, output_filter_models):
+        self.filter_name = filter_name
         self.engine = engine
         self.run_model = run_model
         self.marker_model = marker_model
@@ -115,7 +116,8 @@ class FilterCommon(object):
         try:
             assert variant_read_count_df.shape[0] > 0
         except AssertionError:
-            Logger.instance().warning(VTAMexception("No variants available for this Filter: {}. The analysis will stop here.".format(self.__class__.__name__)))
+            Logger.instance().warning(VTAMexception("No variants available for this Filter: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
         return variant_read_count_df
 

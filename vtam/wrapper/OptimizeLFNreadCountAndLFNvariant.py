@@ -131,8 +131,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
         lfn_read_count_threshold = self.option("lfn_read_count_threshold")
         lfn_variant_or_variant_replicate_threshold = self.option("lfn_variant_or_variant_replicate_threshold")
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ################################################################################################
         #

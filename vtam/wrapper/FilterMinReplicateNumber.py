@@ -92,7 +92,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        filter_various = FilterCommon(engine, run_model, marker_model, biosample_model, replicate_model,
+        filter_various = FilterCommon(self.__class__.__name__, engine, run_model, marker_model, biosample_model, replicate_model,
                                       input_filter_model, output_filter_model)
         fastainfo_instance_list = filter_various.get_fastainfo_instance_list_with_ids(input_file_fastainfo)
 
