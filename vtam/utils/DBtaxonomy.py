@@ -112,6 +112,9 @@ class DBtaxonomy(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-o', '--output', dest='output', action='store', help="Path to custom COI blast db",
                             required=True)
+        parser.add_argument('--precomputed', dest='precomputed', action='store_true', default=True,
+                            help="Path to custom COI blast db",
+                            required=False)
         return parser
 
     @classmethod
