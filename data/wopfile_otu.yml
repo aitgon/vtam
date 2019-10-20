@@ -1,0 +1,202 @@
+{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "parent_otu_optimize.yml" %}
+{% block wopfile_otu %}rule FilterLFN:
+    tool: vtam.wrapper.FilterLFN
+    input:
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            VariantReadCount: vtam.model.VariantReadCount
+        file:
+            fastainfo: {{fastainfo}}{{ input_file_threshold_specific(threshold_specific) }}
+    output:
+        table:
+            FilterLFN: vtam.model.FilterLFN
+    params:
+        filter_lfn_variant: {{filter_lfn_variant}}
+        lfn_variant_threshold: {{lfn_variant_threshold}}
+        lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
+        lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
+        lfn_read_count_threshold: {{lfn_read_count_threshold}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterMinReplicateNumber:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.model.Run
+            Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterLFN: vtam.model.FilterLFN
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+    params:
+        min_replicate_number: {{min_replicate_number}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterPCRError:
+    tool: vtam.wrapper.FilterPCRError
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterPCRError: vtam.model.FilterPCRError
+    params:
+        pcr_error_var_prop: {{pcr_error_var_prop}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterChimera:
+    tool: vtam.wrapper.FilterChimera
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterPCRError: vtam.model.FilterPCRError
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterChimera: vtam.model.FilterChimera
+            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+    params:
+        foo: 0{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterRenkonen:
+    tool: vtam.wrapper.FilterRenkonen
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterChimera: vtam.model.FilterChimera
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterRenkonen: vtam.model.FilterRenkonen
+    params:
+        renkonen_threshold: {{renkonen_threshold}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterIndel:
+    tool: vtam.wrapper.FilterIndel
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterRenkonen: vtam.model.FilterRenkonen
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterIndel: vtam.model.FilterIndel
+    params:
+        foo: 0{{ param_log(log_file, log_verbosity) }}
+
+
+rule FilterCodonStop:
+    tool: vtam.wrapper.FilterCodonStop
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterIndel: vtam.model.FilterIndel
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            FilterCodonStop: vtam.model.FilterCodonStop
+    params:
+        genetic_table_number: {{genetic_table_number}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule ReadCountAverageOverReplicates:
+    tool: vtam.wrapper.ReadCountAverageOverReplicates
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            FilterCodonStop: vtam.model.FilterCodonStop
+        file:
+            fastainfo: {{fastainfo}}
+    output:
+        table:
+            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+    params:
+        foo: 0{{ param_log(log_file, log_verbosity) }}
+
+
+rule TaxAssign:
+    tool: vtam.wrapper.TaxAssign
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterCodonStop: vtam.model.FilterCodonStop
+        file:
+            fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
+            blast_nhr: {{blast_nhr}}
+            blast_nin: {{blast_nin}}
+            blast_nog: {{blast_nog}}
+            blast_nsd: {{blast_nsd}}
+            blast_nsi: {{blast_nsi}}
+            blast_nsq: {{blast_nsq}}{{ param_map_taxids(map_taxids) }}
+    output:
+        table:
+            TaxAssign: vtam.model.TaxAssign
+    params:
+        identity_threshold: {{identity_threshold}}
+        include_prop: {{include_prop}}
+        min_number_of_taxa: {{min_number_of_taxa}}{{ param_log(log_file, log_verbosity) }}
+
+
+rule MakeOtuTable:
+    tool: vtam.wrapper.MakeOtuTable
+    input:
+        table:
+            Marker: vtam.model.Marker
+            Run: vtam.model.Run
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
+            Variant: vtam.model.Variant
+            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterCodonStop: vtam.model.FilterCodonStop
+            TaxAssign: vtam.model.TaxAssign
+        file:
+            fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
+    output:
+        file:
+            OTUTable: {{otutable}}
+    params:
+        foo: 0{{ param_log(log_file, log_verbosity) }}{% endblock %}

@@ -1,0 +1,17 @@
+{% macro param_log(log_file, log_verbosity) -%}
+{% if log_file is not none %}
+        log_verbosity: {{log_verbosity}}
+        log_file: {{log_file}}{% endif %}
+{%- endmacro%}
+
+{% macro param_map_taxids(map_taxids) -%}
+{% if map_taxids is not none %}
+            map_taxids: {{map_taxids}}{% endif %}
+{%- endmacro%}
+
+{% macro input_file_threshold_specific(threshold_specific) -%}
+{% if threshold_specific is not none %}
+            threshold_specific: {{threshold_specific}}{% endif %}
+{%- endmacro%}
+
+

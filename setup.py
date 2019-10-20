@@ -23,11 +23,9 @@ setup(
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
     entry_points={
-        'console_scripts': ['vtam=bin.vtam:main',
-                            'vtam_merge=bin.vtam_merge:main',
-                            'vtam_optimize=bin.vtam_optimize:main',
-                            'create_db_taxonomy=bin.create_db_taxonomy:main',
-                            'create_db_accession2taxid=bin.create_db_accession2taxid:main']
+        'console_scripts': ['vtam=vtam:main',
+                            'download_db_blast_coi=vtam.utils.DBblastCOI:DBblastCOI.main',
+                            'create_db_taxonomy=vtam.utils.DBtaxonomy:DBtaxonomy.main']
     },
     )
 

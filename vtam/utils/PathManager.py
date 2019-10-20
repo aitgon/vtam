@@ -35,7 +35,7 @@ class PathManager(Singleton):
         :return: the output leading to the src file of the project
         """
 
-        wopfile_test_path = os.path.join(os.path.dirname(__file__), "../../test/input/Wopfile_merge.yml")
+        wopfile_test_path = os.path.join(os.path.dirname(__file__), "../../test/input/wopfile_merge.yml")
         return wopfile_test_path
 
     @staticmethod
@@ -72,28 +72,28 @@ class PathManager(Singleton):
 
 
     @staticmethod
-    def check_file_exists_and_is_nonempty(path, error_message=None, abspath=False):
+    def check_file_exists_and_is_nonempty(path, error_message=None, is_abspath=False):
         """Checks if file exists and is not empty
 
         :param error_message: Optional message to help debug the problem
-        :param abspath: If True, returns abspath
+        :param is_abspath: If True, returns abspath
         :return: void
         """
         try:
             assert os.stat(path).st_size > 0
         except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
-        if abspath:
+        if is_abspath:
             return os.path.abspath(path)
         return path
 
 
     @staticmethod
-    def check_dir_exists_and_is_nonempty(path, error_message=None, abspath=False):
+    def check_dir_exists_and_is_nonempty(path, error_message=None, is_abspath=False):
         """Checks if directory exists and is not empty
 
         :param error_message: Optional message to help debug the problem
-        :param abspath: If True, returns abspath
+        :param is_abspath: If True, returns abspath
         :return: void
         """
         try:
@@ -101,6 +101,6 @@ class PathManager(Singleton):
             # assert True
         except AssertionError as err:
             raise VTAMexception("{}: {}".format(err, error_message))
-        if abspath:
+        if is_abspath:
             return os.path.abspath(path)
         return path
