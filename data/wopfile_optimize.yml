@@ -16,7 +16,7 @@
         file:
             optimize_lfn_biosample_replicate: {{optimize_lfn_biosample_replicate}}
     params:
-      foo: 0{{ param_log(log_file, log_verbosity) }}
+        foo: 0{{ param_log(log_file, log_verbosity) }}
 
 
 rule OptimizePCRerror:
