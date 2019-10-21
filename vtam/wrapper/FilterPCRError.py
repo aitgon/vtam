@@ -173,20 +173,20 @@ class FilterPCRError(ToolWrapper):
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
 
-def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_df, tmp_dir):
+def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_unexpected_df, tmp_dir):
     """
     This function runs vsearch to detect PCR errors (1 mism or gap) between the "db" and the "query" sets
 
     Args:
         variant_db_df (Pandas Dataframe): Dataframe with this columns: variant_id, variant_sequence
-        variant_usearch_global_df (Pandas Dataframe): Dataframe with this columns: variant_id, variant_sequence
+        variant_usearch_global_unexpected_df (Pandas Dataframe): Dataframe with this columns: variant_id, variant_sequence
         tmp_dir (str): Path to the tmp dir where the fasta files and vsearch output will be written
 
     Returns: Pandas DataFrame with output of vsearch and these columnts: query, target, alnlen, ids, mism, gaps
 
     """
     # length of smallest sequence
-    length_min = min(variant_db_df.sequence.apply(len).tolist() + variant_usearch_global_df.sequence.apply(len).tolist())
+    length_min = min(variant_db_df.sequence.apply(len).tolist() + variant_usearch_global_unexpected_df.sequence.apply(len).tolist())
     # calcul identity
     identity = floor((length_min - 1) / length_min * 100) / 100
 
@@ -204,7 +204,7 @@ def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_df, tmp_dir)
 
     variant_vsearch_unexpected_fasta = os.path.join(tmp_dir, '{}.fasta'.format("variant_vsearch_unexpected"))
     with open(variant_vsearch_unexpected_fasta, 'w') as fout:
-        for row in variant_usearch_global_df.itertuples():
+        for row in variant_usearch_global_unexpected_df.itertuples():
             id = row.id
             sequence = row.sequence
             fout.write(">{}\n{}\n".format(id, sequence))

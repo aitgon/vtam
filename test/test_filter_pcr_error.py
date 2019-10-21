@@ -48,7 +48,7 @@ class TestFilterPCRError(TestCase):
     def test_02_f10_pcr_error(self):
         #
         vsearch_output_df = f10_pcr_error_run_vsearch(variant_db_df=self.variant_df,
-                                        variant_usearch_global_df=self.variant_df, tmp_dir=self.this_step_tmp_dir)
+                                                      variant_usearch_global_unexpected_df=self.variant_df, tmp_dir=self.this_step_tmp_dir)
         self.assertTrue(sorted(vsearch_output_df.ids.unique().tolist())
                         == [297, 298, 299, 300])
 
