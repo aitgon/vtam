@@ -271,7 +271,8 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     # Output of filter pcr_error
     #
     # Aggregate by biosample
-    variant_read_count_grouped_df = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
+    variant_read_count_grouped_df = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id',
+                                                                      'biosample_id']).sum().reset_index()
     variant_read_count_grouped_df.drop(columns='replicate_id', inplace=True)
     # Compute sum mismatch and gap
     vsearch_output_df['sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
