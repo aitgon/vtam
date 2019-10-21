@@ -1,4 +1,4 @@
-{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "parent_otu_optimize.yml" %}
+{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_otu_optimize.yml" %}
 {% block wopfile_otu %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
