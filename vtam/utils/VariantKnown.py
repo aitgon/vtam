@@ -58,7 +58,6 @@ class VariantKnown(object):
         """
         instance_list = []
         for row in self.variant_known_df.itertuples():
-            print(row)
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
@@ -75,7 +74,7 @@ class VariantKnown(object):
                 # get replicate_id ###########
                 # add this sample_instance ###########
                 instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'variant_id': row.variant_id,
-                                    'biosample_type': row.biosample_type, 'action': row.action, 'variant_sequence': row.variant_sequence})
+                                        'biosample_type': row.biosample_type, 'action': row.action, 'variant_sequence': row.variant_sequence})
         return instance_list
 
 
