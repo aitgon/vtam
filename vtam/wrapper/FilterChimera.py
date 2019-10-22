@@ -127,8 +127,6 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
 
-
-
         # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,

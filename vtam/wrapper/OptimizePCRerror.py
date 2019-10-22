@@ -120,9 +120,9 @@ class OptimizePCRerror(ToolWrapper):
         variant_known_ids_df = variant_known.variant_known_ids_df
 
         # aggregate per mock biosample
-        run_marker_biosample_keep_aggregated_by_mock_df = variant_known_ids_df.loc[
+        run_marker_biosample_aggregated_by_mock_df = variant_known_ids_df.loc[
             variant_known_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
-        run_marker_biosample_keep_aggregated_by_mock_df.drop_duplicates(inplace=True)
+        run_marker_biosample_aggregated_by_mock_df.drop_duplicates(inplace=True)
 
         ################################################################################################################
         #
@@ -130,33 +130,31 @@ class OptimizePCRerror(ToolWrapper):
         #
         ################################################################################################################
         pcr_error_final_df = pandas.DataFrame()
-        for per_biosample in run_marker_biosample_keep_aggregated_by_mock_df.itertuples():
-            per_biosample_run_id = per_biosample.run_id
-            per_biosample_marker_id = per_biosample.marker_id
-            per_biosample_biosample_id = per_biosample.biosample_id
+        for per_biosample_mock in run_marker_biosample_aggregated_by_mock_df.itertuples():
+            per_biosample_mock_run_id = per_biosample_mock.run_id
+            per_biosample_mock_marker_id = per_biosample_mock.marker_id
+            per_biosample_mock_biosample_id = per_biosample_mock.biosample_id
 
             ################################################################################################################
             #
-            # Extract "keep" variants and some columns
+            # Extract "keep" and "tolerate" variants and some columns
             #
             ################################################################################################################
 
-            variant_keep_df = variant_known_ids_df.loc[
-                (variant_known_ids_df['action'] == 'keep') &
-                (variant_known_ids_df['run_id'] == per_biosample_run_id) &
-                (variant_known_ids_df['marker_id'] == per_biosample_marker_id) &
-                (variant_known_ids_df['biosample_id'] == per_biosample_biosample_id),
+            variant_keep_tolerate_df = variant_known_ids_df.loc[
+                (variant_known_ids_df['action'].isin(['keep', 'tolerate'])) &
+                (variant_known_ids_df['run_id'] == per_biosample_mock_run_id) &
+                (variant_known_ids_df['marker_id'] == per_biosample_mock_marker_id) &
+                (variant_known_ids_df['biosample_id'] == per_biosample_mock_biosample_id),
                 ['variant_id', 'variant_sequence']]
-            variant_keep_df.drop_duplicates(inplace=True)
-            variant_keep_df.variant_id = variant_keep_df.variant_id.astype('int')
+            variant_keep_tolerate_df.drop_duplicates(inplace=True)
+            variant_keep_tolerate_df.variant_id = variant_keep_tolerate_df.variant_id.astype('int')
 
-            # run_marker_biosample_keep_df = variant_known_ids_df.loc[
-            #     variant_known_ids_df['action'] == 'keep', ['run_id', 'marker_id', 'biosample_id']].drop_duplicates(inplace=False)
-            variant_keep_df.columns = ['id', 'sequence']
+            variant_keep_tolerate_df.columns = ['id', 'sequence']
 
             ################################################################################################################
             #
-            # For run, marker and biosamples in "keep" variants, create the variant df with id and sequence
+            # For run, marker and mock biosamples, create the variant df with id and sequence
             #
             ################################################################################################################
 
@@ -165,9 +163,9 @@ class OptimizePCRerror(ToolWrapper):
                 stmt_select = sqlalchemy.select([
                     variant_model.__table__.c.id,
                     variant_model.__table__.c.sequence]) \
-                    .where(variant_read_count_model.__table__.c.run_id == per_biosample_run_id) \
-                    .where(variant_read_count_model.__table__.c.marker_id == per_biosample_marker_id) \
-                    .where(variant_read_count_model.__table__.c.biosample_id == per_biosample_biosample_id) \
+                    .where(variant_read_count_model.__table__.c.run_id == per_biosample_mock_run_id) \
+                    .where(variant_read_count_model.__table__.c.marker_id == per_biosample_mock_marker_id) \
+                    .where(variant_read_count_model.__table__.c.biosample_id == per_biosample_mock_biosample_id) \
                     .where(variant_read_count_model.__table__.c.variant_id == variant_model.__table__.c.id) \
                     .distinct()
                 variant_list = variant_list + conn.execute(stmt_select).fetchall()
@@ -176,16 +174,12 @@ class OptimizePCRerror(ToolWrapper):
 
             ################################################################################################################
             #
-            # For run, marker and biosamples in "keep" variants, create the variant_read_count df
+            # For run, marker and mock biosamples, create the variant_read_count df
             #
             ################################################################################################################
 
             variant_read_count_list = []
             with engine.connect() as conn:
-                # for row in run_marker_biosample_keep_df.itertuples():
-                # run_id = row.run_id
-                # marker_id = row.marker_id
-                # biosample_id = row.biosample_id
                 stmt_select = sqlalchemy.select([
                     variant_read_count_model.__table__.c.run_id,
                     variant_read_count_model.__table__.c.marker_id,
@@ -194,9 +188,9 @@ class OptimizePCRerror(ToolWrapper):
                     variant_read_count_model.__table__.c.variant_id,
                     variant_read_count_model.__table__.c.read_count,
                 ]) \
-                    .where(variant_read_count_model.__table__.c.run_id == per_biosample_run_id) \
-                    .where(variant_read_count_model.__table__.c.marker_id == per_biosample_marker_id) \
-                    .where(variant_read_count_model.__table__.c.biosample_id == per_biosample_biosample_id)\
+                    .where(variant_read_count_model.__table__.c.run_id == per_biosample_mock_run_id) \
+                    .where(variant_read_count_model.__table__.c.marker_id == per_biosample_mock_marker_id) \
+                    .where(variant_read_count_model.__table__.c.biosample_id == per_biosample_mock_biosample_id)\
                     .distinct()
                 variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
 
@@ -211,7 +205,7 @@ class OptimizePCRerror(ToolWrapper):
             ################################################################################################################
 
             vsearch_output_df = f10_pcr_error_run_vsearch(
-                variant_db_df=variant_keep_df, variant_usearch_global_unexpected_df=variant_df,
+                variant_db_df=variant_keep_tolerate_df, variant_usearch_global_unexpected_df=variant_df,
                 tmp_dir=this_step_tmp_dir)
 
             variant_read_count_df = variant_read_count_df.rename(columns={'read_count': 'N_ijk'})

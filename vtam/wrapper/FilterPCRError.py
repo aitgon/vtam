@@ -125,10 +125,12 @@ class FilterPCRError(ToolWrapper):
         # 4. Select variant sequence
         #
         ##########################################################
+
         variant_model_table = variant_model.__table__
-        # TODO: select where variant_id in variant_read_count.id
         stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
+                               variant_model_table.c.sequence])\
+            .where(variant_model_table.c.id.in_(variant_read_count_df.variant_id.unique().tolist()))
+
         # Select to DataFrame
         variant_list = []
         with engine.connect() as conn:
