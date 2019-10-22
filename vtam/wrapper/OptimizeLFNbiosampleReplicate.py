@@ -90,7 +90,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         ################################################################################################################
         #
-        # Read user known variant information and verify information
+        # Read user known variant information and verify consistency with DB
         #
         ################################################################################################################
 

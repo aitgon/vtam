@@ -1,4 +1,3 @@
-import os
 import pandas
 import sys
 
@@ -111,9 +110,9 @@ class VariantKnown(object):
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info = FastaInfo(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine)
-        fasta_info_records = fasta_info.get_ids_of_run_marker_biosample_replicate(self.engine, self.run_model,
-                                                          self.marker_model, self.biosample_model, self.replicate_model)
+        fasta_info = FastaInfo(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
+            marker_model=self.marker_model, biosample_model=self.biosample_model, replicate_model=self.replicate_model)
+        fasta_info_records = fasta_info.get_ids_of_run_marker_biosample_replicate()
         fasta_info_df = pandas.DataFrame.from_records(data=fasta_info_records)
 
         ################################################################################################################
@@ -134,3 +133,21 @@ class VariantKnown(object):
                 Logger.instance().error(VTAMexception("Error: Verify in the --variant_known file that run_id, marker_id and biosample_id"
                                                       "are defined in the --fasta_info file"))
                 sys.exit(1)
+
+    def get_run_marker_biosample_variant_keep_df(self):
+        """Returns the 'keep' and 'tolerates' variants
+
+
+
+        :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
+        """
+        run_marker_biosample_variant_keep = self.variant_known_ids_df.loc[
+            (self.variant_known_df.action.isin(['keep', 'tolerate']))]
+        run_marker_biosample_variant_keep = run_marker_biosample_variant_keep.merge(self.variant_known_ids_df,
+                                                on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+        run_marker_biosample_variant_keep = run_marker_biosample_variant_keep[
+            ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
+        # Change types to int
+        run_marker_biosample_variant_keep.variant_id = run_marker_biosample_variant_keep.variant_id.astype('int')
+        return run_marker_biosample_variant_keep
+
