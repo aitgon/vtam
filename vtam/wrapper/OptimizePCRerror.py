@@ -103,14 +103,6 @@ class OptimizePCRerror(ToolWrapper):
 
         ################################################################################################################
         #
-        # Read fasta information with current analysis
-        #
-        ################################################################################################################
-
-        fasta_info = FastaInfo(fasta_info_tsv=fasta_info_tsv, engine=engine)
-
-        ################################################################################################################
-        #
         # Read user known variant information and verify information
         #
         ################################################################################################################
@@ -119,10 +111,15 @@ class OptimizePCRerror(ToolWrapper):
                                      biosample_model, replicate_model)
         variant_known_ids_df = variant_known.variant_known_ids_df
 
-        # aggregate per mock biosample
-        run_marker_biosample_aggregated_by_mock_df = variant_known_ids_df.loc[
+        ################################################################################################################
+        #
+        # Get run_marker_biosample IDs marked as mock
+        #
+        ################################################################################################################
+
+        run_marker_biosample_mock_df = variant_known_ids_df.loc[
             variant_known_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
-        run_marker_biosample_aggregated_by_mock_df.drop_duplicates(inplace=True)
+        run_marker_biosample_mock_df.drop_duplicates(inplace=True)
 
         ################################################################################################################
         #
@@ -130,7 +127,7 @@ class OptimizePCRerror(ToolWrapper):
         #
         ################################################################################################################
         pcr_error_final_df = pandas.DataFrame()
-        for per_biosample_mock in run_marker_biosample_aggregated_by_mock_df.itertuples():
+        for per_biosample_mock in run_marker_biosample_mock_df.itertuples():
             per_biosample_mock_run_id = per_biosample_mock.run_id
             per_biosample_mock_marker_id = per_biosample_mock.marker_id
             per_biosample_mock_biosample_id = per_biosample_mock.biosample_id
@@ -215,7 +212,7 @@ class OptimizePCRerror(ToolWrapper):
 
         ##########################################################
         #
-        # 7. Write Optimize PCRError to TSV file
+        # Convert run_id, marker_id and biosample_id to their names
         #
         ##########################################################
 
@@ -238,6 +235,12 @@ class OptimizePCRerror(ToolWrapper):
 
         pcr_error_final_df = pcr_error_final_df[['run_name', 'marker_name', 'biosample_name', 'variant_id_expected',
                 'N_ijk_expected', 'variant_id_unexpected', 'N_ijk_unexpected', 'N_ijk_unexpected_expected_ratio']]
+
+        ##########################################################
+        #
+        # Write Optimize PCRError to TSV file
+        #
+        ##########################################################
 
         pcr_error_final_df.sort_values(by=['N_ijk_unexpected_expected_ratio', 'variant_id_expected', 'variant_id_unexpected'],
                                        ascending=[False, True, True], inplace=True)
