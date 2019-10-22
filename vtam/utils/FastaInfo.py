@@ -8,12 +8,6 @@ class FastaInfo(object):
         self.fastainfo_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
                                                     'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
-        ################################################################################################################
-        #
-        # Compute IDs and return
-        #
-        ################################################################################################################
-
 
 
     def get_ids_of_run_marker_biosample_replicate(self, engine, run_model, marker_model, biosample_model, replicate_model):
