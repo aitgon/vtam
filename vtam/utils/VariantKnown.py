@@ -34,6 +34,7 @@ class VariantKnown(object):
         self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
+        # columns: run_id, marker_id, biosample_id, replicate_id, variant_id, biosample_type, action, variant_sequence
         self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
 
         ################################################################################################################
