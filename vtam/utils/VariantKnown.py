@@ -135,7 +135,7 @@ class VariantKnown(object):
                 sys.exit(1)
 
     def get_run_marker_biosample_variant_keep_df(self):
-        """Returns the 'keep' and 'tolerates' variants
+        """Returns the 'keep' and 'tolerates' variants together with run_id, marker_id, biosample_id, variant_id
 
 
 
@@ -150,4 +150,75 @@ class VariantKnown(object):
         # Change types to int
         run_marker_biosample_variant_keep.variant_id = run_marker_biosample_variant_keep.variant_id.astype('int')
         return run_marker_biosample_variant_keep
+
+
+    def get_run_marker_biosample_variant_delete_df(self, variant_read_count_df):
+        """Returns the 'delete' variants together with run_id, marker_id, biosample_id, variant_id
+
+
+
+        :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
+        """
+
+        ##########################################################
+        #
+        # Get delete variants, that are not keep in mock samples
+        #
+        ##########################################################
+        # Get mock biosamples
+        run_marker_biosample_mock_df = self.variant_known_ids_df.loc[
+            self.variant_known_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
+        # Get variant_read_count_mock
+        variant_read_count_mock = run_marker_biosample_mock_df.merge(variant_read_count_df,
+                                                                     on=['run_id', 'marker_id', 'biosample_id'])
+        # Get keep variants
+        run_marker_biosample_variant_keep_df = self.get_run_marker_biosample_variant_keep_df()
+        # Get variant read count not in variant know
+        variant_delete_mock_df = variant_read_count_mock.merge(run_marker_biosample_variant_keep_df,
+                                                               on=['run_id', 'marker_id', 'biosample_id', 'variant_id'],
+                                                               how='left', indicator=True)
+
+        # Throw replicate_id and read count
+        variant_delete_mock_df = variant_delete_mock_df.loc[variant_delete_mock_df._merge=='left_only',
+                                    ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
+
+        ##########################################################
+        #
+        # Get delete variants, that are in negative samples
+        #
+        ##########################################################
+        # Get negative biosamples
+        variant_delete_negative_df = self.variant_known_ids_df.loc[self.variant_known_df.biosample_type == 'negative',
+                                                          ['run_id', 'marker_id', 'biosample_id']]
+        # Inner merge of variants and negative biosamples
+        variant_delete_negative_df = variant_delete_negative_df.merge(variant_read_count_df, on=['run_id', 'marker_id',
+                                                                                               'biosample_id'])
+        # Throw replicate_id and read count
+        variant_delete_negative_df = variant_delete_negative_df[['run_id', 'marker_id', 'biosample_id', 'variant_id']] \
+            .drop_duplicates(inplace=False)
+
+        ##########################################################
+        #
+        # Get delete variants, that are marked so in any (real) samples
+        #
+        ##########################################################
+        # Get run_id, marker_id, biosample_id, variant_id that are explicitely marked as delete
+        variant_delete_real_df = self.variant_known_ids_df.loc[self.variant_known_df.action == 'delete']
+        # Remove delete variant that are not explicite, ie in negative biosamples
+        variant_delete_real_df = variant_delete_real_df[~variant_delete_real_df.variant_id.isnull()]
+        #  Throw replicate_id and read count
+        variant_delete_real_df = variant_delete_real_df[
+            ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
+
+        ##########################################################
+        #
+        # Merge (Vertically) the three classes of delete variants
+        #
+        ##########################################################
+        variant_delete_df = pandas.concat([variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df])
+        variant_delete_df = variant_delete_df.drop_duplicates(inplace=False)
+        variant_delete_df.variant_id = variant_delete_df.variant_id.astype(int)
+        variant_delete_df = variant_delete_df.reset_index(drop=True)
+        variant_delete_df.drop_duplicates(inplace=True)
+        return variant_delete_df, variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df
 

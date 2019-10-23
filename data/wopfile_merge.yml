@@ -17,4 +17,5 @@
         fastq_truncqual: {{fastq_truncqual}}
         fastq_maxns: {{fastq_maxns}}
         threads: {{threads}}
-        fastq_ascii: {{fastq_ascii}}{{ param_log(log_file, log_verbosity) }}
+        fastq_ascii: {{fastq_ascii}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}

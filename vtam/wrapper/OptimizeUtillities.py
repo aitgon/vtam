@@ -36,9 +36,12 @@ class KnownVariantAnalyzer(object):
         # Get delete variants, that are not keep in mock samples
         #
         ##########################################################
+        # Get mock biosamples
         biosample_mock_list = self.variant_known_df.loc[
             self.variant_known_df.biosample_type == 'mock', 'biosample_id'].unique().tolist()
+        # Get variant_read_count_mock
         variant_delete_mock_df = self.variant_read_count_df.loc[self.variant_read_count_df.biosample_id.isin(biosample_mock_list)]
+        # Get variant read count not in variant know
         variant_delete_mock_df = variant_delete_mock_df.merge(self.variant_known_df, on=['run_id', 'marker_id',
                                                                                     'biosample_id', 'variant_id'],
                                                               how='left')
