@@ -1,6 +1,5 @@
-{% macro param_log(log_file, log_verbosity) -%}
+{% macro param_log(log_file) -%}
 {% if log_file is not none %}
-        log_verbosity: {{log_verbosity}}
         log_file: {{log_file}}{% endif %}
 {%- endmacro%}
 

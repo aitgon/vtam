@@ -18,7 +18,8 @@
         lfn_variant_threshold: {{lfn_variant_threshold}}
         lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
-        lfn_read_count_threshold: {{lfn_read_count_threshold}}{{ param_log(log_file, log_verbosity) }}
+        lfn_read_count_threshold: {{lfn_read_count_threshold}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterMinReplicateNumber:
@@ -36,7 +37,8 @@ rule FilterMinReplicateNumber:
         table:
             FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
     params:
-        min_replicate_number: {{min_replicate_number}}{{ param_log(log_file, log_verbosity) }}
+        min_replicate_number: {{min_replicate_number}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterPCRError:
@@ -55,7 +57,8 @@ rule FilterPCRError:
         table:
             FilterPCRError: vtam.model.FilterPCRError
     params:
-        pcr_error_var_prop: {{pcr_error_var_prop}}{{ param_log(log_file, log_verbosity) }}
+        pcr_error_var_prop: {{pcr_error_var_prop}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterChimera:
@@ -75,7 +78,7 @@ rule FilterChimera:
             FilterChimera: vtam.model.FilterChimera
             FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
     params:
-        foo: 0{{ param_log(log_file, log_verbosity) }}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterRenkonen:
@@ -93,7 +96,8 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: {{renkonen_threshold}}{{ param_log(log_file, log_verbosity) }}
+        renkonen_threshold: {{renkonen_threshold}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterIndel:
@@ -112,7 +116,7 @@ rule FilterIndel:
         table:
             FilterIndel: vtam.model.FilterIndel
     params:
-        foo: 0{{ param_log(log_file, log_verbosity) }}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterCodonStop:
@@ -131,7 +135,8 @@ rule FilterCodonStop:
         table:
             FilterCodonStop: vtam.model.FilterCodonStop
     params:
-        genetic_table_number: {{genetic_table_number}}{{ param_log(log_file, log_verbosity) }}
+        genetic_table_number: {{genetic_table_number}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule ReadCountAverageOverReplicates:
@@ -149,7 +154,7 @@ rule ReadCountAverageOverReplicates:
         table:
             ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
     params:
-        foo: 0{{ param_log(log_file, log_verbosity) }}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule TaxAssign:
@@ -177,7 +182,8 @@ rule TaxAssign:
     params:
         identity_threshold: {{identity_threshold}}
         include_prop: {{include_prop}}
-        min_number_of_taxa: {{min_number_of_taxa}}{{ param_log(log_file, log_verbosity) }}
+        min_number_of_taxa: {{min_number_of_taxa}}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule MakeOtuTable:
@@ -199,4 +205,4 @@ rule MakeOtuTable:
         file:
             OTUTable: {{otutable}}
     params:
-        foo: 0{{ param_log(log_file, log_verbosity) }}{% endblock %}
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}{% endblock %}
