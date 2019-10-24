@@ -170,12 +170,7 @@ rule TaxAssign:
         file:
             fastainfo: {{fastainfo}}
             taxonomy: {{taxonomy}}
-            blast_nhr: {{blast_nhr}}
-            blast_nin: {{blast_nin}}
-            blast_nog: {{blast_nog}}
-            blast_nsd: {{blast_nsd}}
-            blast_nsi: {{blast_nsi}}
-            blast_nsq: {{blast_nsq}}{{ param_map_taxids(map_taxids) }}
+            map_taxids: {{ map_taxids }}
     output:
         table:
             TaxAssign: vtam.model.TaxAssign
@@ -183,6 +178,8 @@ rule TaxAssign:
         identity_threshold: {{identity_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
+        blast_db_dir: {{blast_db_dir}}
+        blast_db_basename: {{blast_db_basename}}
         log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 

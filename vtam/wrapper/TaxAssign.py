@@ -22,12 +22,6 @@ class TaxAssign(ToolWrapper):
     # Input file
     __input_file_fastainfo = "fastainfo"
     __input_file_taxonomy = "taxonomy"
-    __input_file_blast_nhr = "blast_nhr"
-    __input_file_blast_nin = "blast_nin"
-    __input_file_blast_nog = "blast_nog"
-    __input_file_blast_nsd = "blast_nsd"
-    __input_file_blast_nsi = "blast_nsi"
-    __input_file_blast_nsq = "blast_nsq"
     __input_file_map_taxids = "map_taxids"
     # Input table
     __input_table_marker = "Marker"
@@ -44,12 +38,6 @@ class TaxAssign(ToolWrapper):
         return [
             TaxAssign.__input_file_fastainfo,
             TaxAssign.__input_file_taxonomy,
-            TaxAssign.__input_file_blast_nhr,
-            TaxAssign.__input_file_blast_nin,
-            TaxAssign.__input_file_blast_nog,
-            TaxAssign.__input_file_blast_nsd,
-            TaxAssign.__input_file_blast_nsi,
-            TaxAssign.__input_file_blast_nsq,
             TaxAssign.__input_file_map_taxids,
         ]
 
@@ -76,6 +64,8 @@ class TaxAssign(ToolWrapper):
             "min_number_of_taxa": "int",  # count
             "log_verbosity": "int",
             "log_file": "str",
+            "blast_db_dir": "str",
+            "blast_db_basename": "str",
         }
 
     def run(self):
@@ -97,7 +87,6 @@ class TaxAssign(ToolWrapper):
         # Input file
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
-        input_file_blast_nhr = self.input_file(TaxAssign.__input_file_blast_nhr)
         map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
         #
         # Input table models
@@ -114,6 +103,8 @@ class TaxAssign(ToolWrapper):
         identity_threshold = float(self.option("identity_threshold"))  # percentage
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
+        blast_db_dir = str(self.option("blast_db_dir"))  # count
+        blast_db_basename = str(self.option("blast_db_basename"))  # count
 
         ##########################################################
         #
@@ -235,16 +226,14 @@ class TaxAssign(ToolWrapper):
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
         # get blast db dir and filename prefix from NHR file
-        blast_db_dir = os.path.dirname(input_file_blast_nhr)
         os.environ['BLASTDB'] = blast_db_dir
-        blast_db_file_prefix = os.path.basename(input_file_blast_nhr).split('.')[0]
-        if map_taxids_tsv_path is None: # run blast with full NCBI blast db
-            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_file_prefix, evalue=1e-5,
+        if os.path.basename(map_taxids_tsv_path) == 'None': # run blast with full NCBI blast db
+            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_basename, evalue=1e-5,
                                                  outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
                                                  qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
         else: # run blast with custom blast db
             # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
-            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_file_prefix, evalue=1e-5,
+            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_basename, evalue=1e-5,
                                                  outfmt='"6 qseqid sacc pident evalue qcovhsp"', dust='yes',
                                                  qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
         #
@@ -256,11 +245,12 @@ class TaxAssign(ToolWrapper):
         # Process blast reults
         #
         ##########################################################
-        if map_taxids_tsv_path is None: # Process result from full DB
+        if os.path.basename(map_taxids_tsv_path) == 'None': # Process result from full DB
             # Todo: Must be fixed
-            blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
+            # blast_output_tsv = "/home/gonzalez/tmp/vtam/tmpr95f12vh/TaxAssign.py/blast_output.tsv"
             Logger.instance().debug(
                 "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
+            import pdb; pdb.set_trace()
             lblast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
                                               names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
                                                      'target_tax_id'])
@@ -274,7 +264,15 @@ class TaxAssign(ToolWrapper):
             map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
                                             names=['target_id', 'target_tax_id'])
             lblast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
+            import pdb; pdb.set_trace()
         #
+        """   variant_id  target_id  identity        evalue  coverage  target_tax_id
+0           2  MF7836761    99.429  1.620000e-86       100        1469487
+1           2  MF7836761    99.429  1.620000e-86       100         189839
+2           2  KY2618191    98.857  7.520000e-85       100         189839
+3           2  MF7834791    98.857  7.520000e-85       100         189839
+4           2  KU9559321    98.857  7.520000e-85       100         189839
+"""
         ##########################################################
         #
         # Read target_tax_id
