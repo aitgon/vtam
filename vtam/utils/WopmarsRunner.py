@@ -91,6 +91,7 @@ class WopmarsRunner(Singleton):
         # Write to wopfile
         #
         ################
+        PathManager.mkdir_p(os.path.dirname(wopfile_path))
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
         return wopfile_path, wopfile_content

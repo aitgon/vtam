@@ -3,6 +3,7 @@
 import argparse
 import os
 
+from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.PathManager import PathManager
@@ -23,7 +24,7 @@ class ArgParser():
         :param abspath: If True, returns abspath
         :return: void
         """
-        if not 'blast_db_dir' in OptionManager.instance():
+        if not 'blast_db_dir' in OptionManager.instance(): # First argument of blast_db, which is the blast db dir
             if is_abspath:
                 blast_db_arg = os.path.abspath(blast_db_arg)
             PathManager.check_dir_exists_and_is_nonempty(blast_db_arg,
@@ -31,73 +32,94 @@ class ArgParser():
                                                                        'the first argument to the --blast_db argument',
                                                          is_abspath=is_abspath)
             OptionManager.instance()['blast_db_dir'] = blast_db_arg
-        elif not 'blast_nhr' in OptionManager.instance():
+        else:
+            OptionManager.instance()['blast_db_basename'] = blast_db_arg
             ###############################
             #
             # blast_nhr
             #
             ###############################
-            blast_nhr = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nhr')
-            PathManager.check_file_exists_and_is_nonempty(blast_nhr,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nhr'] = blast_nhr
-            ###############################
-            #
-            # blast_nin
-            #
-            ###############################
-            blast_nin = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nin')
-            PathManager.check_file_exists_and_is_nonempty(blast_nin,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nin'] = blast_nin
-            ###############################
-            #
-            # blast_nog
-            #
-            ###############################
-            blast_nog = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nog')
-            PathManager.check_file_exists_and_is_nonempty(blast_nog,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nog'] = blast_nog
-            ###############################
-            #
-            # blast_nsd
-            #
-            ###############################
-            blast_nsd = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsd')
-            PathManager.check_file_exists_and_is_nonempty(blast_nsd,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nsd'] = blast_nsd
-            ###############################
-            #
-            # blast_nsi
-            #
-            ###############################
-            blast_nsi = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsi')
-            blast_nsi = PathManager.check_file_exists_and_is_nonempty(blast_nsi,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nsi'] = blast_nsi
-            ###############################
-            #
-            # blast_nsq
-            #
-            ###############################
-            blast_nsq = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsq')
-            PathManager.check_file_exists_and_is_nonempty(blast_nsq,
-                                                         error_message='Verify the existance of Blast files defined by the basename '
-                                                                       'in the second argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_nsq'] = blast_nsq
+            # blast_nhr = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nhr')
+            # Verify presence of at least one copy of these files: nhr, nin, nog, nsd, nsi, nsq
+            one_file_exists = {'nhr': 0, 'nin': 0, 'nog': 0, 'nsd': 0, 'nsi': 0, 'nsq': 0}
+            for fname in os.listdir(OptionManager.instance()['blast_db_dir']):
+                if fname.endswith('.nhr'):
+                    one_file_exists['nhr'] = 1
+                elif fname.endswith('.nin'):
+                    one_file_exists['nin'] = 1
+                elif fname.endswith('.nog'):
+                    one_file_exists['nog'] = 1
+                elif fname.endswith('.nsd'):
+                    one_file_exists['nsd'] = 1
+                elif fname.endswith('.nsi'):
+                    one_file_exists['nsi'] = 1
+                elif fname.endswith('.nsq'):
+                    one_file_exists['nsq'] = 1
+            if not sum(one_file_exists.values()) == 6:
+                raise Logger.instance().error(VTAMexception("Verify if there are NHR, NIN, NOG, NSD, NSI and NSQ files "
+                                                            "in the blast directory"))
+            # # do stuff if a file .true doesn't exist.
+            # PathManager.check_file_exists_and_is_nonempty(blast_nhr,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # OptionManager.instance()['blast_nhr'] = blast_nhr
+            # ###############################
+            # #
+            # # blast_nin
+            # #
+            # ###############################
+            # # blast_nin = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nin')
+            # PathManager.check_file_exists_and_is_nonempty(blast_nin,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # # OptionManager.instance()['blast_nin'] = blast_nin
+            # ###############################
+            # #
+            # # blast_nog
+
+            # #
+            # ###############################
+            # # blast_nog = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nog')
+            # PathManager.check_file_exists_and_is_nonempty(blast_nog,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # # OptionManager.instance()['blast_nog'] = blast_nog
+            # ###############################
+            # #
+            # # blast_nsd
+            # #
+            # ###############################
+            # # blast_nsd = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsd')
+            # PathManager.check_file_exists_and_is_nonempty(blast_nsd,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # # OptionManager.instance()['blast_nsd'] = blast_nsd
+            # ###############################
+            # #
+            # # blast_nsi
+            # #
+            # ###############################
+            # # blast_nsi = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsi')
+            # blast_nsi = PathManager.check_file_exists_and_is_nonempty(blast_nsi,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # # OptionManager.instance()['blast_nsi'] = blast_nsi
+            # ###############################
+            # #
+            # # blast_nsq
+            # #
+            # ###############################
+            # # blast_nsq = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsq')
+            # PathManager.check_file_exists_and_is_nonempty(blast_nsq,
+            #                                              error_message='Verify the existance of Blast files defined by the basename '
+            #                                                            'in the second argument to the --blast_db argument',
+            #                                              is_abspath=is_abspath)
+            # # OptionManager.instance()['blast_nsq'] = blast_nsq
         return blast_db_arg
 
     @staticmethod
