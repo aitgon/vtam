@@ -51,7 +51,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'coi_db.nhr'
+        basename = 'nt_coi.nhr'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -61,7 +61,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'coi_db.nin'
+        basename = 'nt_coi.nin'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -71,7 +71,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'coi_db.nog'
+        basename = 'nt_coi.nog'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -81,7 +81,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'coi_db.nsd'
+        basename = 'nt_coi.nsd'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -91,7 +91,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'coi_db.nsi'
+        basename = 'nt_coi.nsi'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -101,7 +101,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = "coi_db.nsq"
+        basename = "nt_coi.nsq"
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
