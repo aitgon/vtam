@@ -7,6 +7,7 @@ import errno
 import os
 import tempfile
 
+from vtam.utils.Logger import Logger
 from vtam.utils.Singleton import Singleton
 from vtam.utils.VTAMexception import VTAMexception
 
@@ -82,7 +83,9 @@ class PathManager(Singleton):
         try:
             assert os.stat(path).st_size > 0
         except AssertionError as err:
-            raise VTAMexception("{}: {}".format(err, error_message))
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        except FileNotFoundError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
         if is_abspath:
             return os.path.abspath(path)
         return path
@@ -100,7 +103,7 @@ class PathManager(Singleton):
             assert len(os.listdir(path)) > 0
             # assert True
         except AssertionError as err:
-            raise VTAMexception("{}: {}".format(err, error_message))
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
         if is_abspath:
             return os.path.abspath(path)
         return path
