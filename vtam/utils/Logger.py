@@ -33,11 +33,13 @@ class Logger(Singleton):
         # log file in append mode of size 1 Mo and 1 backup
         # handler equivalent to stream_handler in term of logging level but write to .log file
         try:
-            if not OptionManager.instance()["log_file"] is None:
-                log_file_path = OptionManager.instance()["log_file"]
-                self.__file_handler = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
-                self.__file_handler.setFormatter(self.__formatter)
-                self.__logger.addHandler(self.__file_handler)
+            assert not (OptionManager.instance()["log_file"] is None or OptionManager.instance()["log_file"] == 'None')
+            log_file_path = OptionManager.instance()["log_file"]
+            self.__file_handler = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
+            self.__file_handler.setFormatter(self.__formatter)
+            self.__logger.addHandler(self.__file_handler)
+        except AssertionError: # ignore
+            pass
         except KeyError: # ignore
             pass
 
