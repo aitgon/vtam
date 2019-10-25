@@ -9,14 +9,21 @@ from vtam.utils.PathManager import PathManager
 
 class TestWorpmarsRunnerOptimize(TestCase):
 
-
-    def test_wopmars_runner_optimize(self):
-        #
+    def setUp(self):
         # Minimal merge command
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {foodir}'.format(**foopaths)
+        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(),
+                                                                             'output'), PathManager.get_package_path())
+        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(), 'test_files', 'blastdb'),
+                                              PathManager.get_package_path())
+        self.foopaths = foopaths
+
+
+    def test_wopmars_runner_optimize(self):
+        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {outdir}'\
+            .format(**self.foopaths)
         parser = ArgParser.get_arg_parser(is_abspath=False)
         # import pdb; pdb.set_trace()
         args = parser.parse_args(args_str.split())
@@ -53,6 +60,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
             SampleInformation: vtam.model.SampleInformation
     params:
         fasta_dir: test/utils
+        log_verbosity: 0
 
 
 rule SortReads:
@@ -66,18 +74,19 @@ rule SortReads:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            sortreads: test/utils/sortreads.tsv
+            sortreads: test/output/sortreads.tsv
     params:
         min_id: 0.8
         minseqlength: 32
         overhang: 0
+        log_verbosity: 0
 
 
 rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            sortreads: test/utils/sortreads.tsv
+            sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
         table:
             Run: vtam.model.Run
@@ -89,7 +98,7 @@ rule VariantReadCount:
             Variant: vtam.model.Variant
             VariantReadCount: vtam.model.VariantReadCount
     params:
-        foo: 0
+        log_verbosity: 0
 
 
 rule OptimizeLFNbiosampleReplicate:
@@ -107,9 +116,9 @@ rule OptimizeLFNbiosampleReplicate:
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_lfn_biosample_replicate: test/utils/optimize_lfn_biosample_replicate.tsv
+            optimize_lfn_biosample_replicate: test/output/optimize_lfn_biosample_replicate.tsv
     params:
-      foo: 0
+        log_verbosity: 0
 
 
 rule OptimizePCRerror:
@@ -127,9 +136,9 @@ rule OptimizePCRerror:
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_pcr_error: test/utils/optimize_pcr_error.tsv
+            optimize_pcr_error: test/output/optimize_pcr_error.tsv
     params:
-        foo: 0
+        log_verbosity: 0
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -147,14 +156,15 @@ rule OptimizeLFNreadCountAndLFNvariant:
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_lfn_read_count_and_lfn_variant: test/utils/optimize_lfn_read_count_and_lfn_variant.tsv
-            optimize_lfn_variant_specific: test/utils/optimize_lfn_variant_specific.tsv
+            optimize_lfn_read_count_and_lfn_variant: test/output/optimize_lfn_read_count_and_lfn_variant.tsv
+            optimize_lfn_variant_specific: test/output/optimize_lfn_variant_specific.tsv
     params:
         is_optimize_lfn_variant_replicate: 0
         lfn_variant_or_variant_replicate_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
         min_replicate_number: 2
+        log_verbosity: 0
 
 
 rule OptimizeLFNreadCountAndLFNvariantReplicate:
@@ -172,12 +182,13 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_lfn_read_count_and_lfn_variant: test/utils/optimize_lfn_read_count_and_lfn_variant_replicate.tsv
-            optimize_lfn_variant_specific: test/utils/optimize_lfn_variant_replicate_specific.tsv
+            optimize_lfn_read_count_and_lfn_variant: test/output/optimize_lfn_read_count_and_lfn_variant_replicate.tsv
+            optimize_lfn_variant_specific: test/output/optimize_lfn_variant_replicate_specific.tsv
     params:
         is_optimize_lfn_variant_replicate: 1
         lfn_variant_or_variant_replicate_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
-        min_replicate_number: 2"""
+        min_replicate_number: 2
+        log_verbosity: 0"""
         self.assertTrue(wopfile_content == wopfile_content_bak)

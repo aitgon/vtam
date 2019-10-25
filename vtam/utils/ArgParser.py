@@ -170,7 +170,7 @@ class ArgParser():
         parser_vtam_otu.add_argument('--num_threads', action='store',
                                      help="Number of threads",
                                      required=False,
-                                     default=multiprocessing.cpu_count()-1)
+                                     default=multiprocessing.cpu_count())
 
         parser_vtam_otu.set_defaults(command='otu')  # This attribute will trigget the good command
         #############################################
