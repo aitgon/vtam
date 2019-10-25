@@ -225,6 +225,7 @@ class TaxAssign(ToolWrapper):
         #
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
+        # blast_output_tsv = "/home/gonzalez/tmp/blast/blast_output.tsv" # uncomment for testing
         # get blast db dir and filename prefix from NHR file
         os.environ['BLASTDB'] = blast_db
         # if os.path.basename(map_taxids_tsv_path) == 'None': # run blast with full NCBI blast db
@@ -257,17 +258,12 @@ class TaxAssign(ToolWrapper):
         blast_output_df = (
             pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
                           axis=1))
+        # Select first tax_id
         blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
         # lblast_output_df = (pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)], axis=1))[['variant_id', 'identity', 0]]
         #
-        # blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
-        # else: # Process result from custom DB
-        #     blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
-        #                                       names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
-        #     map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
-        #                                     names=['target_id', 'target_tax_id'])
-        #     blast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
-        #     #
+        blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
+        # Blast output extract
         """   variant_id  target_id  identity        evalue  coverage  target_tax_id
 0           2  MF7836761    99.429  1.620000e-86       100        1469487
 1           2  MF7836761    99.429  1.620000e-86       100         189839
