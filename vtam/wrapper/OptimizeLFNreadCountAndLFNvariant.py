@@ -291,26 +291,25 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # Write TSV file
         #
         ##########################################################
-        if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
-            column_names = ['variant_nb_keep', 'variant_nb_delete', 'lfn_read_count_threshold', 'lfn_variant_threshold']
-            out_lfn_variant_or_variant_replicate_df = pandas.DataFrame(out_lfn_variant_list, columns=['variant_nb_keep', 'variant_nb_delete',
-                                                                                 'lfn_read_count_threshold',
-                                                                                 'lfn_variant_or_variant_threshold'])
-            out_lfn_variant_or_variant_replicate_df.columns = column_names
-        else:  # optimize lfn variant replicate
-            column_names = ['variant_nb_keep', 'variant_nb_delete', 'lfn_read_count_threshold', 'lfn_variant_replicate_threshold']
-            out_lfn_variant_or_variant_replicate_df = pandas.DataFrame(out_lfn_variant_list, columns=['variant_nb_keep', 'variant_nb_delete',
-                                                                                 'lfn_read_count_threshold',
-                                                                                 'lfn_variant_or_variant_replicate_threshold'])
-            out_lfn_variant_or_variant_replicate_df.columns = ['variant_nb_keep', 'variant_nb_delete',
-                                                                                 'lfn_read_count_threshold',
-                                                                                 'lfn_variant_replicate_threshold']
-
+        # From list of dics to df
+        out_lfn_variant_or_variant_replicate_df = pandas.DataFrame(out_lfn_variant_list)
+        # List of columns in order
+        column_names = ['variant_nb_keep', 'variant_nb_delete', 'lfn_read_count_threshold', 'lfn_variant_or_variant_replicate_threshold']
+        # Reorder columns
+        out_lfn_variant_or_variant_replicate_df = out_lfn_variant_or_variant_replicate_df[column_names]
+        # Sort columns
         out_lfn_variant_or_variant_replicate_df.sort_values(by=column_names,
                                                             ascending=[False, True, True, True], inplace=True)
+        # Rename columns depending on whether this is optimize_lfn_variant or is_optimize_lfn_variant_replicate
+        if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
+            out_lfn_variant_or_variant_replicate_df = out_lfn_variant_or_variant_replicate_df\
+                .rename(columns={'lfn_variant_or_variant_replicate_threshold': 'lfn_variant_threshold'})
+        else:  # optimize lfn variant replicate
+            out_lfn_variant_or_variant_replicate_df = out_lfn_variant_or_variant_replicate_df\
+                .rename(columns={'lfn_variant_or_variant_replicate_threshold': 'lfn_variant_replicate_threshold'})
 
         out_lfn_variant_or_variant_replicate_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False,
-                                                       float_format='%.10f')
+                                                       float_format='%.6f')
 
 
         ##########################################################
@@ -467,7 +466,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
 
         lfn_variant_or_variant_replicate_specific_threshold_df.to_csv(
-            output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False, float_format='%.10f')
+            output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False, float_format='%.6f')
 
 
 def lfn_read_count_and_lfn_variant(is_optimize_lfn_variant_replicate, variant_read_count_df, variant_keep_df,
