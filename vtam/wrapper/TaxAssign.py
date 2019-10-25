@@ -254,15 +254,20 @@ class TaxAssign(ToolWrapper):
         blast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
                                           names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
                                                  'target_tax_id'])
+        # Remove null target tax ids
+        blast_output_df = blast_output_df.loc[~blast_output_df.target_tax_id.isnull()]
         # expand multiple target_tax_ids
+        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('str') # first convert as string
         blast_output_df = (
             pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
                           axis=1))
         # Select first tax_id
         blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
-        # lblast_output_df = (pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)], axis=1))[['variant_id', 'identity', 0]]
-        #
+        # rename first tax_id
         blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
+        # Convert columns back to int
+        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('float')
+        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('int')
         # Blast output extract
         """   variant_id  target_id  identity        evalue  coverage  target_tax_id
 0           2  MF7836761    99.429  1.620000e-86       100        1469487
