@@ -13,6 +13,7 @@ class VSearch:
 
     def run(self):
         cmd_args = [str(item) for item in list(sum(list(self.params.items()), ()))]
+        # TODO: include threads argument
         cmd_line = ['vsearch'] + cmd_args
         with open(os.devnull, 'w') as FNULL:
             Logger.instance().debug(

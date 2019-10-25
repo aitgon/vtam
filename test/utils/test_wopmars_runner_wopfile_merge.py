@@ -53,7 +53,9 @@ class TestWorpmarsRunnerMerge(TestCase):
         fastq_truncqual: 10
         fastq_maxns: 0
         threads: 8
-        fastq_ascii: 33"""
+        fastq_ascii: 33
+        log_verbosity: 0"""
+
         self.assertTrue(wopfile_content == wopfile_content_bak)
         ###############################################################
         #
