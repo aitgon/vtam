@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import multiprocessing
 import os
 
 from vtam.utils.Logger import Logger
@@ -12,7 +13,7 @@ from vtam.utils.PathManager import PathManager
 class ArgParser():
 
     @staticmethod
-    def verify_an_store_blast_db_argument(blast_db_arg, is_abspath=False):
+    def verify_an_store_blast_db_argument(blast_db, is_abspath=False):
         """Verifies --blast_db argument. Must be exactly two arguments.
 
         - First argument: REQUIRED. Blast DB directory
@@ -24,103 +25,41 @@ class ArgParser():
         :param abspath: If True, returns abspath
         :return: void
         """
-        if not 'blast_db_dir' in OptionManager.instance(): # First argument of blast_db, which is the blast db dir
-            if is_abspath:
-                blast_db_arg = os.path.abspath(blast_db_arg)
-            PathManager.check_dir_exists_and_is_nonempty(blast_db_arg,
-                                                         error_message='Verify the existance and non-emptyness of the directory in '
-                                                                       'the first argument to the --blast_db argument',
-                                                         is_abspath=is_abspath)
-            OptionManager.instance()['blast_db_dir'] = blast_db_arg
-        else:
-            OptionManager.instance()['blast_db_basename'] = blast_db_arg
-            ###############################
-            #
-            # blast_nhr
-            #
-            ###############################
-            # blast_nhr = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nhr')
-            # Verify presence of at least one copy of these files: nhr, nin, nog, nsd, nsi, nsq
-            one_file_exists = {'nhr': 0, 'nin': 0, 'nog': 0, 'nsd': 0, 'nsi': 0, 'nsq': 0}
-            for fname in os.listdir(OptionManager.instance()['blast_db_dir']):
-                if fname.endswith('.nhr'):
-                    one_file_exists['nhr'] = 1
-                elif fname.endswith('.nin'):
-                    one_file_exists['nin'] = 1
-                elif fname.endswith('.nog'):
-                    one_file_exists['nog'] = 1
-                elif fname.endswith('.nsd'):
-                    one_file_exists['nsd'] = 1
-                elif fname.endswith('.nsi'):
-                    one_file_exists['nsi'] = 1
-                elif fname.endswith('.nsq'):
-                    one_file_exists['nsq'] = 1
-            if not sum(one_file_exists.values()) == 6:
-                raise Logger.instance().error(VTAMexception("Verify if there are NHR, NIN, NOG, NSD, NSI and NSQ files "
-                                                            "in the blast directory"))
-            # # do stuff if a file .true doesn't exist.
-            # PathManager.check_file_exists_and_is_nonempty(blast_nhr,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # OptionManager.instance()['blast_nhr'] = blast_nhr
-            # ###############################
-            # #
-            # # blast_nin
-            # #
-            # ###############################
-            # # blast_nin = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nin')
-            # PathManager.check_file_exists_and_is_nonempty(blast_nin,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # # OptionManager.instance()['blast_nin'] = blast_nin
-            # ###############################
-            # #
-            # # blast_nog
-
-            # #
-            # ###############################
-            # # blast_nog = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nog')
-            # PathManager.check_file_exists_and_is_nonempty(blast_nog,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # # OptionManager.instance()['blast_nog'] = blast_nog
-            # ###############################
-            # #
-            # # blast_nsd
-            # #
-            # ###############################
-            # # blast_nsd = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsd')
-            # PathManager.check_file_exists_and_is_nonempty(blast_nsd,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # # OptionManager.instance()['blast_nsd'] = blast_nsd
-            # ###############################
-            # #
-            # # blast_nsi
-            # #
-            # ###############################
-            # # blast_nsi = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsi')
-            # blast_nsi = PathManager.check_file_exists_and_is_nonempty(blast_nsi,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # # OptionManager.instance()['blast_nsi'] = blast_nsi
-            # ###############################
-            # #
-            # # blast_nsq
-            # #
-            # ###############################
-            # # blast_nsq = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db_arg + '.nsq')
-            # PathManager.check_file_exists_and_is_nonempty(blast_nsq,
-            #                                              error_message='Verify the existance of Blast files defined by the basename '
-            #                                                            'in the second argument to the --blast_db argument',
-            #                                              is_abspath=is_abspath)
-            # # OptionManager.instance()['blast_nsq'] = blast_nsq
-        return blast_db_arg
+        # if not 'blast_db_dir' in OptionManager.instance(): # First argument of blast_db, which is the blast db dir
+        if is_abspath:
+            blast_db = os.path.abspath(blast_db)
+        PathManager.check_dir_exists_and_is_nonempty(blast_db,
+                                             error_message='Verify the existance and non-emptyness of the directory in '
+                                                           'the first argument to the --blast_db argument',
+                                                     is_abspath=is_abspath)
+        OptionManager.instance()['blast_db'] = blast_db
+        # else:
+        #     OptionManager.instance()['blast_db_basename'] = blast_db
+        #     ###############################
+        #     #
+        #     # blast_nhr
+        #     #
+        #     ###############################
+        #     # blast_nhr = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db + '.nhr')
+        #     # Verify presence of at least one copy of these files: nhr, nin, nog, nsd, nsi, nsq
+        one_file_exists = {'nhr': 0, 'nin': 0, 'nog': 0, 'nsd': 0, 'nsi': 0, 'nsq': 0}
+        for fname in os.listdir(OptionManager.instance()['blast_db']):
+            if fname.endswith('.nhr'):
+                one_file_exists['nhr'] = 1
+            elif fname.endswith('.nin'):
+                one_file_exists['nin'] = 1
+            elif fname.endswith('.nog'):
+                one_file_exists['nog'] = 1
+            elif fname.endswith('.nsd'):
+                one_file_exists['nsd'] = 1
+            elif fname.endswith('.nsi'):
+                one_file_exists['nsi'] = 1
+            elif fname.endswith('.nsq'):
+                one_file_exists['nsq'] = 1
+        if not sum(one_file_exists.values()) == 6:
+            raise Logger.instance().error(VTAMexception("Verify the Blast DB directory for files with 'nt' file name"
+                                                        " and 'nhr', 'nin', 'nog', 'nsd', 'nsi' and 'nsq' file types."))
+        return blast_db
 
     @staticmethod
     def get_arg_parser(is_abspath=False):
@@ -183,31 +122,34 @@ class ArgParser():
         parser_vtam_otu.add_argument('--fastainfo', action='store',
                                      help="REQUIRED: TSV file with FASTA sample information",
                                      required=True, type=lambda x:
-            PathManager.check_file_exists_and_is_nonempty(x,
+                                            PathManager.check_file_exists_and_is_nonempty(x,
                                                           error_message="Verify the '--fastainfo' argument",
                                                           is_abspath=is_abspath))
+
         parser_vtam_otu.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                      required=True,
                                      type=lambda x:
                                      PathManager.check_file_exists_and_is_nonempty(x,
                                                                                    error_message="Verify the '--fastadir' argument",
                                                                                    is_abspath=is_abspath))
+
         parser_vtam_otu.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
                                      required=True)
-        parser_vtam_otu.add_argument('--blast_db', action='store', nargs=2,
-                                     help="REQUIRED: One argument, optional the second argument"
-                                          "-First argument: Blast DB directory (Full or custom one)"
-                                          "-Second argument: Blast DB file basename", default="blast_dir",
+
+        parser_vtam_otu.add_argument('--blast_db', action='store',
+                                     help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
+                                          # "-First argument: Blast DB directory (Full or custom one)"
+                                          # "-Second argument: Blast DB file basename", default="blast_dir",
                                      required=True,
                                      type=lambda x:
                                      ArgParser.verify_an_store_blast_db_argument(x, is_abspath=is_abspath))
-        parser_vtam_otu.add_argument('--map_taxids', action='store',
-                                     help="TSV file with mapping from NCBI sequence IDs to tax IDs."
-                                          "Required if working with custome DB.",
-                                     required=False, type=lambda x:
-            PathManager.check_file_exists_and_is_nonempty(x,
-                                                          error_message="Verify the file in the '--map_taxids' argument",
-                                                          is_abspath=is_abspath))
+        # parser_vtam_otu.add_argument('--map_taxids', action='store',
+        #                              help="TSV file with mapping from NCBI sequence IDs to tax IDs."
+        #                                   "Required if working with custome DB.",
+        #                              required=False, type=lambda x:
+        #     PathManager.check_file_exists_and_is_nonempty(x,
+        #                                                   error_message="Verify the file in the '--map_taxids' argument",
+        #                                                   is_abspath=is_abspath))
         parser_vtam_otu.add_argument('--taxonomy', dest='taxonomy', action='store',
                                      help="""REQUIRED: SQLITE DB with taxonomy information.
 
@@ -224,6 +166,12 @@ class ArgParser():
                                      type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
                                                                   error_message="Verify the '--threshold_specific' argument",
                                                                   is_abspath=is_abspath))
+
+        parser_vtam_otu.add_argument('--num_threads', action='store',
+                                     help="Number of threads",
+                                     required=False,
+                                     default=multiprocessing.cpu_count()-1)
+
         parser_vtam_otu.set_defaults(command='otu')  # This attribute will trigget the good command
         #############################################
         #

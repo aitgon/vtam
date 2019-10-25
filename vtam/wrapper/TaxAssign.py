@@ -22,7 +22,7 @@ class TaxAssign(ToolWrapper):
     # Input file
     __input_file_fastainfo = "fastainfo"
     __input_file_taxonomy = "taxonomy"
-    __input_file_map_taxids = "map_taxids"
+    # __input_file_map_taxids = "map_taxids"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -38,7 +38,7 @@ class TaxAssign(ToolWrapper):
         return [
             TaxAssign.__input_file_fastainfo,
             TaxAssign.__input_file_taxonomy,
-            TaxAssign.__input_file_map_taxids,
+            # TaxAssign.__input_file_map_taxids,
         ]
 
     def specify_input_table(self):
@@ -64,8 +64,8 @@ class TaxAssign(ToolWrapper):
             "min_number_of_taxa": "int",  # count
             "log_verbosity": "int",
             "log_file": "str",
-            "blast_db_dir": "str",
-            "blast_db_basename": "str",
+            "blast_db": "str",
+            "num_threads": "str",
         }
 
     def run(self):
@@ -87,7 +87,7 @@ class TaxAssign(ToolWrapper):
         # Input file
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
-        map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
+        # map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
         #
         # Input table models
         marker_model = self.input_table(TaxAssign.__input_table_marker)
@@ -103,8 +103,8 @@ class TaxAssign(ToolWrapper):
         identity_threshold = float(self.option("identity_threshold"))  # percentage
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
-        blast_db_dir = str(self.option("blast_db_dir"))  # count
-        blast_db_basename = str(self.option("blast_db_basename"))  # count
+        blast_db = str(self.option("blast_db"))  # count
+        num_threads = str(self.option("num_threads"))  # count
 
         ##########################################################
         #
@@ -226,16 +226,18 @@ class TaxAssign(ToolWrapper):
         # Run and read local blast result
         blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
         # get blast db dir and filename prefix from NHR file
-        os.environ['BLASTDB'] = blast_db_dir
-        if os.path.basename(map_taxids_tsv_path) == 'None': # run blast with full NCBI blast db
-            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_basename, evalue=1e-5,
-                                                 outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                                 qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
-        else: # run blast with custom blast db
-            # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
-            blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_basename, evalue=1e-5,
-                                                 outfmt='"6 qseqid sacc pident evalue qcovhsp"', dust='yes',
-                                                 qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
+        os.environ['BLASTDB'] = blast_db
+        # if os.path.basename(map_taxids_tsv_path) == 'None': # run blast with full NCBI blast db
+        #     blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_basename, evalue=1e-5,
+        #                                          outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+        #                                          qcov_hsp_perc=80, num_threads=1, out=blast_output_tsv)
+        # else: # run blast with custom blast db
+        # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
+        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db='nt', evalue=1e-5,
+                                             outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
+                                             qcov_hsp_perc=80, num_threads=num_threads, out=blast_output_tsv)
+        Logger.instance().debug(
+            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, str(blastn_cline)))
         #
         # Run blast
         stdout, stderr = blastn_cline()
@@ -245,28 +247,28 @@ class TaxAssign(ToolWrapper):
         # Process blast reults
         #
         ##########################################################
-        if os.path.basename(map_taxids_tsv_path) == 'None': # Process result from full DB
-            Logger.instance().debug(
-                "file: {}; line: {}; Reading TSV output from local blast: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
-            blast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
-                                              names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
-                                                     'target_tax_id'])
-            # expand multiple target_tax_ids
-            blast_output_df = (
-                pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
-                              axis=1))
-            blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
-            # lblast_output_df = (pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)], axis=1))[['variant_id', 'identity', 0]]
-            #
-            blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
-        else: # Process result from custom DB
-            blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
-                                              names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
-            map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
-                                            names=['target_id', 'target_tax_id'])
-            blast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
-            #
-            """   variant_id  target_id  identity        evalue  coverage  target_tax_id
+        # if os.path.basename(map_taxids_tsv_path) == 'None': # Process result from full DB
+        Logger.instance().debug(
+            "file: {}; line: {}; Reading Blast output from: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
+        blast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
+                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
+                                                 'target_tax_id'])
+        # expand multiple target_tax_ids
+        blast_output_df = (
+            pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
+                          axis=1))
+        blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
+        # lblast_output_df = (pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)], axis=1))[['variant_id', 'identity', 0]]
+        #
+        # blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
+        # else: # Process result from custom DB
+        #     blast_result_df = pandas.read_csv(blast_output_tsv, header=None, sep="\t",
+        #                                       names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage'])
+        #     map_tax_id_df = pandas.read_csv(map_taxids_tsv_path, header=None, sep="\t",
+        #                                     names=['target_id', 'target_tax_id'])
+        #     blast_output_df = blast_result_df.merge(map_tax_id_df, on='target_id')
+        #     #
+        """   variant_id  target_id  identity        evalue  coverage  target_tax_id
 0           2  MF7836761    99.429  1.620000e-86       100        1469487
 1           2  MF7836761    99.429  1.620000e-86       100         189839
 2           2  KY2618191    98.857  7.520000e-85       100         189839
