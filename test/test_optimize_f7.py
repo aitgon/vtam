@@ -15,7 +15,7 @@ class TestOptimizeF7(TestCase):
         self.variant_read_count_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_read_count.tsv")
         self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
-                                                  "optimize_f7", "variants_optimize.tsv")
+                                                  "optimize_f7", "variant_known.tsv")
         self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(self.this_step_tmp_dir)
         #
