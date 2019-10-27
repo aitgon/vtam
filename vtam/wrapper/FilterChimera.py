@@ -4,7 +4,7 @@ from vtam.utils.FilterCommon import FilterCommon
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VSearch import Vsearch3
+from vtam.utils.VSearch import VsearchChimera
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -245,7 +245,7 @@ def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
             "nonchimeras": chimera2_nonchimeras_fasta,
             "chimeras": chimera2_chimeras_fasta
         }
-        vsearch_chimera = Vsearch3(**vsearch_chimera_args)
+        vsearch_chimera = VsearchChimera(**vsearch_chimera_args)
         vsearch_chimera.run()
 
         ###################################################################

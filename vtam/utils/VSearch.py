@@ -4,6 +4,27 @@ import subprocess
 
 from vtam.utils.Logger import Logger
 
+class VSearch2():
+
+    def __init__(self, parameters):
+        """Creates a vsearch object based on the parameters
+
+        :param parameters: Dictionary with key:value for store parameters or key:None for other parameters
+        :return: void
+        """
+        self.parameters = parameters
+
+    def run(self):
+        command = 'vsearch'
+        for param in self.parameters:
+            if not self.parameters[param] is None:
+                command += ' {} {}'.format(param, self.parameters[param])
+            else:
+                command += ' {}'.format(param)
+        Logger.instance().info(command)
+        run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+        Logger.instance().info(run_result.stdout)
+
 
 class VSearch:
 
@@ -22,7 +43,7 @@ class VSearch:
             p.wait()
 
 
-class VSearch1(VSearch):
+class VSearchUsearchGlobal(VSearch):
 
     def __init__(self, db, usearch_global, id=None, maxhits=None, maxrejects=None, maxaccepts=None, minseqlength=None, userout=None, userfields=None, query_cov=None):
         #
@@ -41,7 +62,7 @@ class VSearch1(VSearch):
 
 
 
-class Vsearch3(VSearch):
+class VsearchChimera(VSearch):
 
     def __init__(self, uchime_denovo, borderline, nonchimeras, chimeras):
         VSearch.__init__(self)
@@ -55,7 +76,7 @@ def main():
     vsearch = VSearch()
     vsearch.run()
     vsearch_params = {'db' : 'dbpath', 'usearch_global' : 'usearch_global', 'maxrejects': 1}
-    vsearch1 = VSearch1(**vsearch_params)
+    vsearch1 = VSearchUsearchGlobal(**vsearch_params)
     vsearch1.run()
 
 
