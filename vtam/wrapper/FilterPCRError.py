@@ -4,7 +4,7 @@ from vtam import Logger
 from vtam.utils.FilterCommon import FilterCommon
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VSearch import VSearch1
+from vtam.utils.VSearch import VSearchUsearchGlobal
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -224,7 +224,7 @@ def f10_pcr_error_run_vsearch(variant_db_df, variant_usearch_global_unexpected_d
                                    'userfields': "query+target+alnlen+ids+mism+gaps",
                                    }
 
-    vsearch_usearch_global = VSearch1(**vsearch_usearch_global_args)
+    vsearch_usearch_global = VSearchUsearchGlobal(**vsearch_usearch_global_args)
     vsearch_usearch_global.run()
     column_names = ['query', 'target', 'alnlen', 'ids', 'mism', 'gaps']
     vsearch_output_df = pandas.read_csv(sample_tsv, sep='\t', names=column_names)

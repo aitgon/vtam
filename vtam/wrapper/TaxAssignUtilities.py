@@ -1,4 +1,3 @@
-import os
 import pandas
 import sqlite3
 
@@ -6,7 +5,6 @@ from vtam.utils.constants import rank_hierarchy
 
 from vtam.utils.constants import identity_list
 
-from Bio.Blast.Applications import NcbiblastnCommandline
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
@@ -25,60 +23,6 @@ def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
     con.close()
     return taxonomy_db_df
-
-
-def f02_variant_df_to_fasta(variant_df, fasta_path):
-    """
-    Takes variant DF with two columns (variant_id, variant_sequence) and return FASTA file output
-
-    Args:
-        variant_df (pandas.DataFrame): DF with two columns (variant_id, variant_sequence)
-        fasta_path (str): Path to FASTA file
-
-
-    Returns:
-        None
-
-    """
-    with open(fasta_path, "w") as fout:
-        for row in variant_df.itertuples():
-            fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
-
-
-def f03_lblast(variant_fasta_path, variant_tsv_path):
-    """
-    Runs Blast
-
-    Args:
-        variant_id (Integer): Internal ID of variant
-        variant_sequence (String): Sequence of variant
-
-    Returns:
-        String: Path to output of qblast in TSV format
-    """
-    # http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc98
-    # Create FASTA
-    blastn_cline = NcbiblastnCommandline(query=variant_fasta_path, db="nt", evalue=1e-5,
-                                         outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                         qcov_hsp_perc=80, num_threads=1, out=variant_tsv_path)
-    stdout, stderr = blastn_cline()
-
-
-def f04_import_qblast_output_into_df(qblast_output_tsv_path):
-    """
-    Imports Blast output TSV into DataFrame
-
-    Args:
-        qblast_output_tsv_path (String): Path to output of qblast in TSV format
-
-    Returns:
-        DataFrame: with three columns: target_id, identity, target_tax_id
-    """
-    qblast_out_df = pandas.read_csv(qblast_output_tsv_path, sep="\t", header=None, names=['target_id', 'identity', 'target_tax_id'], usecols=[1, 2, 5])
-    # extract the target_id
-    qblast_out_df.target_id = qblast_out_df.target_id.str.split('|', 2).str[1]
-    qblast_out_df.target_id = pandas.to_numeric(qblast_out_df.target_id)
-    return qblast_out_df
 
 
 def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
