@@ -7,10 +7,11 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam.utils.FastaIO import FastaIO
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
+from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 from vtam.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
 
@@ -210,7 +211,7 @@ class TaxAssign(ToolWrapper):
             if exception.errno != errno.EEXIST:
                 raise
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
-        f02_variant_df_to_fasta(variant_df, variant_fasta)
+        FastaIO.variant_df_to_fasta_file(variant_df, variant_fasta)
         #
 
         ##########################################################

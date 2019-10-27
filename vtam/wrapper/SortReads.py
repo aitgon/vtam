@@ -9,7 +9,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
 
-from vtam.utils.VSearch import VSearch1
+from vtam.utils.VSearch import VSearchUsearchGlobal
 from vtam.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads
@@ -158,7 +158,7 @@ class SortReads(ToolWrapper):
                               'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
                               'userout': vsearch_output_tsv,
                               }
-            vsearch1 = VSearch1(**vsearch_params)
+            vsearch1 = VSearchUsearchGlobal(**vsearch_params)
             vsearch1.run()
             del vsearch1
             #
@@ -236,7 +236,7 @@ class SortReads(ToolWrapper):
                               'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
                               'userout': vsearch_output_tsv,
                               }
-            vsearch1 = VSearch1(**vsearch_params)
+            vsearch1 = VSearchUsearchGlobal(**vsearch_params)
             vsearch1.run()
             del vsearch1
             #

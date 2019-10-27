@@ -1,7 +1,7 @@
 
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VSearch import Vsearch3
+from vtam.utils.VSearch import VsearchChimera
 from Bio import SeqIO
 import os
 from vtam.wrapper.FilterChimera import f11_filter_chimera
@@ -96,7 +96,7 @@ class TestChimera(TestCase):
                 "nonchimeras": chimear2_nonchimeras_fasta,
                 "chimeras": chimear2_chimeras_fasta
             }
-            vsearch_chimera = Vsearch3(**vsearch_chimera_args)
+            vsearch_chimera = VsearchChimera(**vsearch_chimera_args)
             vsearch_chimera.run()
 
             ###################################################################
