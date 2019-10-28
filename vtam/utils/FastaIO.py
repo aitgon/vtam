@@ -20,11 +20,9 @@ class FastaIO:
         """
         with open(fasta_path, "w") as fout:
             for row in variant_df.itertuples():
-                print(row, add_column)
                 fasta_line = ">{}".format(row.id)
                 if not add_column is None:
                     fasta_line += ";{}={}".format(add_column, getattr(row, add_column))
                 fasta_line += "\n".format(row.id)
                 fasta_line += "{}\n".format(row.sequence)
-                print(fasta_line)
                 fout.write(fasta_line)
