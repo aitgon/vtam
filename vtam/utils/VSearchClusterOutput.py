@@ -29,15 +29,12 @@ class VSearchClusterOutput(object):
         cluster_instance_list = []
         centroid = None
         while pathlib.Path(cluster_i_path).exists():
-            print(cluster_i_path)
             seq_j = 0
             for seq_record in SeqIO.parse(cluster_i_path, "fasta"):
                 cluster_instance = {}
-                print(str(seq_record))
                 variant_id = seq_record.id.split(';')[0]
                 if seq_j == 0:
                     centroid = variant_id
-                print(centroid, variant_id)
                 cluster_instance['centroid_variant_id'] = centroid
                 cluster_instance['variant_id'] = variant_id
                 seq_j += 1
