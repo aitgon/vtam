@@ -55,9 +55,9 @@ class TestPoolMarkers(TestCase):
         # ONGOING
         # Information to keep about each centroid
         centroid_df = cluster_df.loc[cluster_df.centroid_variant_id == cluster_df.variant_id,
-                                     ['centroid_variant_id', 'marker_name', 'run_name', 'sequence_length', 'phylum',
+                                     ['centroid_variant_id', 'phylum',
                                       'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name',
-                                      'identity', 'ltg_rank', 'variant_sequence']]
+                                      'ltg_rank']]
         centroid_df.drop_duplicates(inplace=True)
         #
         # Centroid to aggregated variants
@@ -67,30 +67,21 @@ class TestPoolMarkers(TestCase):
         # Centroid to aggregated variants and biosamples
         cluster_df_col = cluster_df.columns
         biosample_columns = list(set(cluster_df_col[6:]).difference(set(list(cluster_df_col[-12:]))))
-        centroid_biosamples_columns = ['centroid_variant_id'] + list(set(cluster_df_col[6:]).difference(set(list(cluster_df_col[-12:]))))
-        centroid_to_biosample_df = cluster_df[centroid_biosamples_columns]
-        centroid_to_biosample_df[centroid_biosamples_columns[1:]] = (cluster_df[centroid_biosamples_columns[1:]] > 0).astype('int')
-        centroid_to_biosample_df.drop_duplicates(inplace=True)
-        import pdb; pdb.set_trace()
-        centroid_to_biosample_df = centroid_to_biosample_df.groupby('centroid_variant_id')['sample3', 'sample1', 'sample2'].apply(lambda x: sum(x))
-
-        import pdb; pdb.set_trace()
-        centroid_to_variant_biosample_df = centroid_to_variant_biosample_df.groupby('centroid_variant_id')['variant_id', 'Tpos1_prerun', 'Tpos2_prerun'].apply(lambda x: ','.join(map(str, sorted(x))))
-
-
-
-
-        cluster_df_col = cluster_df.columns
-        centroid_to_lineage_columns = ['centroid_variant_id'] + list(cluster_df_col[-12:])
-        biosamples_columns = list(set(cluster_df_col[6:]).difference(set(centroid_to_lineage_columns)))
-
-        output_df = cluster_df.copy()
-        import pdb; pdb.set_trace()
         # Drop some columns
-        output_df.drop(['read_count', 'chimera_borderline', 'variant_sequence'], axis=1, inplace=True)
-        # Convert biosamples read count to present/absent
-        output_df[biosamples_columns] = (output_df[biosamples_columns] > 0).astype('int')
-        #
+        are_reads = lambda x: int(sum(x)>0)
+        # agg_dic = {'variant_id': lambda x: ','.join(map(str, x)), 'sample1': are_reads, 'sample2': are_reads, 'sample3': are_reads}
+        agg_dic = {}
+        for k in ['variant_id', 'run_name', 'marker_name']:
+            agg_dic[k] = lambda x: ','.join(map(str, list(set(x))))
+        for k in biosample_columns:
+            agg_dic[k] = are_reads
+        output_df = cluster_df[['centroid_variant_id', 'variant_id', 'run_name', 'marker_name'] + biosample_columns]
+        output_df = output_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
+        output_df = output_df.merge(centroid_df, on='centroid_variant_id')
+        output_df_cols = list(output_df.columns)
+        # output_df_cols.insert(0, output_df_cols.pop(output_df_cols.index('marker'))) #
+        # output_df = output_df[]
+        output_df.to_csv("otu_clusters.tsv", sep="\t", index=False)
         import pdb; pdb.set_trace()
 
 
