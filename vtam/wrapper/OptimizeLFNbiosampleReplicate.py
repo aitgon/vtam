@@ -4,6 +4,7 @@ import sys
 import sqlalchemy
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam.utils.FastaInfo import FastaInfo
 from vtam.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
@@ -110,34 +111,32 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         ################################################################################################################
         #
-        # For run, marker and mock biosamples, create the variant_read_count df
+        # Get variant read count df
         #
         ################################################################################################################
 
-        variant_read_count_list = []
-        with engine.connect() as conn:
-            for row in run_marker_biosample_mock_df.itertuples():
-                run_id = row.run_id
-                marker_id = row.marker_id
-                biosample_id = row.biosample_id
-                stmt_select = sqlalchemy.select([
-                    variant_read_count_model.__table__.c.run_id,
-                    variant_read_count_model.__table__.c.marker_id,
-                    variant_read_count_model.__table__.c.biosample_id,
-                    variant_read_count_model.__table__.c.replicate_id,
-                    variant_read_count_model.__table__.c.variant_id,
-                    variant_read_count_model.__table__.c.read_count,
-                ]) \
-                    .where(variant_read_count_model.__table__.c.run_id == run_id) \
-                    .where(variant_read_count_model.__table__.c.marker_id == marker_id) \
-                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_id)\
-                    .distinct()
-                variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
+        fasta_info = FastaInfo(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
 
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list, columns=['run_id', 'marker_id',
-                                                        'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
-        variant_read_count_df.drop_duplicates(inplace=True)
+        ################################################################################################
+        #
+        # Get delete variants, that are not keep in mock samples
+        #
+        ################################################################################################
 
+        # These columns: run_id  marker_id  biosample_id  variant_id
+        variant_keep_df = variant_known.get_run_marker_biosample_variant_keep_df()
+
+
+        ################################################################################################################
+        #
+        # variant_read_count for keep variants only
+        #
+        ################################################################################################################
+
+        variant_read_count_keep_df = variant_read_count_df.merge(variant_keep_df, on=['run_id', 'marker_id',
+                                                                                                    'biosample_id',
+                                                                                                    'variant_id'])
 
         ##########################################################
         #
@@ -145,7 +144,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df = variant_read_count_df.rename(columns={'read_count': 'N_ijk'})
+        output_df = variant_read_count_keep_df.rename(columns={'read_count': 'N_ijk'})
         aggregate_df = output_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'N_ijk']].groupby(
             by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
         aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
@@ -202,5 +201,5 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
                                        ascending=[True, True, True, True, True], inplace=True)
-        output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
+        output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
 
