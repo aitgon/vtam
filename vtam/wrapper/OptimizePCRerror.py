@@ -8,7 +8,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from vtam.utils.FastaInfo import FastaInfo
 from vtam.utils.VariantKnown import VariantKnown
-from vtam.wrapper.FilterPCRError import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
+from vtam.wrapper.FilterPCRerror import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
 
 from sqlalchemy import select
 import pandas

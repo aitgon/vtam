@@ -26,7 +26,7 @@ class FilterChimera(ToolWrapper):
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
-    __input_table_filter_pcr_error = "FilterPCRError"
+    __input_table_filter_pcr_error = "FilterPCRerror"
     __input_table_Variant = "Variant"
     # Output table
     __output_table_filter_chimera = "FilterChimera"

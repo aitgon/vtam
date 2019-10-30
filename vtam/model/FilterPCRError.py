@@ -5,7 +5,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 
 
 class FilterPCRError(Base):
-    __tablename__ = "FilterPCRError"
+    __tablename__ = "FilterPCRerror"
     __table_args__ = (
         UniqueConstraint('marker_id','run_id', 'variant_id', 'biosample_id', 'replicate_id'),
     )

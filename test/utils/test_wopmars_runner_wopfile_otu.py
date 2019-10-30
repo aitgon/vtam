@@ -141,8 +141,8 @@ rule FilterMinReplicateNumber:
         log_verbosity: 0
 
 
-rule FilterPCRError:
-    tool: vtam.wrapper.FilterPCRError
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
     input:
         table:
             Marker: vtam.model.Marker
@@ -155,7 +155,7 @@ rule FilterPCRError:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
         log_verbosity: 0
@@ -170,7 +170,7 @@ rule FilterChimera:
             Biosample: vtam.model.Biosample
             Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
@@ -435,8 +435,8 @@ rule FilterMinReplicateNumber:
         log_verbosity: 0
 
 
-rule FilterPCRError:
-    tool: vtam.wrapper.FilterPCRError
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
     input:
         table:
             Marker: vtam.model.Marker
@@ -449,7 +449,7 @@ rule FilterPCRError:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
         log_verbosity: 0
@@ -464,7 +464,7 @@ rule FilterChimera:
             Biosample: vtam.model.Biosample
             Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
@@ -724,8 +724,8 @@ rule FilterMinReplicateNumber:
         log_verbosity: 0
 
 
-rule FilterPCRError:
-    tool: vtam.wrapper.FilterPCRError
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
     input:
         table:
             Marker: vtam.model.Marker
@@ -738,7 +738,7 @@ rule FilterPCRError:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         table:
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
         log_verbosity: 0
@@ -753,7 +753,7 @@ rule FilterChimera:
             Biosample: vtam.model.Biosample
             Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
