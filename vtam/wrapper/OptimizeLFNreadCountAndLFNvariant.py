@@ -12,6 +12,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from vtam import VTAMexception
 from vtam.utils.FastaInfo import FastaInfo
 from vtam.utils.Logger import Logger
+from vtam.utils.VariantReadCountLFN import VariantReadCountLFN
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.VariantKnown import VariantKnown
@@ -321,16 +322,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                                                                                     'marker_id',
                                                                                                     'biosample_id',
                                                                                                     'variant_id'])
+        variant_read_count_instance = VariantReadCountLFN(variant_read_count_delete_df)
 
         if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
-            # TODO: N_id_df is the sum over all replicates
-            import pdb; pdb.set_trace()
             # N_i_df = variant_read_count_delete_df[['run_id', 'marker_id', 'variant_id', 'read_count']] \
             #     .groupby(by=['run_id', 'marker_id', 'variant_id']) \
             #     .sum().reset_index()
-            N_i_df = variant_read_count_delete_df.groupby(by=['run_id', 'marker_id', 'variant_id']).agg({'read_count': sum})
-            N_i_df = N_i_df.rename(columns={'read_count': 'N_i'})
-            N_i_df.drop_duplicates(inplace=True)
+            # N_i_df = variant_read_count_delete_df.groupby(by=['run_id', 'marker_id', 'variant_id']).agg({'read_count': sum})
+            # N_i_df = N_i_df.rename(columns={'read_count': 'N_i'})
+            # N_i_df.drop_duplicates(inplace=True)
+            N_i_df = variant_read_count_instance.get_N_i_df()
+
             lfn_variant_or_variant_replicate_specific_threshold_df = variant_read_count_delete_df.merge(N_i_df,
                                                                                                         on=['run_id',
                                                                                                             'marker_id',
@@ -348,18 +350,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 ['run_id', 'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold']]).drop_duplicates(
                 inplace=False)
         else:  # optimize lfn variant replicate
-            # TODO: Fix sum
-            N_ik_df = variant_read_count_delete_df[['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count']] \
-                .groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']) \
-                .sum().reset_index()
-            N_ik_df = N_ik_df.rename(columns={'read_count': 'N_ik'})
-            N_ik_df.drop_duplicates(inplace=True)
+            # N_ik_df = variant_read_count_delete_df[['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count']] \
+            #     .groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']) \
+            #     .sum().reset_index()
+            # N_ik_df = N_ik_df.rename(columns={'read_count': 'N_ik'})
+            # N_ik_df.drop_duplicates(inplace=True)
+            N_i_df = variant_read_count_instance.get_N_i_df()
             lfn_variant_or_variant_replicate_specific_threshold_df = variant_read_count_delete_df.merge(N_ik_df,
                                                                                                         on=['run_id',
                                                                                                             'marker_id',
                                                                                                             'variant_id',
                                                                                                             'replicate_id'])
-            del (N_ik_df)
             lfn_variant_or_variant_replicate_specific_threshold_df[
                 'lfn_variant_replicate_threshold'] = lfn_variant_or_variant_replicate_specific_threshold_df.read_count \
                                                      / lfn_variant_or_variant_replicate_specific_threshold_df.N_ik
@@ -415,23 +416,16 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             [lfn_variant_delete_mock_specific_threshold_df, lfn_variant_delete_negative_specific_threshold_df,
              lfn_variant_delete_real_specific_threshold_df])
 
-        if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
-            lfn_variant_or_variant_replicate_specific_threshold_df = \
-            # TODO fix all groupby with agg function
-            lfn_variant_or_variant_replicate_specific_threshold_df[
-                ['run_id', 'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold',
-                 'biosample_type']].groupby(
-                by=['run_id', 'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold'])[
-                'biosample_type'].apply(lambda x: ','.join(set(x))).reset_index()
-        else:  # optimize lfn variant replicate
-            lfn_variant_or_variant_replicate_specific_threshold_df = \
-            lfn_variant_or_variant_replicate_specific_threshold_df[
-                ['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count', 'N_ik', 'lfn_variant_replicate_threshold',
-                 'biosample_type']].groupby(
-                by=['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count', 'N_ik', 'lfn_variant_replicate_threshold'])[
-                'biosample_type'].apply(lambda x: ','.join(set(x))).reset_index()
         lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.rename(
             columns={'read_count': 'N_ijk_max'})
+        if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
+            lfn_variant_or_variant_replicate_specific_threshold_df.groupby(
+                by=['run_id', 'marker_id', 'variant_id', 'N_ijk_max', 'N_i', 'lfn_variant_threshold']).agg(
+                {'biosample_type': lambda x: ','.join(set(x))}).reset_index()
+        else:  # optimize lfn variant replicate
+            lfn_variant_or_variant_replicate_specific_threshold_df.groupby(
+                by=['run_id', 'marker_id', 'variant_id', 'N_ijk_max', 'N_ik', 'lfn_variant_replicate_threshold']).agg(
+                {'biosample_type': lambda x: ','.join(set(x))}).reset_index()
 
         ##########################################################
         #
@@ -538,7 +532,6 @@ def lfn_read_count_and_lfn_variant(is_optimize_lfn_variant_replicate, variant_re
     # Count keep
     #
     ##########################################################
-    # import pdb; pdb.set_trace()
 
     variant_read_count_remained_df = variant_read_count_remained_df[
         ['run_id', 'marker_id', 'biosample_id', 'variant_id']]

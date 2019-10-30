@@ -1,3 +1,4 @@
+import sqlalchemy
 from sqlalchemy import select
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
@@ -224,7 +225,11 @@ class FilterLFN(ToolWrapper):
         filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
         records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(variant_filter_lfn_model.__table__.insert(), records)
+            try:
+                conn.execute(variant_filter_lfn_model.__table__.insert(), records)
+            except sqlalchemy.exc.IntegrityError:
+                Logger.instance().error(VTAMexception(
+                    "Records are not unique"))
 
         ##########################################################
         #
