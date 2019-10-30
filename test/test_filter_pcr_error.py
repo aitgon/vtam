@@ -2,7 +2,7 @@ import os
 import pandas
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
-from vtam.wrapper.FilterPCRError import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
+from vtam.wrapper.FilterPCRerror import f10_pcr_error_analyze_vsearch_output_df, f10_pcr_error_run_vsearch
 
 
 class TestFilterPCRError(TestCase):
