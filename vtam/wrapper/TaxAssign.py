@@ -192,7 +192,7 @@ class TaxAssign(ToolWrapper):
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
                 variant_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_list, columns=['variant_id', 'variant_sequence'])
+        variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
 
         # creation one fasta file containing all the variant
         #

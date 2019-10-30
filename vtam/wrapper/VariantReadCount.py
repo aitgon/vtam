@@ -7,13 +7,15 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VariantReadCountLFN import VariantReadCountLFN
 
-from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
+
+# from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
 
 
 class VariantReadCount(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.VariantReadCount"
+        "polymorphic_identity": "vtam.wrapper.VariantReadCountLFN"
     }
     # Input
     # Input file
@@ -96,7 +98,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete singleton
-        # 6. Insert into Variant and VariantReadCount tables
+        # 6. Insert into Variant and VariantReadCountLFN tables
         #
         ################################
 
@@ -150,27 +152,30 @@ class VariantReadCount(ToolWrapper):
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
                              header=None,
                              names=['read_id', 'fasta_id', 'run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence'])
-        read_annotation_df.drop('read_id', axis=1, inplace=True)
+        read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
         ##########################################################
         #
-        # 4. Group by read sequence
+        # 4. Group by read sequence to variant_read_count with run_id, marker, ...
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = read_annotation_df.groupby(['fasta_id', 'run_id', 'marker_id', 'biosample_id',
-                                    'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+        # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
+        variant_read_count_df.rename(columns={'variant_sequence': 'variant_id'}, inplace=True)
 
         ##########################################################
         #
-        # 5. Remove singleton
+        # 5. Remove singletons
         #
         ##########################################################
+        variant_read_count_lfn = VariantReadCountLFN(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
+        variant_read_count_df = variant_read_count_lfn.filter_singletons() # returns variant_read_count wout singletons
+        variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
         ################################
         #
-        # 6. Insert into Variant and VariantReadCount tables
+        # 6. Insert into Variant and VariantReadCountLFN tables
         #
         ################################
         Logger.instance().debug(
