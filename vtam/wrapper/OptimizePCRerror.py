@@ -171,7 +171,7 @@ class OptimizePCRerror(ToolWrapper):
 
             ################################################################################################################
             #
-            # For run, marker and mock biosamples, create the variant_read_count df
+            # For each biosample: run, marker and mock biosamples, create the variant_read_count df
             #
             ################################################################################################################
 
@@ -193,6 +193,8 @@ class OptimizePCRerror(ToolWrapper):
 
             variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list, columns=['run_id', 'marker_id',
                                                             'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+
+            # TODO demander emese: est-ce que N_ij est la somme sur tous les replicats? N_ij=somme(N_ij1, N_ij2, N_ij3)
             variant_read_count_df.drop_duplicates(inplace=True)
 
             ################################################################################################################
@@ -205,7 +207,7 @@ class OptimizePCRerror(ToolWrapper):
                 variant_db_df=variant_keep_tolerate_df, variant_usearch_global_unexpected_df=variant_df,
                 tmp_dir=this_step_tmp_dir)
 
-            variant_read_count_df = variant_read_count_df.rename(columns={'read_count': 'N_ijk'})
+            variant_read_count_df = variant_read_count_df.rename(columns={'read_count': 'N_ij'})
             pcr_error_df = f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df)
 
             pcr_error_final_df = pandas.concat([pcr_error_final_df, pcr_error_df], axis=0)
