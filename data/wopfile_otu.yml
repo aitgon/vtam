@@ -41,8 +41,8 @@ rule FilterMinReplicateNumber:
         log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
-rule FilterPCRError:
-    tool: vtam.wrapper.FilterPCRError
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
     input:
         table:
             Marker: vtam.model.Marker
@@ -55,7 +55,7 @@ rule FilterPCRError:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRError: vtam.model.FilterPCRerror
     params:
         pcr_error_var_prop: {{pcr_error_var_prop}}
         log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
@@ -70,7 +70,7 @@ rule FilterChimera:
             Biosample: vtam.model.Biosample
             Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRError: vtam.model.FilterPCRerror
         file:
             fastainfo: {{fastainfo}}
     output:

@@ -13,9 +13,9 @@ import pandas
 import sys
 
 
-class FilterPCRError(ToolWrapper):
+class FilterPCRerror(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.FilterPCRError"
+        "polymorphic_identity": "vtam.wrapper.FilterPCRerror"
     }
 
     # Input file
@@ -28,29 +28,29 @@ class FilterPCRError(ToolWrapper):
     __input_table_variant = "Variant"
     __input_table_filter_min_replicate_number = "FilterMinReplicateNumber"
     # Output table
-    __output_table_filter_pcr_error = "FilterPCRError"
+    __output_table_filter_pcr_error = "FilterPCRerror"
 
 
     def specify_input_file(self):
         return[
-            FilterPCRError.__input_file_fastainfo,
+            FilterPCRerror.__input_file_fastainfo,
 
         ]
 
     def specify_input_table(self):
         return [
-            FilterPCRError.__input_table_marker,
-            FilterPCRError.__input_table_run,
-            FilterPCRError.__input_table_biosample,
-            FilterPCRError.__input_table_replicate,
-            FilterPCRError.__input_table_variant,
-            FilterPCRError.__input_table_filter_min_replicate_number,
+            FilterPCRerror.__input_table_marker,
+            FilterPCRerror.__input_table_run,
+            FilterPCRerror.__input_table_biosample,
+            FilterPCRerror.__input_table_replicate,
+            FilterPCRerror.__input_table_variant,
+            FilterPCRerror.__input_table_filter_min_replicate_number,
         ]
 
 
     def specify_output_table(self):
         return [
-            FilterPCRError.__output_table_filter_pcr_error,
+            FilterPCRerror.__output_table_filter_pcr_error,
         ]
 
     def specify_params(self):
@@ -77,21 +77,21 @@ class FilterPCRError(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        input_file_fastainfo = self.input_file(FilterPCRError.__input_file_fastainfo)
+        input_file_fastainfo = self.input_file(FilterPCRerror.__input_file_fastainfo)
         #
         # Input table models
-        marker_model = self.input_table(FilterPCRError.__input_table_marker)
-        run_model = self.input_table(FilterPCRError.__input_table_run)
-        biosample_model = self.input_table(FilterPCRError.__input_table_biosample)
-        replicate_model = self.input_table(FilterPCRError.__input_table_replicate)
-        variant_model = self.input_table(FilterPCRError.__input_table_variant)
-        input_filter_model = self.input_table(FilterPCRError.__input_table_filter_min_replicate_number)
+        marker_model = self.input_table(FilterPCRerror.__input_table_marker)
+        run_model = self.input_table(FilterPCRerror.__input_table_run)
+        biosample_model = self.input_table(FilterPCRerror.__input_table_biosample)
+        replicate_model = self.input_table(FilterPCRerror.__input_table_replicate)
+        variant_model = self.input_table(FilterPCRerror.__input_table_variant)
+        input_filter_model = self.input_table(FilterPCRerror.__input_table_filter_min_replicate_number)
         #
         # Options
         pcr_error_var_prop = self.option("pcr_error_var_prop")
         #
         # Output table models
-        output_filter_model = self.output_table(FilterPCRError.__output_table_filter_pcr_error)
+        output_filter_model = self.output_table(FilterPCRerror.__output_table_filter_pcr_error)
 
         ##########################################################
         #
@@ -301,12 +301,12 @@ def f10_get_maximal_pcr_error_value(variant_read_count_df, vsearch_output_df):
     pcr_error_df.drop_duplicates(inplace=True)
     pcr_error_df.drop(columns=['variant_id'], inplace = True)
     pcr_error_df.rename(columns={'target': 'variant_id_expected'}, inplace=True)
-    pcr_error_df.rename(columns={'N_ijk_y': 'N_ijk_expected'}, inplace=True)
-    pcr_error_df.rename(columns={'N_ijk_x': 'N_ijk_unexpected'}, inplace=True)
-    pcr_error_df['N_ijk_unexpected_expected_ratio'] = pcr_error_df.N_ijk_unexpected / pcr_error_df.N_ijk_expected
-    pcr_error_df.sort_values(by='N_ijk_unexpected_expected_ratio', ascending=False, inplace=True)
+    pcr_error_df.rename(columns={'N_ij_y': 'N_ij_expected'}, inplace=True)
+    pcr_error_df.rename(columns={'N_ij_x': 'N_ij_unexpected'}, inplace=True)
+    pcr_error_df['N_ij_unexpected_expected_ratio'] = pcr_error_df.N_ij_unexpected / pcr_error_df.N_ij_expected
+    pcr_error_df.sort_values(by='N_ij_unexpected_expected_ratio', ascending=False, inplace=True)
     # reorganize output columns
     pcr_error_df = pcr_error_df[
-        ['run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ijk_expected', 'variant_id_unexpected',
-         'N_ijk_unexpected', 'N_ijk_unexpected_expected_ratio']]
+        ['run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected', 'variant_id_unexpected',
+         'N_ij_unexpected', 'N_ij_unexpected_expected_ratio']]
     return pcr_error_df

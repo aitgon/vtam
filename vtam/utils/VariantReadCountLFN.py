@@ -19,9 +19,8 @@ class VariantReadCountLFN(object):
         """
 
         try:
-            assert variant_read_count_df.columns.tolist() == ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']
+            assert sorted(variant_read_count_df.columns.tolist()) == sorted(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
         except:
-            import pdb; pdb.set_trace()
             Logger.instance().error(VTAMexception("This DataFrame is not composed of columns: 'run_id', 'marker_id', "
                                                   "'biosample_id', 'replicate_id', 'variant_id', 'read_count'. The workflow will exit"))
             sys.exit(1)
