@@ -144,12 +144,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df = variant_read_count_keep_df.rename(columns={'read_count': 'N_ijk'})
-        aggregate_df = output_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'N_ijk']].groupby(
-            by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-        aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
-        output_df = output_df.merge(aggregate_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        output_df['lfn_biosample_replicate: N_ijk/N_jk'] = output_df['N_ijk'] / output_df['N_jk']
+        lfn_biosample_replicate_df = variant_read_count_keep_df.rename(columns={'read_count': 'N_ijk'})
+        N_jk_df = lfn_biosample_replicate_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).agg({'N_ijk': sum})
+        N_jk_df = N_jk_df.rename(columns={'N_ijk': 'N_jk'})
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
+        lfn_biosample_replicate_df['lfn_biosample_replicate: N_ijk/N_jk'] = lfn_biosample_replicate_df['N_ijk'] / lfn_biosample_replicate_df['N_jk']
 
         ##########################################################
         #
@@ -157,10 +156,10 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df=output_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
+        lfn_biosample_replicate_df=lfn_biosample_replicate_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
         round_down_4_decimals = lambda x: int(x * 10 ** 4) / 10 ** 4
-        output_df['round_down'] = output_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
+        lfn_biosample_replicate_df['round_down'] = lfn_biosample_replicate_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
 
         ##########################################################
         #
@@ -179,18 +178,18 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
                 sqlalchemy.select([replicate_model.__table__.c.id, replicate_model.__table__.c.name])).fetchall()
 
         run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
-        output_df = output_df.merge(run_id_to_name_df, on='run_id')
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df.merge(run_id_to_name_df, on='run_id')
 
         marker_id_to_name_df = pandas.DataFrame.from_records(data=marker_id_to_name, columns=['marker_id', 'marker_name'])
-        output_df = output_df.merge(marker_id_to_name_df, on='marker_id')
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df.merge(marker_id_to_name_df, on='marker_id')
 
         biosample_id_to_name_df = pandas.DataFrame.from_records(data=biosample_id_to_name, columns=['biosample_id', 'biosample_name'])
-        output_df = output_df.merge(biosample_id_to_name_df, on='biosample_id')
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df.merge(biosample_id_to_name_df, on='biosample_id')
 
         replicate_id_to_name_df = pandas.DataFrame.from_records(data=replicate_id_to_name, columns=['replicate_id', 'replicate_name'])
-        output_df = output_df.merge(replicate_id_to_name_df, on='replicate_id')
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df.merge(replicate_id_to_name_df, on='replicate_id')
 
-        output_df = output_df[['run_name', 'marker_name', 'biosample_name', 'replicate_name', 'variant_id',
+        lfn_biosample_replicate_df = lfn_biosample_replicate_df[['run_name', 'marker_name', 'biosample_name', 'replicate_name', 'variant_id',
        'N_ijk', 'N_jk', 'lfn_biosample_replicate: N_ijk/N_jk', 'round_down']]
 
         ##########################################################
@@ -199,7 +198,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
+        lfn_biosample_replicate_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
                                        ascending=[True, True, True, True, True], inplace=True)
-        output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
+        lfn_biosample_replicate_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
 
