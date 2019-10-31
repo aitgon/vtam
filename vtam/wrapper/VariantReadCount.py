@@ -7,7 +7,7 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
-from vtam.utils.VariantReadCountLFN import VariantReadCountLFN
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
 # from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
@@ -15,7 +15,7 @@ from vtam.utils.VariantReadCountLFN import VariantReadCountLFN
 
 class VariantReadCount(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.VariantReadCountLFN"
+        "polymorphic_identity": "vtam.wrapper.VariantReadCountDF"
     }
     # Input
     # Input file
@@ -98,7 +98,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete singleton
-        # 6. Insert into Variant and VariantReadCountLFN tables
+        # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################
 
@@ -168,14 +168,14 @@ class VariantReadCount(ToolWrapper):
         # 5. Remove singletons
         #
         ##########################################################
-        variant_read_count_lfn = VariantReadCountLFN(variant_read_count_df)
+        variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_lfn.filter_singletons() # returns variant_read_count wout singletons
+        variant_read_count_df = variant_read_count_lfn.filter_out_singletons() # returns variant_read_count wout singletons
         variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
         ################################
         #
-        # 6. Insert into Variant and VariantReadCountLFN tables
+        # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################
         Logger.instance().debug(

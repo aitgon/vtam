@@ -17,7 +17,7 @@ vtam/discussion_reda_aitor/example_filter.ods
 """
 
 from vtam.utils.Logger import Logger
-from vtam.utils.VariantReadCountLFN import VariantReadCountLFN
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 import inspect
 import pandas
@@ -29,7 +29,7 @@ class FilterLFNrunner:
         self.variant_read_count_df = variant_read_count_df[
             ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
         # Instance for all the calculations N_i, N_ij, etc
-        self.variant_read_count_lfn_df = VariantReadCountLFN(variant_read_count_df)
+        self.variant_read_count_lfn_df = VariantReadCountDF(variant_read_count_df)
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
@@ -214,6 +214,7 @@ class FilterLFNrunner:
         filter_df['filter_delete'] = False
         filter_df.loc[filter_df['N_ijk/N_ik'] < lfn_variant_replicate_threshold, 'filter_delete'] = True
 
+        # import pdb; pdb.set_trace()
         if not threshold_specific_df is None:
             this_filter_id = 5
             # for variant_id in threshold_specific_df:
@@ -287,7 +288,7 @@ class FilterLFNrunner:
 
         #
         # Compute N_ik_df, merge and add to filter_df
-        N_kj_df = self.variant_read_count_lfn_df.get_N_kj_df() # Compute N_kj_df
+        N_kj_df = self.variant_read_count_lfn_df.get_N_jk_df() # Compute N_kj_df
         filter_df = self.variant_read_count_df.merge(N_kj_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
                                                right_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
         filter_df['N_ijk/N_kj'] = filter_df.read_count / filter_df.N_kj

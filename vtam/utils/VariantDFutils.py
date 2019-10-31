@@ -1,10 +1,13 @@
-class FastaIO:
+class VariantDFutils:
     """
-    Defines functions for the input and output to a fasta file
+    Functions to manipulate a variant_df
     """
 
-    @staticmethod
-    def variant_df_to_fasta_file(variant_df, fasta_path, add_column=None):
+    def __init__(self, variant_df):
+        """Initiates a new object based on a variant_df (id, sequence)"""
+        self.__variant_df = variant_df
+
+    def to_fasta(self, fasta_path, add_column=None):
         """
         Takes variant DF with two columns (id, sequence) or optionally a third column (add_column)
         and returns a path to the fasta file
@@ -19,7 +22,7 @@ class FastaIO:
 
         """
         with open(fasta_path, "w") as fout:
-            for row in variant_df.itertuples():
+            for row in self.__variant_df.itertuples():
                 fasta_line = ">{}".format(row.id)
                 if not add_column is None:
                     fasta_line += ";{}={}".format(add_column, getattr(row, add_column))
