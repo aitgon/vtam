@@ -37,7 +37,7 @@ rule SampleInformation:
         fasta_dir: {{FASTA_DIR}}
 
 rule SortReads:
-    tool: vtam.wrapper.VariantReadCountLFN
+    tool: vtam.wrapper.VariantReadCountDF
     input:
         table:
             File: vtam.model.File

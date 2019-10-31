@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from vtam.utils.FilterCommon import FilterCommon
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.OptionManager import OptionManager
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -181,13 +181,13 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # #
         # ##########################################################
         # records = df_out.to_dict('records')
-        # with engine.connect() as conn:
+        # with __engine.connect() as conn:
         #         conn.execute(consensus_model.__table__.insert(), records)
 
         ############################################
         # Write to DB
         ############################################
-        records = FilterCommon.filter_delete_df_to_dict(df_out)
+        records = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
             conn.execute(consensus_model.__table__.insert(), records)
 

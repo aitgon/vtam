@@ -7,7 +7,7 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaIO import FastaIO
+from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
@@ -211,7 +211,9 @@ class TaxAssign(ToolWrapper):
             if exception.errno != errno.EEXIST:
                 raise
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
-        FastaIO.variant_df_to_fasta_file(variant_df, variant_fasta)
+        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils.to_fasta(variant_fasta)
+        # VariantDFutils.to_fasta(variant_df, variant_fasta)
         #
 
         ##########################################################

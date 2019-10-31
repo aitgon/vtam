@@ -3,9 +3,9 @@ import io
 import os
 import pandas
 
-from vtam.utils.VSearch import VSearch2
+from vtam.utils.VSearch import VSearch
 from vtam.utils.VSearchClusterOutput import VSearchClusterOutput
-from vtam.utils.FastaIO import FastaIO
+from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.PathManager import PathManager
 from unittest import TestCase
 
@@ -31,7 +31,8 @@ class TestPoolMarkers(TestCase):
         variant_df = otu_table_df[['variant_id', 'variant_sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta file from otu_table_df
-        FastaIO.variant_df_to_fasta_file(variant_df, fasta_path, add_column='size')
+        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output path
         vsearch_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'centroid_out.fa')
         # Define cluster output path
@@ -41,7 +42,7 @@ class TestPoolMarkers(TestCase):
         vsearch_parameters = {'--cluster_size': fasta_path, '--clusters':  vsearch_cluster_output_path,
                               '--id': 1, '--sizein': None,
                               '--centroids': vsearch_output_path}
-        vsearch_cluster = VSearch2(parameters = vsearch_parameters)
+        vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
         #
         # Analyze vsearch cluster output
@@ -82,7 +83,7 @@ class TestPoolMarkers(TestCase):
         # output_df_cols.insert(0, output_df_cols.pop(output_df_cols.index('marker'))) #
         # output_df = output_df[]
         output_df.to_csv("otu_clusters.tsv", sep="\t", index=False)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 
 
     def test_01(self):

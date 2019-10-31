@@ -1,7 +1,9 @@
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 from sqlalchemy import select
-from vtam.utils.FilterCommon import FilterCommon
+
+from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
@@ -84,13 +86,12 @@ class FilterCodonStop(ToolWrapper):
         biosample_model = self.input_table(FilterCodonStop.__input_table_biosample)
         replicate_model = self.input_table(FilterCodonStop.__input_table_replicate)
         variant_model = self.input_table(FilterCodonStop.__input_table_Variant)
-        input_filter_model = self.input_table(FilterCodonStop.__input_table_filter_indel)
+        input_filter_indel_model = self.input_table(FilterCodonStop.__input_table_filter_indel)
         #options
         genetic_table_number = int(self.option("genetic_table_number"))
         #
         # Output table models
-        output_filter_models = self.output_table(FilterCodonStop.__output_table_filter_codon_stop)
-
+        output_filter_codon_stop_model = self.output_table(FilterCodonStop.__output_table_filter_codon_stop)
 
         ##########################################################
         #
@@ -98,27 +99,26 @@ class FilterCodonStop(ToolWrapper):
         #
         ##########################################################
 
-        filter_various = FilterCommon(self.__class__.__name__, engine, run_model, marker_model, biosample_model, replicate_model,
-                                      input_filter_model,
-                                      output_filter_models=output_filter_models)
-        fastainfo_instance_list = filter_various.get_fastainfo_instance_list_with_ids(input_file_fastainfo)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info_record_list = fasta_info.get_fasta_info_record_list()
 
         ##########################################################
         #
-        # 2. Delete /run/markerbiosample/replicate from this filter table
+        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-        filter_various.delete_output_filter_model(fastainfo_instance_list)
-
+        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_codon_stop_model, engine=engine)
+        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
 
         ##########################################################
         #
-        # 3. Select variant_read_count_model
+        # variant_read_count_df
         #
         ##########################################################
 
-        variant_read_count_df = filter_various.get_variant_read_count_model(fastainfo_instance_list)
+        filter_id = None
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_indel_model, filter_id=filter_id)
 
         ##########################################################
         #
@@ -152,9 +152,9 @@ class FilterCodonStop(ToolWrapper):
         #
         ##########################################################
 
-        records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
+        records = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(output_filter_models.__table__.insert(), records)
+            conn.execute(output_filter_codon_stop_model.__table__.insert(), records)
 
         ##########################################################
         #
