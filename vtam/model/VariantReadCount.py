@@ -1,7 +1,7 @@
 from sqlalchemy import UniqueConstraint
 from wopmars.framework.database.Base import Base
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey
 
 
 class VariantReadCount(Base):

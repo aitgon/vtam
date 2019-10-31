@@ -10,10 +10,8 @@ class VSearchClusterOutput(object):
     def __init__(self, clusters_path):
         self.clusters_path =clusters_path
 
-
-
-
     def clusters_to_df(self):
+
         """
         Analysis vsearch cluster output, which a path that corresponds to the same path with ticker 0, 1, 2
 
@@ -22,6 +20,7 @@ class VSearchClusterOutput(object):
 
         :return: pandas.DataFrame with columns: variant_id_centroid and variant_id
         """
+
         clusters_dir = os.path.dirname(self.clusters_path)
         clusters_basename = os.path.basename(self.clusters_path)
         cluster_i = 0

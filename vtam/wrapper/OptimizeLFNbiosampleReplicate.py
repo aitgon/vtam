@@ -4,7 +4,7 @@ import sys
 import sqlalchemy
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInfo import FastaInfo
+from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
@@ -115,7 +115,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInfo(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
         variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
 
         ################################################################################################

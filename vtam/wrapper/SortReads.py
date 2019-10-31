@@ -9,7 +9,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
 
-from vtam.utils.VSearch import VSearchUsearchGlobal
+from vtam.utils.VSearch import VSearch
 from vtam.wrapper.SortReadsUtilities import \
     create_primer_tag_fasta_for_vsearch, discard_tag_primer_alignment_with_low_sequence_quality,  trim_reads, \
     convert_trimmed_tsv_to_fasta, annotate_reads
@@ -148,19 +148,36 @@ class SortReads(ToolWrapper):
             # 1. Define vsearch parameters
             # 2. Run vsearch: output written to 'vsearch_output_tsv'
             ############################################
-            vsearch_params = {'db': primer_tag_fasta,
-                              'usearch_global': fasta_name,
-                              'id': str(self.option("min_id")),
-                              'maxhits': 1,
-                              'maxrejects': 0,
-                              'maxaccepts': 0,
-                              'minseqlength': str(self.option("minseqlength")),
-                              'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
-                              'userout': vsearch_output_tsv,
-                              }
-            vsearch1 = VSearchUsearchGlobal(**vsearch_params)
-            vsearch1.run()
-            del vsearch1
+            # vsearch_params = {'db': primer_tag_fasta,
+            #                   'usearch_global': fasta_name,
+            #                   'id': str(self.option("min_id")),
+            #                   'maxhits': 1,
+            #                   'maxrejects': 0,
+            #                   'maxaccepts': 0,
+            #                   'minseqlength': str(self.option("minseqlength")),
+            #                   'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+            #                   'userout': vsearch_output_tsv,
+            #                   }
+            # vsearch1 = VSearchUsearchGlobal(**vsearch_params)
+            # vsearch1.run()
+            # del vsearch1
+
+            #
+            # Create object and run vsearch
+            vsearch_parameters = {'--db': primer_tag_fasta,
+                                                  '--usearch_global': fasta_name,
+                                                  '--id': str(self.option("min_id")),
+                                                  '--maxhits': 1,
+                                                  '--maxrejects': 0,
+                                                  '--maxaccepts': 0,
+                                                  '--minseqlength': str(self.option("minseqlength")),
+                                                  '--userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+                                                  '--userout': vsearch_output_tsv,
+                                  }
+            vsearch_cluster = VSearch(parameters=vsearch_parameters)
+            vsearch_cluster.run()
+
+
             #
             ############################################
             # discard_tag_primer_alignment_with_low_sequence_quality
@@ -226,19 +243,34 @@ class SortReads(ToolWrapper):
                 "file: {}; line: {}; FASTA {} {}; forward {}; vsearch_output_tsv".format(__file__,
                                                                                       inspect.currentframe().f_lineno,
                                                                                          fasta_id, fasta_name, is_forward_strand))
-            vsearch_params = {'db': primer_tag_fasta,
-                              'usearch_global': trimmed_fasta,
-                              'id': str(self.option("min_id")),
-                              'maxhits': 1,
-                              'maxrejects': 0,
-                              'maxaccepts': 0,
-                              'minseqlength': str(self.option("minseqlength")),
-                              'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
-                              'userout': vsearch_output_tsv,
-                              }
-            vsearch1 = VSearchUsearchGlobal(**vsearch_params)
-            vsearch1.run()
-            del vsearch1
+            # vsearch_params = {'db': primer_tag_fasta,
+            #                   'usearch_global': trimmed_fasta,
+            #                   'id': str(self.option("min_id")),
+            #                   'maxhits': 1,
+            #                   'maxrejects': 0,
+            #                   'maxaccepts': 0,
+            #                   'minseqlength': str(self.option("minseqlength")),
+            #                   'userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+            #                   'userout': vsearch_output_tsv,
+            #                   }
+            # vsearch1 = VSearchUsearchGlobal(**vsearch_params)
+            # vsearch1.run()
+            # del vsearch1
+
+            #
+            # Create object and run vsearch
+            vsearch_parameters = {'--db': primer_tag_fasta,
+                                                  '--usearch_global': trimmed_fasta,
+                                                  '--id': str(self.option("min_id")),
+                                                  '--maxhits': 1,
+                                                  '--maxrejects': 0,
+                                                  '--maxaccepts': 0,
+                                                  '--minseqlength': str(self.option("minseqlength")),
+                                                  '--userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
+                                                  '--userout': vsearch_output_tsv,
+                                  }
+            vsearch_cluster = VSearch(parameters=vsearch_parameters)
+            vsearch_cluster.run()
             #
             ############################################
             # discard_tag_primer_alignment_with_low_sequence_quality

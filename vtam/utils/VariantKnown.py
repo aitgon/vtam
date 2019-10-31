@@ -5,7 +5,7 @@ import sqlalchemy
 from sqlalchemy import select
 
 from vtam import Logger, VTAMexception
-from vtam.utils.FastaInfo import FastaInfo
+from vtam.utils.FastaInformation import FastaInformation
 
 
 class VariantKnown(object):
@@ -103,16 +103,17 @@ class VariantKnown(object):
                 try:
                     assert not conn.execute(stmt_select).first() is None
                 except AssertionError:
-                    Logger.instance().error(VTAMexception("Error: Verify the IDs and sequence of the variants in the --variant_known file"))
+                    Logger.instance().error(VTAMexception("Error: The variant_id {} and variant_sequence {} from the "
+                                                          "known variant file do not match in the DB".format(str(variant_id), variant_sequence)))
                     sys.exit(1)
 
 
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info = FastaInfo(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
-            marker_model=self.marker_model, biosample_model=self.biosample_model, replicate_model=self.replicate_model)
-        fasta_info_records = fasta_info.get_ids_of_run_marker_biosample_replicate()
+        fasta_info = FastaInformation(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
+                                      marker_model=self.marker_model, biosample_model=self.biosample_model, replicate_model=self.replicate_model)
+        fasta_info_records = fasta_info.get_fasta_info_record_list()
         fasta_info_df = pandas.DataFrame.from_records(data=fasta_info_records)
 
         ################################################################################################################

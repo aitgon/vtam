@@ -300,7 +300,7 @@ def count_reads(read_count_marker_tsv, count_reads_marker, marker_name, out_tsv)
     """
     # Parse the database for Marker files
     # Creating a database name to store the results
-    # Store the database file filename in the marker_model for later use
+    # Store the database file filename in the __marker_model for later use
     # Open connection with the database file
     conn = sqlite3.connect(count_reads_marker)
     # Drop the table if the program has been launch before
@@ -371,12 +371,12 @@ def gather_files(marker_name, gathered_marker_file, tsv_file_list_with_read_anno
     :return: void
     """
     # Search the csv files for each marker_id in the Marker table
-    # for element in session.query(marker_model).all():
+    # for element in session.query(__marker_model).all():
     # Creating a filename for a database file for each marker_id
     # filename = element.name + "_file"
     # file_place = "data/" + filename + ".csv"
     # Storing this name in the row of the corresponding marker_id
-    # session.query(marker_model).filter(marker_model.name == element.name).update({marker_model.marker_file: file_place})
+    # session.query(__marker_model).filter(__marker_model.name == element.name).update({__marker_model.marker_file: file_place})
     i = 0
     for annotated_file in tsv_file_list_with_read_annotations:
         if i == 0:
