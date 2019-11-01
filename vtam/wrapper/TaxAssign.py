@@ -11,9 +11,9 @@ from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
-from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
-from vtam.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
 
 
 class TaxAssign(ToolWrapper):

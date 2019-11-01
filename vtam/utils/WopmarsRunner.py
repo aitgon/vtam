@@ -55,6 +55,7 @@ class WopmarsRunner(Singleton):
         #####################
         template_dir = os.path.join(os.path.dirname(__file__), '../../data')
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
+        template = None
         if self.command == 'merge':
             template = jinja2_env.get_template('wopfile_merge.yml')
         elif self.command in ['otu', 'optimize']:
@@ -62,7 +63,7 @@ class WopmarsRunner(Singleton):
             self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
             if self.command == 'otu':
                 self.parameters['otutable'] = os.path.join(self.parameters['outdir'], "otutable.tsv")
-                # if self.parameters['threshold_specific'] is not None: # threshold variant specific
+                self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
                 template = jinja2_env.get_template('wopfile_otu.yml')
                 # else:
                 #     template = jinja2_env.get_template('wopfile_otu.yml')
