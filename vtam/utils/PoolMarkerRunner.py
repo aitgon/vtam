@@ -18,7 +18,6 @@ class PoolMarkerRunner(object):
     def __init__(self, otu_table_df):
 
         try:
-            import pdb; pdb.set_trace()
             assert otu_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
                                                          'read_count']
             assert otu_table_df.columns.tolist()[-12:] == ['phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name', 'identity',
