@@ -89,7 +89,7 @@ class VariantReadCountDF(object):
 
         N_jk_df = self.variant_read_count_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).agg({'read_count': sum})\
             .reset_index()
-        N_jk_df = N_jk_df.rename(columns={'read_count': 'N_kj'})
+        N_jk_df = N_jk_df.rename(columns={'read_count': 'N_jk'})
         N_jk_df.drop_duplicates(inplace=True)
 
         return N_jk_df

@@ -3,7 +3,7 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
     f06_select_ltg, f05_blast_result_subset, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 
@@ -55,7 +55,7 @@ class TestTaxAssign(TestCase):
 
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_tempdir)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
