@@ -201,4 +201,16 @@ rule MakeOtuTable:
         file:
             OTUTable: {{otutable}}
     params:
+        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
+
+
+rule PoolMarkers:
+    tool: vtam.wrapper.PoolMarkers
+    input:
+        file:
+            OTUtable: {{otutable}}
+    output:
+        file:
+            PooledMarkers: {{pooled_markers}}
+    params:
         log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}{% endblock %}

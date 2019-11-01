@@ -5,7 +5,7 @@ import pandas
 
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.Logger import Logger
-from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
 from vtam.utils.constants import rank_hierarchy_otu_table
 
 

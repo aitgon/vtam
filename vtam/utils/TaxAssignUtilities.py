@@ -1,9 +1,7 @@
 import pandas
 import sqlite3
 
-from vtam.utils.constants import rank_hierarchy
-
-from vtam.utils.constants import identity_list
+from vtam.utils.constants import rank_hierarchy,identity_list
 
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):

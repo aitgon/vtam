@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import sys
 from pathlib import Path
 from unittest import TestCase
@@ -8,7 +7,7 @@ import pandas
 
 from vtam import Logger
 from vtam.utils.DBtaxonomy import DBtaxonomy
-from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
 
 from vtam.wrapper.MakeOtuTable import f16_otu_table_maker
 

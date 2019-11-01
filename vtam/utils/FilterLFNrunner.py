@@ -288,10 +288,10 @@ class FilterLFNrunner:
 
         #
         # Compute N_ik_df, merge and add to filter_df
-        N_kj_df = self.variant_read_count_lfn_df.get_N_jk_df() # Compute N_kj_df
-        filter_df = self.variant_read_count_df.merge(N_kj_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
+        N_jk_df = self.variant_read_count_lfn_df.get_N_jk_df() # Compute N_jk_df
+        filter_df = self.variant_read_count_df.merge(N_jk_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
                                                right_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        filter_df['N_ijk/N_kj'] = filter_df.read_count / filter_df.N_kj
+        filter_df['N_ijk/N_jk'] = filter_df.read_count / filter_df.N_jk
 
         # Initialize
         filter_df['filter_id'] = this_filter_id
@@ -303,7 +303,7 @@ class FilterLFNrunner:
         #
         # Selecting all the indexes where the ratio is below the ratio
         filter_df.loc[
-            filter_df['N_ijk/N_kj'] < lfn_biosample_replicate_threshold, 'filter_delete'] = True
+            filter_df['N_ijk/N_jk'] < lfn_biosample_replicate_threshold, 'filter_delete'] = True
         #
         # Keep only interest columns
         filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',

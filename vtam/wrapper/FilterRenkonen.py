@@ -77,7 +77,7 @@ class FilterRenkonen(ToolWrapper):
         input_filter_chimera_model = self.input_table(FilterRenkonen.__input_table_chimera)
         #
         # Options
-        # TaxAssign parameters
+        # PoolMarkers parameters
         renkonen_threshold = float(self.option("renkonen_threshold"))
         #
         # Output table models
