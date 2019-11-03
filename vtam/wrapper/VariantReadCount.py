@@ -110,7 +110,7 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             Logger.instance().debug(row)
@@ -150,8 +150,7 @@ class VariantReadCount(ToolWrapper):
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
-                             header=None,
-                             names=['read_id', 'fasta_id', 'run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence'])
+                             header=0,)
         read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
         ##########################################################
         #
@@ -159,9 +158,9 @@ class VariantReadCount(ToolWrapper):
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_sequence']).size().reset_index(name='read_count')
         # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
-        variant_read_count_df.rename(columns={'variant_sequence': 'variant_id'}, inplace=True)
+        variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
 
         ##########################################################
         #

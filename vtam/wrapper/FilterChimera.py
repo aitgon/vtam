@@ -102,7 +102,7 @@ class FilterChimera(ToolWrapper):
         ##########################################################
 
         fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
-        fasta_info_record_list = fasta_info.get_fasta_info_record_list()
+        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
         #
@@ -204,7 +204,7 @@ class FilterChimera(ToolWrapper):
 #         ['run_id', 'marker_id', 'biosample_id']]  # keep columns
 #     ###################################################################
 #     #
-#     # 1. Make a fasta file with all variants for each run, marker, biosample
+#     # 1. Make a fasta_path file with all variants for each run, marker, biosample
 #     #
 #     ###################################################################
 #     for row_run_marker_biosample in df_grouped_run_marker_biosample.iterrows():
@@ -217,15 +217,15 @@ class FilterChimera(ToolWrapper):
 #
 #         ###################################################################
 #         #
-#         # 2. Sort variants by abundance and write to fasta
+#         # 2. Sort variants by abundance and write to fasta_path
 #         #
 #         ###################################################################
 #         df_grouped_biosample_id.sort_values(by='read_count', ascending=False, inplace=True)
 #         #
 #         chimera1_fasta = os.path.join(this_step_tmp_dir,
-#                                       'chimera1_biosample_id_{}.fasta'.format(biosample_id))
+#                                       'chimera1_biosample_id_{}.fasta_path'.format(biosample_id))
 #         #
-#         #  Prepare 1 fasta file
+#         #  Prepare 1 fasta_path file
 #         with open(chimera1_fasta, 'w') as fasta_fout:
 #             for variant_id in df_grouped_biosample_id.variant_id.unique():
 #                 variant_sequence = variant_df.loc[variant_df.id == variant_id, 'sequence'].values[0]
@@ -239,11 +239,11 @@ class FilterChimera(ToolWrapper):
 #         #
 #         ###################################################################
 #         chimera2_borderline_fasta = os.path.join(this_step_tmp_dir,
-#                                                  'chimera2_biosample_id_{}_borderline.fasta'.format(biosample_id))
+#                                                  'chimera2_biosample_id_{}_borderline.fasta_path'.format(biosample_id))
 #         chimera2_nonchimeras_fasta = os.path.join(this_step_tmp_dir,
-#                                                   'chimera2_biosample_id_{}_nonchimeras.fasta'.format(biosample_id))
+#                                                   'chimera2_biosample_id_{}_nonchimeras.fasta_path'.format(biosample_id))
 #         chimera2_chimeras_fasta = os.path.join(this_step_tmp_dir,
-#                                                'chimera2_biosample_id_{}_chimeras.fasta'.format(biosample_id))
+#                                                'chimera2_biosample_id_{}_chimeras.fasta_path'.format(biosample_id))
 #         #
 #         vsearch_chimera_args = {
 #             "uchime_denovo": chimera1_fasta,
@@ -260,7 +260,7 @@ class FilterChimera(ToolWrapper):
 #         #
 #         ###################################################################
 #         with open(chimera2_chimeras_fasta, "r") as handle:
-#             for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
+#             for chimera_seqrecord in SeqIO.parse(handle, "fasta_path"):
 #                 variant_id = int(chimera_seqrecord.id.split(';')[0])
 #                 filter_output_df.loc[(filter_output_df['run_id'] == run_id)
 #                                      & (filter_output_df['marker_id'] == marker_id)
@@ -268,7 +268,7 @@ class FilterChimera(ToolWrapper):
 #                                      & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = True
 #
 #         with open(chimera2_borderline_fasta, "r") as handle:
-#             for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
+#             for chimera_seqrecord in SeqIO.parse(handle, "fasta_path"):
 #                 variant_id = int(chimera_seqrecord.id.split(';')[0])
 #                 filter_borderline_output_df.loc[(filter_borderline_output_df['run_id'] == run_id)
 #                                      & (filter_borderline_output_df['marker_id'] == marker_id)

@@ -403,11 +403,11 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
             lfn_variant_or_variant_replicate_specific_threshold_df.groupby(
                 by=['run_id', 'marker_id', 'variant_id', 'N_ijk_max', 'N_i', 'lfn_variant_threshold']).agg(
-                {'biosample_type': lambda x: ','.join(set(x))}).reset_index()
+                {'biosample_type': lambda x: ','.join(sorted(set(x)))}).reset_index()
         else:  # optimize lfn variant replicate
             lfn_variant_or_variant_replicate_specific_threshold_df.groupby(
                 by=['run_id', 'marker_id', 'variant_id', 'N_ijk_max', 'N_ik', 'lfn_variant_replicate_threshold']).agg(
-                {'biosample_type': lambda x: ','.join(set(x))}).reset_index()
+                {'biosample_type': lambda x: ','.join(sorted(set(x)))}).reset_index()
 
         ##########################################################
         #
@@ -454,7 +454,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # Aggregate biosample types
         lfn_variant_or_variant_replicate_specific_threshold_df \
             = lfn_variant_or_variant_replicate_specific_threshold_df.groupby(
-            column_names[:-1]).agg({'biosample_type': lambda x: ','.join(set(x))}).reset_index()
+            column_names[:-1]).agg({'biosample_type': lambda x: ','.join(sorted(set(x)))}).reset_index()
 
         lfn_variant_or_variant_replicate_specific_threshold_df.to_csv(
             output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False, float_format='%.6f')

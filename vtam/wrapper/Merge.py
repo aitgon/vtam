@@ -77,7 +77,7 @@ class Merge(ToolWrapper):
         #
         # Go
         # Opening the file to get all the lines stocked in the list csv_content
-        fastq_and_fasta_list = [] # unique pairs of fastq files with the corresponding fasta file
+        fastq_and_fasta_list = [] # unique pairs of fastq files with the corresponding fasta_path file
         with open(fastqinfo, 'r') as csv_file:
             with open(fastainfo, 'w') as fastainfo_fout:
                 next(csv_file) # skip header of fastqinfo
@@ -98,6 +98,7 @@ class Merge(ToolWrapper):
                     except FileNotFoundError:
                         Logger.instance().error(VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
                         sys.exit(1)
+                    # TODO Ask emese how to construct fasta names from Fastq
                     fout_name = sample_info[7] + "_" + sample_info[4] + "_" +sample_info[6] + ".fasta"
                     PathManager.mkdir_p(fasta_dir)
                     fastainfo_line = line.strip() + '\t' + fout_name + '\n'

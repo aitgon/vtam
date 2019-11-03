@@ -10,11 +10,11 @@ class VariantDFutils:
     def to_fasta(self, fasta_path, add_column=None):
         """
         Takes variant DF with two columns (id, sequence) or optionally a third column (add_column)
-        and returns a path to the fasta file
+        and returns a path to the fasta_path file
 
         Args:
             variant_df (pandas.DataFrame): DF with two columns (id, sequence)
-            add_column (str): The add_column with be added to the fasta header as: >id;add_column_label=add_column_value
+            add_column (str): The add_column with be added to the fasta_path header as: >id;add_column_label=add_column_value
             fasta_path (str): Path to FASTA file
 
         Returns:

@@ -67,13 +67,17 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         file:
             sortreads: test/output/sortreads.tsv
     params:
+        fasta_dir: test/utils
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -300,6 +304,18 @@ rule MakeOtuTable:
     output:
         file:
             OTUTable: test/output/otutable.tsv
+    params:
+        log_verbosity: 0
+
+
+rule PoolMarkers:
+    tool: vtam.wrapper.PoolMarkers
+    input:
+        file:
+            OTUtable: test/output/otutable.tsv
+    output:
+        file:
+            PooledMarkers: test/output/pooled_markers.tsv
     params:
         log_verbosity: 0"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
@@ -361,13 +377,17 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         file:
             sortreads: test/output/sortreads.tsv
     params:
+        fasta_dir: test/utils
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -595,6 +615,18 @@ rule MakeOtuTable:
         file:
             OTUTable: test/output/otutable.tsv
     params:
+        log_verbosity: 0
+
+
+rule PoolMarkers:
+    tool: vtam.wrapper.PoolMarkers
+    input:
+        file:
+            OTUtable: test/output/otutable.tsv
+    output:
+        file:
+            PooledMarkers: test/output/pooled_markers.tsv
+    params:
         log_verbosity: 0"""
             self.assertTrue(wopfile_content == wopfile_content_bak)
 
@@ -649,13 +681,17 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_otu.py
     output:
         file:
             sortreads: test/output/sortreads.tsv
     params:
+        fasta_dir: test/utils
         min_id: 0.8
         minseqlength: 32
         overhang: 0
@@ -884,5 +920,18 @@ rule MakeOtuTable:
         file:
             OTUTable: test/output/otutable.tsv
     params:
+        log_verbosity: 0
+
+
+rule PoolMarkers:
+    tool: vtam.wrapper.PoolMarkers
+    input:
+        file:
+            OTUtable: test/output/otutable.tsv
+    output:
+        file:
+            PooledMarkers: test/output/pooled_markers.tsv
+    params:
         log_verbosity: 0"""
+
         self.assertTrue(wopfile_content == wopfile_content_bak)

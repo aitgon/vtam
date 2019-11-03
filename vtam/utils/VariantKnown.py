@@ -113,7 +113,7 @@ class VariantKnown(object):
 
         fasta_info = FastaInformation(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
                                       marker_model=self.marker_model, biosample_model=self.biosample_model, replicate_model=self.replicate_model)
-        fasta_info_records = fasta_info.get_fasta_info_record_list()
+        fasta_info_records = fasta_info.get_fasta_information_record_list()
         fasta_info_df = pandas.DataFrame.from_records(data=fasta_info_records)
 
         ################################################################################################################
