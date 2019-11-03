@@ -24,13 +24,17 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: {{fastainfo}}
     output:
         file:
             sortreads: {{sortreads}}
     params:
+        fasta_dir: {{fastadir}}
         min_id: {{min_id}}
         minseqlength: {{minseqlength}}
         overhang: {{overhang}}

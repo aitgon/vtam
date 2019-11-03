@@ -58,7 +58,7 @@ class TestTaxAssign(TestCase):
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_tempdir)
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path=variant_fasta)
         # f02_variant_df_to_fasta(variant_df, variant_fasta)

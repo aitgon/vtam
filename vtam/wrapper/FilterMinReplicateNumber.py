@@ -22,8 +22,8 @@ class FilterMinReplicateNumber(ToolWrapper):
     # Input file
     __input_file_fastainfo = "fastainfo"
     # Input table
-    __input_table_marker = "Marker"
     __input_table_run = "Run"
+    __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant_filter_lfn = "FilterLFN"
@@ -39,8 +39,8 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            FilterMinReplicateNumber.__input_table_marker,
             FilterMinReplicateNumber.__input_table_run,
+            FilterMinReplicateNumber.__input_table_marker,
             FilterMinReplicateNumber.__input_table_biosample,
             FilterMinReplicateNumber.__input_table_replicate,
             FilterMinReplicateNumber.__input_table_variant_filter_lfn,
@@ -72,12 +72,12 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file output
+        # Input files
         input_file_fastainfo = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
         #
-        # Input table models
-        marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
+        # Input tables
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
+        marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
         biosample_model = self.input_table(FilterMinReplicateNumber.__input_table_biosample)
         replicate_model = self.input_table(FilterMinReplicateNumber.__input_table_replicate)
         input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
@@ -85,7 +85,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         # Options
         min_replicate_number = self.option("min_replicate_number")
         #
-        # Output table models
+        # Output tables
         output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
 
         ##########################################################
@@ -95,7 +95,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
 
         fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
-        fasta_info_record_list = fasta_info.get_fasta_info_record_list()
+        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
         #

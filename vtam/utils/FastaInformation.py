@@ -9,7 +9,7 @@ class FastaInformation(object):
     """This class defines various methods to retrieve data from the DB based on the Fasta Information TSV"""
 
     def __init__(self, fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model):
-        """A new instance needs the path to the fasta information TSV file as wel as DB information to interact with the DB"""
+        """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
         self.__engine = engine
         self.__run_model = run_model
         self.__marker_model = marker_model
@@ -17,15 +17,16 @@ class FastaInformation(object):
         self.__replicate_model = replicate_model
         #
         self.__fastainfo_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, \
-                                              names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-                                                    'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+                                              names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name',\
+                                                    'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_file_name'])
         #
-        # self.fastainfo_instance_list = self.get_fasta_info_record_list()
+        # self.fastainfo_instance_list = self.get_fasta_information_record_list()
 
-    def get_fasta_info_record_list(self):
+    def get_fasta_information_record_list(self, extended_information=False):
         """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate_id entries (See return)
 
+        :param extended_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
         :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate_id': 1}, {'run_id': 1, ...
         """
         fasta_info_instance_list = []
@@ -47,9 +48,15 @@ class FastaInformation(object):
                 # get replicate_id ###########
                 stmt_select_replicate_id = sqlalchemy.select([self.__replicate_model.__table__.c.id]).where(self.__replicate_model.__table__.c.name == replicate_name)
                 replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
-                # add this sample_instance ###########
-                fasta_info_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
-                                             'replicate_id': replicate_id})
+            fasta_information_obj = {'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'replicate_id': replicate_id}
+            if extended_information:
+                fasta_information_obj['tag_fwd_sequence'] = row.tag_fwd_sequence
+                fasta_information_obj['primer_fwd_sequence'] = row.primer_fwd_sequence
+                fasta_information_obj['tag_rev_sequence'] = row.tag_rev_sequence
+                fasta_information_obj['primer_rev_sequence'] = row.primer_rev_sequence
+                fasta_information_obj['fasta_file_name'] = row.fasta_file_name
+            # add this sample_instance ###########
+            fasta_info_instance_list.append(fasta_information_obj)
         return fasta_info_instance_list
 
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
@@ -62,7 +69,7 @@ class FastaInformation(object):
         variant_read_count_like_table = variant_read_count_like_model.__table__
 
         variant_read_count_list = []
-        for sample_instance in self.get_fasta_info_record_list():
+        for sample_instance in self.get_fasta_information_record_list():
             run_id = sample_instance['run_id']
             marker_id = sample_instance['marker_id']
             biosample_id = sample_instance['biosample_id']

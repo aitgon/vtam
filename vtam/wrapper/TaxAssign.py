@@ -115,7 +115,7 @@ class TaxAssign(ToolWrapper):
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
                                        names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
                                               'marker_name', 'biosample_name', \
-                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
@@ -194,7 +194,7 @@ class TaxAssign(ToolWrapper):
                 variant_list.append(row)
         variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
 
-        # creation one fasta file containing all the variant
+        # creation one fasta_path file containing all the variant
         #
         ##########################################################
         #
@@ -210,7 +210,7 @@ class TaxAssign(ToolWrapper):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(variant_fasta)
         # VariantDFutils.to_fasta(variant_df, variant_fasta)

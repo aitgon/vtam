@@ -27,6 +27,7 @@ class VariantReadCountDF(object):
             Logger.instance().error(VTAMexception("This DataFrame is not composed of columns: 'run_id', 'marker_id', "
                                                   "'biosample_id', 'replicate_id', 'variant_id', 'read_count'. The workflow will exit"))
             sys.exit(1)
+
         self.variant_read_count_df = variant_read_count_df
 
     def filter_out_singletons(self):

@@ -90,7 +90,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
 
         fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
-        fasta_info_record_list = fasta_info.get_fasta_info_record_list()
+        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
         #
