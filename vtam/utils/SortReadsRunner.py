@@ -131,16 +131,18 @@ class SortReadsRunner(object):
                 primer_rev = record.id.split(';')[4].split('=')[1]
                 read_sequence = record.seq
                 fasta_file_name = os.path.basename( self.fasta_path)
-                # import pdb; pdb.set_trace()
-                annotation = self.fasta_information_df.loc[(self.fasta_information_df.tag_fwd_sequence == tag_fwd)
+                annotation_df = self.fasta_information_df.loc[(self.fasta_information_df.tag_fwd_sequence == tag_fwd)
                                                            & (self.fasta_information_df.tag_rev_sequence == tag_rev)
                                                            & (self.fasta_information_df.primer_fwd_sequence == primer_fwd)
                                                            & (self.fasta_information_df.primer_rev_sequence == primer_rev)
-                                                           & (self.fasta_information_df.fasta_file_name == fasta_file_name)].iloc[0]
-                run_id = annotation.run_id
-                marker_id = annotation.marker_id
-                biosample_id = annotation.biosample_id
-                replicate_id = annotation.replicate_id
-                out_line = "\t".join([str(i) for i in [read_id, run_id, fasta_id, marker_id, biosample_id, replicate_id, read_sequence]]) + "\n"
-                fout.write(out_line)
+                                                           & (self.fasta_information_df.fasta_file_name == fasta_file_name)]
+                if annotation_df.shape[0] > 0: # there is a match
+                    annotation_series = annotation_df.iloc[0] # get row as series
+                    run_id = annotation_series.run_id
+                    marker_id = annotation_series.marker_id
+                    biosample_id = annotation_series.biosample_id
+                    replicate_id = annotation_series.replicate_id
+                    out_line = "\t".join([str(i) for i in [read_id, run_id, fasta_id, marker_id, biosample_id, replicate_id, read_sequence]]) + "\n"
+                    fout.write(out_line)
+
 
