@@ -24,7 +24,7 @@ class SortReadsRunner(object):
         column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'tag_fwd_sequence',
                             'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'fasta_file_name']
         try:
-            fasta_information_df[column_list] = fasta_information_df
+            fasta_information_df = fasta_information_df[column_list]
             assert fasta_information_df.columns.tolist() == \
                    ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'tag_fwd_sequence', 'primer_fwd_sequence',
                     'tag_rev_sequence', 'primer_rev_sequence', 'fasta_file_name']
