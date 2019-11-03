@@ -42,12 +42,12 @@ class PoolMarkerRunner(object):
         self.cluster_df = None # returned by get_vsearch_clusters_to_df
 
     def cluster_sequences_with_vsearch(self):
-        # Define fasta path
+        # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant df
         variant_df = self.otu_table_df[['variant_id', 'variant_sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
-        # Create fasta file from otu_table_df
+        # Create fasta_path file from otu_table_df
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output path

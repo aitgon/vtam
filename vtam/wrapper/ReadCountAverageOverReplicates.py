@@ -90,7 +90,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ##########################################################
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name

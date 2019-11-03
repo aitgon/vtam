@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
 import io
 import os
-import pandas
-
-from vtam.utils.VSearch import VSearch
-# from vtam.utils.VSearchClusterOutput import VSearchClusterOutput
-from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.utils.PathManager import PathManager
 from unittest import TestCase
 
+import pandas
+
+from vtam.utils.PathManager import PathManager
 from vtam.utils.PoolMarkerRunner import PoolMarkerRunner
+from vtam.utils.VSearch import VSearch
+from vtam.utils.VariantDFutils import VariantDFutils
 
 
 class TestPoolMarkers(TestCase):
@@ -26,12 +24,12 @@ class TestPoolMarkers(TestCase):
         self.otu_table_df = otu_table_df
         # Create tempdir
         PathManager.mkdir_p(os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__)))
-        # Define fasta path
+        # Define fasta_path path
         fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
         # Create variant df
         variant_df = otu_table_df[['variant_id', 'variant_sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
-        # Create fasta file from otu_table_df
+        # Create fasta_path file from otu_table_df
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output path
@@ -45,44 +43,6 @@ class TestPoolMarkers(TestCase):
                               '--centroids': vsearch_output_path}
         vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
-        #
-        # Analyze vsearch cluster output
-        # vsearch_cluster = VSearchClusterOutput(cluster_path = vsearch_cluster_output_path)
-        # cluster_df = vsearch_cluster.clusters_to_df()
-        # #
-        # # # Merge cluster_df with otu_table
-        # # cluster_df = cluster_df.merge(otu_table_df, on='variant_id')
-        # # cluster_df.sort_values(by=cluster_df.columns.tolist(), inplace=True)
-        # #
-        # # ONGOING
-        # # Information to keep about each centroid
-        # centroid_df = cluster_df.loc[cluster_df.centroid_variant_id == cluster_df.variant_id,
-        #                              ['centroid_variant_id', 'phylum',
-        #                               'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name',
-        #                               'ltg_rank']]
-        # centroid_df.drop_duplicates(inplace=True)
-        # #
-        # # Centroid to aggregated variants
-        # centroid_to_variant_id_df = cluster_df[['centroid_variant_id', 'variant_id']].drop_duplicates(inplace=False)
-        # centroid_to_variant_id_df = centroid_to_variant_id_df.groupby('centroid_variant_id')['variant_id'].apply(lambda x: ','.join(map(str, sorted(x))))
-        # #
-        # # Centroid to aggregated variants and biosamples
-        # cluster_df_col = cluster_df.columns
-        # biosample_columns = list(set(cluster_df_col[6:]).difference(set(list(cluster_df_col[-12:]))))
-        # # Drop some columns
-        # are_reads = lambda x: int(sum(x)>0)
-        # # agg_dic = {'variant_id': lambda x: ','.join(map(str, x)), 'sample1': are_reads, 'sample2': are_reads, 'sample3': are_reads}
-        # agg_dic = {}
-        # for k in ['variant_id', 'run_name', 'marker_name']:
-        #     agg_dic[k] = lambda x: ','.join(map(str, list(set(x))))
-        # for k in biosample_columns:
-        #     agg_dic[k] = are_reads
-        # output_df = cluster_df[['centroid_variant_id', 'variant_id', 'run_name', 'marker_name'] + biosample_columns]
-        # output_df = output_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
-        # output_df = output_df.merge(centroid_df, on='centroid_variant_id')
-        # output_df_cols = list(output_df.columns)
-        # # output_df_cols.insert(0, output_df_col
-        # output_df.to_csv("otu_clusters.tsv", sep="\t", index=False)
 
     def test_cluster_sequences_with_vsearch(self):
         ####################################################################

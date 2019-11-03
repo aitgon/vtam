@@ -69,13 +69,17 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
             sortreads: test/output/sortreads.tsv
     params:
+        fasta_dir: test/utils
         min_id: 0.8
         minseqlength: 32
         overhang: 0
