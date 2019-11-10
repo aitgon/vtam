@@ -15,7 +15,7 @@ from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 class VariantReadCount(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.VariantReadCountDF"
+        "polymorphic_identity": "vtam.wrapper.VariantReadCount"
     }
     # Input
     # Input file
