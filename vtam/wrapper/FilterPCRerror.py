@@ -149,7 +149,7 @@ class FilterPCRerror(ToolWrapper):
                                                                    & (variant_read_count_df.marker_id == marker_id)
                                                                    & (variant_read_count_df.biosample_id == biosample_id)]
 
-            variant_per_biosample_df = variant_df.loc[variant_df.id.isin(variant_read_count_df.variant_id.unique().tolist())]
+            variant_per_biosample_df = variant_df.loc[variant_df.index.isin(variant_read_count_df.variant_id.unique().tolist())]
             this_step_tmp_per_biosample_dir = os.path.join(this_step_tmp_dir, "run_{}_marker_{}_biosample{}".format(run_id, marker_id, biosample_id))
             PathManager.instance().mkdir_p(this_step_tmp_per_biosample_dir)
 

@@ -63,6 +63,7 @@ class FastaInformation(object):
         """Based on the Fasta samples and the variant_read_count_model, returns the variant_read_count_df
 
         :param variant_read_count_like_model: SQLalchemy model with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
+        :param filter_id:
         :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
         """
 
@@ -107,28 +108,103 @@ class FastaInformation(object):
             sys.exit(0)
         return variant_read_count_df
 
-    def get_variant_df(self, variant_read_count_like_model, variant_model):
+    def get_variant_df(self, variant_read_count_like_model, variant_model, filter_id=None):
         """Based on the Fasta information TSV and variant_model, returns the variant_df
 
-        :return: DataFrame with columns: id, sequence
+        :return: DataFrame with columns: index, sequence
         """
 
-        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model)
+        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
 
-        variant_record_list = []
+        record_list = []
         variant_model_table = variant_model.__table__
         for variant_id in variant_read_count_like_df.variant_id.unique().tolist():
             stmt_select = sqlalchemy.select([variant_model_table.c.sequence]).where(variant_model_table.c.id == variant_id)
             with self.__engine.connect() as conn:
-                for sequence in conn.execute(stmt_select).fetchone():
-                    variant_record_list.append({'id': variant_id, 'sequence': sequence})
+                for sequence in conn.execute(stmt_select).first():
+                    record_list.append({'id': variant_id, 'sequence': sequence})
 
-        # # Select to DataFrame
-        # variant_list = []
-        # with self.__engine.connect() as conn:
-        #     for row in conn.execute(stmt_variant).fetchall():
-        #         variant_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_record_list)
+        variant_df = pandas.DataFrame.from_records(record_list, index='id')
 
         return variant_df
+
+    def get_biosample_df(self, variant_read_count_like_model, filter_id=None):
+        """Based on the Fasta information TSV and biosample_model, returns the biosample_df
+
+        :return: DataFrame with columns: index, name
+        """
+
+        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
+
+        record_list = []
+        biosample_model_table = self.__biosample_model.__table__
+        for biosample_id in variant_read_count_like_df.biosample_id.unique().tolist():
+            stmt_select = sqlalchemy.select([biosample_model_table.c.name]).where(biosample_model_table.c.id == biosample_id)
+            with self.__engine.connect() as conn:
+                for biosample_name in conn.execute(stmt_select).first():
+                    record_list.append({'id': biosample_id, 'name': biosample_name})
+
+        biosample_df = pandas.DataFrame.from_records(record_list, index='id')
+
+        return biosample_df
+
+    def get_marker_df(self, variant_read_count_like_model, filter_id=None):
+        """Based on the Fasta information TSV and marker_model, returns the marker_df
+
+        :return: DataFrame with columns: index, name
+        """
+
+        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
+
+        record_list = []
+        marker_model_table = self.__marker_model.__table__
+        for marker_id in variant_read_count_like_df.marker_id.unique().tolist():
+            stmt_select = sqlalchemy.select([marker_model_table.c.name]).where(marker_model_table.c.id == marker_id)
+            with self.__engine.connect() as conn:
+                for marker_name in conn.execute(stmt_select).first():
+                    record_list.append({'id': marker_id, 'name': marker_name})
+
+        marker_df = pandas.DataFrame.from_records(record_list, index='id')
+
+        return marker_df
+
+    def get_run_df(self, variant_read_count_like_model, filter_id=None):
+        """Based on the Fasta information TSV and run_model, returns the run_df
+
+        :return: DataFrame with columns: index, name
+        """
+
+        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
+
+        record_list = []
+        run_model_table = self.__run_model.__table__
+        for run_id in variant_read_count_like_df.run_id.unique().tolist():
+            stmt_select = sqlalchemy.select([run_model_table.c.name]).where(run_model_table.c.id == run_id)
+            with self.__engine.connect() as conn:
+                for run_name in conn.execute(stmt_select).first():
+                    record_list.append({'id': run_id, 'name': run_name})
+
+        run_df = pandas.DataFrame.from_records(record_list, index='id')
+
+        return run_df
+
+    def get_chimera_borderline(self, variant_read_count_like_model, filter_id=None):
+        """Based on the Fasta information TSV and run_model, returns the run_df
+
+        :return: DataFrame with columns: index, name
+        """
+
+        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
+
+        record_list = []
+        run_model_table = self.__run_model.__table__
+        for run_id in variant_read_count_like_df.run_id.unique().tolist():
+            stmt_select = sqlalchemy.select([run_model_table.c.name]).where(run_model_table.c.id == run_id)
+            with self.__engine.connect() as conn:
+                for run_name in conn.execute(stmt_select).first():
+                    record_list.append({'id': run_id, 'name': run_name})
+
+        run_df = pandas.DataFrame.from_records(record_list, index='id')
+
+        return run_df
 
