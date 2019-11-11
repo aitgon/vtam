@@ -161,11 +161,11 @@ class OptimizePCRerror(ToolWrapper):
             run_marker_biosample_variant_keep_per_biosample_df = run_marker_biosample_variant_keep_df.loc[
                 run_marker_biosample_variant_keep_df.biosample_id==biosample_id]
             variant_expected_per_biosample_df = variant_df.loc[
-                variant_df.id.isin(run_marker_biosample_variant_keep_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
+                variant_df.index.isin(run_marker_biosample_variant_keep_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
 
             variant_delete_mock_per_biosample_df = variant_delete_mock_df.loc[variant_delete_mock_df.biosample_id==biosample_id]
             variant_unexpected_per_biosample_df = variant_df.loc[
-                variant_df.id.isin(variant_delete_mock_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
+                variant_df.index.isin(variant_delete_mock_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
 
             variant_read_count_per_biosample_df = variant_read_count_df.loc[variant_read_count_df.biosample_id==biosample_id]
 

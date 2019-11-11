@@ -1,6 +1,8 @@
+import pandas
 from wopmars.framework.database.Base import Base
 
-from sqlalchemy import Column, String, Integer, Boolean
+from sqlalchemy import Column, String, Integer, Boolean, select
+
 
 class Biosample(Base):
     __tablename__ = 'Biosample'

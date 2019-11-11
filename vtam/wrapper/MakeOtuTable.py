@@ -3,6 +3,8 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 
+from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.MakeOtuTableRunner import MakeOtuTableRunner
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.Logger import Logger
 from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
@@ -81,6 +83,7 @@ class MakeOtuTable(ToolWrapper):
         marker_model = self.input_table(MakeOtuTable.__input_table_marker)
         run_model = self.input_table(MakeOtuTable.__input_table_run)
         biosample_model = self.input_table(MakeOtuTable.__input_table_biosample)
+        replicate_model = self.input_table(MakeOtuTable.__input_table_replicate)
         filter_chimera_borderline_model = self.input_table(MakeOtuTable.__input_table_filter_chimera_borderline)
         filter_codon_stop_model = self.input_table(MakeOtuTable.__input_table_filter_codon_stop)
         variant_model = self.input_table(MakeOtuTable.__input_table_variant)
@@ -90,13 +93,28 @@ class MakeOtuTable(ToolWrapper):
         #
         # Options
 
+        ##########################################################
+        #
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # Compute variant_read_count_df
         #
         ##########################################################
+
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        variant_read_count_df = fasta_info.get_variant_read_count_df(filter_codon_stop_model)
+        variant_df = fasta_info.get_variant_df(filter_codon_stop_model, variant_model)
+
+        otu_table_runner = MakeOtuTableRunner(engine, input_file_fastainfo, run_model, marker_model, biosample_model, replicate_model, filter_chimera_borderline_model,
+                 filter_codon_stop_model, variant_model, tax_assign_model)
+        otu_table_runner.run()
+
+
+        # #########################################################
         #
         # Get variants that passed the filter
         # Get also chimera borderline information
         #
-        ##########################################################
+        # #########################################################
         Logger.instance().debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
