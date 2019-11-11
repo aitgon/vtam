@@ -39,16 +39,17 @@ class SampleInformation(ToolWrapper):
     def specify_params(self):
         return{
             "fasta_dir": "str",
-            "log_verbosity": "int",
-            "log_file": "str",
+            # "log_verbosity": "int",
+            # "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        fasta_dir = str(os.getenv('FASTADIR'))
 
         ##########################################################
         #
@@ -81,10 +82,13 @@ class SampleInformation(ToolWrapper):
                 replicate_name = line.strip().split('\t')[6]
                 if len(line.strip().split('\t')) == 9: # No fastq file columns
                     fasta_file_name = line.strip().split('\t')[8]
-                    fasta_file_full_path = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[8])
+                    # fasta_file_full_path = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[8])
+                    fasta_file_full_path = os.path.join(fasta_dir, line.strip().split('\t')[8])
                 elif len(line.strip().split('\t')) == 11: # Yes fastq file columns
                     fasta_file_name = line.strip().split('\t')[10]
-                    fasta_file_full_path = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[10])
+
+                    # fasta_file_full_path = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[10])
+                    fasta_file_full_path = os.path.join(fasta_dir, line.strip().split('\t')[10])
                 else:
                     raise IndexError("{} error. Verify nb of columns in this input file: {}".format(self.__class__.__name__, os.path.join(os.getcwd(), csv_path)))
                 if not os.path.isfile(os.path.join(os.getcwd(), fasta_file_full_path)):

@@ -31,8 +31,14 @@ class VTAM(object):
         #
         #####################
         for k in vars(self.args):
-            # import pdb; pdb.set_trace()
             OptionManager.instance()[k] = vars(self.args)[k]
+        # Set thread number
+        if 'threads' in vars(self.args):
+            os.environ['THREADS'] = str(vars(self.args)['threads'])
+        if 'fastqdir' in vars(self.args):
+            os.environ['FASTQDIR'] = vars(self.args)['fastqdir']
+        if 'fastadir' in vars(self.args):
+            os.environ['FASTADIR'] = vars(self.args)['fastadir']
         try:
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()

@@ -72,9 +72,11 @@ class TaxAssign(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        threads = int(os.getenv('THREADS'))
+
 
         #########################################################
         #
@@ -105,7 +107,7 @@ class TaxAssign(ToolWrapper):
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
         blast_db = str(self.option("blast_db"))  # count
-        num_threads = str(self.option("num_threads"))  # count
+        # num_threads = str(self.option("num_threads"))  # count
 
         ##########################################################
         #
@@ -239,7 +241,7 @@ class TaxAssign(ToolWrapper):
         # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
         blastn_cline = NcbiblastnCommandline(query=variant_fasta, db='nt', evalue=1e-5,
                                              outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                             qcov_hsp_perc=80, num_threads=num_threads, out=blast_output_tsv)
+                                             qcov_hsp_perc=80, num_threads=threads, out=blast_output_tsv)
         Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, str(blastn_cline)))
         #

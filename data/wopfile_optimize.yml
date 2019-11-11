@@ -15,8 +15,6 @@
     output:
         file:
             optimize_lfn_biosample_replicate: {{optimize_lfn_biosample_replicate}}
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule OptimizePCRerror:
@@ -35,8 +33,6 @@ rule OptimizePCRerror:
     output:
         file:
             optimize_pcr_error: {{optimize_pcr_error}}
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -62,7 +58,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule OptimizeLFNreadCountAndLFNvariantReplicate:
@@ -87,5 +82,4 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
         lfn_variant_or_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
-        min_replicate_number: {{min_replicate_number}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}{% endblock %}
+        min_replicate_number: {{min_replicate_number}}{% endblock %}
