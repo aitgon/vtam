@@ -21,13 +21,13 @@ class PoolMarkerRunner(object):
             assert otu_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
                                                          'read_count']
             assert otu_table_df.columns.tolist()[-12:] == ['phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name', 'identity',
-             'ltg_rank', 'chimera_borderline', 'variant_sequence']
+             'ltg_rank', 'chimera_borderline', 'sequence']
         except:
             Logger.instance().error(VTAMexception("The OTU table structure is wrong. It is expected to start with these columns:"
                                                   "'variant_id', 'marker_name', 'run_name', 'sequence_length', 'read_count'"
                                                   " followed by biosample names and ending with"
                                                   "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
-                                                  "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'variant_sequence'."))
+                                                  "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
             sys.exit(1)
 
         self.biosample_names = otu_table_df.columns.tolist()[5:-12]
@@ -45,7 +45,7 @@ class PoolMarkerRunner(object):
         # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant df
-        variant_df = self.otu_table_df[['variant_id', 'variant_sequence', 'read_count']].drop_duplicates(inplace=False)
+        variant_df = self.otu_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from otu_table_df
         variant_df_utils = VariantDFutils(variant_df)
