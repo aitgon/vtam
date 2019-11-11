@@ -16,8 +16,8 @@ class FastaInformation(object):
         self.__biosample_model = biosample_model
         self.__replicate_model = replicate_model
         #
-        self.__fastainfo_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, \
-                                              names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name',\
+        self.df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, \
+                                  names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name',\
                                                     'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_file_name'])
         #
         # self.fastainfo_instance_list = self.get_fasta_information_record_list()
@@ -30,7 +30,7 @@ class FastaInformation(object):
         :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate_id': 1}, {'run_id': 1, ...
         """
         fasta_info_instance_list = []
-        for row in self.__fastainfo_df.itertuples():
+        for row in self.df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
