@@ -34,16 +34,16 @@ class PoolMarkers(ToolWrapper):
 
     def specify_params(self):
         return {
-            "log_verbosity": "int",
-            "log_file": "str"
+            # "log_verbosity": "int",
+            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         #########################################################
         #

@@ -37,18 +37,21 @@ class Merge(ToolWrapper):
             "fastq_maxee": "int",
             "fastq_truncqual": "int",
             "fastq_maxns": "int",
-            "threads": "int",
+            # "threads": "int",
             "fastq_ascii": "int",
-            "log_verbosity": "int",
-            "log_file": "str"
+            # "log_verbosity": "int",
+            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        threads = int(os.getenv('THREADS'))
+        fastq_dir = str(os.getenv('FASTQDIR'))
+        fasta_dir = str(os.getenv('FASTADIR'))
 
         ##########################################################
         #
@@ -63,8 +66,8 @@ class Merge(ToolWrapper):
         fastainfo = self.output_file(Merge.__output_fastainfo)
         #
         # Options
-        fastq_dir = self.option("fastq_dir")
-        fasta_dir = self.option("fasta_dir")
+        # fastq_dir = self.option("fastq_dir")
+        # fasta_dir = self.option("fasta_dir")
         fastq_minovlen = self.option("fastq_minovlen")
         fastq_maxmergelen = self.option("fastq_maxmergelen")
         fastq_minmergelen = self.option("fastq_minmergelen")
@@ -73,7 +76,6 @@ class Merge(ToolWrapper):
         fastq_truncqual = self.option("fastq_truncqual")
         fastq_maxns = self.option("fastq_maxns")
         fastq_ascii = self.option("fastq_ascii")
-        threads = self.option("threads")
         #
         # Go
         # Opening the file to get all the lines stocked in the list csv_content
@@ -124,7 +126,7 @@ class Merge(ToolWrapper):
             command += " --fastq_ascii {}".format(fastq_ascii)
             command += " --threads {}".format(threads)
             Logger.instance().info(command)
-            run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+            run_result = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             Logger.instance().info(run_result.stdout)
             try:
                 assert run_result.returncode == 0 # vsearch exited correctly?

@@ -58,8 +58,8 @@ class FilterCodonStop(ToolWrapper):
     def specify_params(self):
         return {
             "genetic_table_number": "int",
-            "log_verbosity": "int",
-            "log_file": "str"
+            # "log_verbosity": "int",
+            # "log_file": "str"
 
         }
 
@@ -67,9 +67,9 @@ class FilterCodonStop(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
