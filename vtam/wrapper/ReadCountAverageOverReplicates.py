@@ -52,9 +52,9 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
     def specify_params(self):
         return {
-            "foo": "int",
-            "log_verbosity": "int",
-            "log_file": "str",
+            # "foo": "int",
+            # "log_verbosity": "int",
+            # "log_file": "str",
         }
 
 
@@ -62,9 +62,9 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
         #
         # Input file output
         input_file_fastainfo = self.input_file(ReadCountAverageOverReplicates.__input_file_fastainfo)

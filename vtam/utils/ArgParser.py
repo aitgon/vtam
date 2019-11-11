@@ -83,11 +83,15 @@ class ArgParser():
         parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
                                  help="Execute the workflow to the given target RULE: SampleInformation, ...",
                                  required=False)
+        parser_vtam.add_argument('--threads', action='store',
+                                     help="Number of threads",
+                                     required=False,
+                                     default=multiprocessing.cpu_count())
         parser_vtam.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
                                  help="Execute the workflow from the given RULE.",
                                  required=False)
         parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0, required=False,
-                                 help="Set verbosity level, eg. None (Error level) -v (Info level) or -vv (Debug level)"
+                                 help="Set verbosity level, eg. None (Error level) -v (Info level)"
                                  )
         subparsers = parser_vtam.add_subparsers()
 
@@ -166,12 +170,6 @@ class ArgParser():
                                      type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
                                                                   error_message="Verify the '--threshold_specific' argument",
                                                                   is_abspath=is_abspath))
-
-        parser_vtam_otu.add_argument('--num_threads', action='store',
-                                     help="Number of threads",
-                                     required=False,
-                                     default=multiprocessing.cpu_count())
-
         parser_vtam_otu.set_defaults(command='otu')  # This attribute will trigget the good command
         #############################################
         #

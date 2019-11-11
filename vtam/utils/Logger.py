@@ -15,7 +15,7 @@ class Logger(Singleton):
     """
 
     def __init__(self):
-        self.__logger = logging.getLogger("VTAM")
+        self.__logger = logging.getLogger("tw")
         self.__formatter_str = '%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s'
         self.__formatter = logging.Formatter(self.__formatter_str)
         #####################

@@ -113,13 +113,15 @@ class WopmarsRunner(Singleton):
         if self.wopfile_path is None:
             self.wopfile_path = os.path.join(self.tempdir, 'Wopfile_{}.yml'.format(self.command))
             self.wopfile_path, wopfile_content = self.create_wopfile(path=self.wopfile_path)
-        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} -p -v"
+        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} --toolwrapper-log "
         wopmars_command = wopmars_command_template\
             .format(wopfile_path=self.wopfile_path, **self.parameters)
         if self.parameters['dryrun']:
             wopmars_command += " -n"
         if self.parameters['forceall']:
             wopmars_command += " -F"
+        if self.parameters['log_verbosity'] > 0:
+            wopmars_command += " -v"
         if not self.parameters['log_file'] is None:
             wopmars_command += " --log " + self.parameters['log_file']
         if not self.parameters['targetrule'] is None:
