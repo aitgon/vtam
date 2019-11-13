@@ -61,7 +61,7 @@ class ReadTrimmer(object):
         :return:
         """
         if self.tag_primer_fasta_path is None:
-            self.tag_primer_fasta_path = os.path.join(self.tempdir, "tag_primer.fasta_path")
+            self.tag_primer_fasta_path = os.path.join(self.tempdir, "tag_primer.fasta")
 
         tag_primer_sequence_list = \
             ["{}{}".format(tag_sequence.lower(), primer_sequence.upper())
@@ -157,7 +157,7 @@ class ReadTrimmer(object):
             self.keep_alignements_with_high_quality()
 
         temp_db_sqlite = os.path.join(self.tempdir, "reads.db")
-        self.reads_trimmed_fasta_path = os.path.join(self.tempdir, "read_trimmed.fasta_path")
+        self.reads_trimmed_fasta_path = os.path.join(self.tempdir, "read_trimmed.fasta")
 
         try:
             with sqlite3.connect(temp_db_sqlite) as conn:

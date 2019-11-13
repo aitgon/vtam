@@ -53,7 +53,7 @@ class FilterChimeraRunner(object):
 
             variant_df_utils_obj = VariantDFutils(variant_df)
 
-            uchime_fasta_path = os.path.join(tmp_dir, os.path.basename(__name__), 'run_{}_marker_{}_biosample_{}.fasta_path'
+            uchime_fasta_path = os.path.join(tmp_dir, os.path.basename(__name__), 'run_{}_marker_{}_biosample_{}.fasta'
                                       .format(run_id, marker_id, biosample_id))
             variant_df_utils_obj.to_fasta(fasta_path=uchime_fasta_path, add_column="size")
 
@@ -63,13 +63,13 @@ class FilterChimeraRunner(object):
             #
             ###################################################################
             uchime_borderline_fasta_path = os.path.join(this_step_tmp_dir,
-                                                     'run_{}_marker_{}_biosample_{}_borderline.fasta_path'
+                                                     'run_{}_marker_{}_biosample_{}_borderline.fasta'
                                                          .format(run_id, marker_id, biosample_id))
             uchime_nonchimeras_fasta_path = os.path.join(this_step_tmp_dir,
-                                                      'run_{}_marker_{}_biosample_id_{}_nonchimeras.fasta_path'
+                                                      'run_{}_marker_{}_biosample_id_{}_nonchimeras.fasta'
                                                          .format(run_id, marker_id, biosample_id))
             uchime_chimeras_fasta_path = os.path.join(this_step_tmp_dir,
-                                                   'run_{}_marker_{}_biosample_{}_chimeras.fasta_path'
+                                                   'run_{}_marker_{}_biosample_{}_chimeras.fasta'
                                                          .format(run_id, marker_id, biosample_id))
 
             #
