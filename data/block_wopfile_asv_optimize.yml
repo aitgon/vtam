@@ -53,4 +53,4 @@ rule VariantReadCount:
             VariantReadCount: vtam.model.VariantReadCount
 
 
-{% block wopfile_otu %}{% endblock %}{% block wopfile_optimize %}{% endblock %}
+{% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

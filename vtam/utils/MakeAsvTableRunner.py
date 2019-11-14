@@ -8,10 +8,10 @@ from vtam.model.Biosample import Biosample
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.utils.constants import rank_hierarchy_otu_table
+from vtam.utils.constants import rank_hierarchy_asv_table
 
 
-class MakeOtuTableRunner(object):
+class MakeAsvTableRunner(object):
 
     def __init__(self, engine, input_file_fastainfo, run_model, marker_model, biosample_model, replicate_model,
                  filter_chimera_borderline_model, filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy):
@@ -43,59 +43,59 @@ class MakeOtuTableRunner(object):
         variant_read_count_obj = VariantReadCountDF(variant_read_count_df)
         N_ij_df = variant_read_count_obj.get_N_ij_df()
 
-        otu_df = N_ij_df.merge(biosample_df, left_on='biosample_id', right_on='id')
-        otu_df.rename({'name': 'biosample_name'}, axis=1, inplace=True)
-        otu_df.drop('biosample_id', axis=1, inplace=True)
-        otu_df = otu_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_name', values='N_ij',
+        asv_df = N_ij_df.merge(biosample_df, left_on='biosample_id', right_on='id')
+        asv_df.rename({'name': 'biosample_name'}, axis=1, inplace=True)
+        asv_df.drop('biosample_id', axis=1, inplace=True)
+        asv_df = asv_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_name', values='N_ij',
                                      fill_value=0).reset_index()
 
         ################################################################################################################
         #
-        # Otu_df2: biosamples
+        # Asv_df2: biosamples
         #
         ################################################################################################################
 
-        otu_df2 = otu_df
+        asv_df2 = asv_df
         biosample_name_list = fasta_info_obj.df.biosample_name.drop_duplicates(keep='first').tolist()
-        otu_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in otu_df2.iloc[:, 3:].columns.tolist()]
-        otu_df2 = otu_df2[otu_df2_columns]
+        asv_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in asv_df2.iloc[:, 3:].columns.tolist()]
+        asv_df2 = asv_df2[asv_df2_columns]
 
         ################################################################################################################
         #
-        # Otu_df1: First part
+        # Asv_df1: First part
         #
         ################################################################################################################
 
-        otu_df1 = otu_df
-        otu_df1['read_count'] = otu_df1.iloc[:, 3:].apply(sum, axis=1)
+        asv_df1 = asv_df
+        asv_df1['read_count'] = asv_df1.iloc[:, 3:].apply(sum, axis=1)
 
         # Add marker_name
-        otu_df1 = otu_df1.merge(marker_df, left_on = 'marker_id', right_index=True)
-        otu_df1.rename({'name': 'marker_name'}, axis=1, inplace=True)
-        # otu_df1.drop('marker_id', axis=1, inplace=True)
+        asv_df1 = asv_df1.merge(marker_df, left_on = 'marker_id', right_index=True)
+        asv_df1.rename({'name': 'marker_name'}, axis=1, inplace=True)
+        # asv_df1.drop('marker_id', axis=1, inplace=True)
 
         # Add run_name
-        otu_df1 = otu_df1.merge(run_df, left_on='run_id', right_index=True)
-        otu_df1.rename({'name': 'run_name'}, axis=1, inplace=True)
-        # otu_df1.drop('run_id', axis=1, inplace=True)
+        asv_df1 = asv_df1.merge(run_df, left_on='run_id', right_index=True)
+        asv_df1.rename({'name': 'run_name'}, axis=1, inplace=True)
+        # asv_df1.drop('run_id', axis=1, inplace=True)
 
         # Add sequence
-        otu_df1 = otu_df1.merge(variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
-        otu_df1['sequence_length'] = otu_df1.sequence.apply(lambda x: len(x))
+        asv_df1 = asv_df1.merge(variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
+        asv_df1['sequence_length'] = asv_df1.sequence.apply(lambda x: len(x))
 
-        otu_df1 = otu_df1[['variant_id', 'marker_id', 'run_id', 'marker_name', 'run_name', 'sequence_length', 'read_count']]
+        asv_df1 = asv_df1[['variant_id', 'marker_id', 'run_id', 'marker_name', 'run_name', 'sequence_length', 'read_count']]
 
         ################################################################################################################
         #
-        # Otu_df3: Last part
+        # Asv_df3: Last part
         #
         ################################################################################################################
 
-        otu_df3 = otu_df[['variant_id', 'marker_id', 'run_id']]
+        asv_df3 = asv_df[['variant_id', 'marker_id', 'run_id']]
 
         # Chimera borderline
         variant_to_chimera_borderline_df = self.get_chimera_borderline_df()
-        otu_df3 = otu_df3.merge(variant_to_chimera_borderline_df, on=['variant_id', 'marker_id', 'run_id'])
+        asv_df3 = asv_df3.merge(variant_to_chimera_borderline_df, on=['variant_id', 'marker_id', 'run_id'])
 
         #####
         #
@@ -132,40 +132,40 @@ class MakeOtuTableRunner(object):
 
         #
         # Merge ltg tax assign results
-        otu_df = otu_df.merge(ltg_tax_assign_df, on='variant_id')
+        asv_df = asv_df.merge(ltg_tax_assign_df, on='variant_id')
         list_lineage = []
-        for tax_id in otu_df['ltg_tax_id'].unique().tolist():
+        for tax_id in asv_df['ltg_tax_id'].unique().tolist():
             dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
             list_lineage.append(dic_lineage)
         lineage_df = pandas.DataFrame(data=list_lineage)
         lineage_list_df_columns_sorted = list(
-            filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_otu_table))
+            filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
         lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
         lineage_df = lineage_df[lineage_list_df_columns_sorted]
 
-        otu_df3 = otu_df3.merge(ltg_tax_assign_df, on='variant_id')
-        otu_df3 = otu_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
-        otu_df3.drop('tax_id', axis=1, inplace=True)
+        asv_df3 = asv_df3.merge(ltg_tax_assign_df, on='variant_id')
+        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
+        asv_df3.drop('tax_id', axis=1, inplace=True)
 
         # Add sequence
-        otu_df3 = otu_df3.merge(variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
+        asv_df3 = asv_df3.merge(variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
 
         # Column order
-        otu_df3 = otu_df3[['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
+        asv_df3 = asv_df3[['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
                            'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence']]
 
         ################################################################################################################
         #
-        # Otu_df: Final merge
+        # Asv_df: Final merge
         #
         ################################################################################################################
 
-        otu_df_final = otu_df1.merge(otu_df2, on=['variant_id', 'marker_id', 'run_id'])
-        otu_df_final = otu_df_final.merge(otu_df3, on=['variant_id', 'marker_id', 'run_id'])
-        otu_df_final.drop('marker_id', axis=1, inplace=True)
-        otu_df_final.drop('run_id', axis=1, inplace=True)
+        asv_df_final = asv_df1.merge(asv_df2, on=['variant_id', 'marker_id', 'run_id'])
+        asv_df_final = asv_df_final.merge(asv_df3, on=['variant_id', 'marker_id', 'run_id'])
+        asv_df_final.drop('marker_id', axis=1, inplace=True)
+        asv_df_final.drop('run_id', axis=1, inplace=True)
 
-        return otu_df_final
+        return asv_df_final
 
     def get_chimera_borderline_df(self):
         # #########################################################

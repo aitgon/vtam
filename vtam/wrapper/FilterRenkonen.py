@@ -142,7 +142,7 @@ class FilterRenkonen(ToolWrapper):
             sys.exit(0)
 
 
-def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
+def renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
     #  Compute sum of read_count per 'run_id', 'marker_id', 'biosample_id', 'replicate_id'
     variant_read_proportion_per_replicate_df = variant_read_count_df[
         ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(

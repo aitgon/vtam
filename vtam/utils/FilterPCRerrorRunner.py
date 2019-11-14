@@ -119,7 +119,7 @@ class FilterPCRerrorRunner(object):
         variant_unexpected_to_expected_ratio_df = self.get_variant_unexpected_to_expected_ratio_df()
 
         # Initiates filter_output_df
-        filter_output_df = self.__variant_read_count_df
+        filter_output_df = self.__variant_read_count_df.copy()
         filter_output_df['filter_delete'] = False
 
         for row in variant_unexpected_to_expected_ratio_df.itertuples():
