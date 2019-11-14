@@ -1,5 +1,5 @@
-{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_otu_optimize.yml" %}
-{% block wopfile_otu %}rule FilterLFN:
+{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
@@ -163,14 +163,14 @@ rule TaxAssign:
         table:
             TaxAssign: vtam.model.TaxAssign
     params:
-        identity_threshold: {{identity_threshold}}
+        ltg_rule_threshold: {{ltg_rule_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
         blast_db: {{blast_db}}
 
 
-rule MakeOtuTable:
-    tool: vtam.wrapper.MakeOtuTable
+rule MakeAsvTable:
+    tool: vtam.wrapper.MakeAsvTable
     input:
         table:
             Marker: vtam.model.Marker
@@ -186,14 +186,14 @@ rule MakeOtuTable:
             taxonomy: {{taxonomy}}
     output:
         file:
-            OTUTable: {{otutable}}
+            ASVTable: {{asvtable}}
 
 
 rule PoolMarkers:
     tool: vtam.wrapper.PoolMarkers
     input:
         file:
-            OTUtable: {{otutable}}
+            ASVtable: {{asvtable}}
     output:
         file:
             PooledMarkers: {{pooled_markers}}{% endblock %}

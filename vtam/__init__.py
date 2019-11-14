@@ -17,7 +17,7 @@ class VTAM(object):
         These are the VTAM commands:
 
    merge      Merge FASTQ files
-   otu        Carry out the whole pipeline, including sort and count reads, filter variants, tax assign and create OTU table
+   asv        Carry out the whole pipeline, including sort and count reads, filter variants, tax assign and create ASV table
    optimize   Show different variant characteristics to help select filter parameters
 """
 

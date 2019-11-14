@@ -13,7 +13,7 @@ class WopmarsRunner(Singleton):
     def __init__(self, command, parameters):
         """
 
-        :param command: takes one of three values: merge, otu or optimize
+        :param command: takes one of three values: merge, asv or optimize
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
         self.command = command
@@ -58,17 +58,17 @@ class WopmarsRunner(Singleton):
         template = None
         if self.command == 'merge':
             template = jinja2_env.get_template('wopfile_merge.yml')
-        elif self.command in ['otu', 'optimize']:
+        elif self.command in ['asv', 'optimize']:
             # Add output to sortreads file
             self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
-            if self.command == 'otu':
-                self.parameters['otutable'] = os.path.join(self.parameters['outdir'], "otutable.tsv")
+            if self.command == 'asv':
+                self.parameters['asvtable'] = os.path.join(self.parameters['outdir'], "asvtable.tsv")
                 self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
-                template = jinja2_env.get_template('wopfile_otu.yml')
+                template = jinja2_env.get_template('wopfile_asv.yml')
                 # else:
-                #     template = jinja2_env.get_template('wopfile_otu.yml')
+                #     template = jinja2_env.get_template('wopfile_asv.yml')
                 # Create wopfile
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_otu.yml')
+                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_asv.yml')
             elif self.command == 'optimize':
                 #
                 self.parameters['optimize_lfn_biosample_replicate'] \

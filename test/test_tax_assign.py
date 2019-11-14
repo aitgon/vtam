@@ -22,7 +22,7 @@ class TestTaxAssign(TestCase):
         #
         #####################################
         #
-        self.identity_threshold = 97
+        self.ltg_rule_threshold = 97
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
@@ -216,7 +216,7 @@ class TestTaxAssign(TestCase):
                                                                right_on='tax_id')
         variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
         #
-        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=self.identity_threshold,
+        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_threshold=self.ltg_rule_threshold,
                                                 include_prop=self.include_prop, min_number_of_taxa=self.min_number_of_taxa)
         #
         # Output

@@ -60,7 +60,7 @@ class TaxAssign(ToolWrapper):
 
     def specify_params(self):
         return {
-            "identity_threshold": "float",  # percentage
+            "ltg_rule_threshold": "float",  # percentage
             "include_prop": "float",  # percentage
             "min_number_of_taxa": "int",  # count
             "log_verbosity": "int",
@@ -103,7 +103,7 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
-        identity_threshold = float(self.option("identity_threshold"))  # percentage
+        ltg_rule_threshold = float(self.option("ltg_rule_threshold"))  # percentage
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
         blast_db = str(self.option("blast_db"))  # count
@@ -193,8 +193,8 @@ class TaxAssign(ToolWrapper):
         variant_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
-                variant_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_list, columns=['id', 'sequence'])
+                variant_list.append({'id': row.variant_id, 'sequence': row.sequence})
+        variant_df = pandas.DataFrame.from_records(variant_list, index='id')
 
         # creation one fasta_path file containing all the variant
         #
@@ -326,11 +326,11 @@ class TaxAssign(ToolWrapper):
             "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
             "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
         #
-        # f07_blast_result_to_ltg_tax_id(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+        # f07_blast_result_to_ltg_tax_id(tax_lineage_df,ltg_rule_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
         #
         ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df,
-                                                identity_threshold=int(identity_threshold),
+                                                ltg_rule_threshold=int(ltg_rule_threshold),
                                                 include_prop=int(include_prop), min_number_of_taxa=min_number_of_taxa)
         ##########################################################
         #

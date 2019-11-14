@@ -40,8 +40,10 @@ class FilterChimeraRunner(object):
             variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
             N_i_df = variant_read_count_df_obj.get_N_i_df()
 
-            variant_df = self.variant_df.merge(N_i_df, left_on='id', right_on='variant_id')
-            variant_df.rename(columns = {'N_i': 'size'}, inplace=True)
+            variant_size_df = self.variant_df.merge(N_i_df, left_index=True, right_on='variant_id')
+            variant_size_df = variant_size_df[['variant_id', 'sequence', 'N_i']]
+            variant_size_df.rename(columns = {'N_i': 'size'}, inplace=True)
+            variant_size_df.set_index('variant_id', inplace=True)
 
             ###################################################################
             #
@@ -49,9 +51,9 @@ class FilterChimeraRunner(object):
             #
             ###################################################################
 
-            variant_df.sort_values(by='size', ascending=False, inplace=True)
+            variant_size_df.sort_values(by='size', ascending=False, inplace=True)
 
-            variant_df_utils_obj = VariantDFutils(variant_df)
+            variant_df_utils_obj = VariantDFutils(variant_size_df)
 
             uchime_fasta_path = os.path.join(tmp_dir, os.path.basename(__name__), 'run_{}_marker_{}_biosample_{}.fasta'
                                       .format(run_id, marker_id, biosample_id))

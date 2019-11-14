@@ -119,42 +119,42 @@ class ArgParser():
 
         #############################################
         #
-        # create the parser for the "otu" command
+        # create the parser for the "asv" command
         #
         #############################################
-        parser_vtam_otu = subparsers.add_parser('otu', add_help=True, parents=[parser_vtam])
-        parser_vtam_otu.add_argument('--fastainfo', action='store',
+        parser_vtam_asv = subparsers.add_parser('asv', add_help=True, parents=[parser_vtam])
+        parser_vtam_asv.add_argument('--fastainfo', action='store',
                                      help="REQUIRED: TSV file with FASTA sample information",
                                      required=True, type=lambda x:
                                             PathManager.check_file_exists_and_is_nonempty(x,
                                                           error_message="Verify the '--fastainfo' argument",
                                                           is_abspath=is_abspath))
 
-        parser_vtam_otu.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
+        parser_vtam_asv.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                      required=True,
                                      type=lambda x:
                                      PathManager.check_file_exists_and_is_nonempty(x,
                                                                                    error_message="Verify the '--fastadir' argument",
                                                                                    is_abspath=is_abspath))
 
-        parser_vtam_otu.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
+        parser_vtam_asv.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
                                      required=True)
 
-        parser_vtam_otu.add_argument('--blast_db', action='store',
+        parser_vtam_asv.add_argument('--blast_db', action='store',
                                      help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
                                           # "-First argument: Blast DB directory (Full or custom one)"
                                           # "-Second argument: Blast DB file basename", default="blast_dir",
                                      required=True,
                                      type=lambda x:
                                      ArgParser.verify_an_store_blast_db_argument(x, is_abspath=is_abspath))
-        # parser_vtam_otu.add_argument('--map_taxids', action='store',
+        # parser_vtam_asv.add_argument('--map_taxids', action='store',
         #                              help="TSV file with mapping from NCBI sequence IDs to tax IDs."
         #                                   "Required if working with custome DB.",
         #                              required=False, type=lambda x:
         #     PathManager.check_file_exists_and_is_nonempty(x,
         #                                                   error_message="Verify the file in the '--map_taxids' argument",
         #                                                   is_abspath=is_abspath))
-        parser_vtam_otu.add_argument('--taxonomy', dest='taxonomy', action='store',
+        parser_vtam_asv.add_argument('--taxonomy', dest='taxonomy', action='store',
                                      help="""REQUIRED: SQLITE DB with taxonomy information.
 
         This database is create with the command: create_db_taxonomy. For instance
@@ -164,13 +164,13 @@ class ArgParser():
                                      type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
                                                                   error_message="Verify the '--taxonomy' argument",
                                                                   is_abspath=is_abspath))
-        parser_vtam_otu.add_argument('--threshold_specific', default=None, action='store', required=False,
+        parser_vtam_asv.add_argument('--threshold_specific', default=None, action='store', required=False,
                                      help="TSV file with variant (col1: variant; col2: threshold) or variant-replicate "
                                           "(col1: variant; col2: replicate; col3: threshold)specific thresholds. Header expected.",
                                      type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
                                                                   error_message="Verify the '--threshold_specific' argument",
                                                                   is_abspath=is_abspath))
-        parser_vtam_otu.set_defaults(command='otu')  # This attribute will trigget the good command
+        parser_vtam_asv.set_defaults(command='asv')  # This attribute will trigget the good command
         #############################################
         #
         # create the parser for the "optimize" command

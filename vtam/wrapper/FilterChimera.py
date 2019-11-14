@@ -124,25 +124,30 @@ class FilterChimera(ToolWrapper):
         ##########################################################
 
         filter_id = None
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_pcr_error_model, filter_id=filter_id)
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model
+                                                                     =input_filter_pcr_error_model, filter_id=filter_id)
+        variant_df = fasta_info.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model,
+                                               variant_model=variant_model,
+                                               filter_id=filter_id)
 
-        ##########################################################
+        # ##########################################################
+        # #
+        # #
+        # ##########################################################
         #
+        # # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
+        # variant_model_table = variant_model.__table__
+        # stmt_variant = select([variant_model_table.c.id,
+        #                        variant_model_table.c.sequence])
         #
-        ##########################################################
-
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([variant_model_table.c.id,
-                               variant_model_table.c.sequence])
-
-        # Select to DataFrame
-        variant_filter_lfn_passed_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_filter_lfn_passed_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-                                                              columns=['id', 'sequence'])
+        # # TODO variant_df = fasta_info.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model, filter_id=filter_id)
+        # # Select to DataFrame
+        # variant_filter_lfn_passed_list = []
+        # with engine.connect() as conn:
+        #     for row in conn.execute(stmt_variant).fetchall():
+        #         variant_filter_lfn_passed_list.append(row)
+        # variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
+        #                                                       columns=['id', 'sequence'])
         ##########################################################
         #
         # 4. Run Filter
