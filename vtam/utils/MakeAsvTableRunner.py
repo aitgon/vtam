@@ -93,21 +93,9 @@ class MakeAsvTableRunner(object):
 
         asv_df3 = asv_df[['variant_id', 'marker_id', 'run_id']]
 
-        # Chimera borderline
-        variant_to_chimera_borderline_df = self.get_chimera_borderline_df()
-        asv_df3 = asv_df3.merge(variant_to_chimera_borderline_df, on=['variant_id', 'marker_id', 'run_id'])
-
-        #####
-        #
-        # ltg_tax_assign
-        #
-        #####
-
-        tax_assign_model_table = self.tax_assign_model.__table__
-        stmt_ltg_tax_assign = sqlalchemy.select([tax_assign_model_table.c.variant_id,
-                               tax_assign_model_table.c.identity,
-                               tax_assign_model_table.c.ltg_rank,
-                               tax_assign_model_table.c.ltg_tax_id])
+        # TODO: ask emese: is Chimera borderline per biosample?, how to add this information in asvtable?
+        variant_to_chimera_borderline_df = self.get_chimera_borderline_df(variant_df)
+        asv_df3 = asv_df3.merge(variant_to_chimera_borderline_df, on=['variant_id'])
 
         #####
         #
@@ -117,22 +105,42 @@ class MakeAsvTableRunner(object):
         taxonomy_sqlite_path = self.input_file_taxonomy
         taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 
+        #####
+        #
+        # ltg_tax_assign
+        #
+        #####
 
         # Select to DataFrame
         tax_assign_list = []
+        tax_assign_model_table = self.tax_assign_model.__table__
         with self.engine.connect() as conn:
-            for row in conn.execute(stmt_ltg_tax_assign).fetchall():
-                tax_assign_list.append(row)
-        ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list,
-                                                          columns=['variant_id', 'identity', 'ltg_rank', 'ltg_tax_id'])
+            for df_row in variant_df.itertuples():
+                variant_id = df_row.Index
+                stmt_ltg_tax_assign = sqlalchemy.select([tax_assign_model_table.c.variant_id,
+                                                         tax_assign_model_table.c.identity,
+                                                         tax_assign_model_table.c.ltg_rank,
+                                                         tax_assign_model_table.c.ltg_tax_id])\
+                    .where(tax_assign_model_table.c.variant_id == variant_id)
+
+                try:
+                    variant_id, identity, ltg_rank, ltg_tax_id = conn.execute(stmt_ltg_tax_assign).first()
+                    tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank, 'ltg_tax_id': ltg_tax_id})
+                except TypeError: # no result
+                    pass
+        # with self.engine.connect() as conn:
+        #     for row in conn.execute(stmt_ltg_tax_assign).fetchall():
+        #         tax_assign_list.append(row)
+        ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
         #
-        ltg_tax_assign_df = ltg_tax_assign_df.merge(taxonomy_db_df, left_on='ltg_tax_id', right_on='tax_id')
+        ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_db_df,
+                                                                  left_on='ltg_tax_id', right_on='tax_id', how="left").set_index('variant_id')
         ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
         ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
 
         #
         # Merge ltg tax assign results
-        asv_df = asv_df.merge(ltg_tax_assign_df, on='variant_id')
+        asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True).drop_duplicates(inplace=False)
         list_lineage = []
         for tax_id in asv_df['ltg_tax_id'].unique().tolist():
             dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
@@ -143,12 +151,12 @@ class MakeAsvTableRunner(object):
         lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
         lineage_df = lineage_df[lineage_list_df_columns_sorted]
 
-        asv_df3 = asv_df3.merge(ltg_tax_assign_df, on='variant_id')
-        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
+        asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True).drop_duplicates(inplace=False)
+        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id').drop_duplicates(inplace=False)
         asv_df3.drop('tax_id', axis=1, inplace=True)
 
         # Add sequence
-        asv_df3 = asv_df3.merge(variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
+        asv_df3 = asv_df3.merge(variant_df, left_on='variant_id', right_index=True)
 
         # Column order
         asv_df3 = asv_df3[['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
@@ -167,7 +175,7 @@ class MakeAsvTableRunner(object):
 
         return asv_df_final
 
-    def get_chimera_borderline_df(self):
+    def get_chimera_borderline_df(self, variant_df):
         # #########################################################
         #
         # Get variants that passed the filter
@@ -177,21 +185,18 @@ class MakeAsvTableRunner(object):
         Logger.instance().debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__, inspect.currentframe().f_lineno,'TaxAssign'))
 
-        filter_codon_stop_model_table = self.filter_codon_stop_model.__table__
-        filter_chimera_borderline_model_table = self.filter_chimera_borderline_model.__table__
-        variant_model_table = self.variant_model.__table__
-        stmt_filter_codon_stop = sqlalchemy.select([
-                            filter_codon_stop_model_table.c.variant_id,
-                            filter_codon_stop_model_table.c.marker_id,
-                            filter_codon_stop_model_table.c.run_id,
-                            filter_chimera_borderline_model_table.c.filter_delete, ]) \
-            .where(filter_chimera_borderline_model_table.c.variant_id == variant_model_table.c.id) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 0).distinct()
-        # Select to DataFrame
+        # filter_codon_stop_model_table = self.filter_codon_stop_model.__table__
         variant_to_chimera_borderline_list = []
+        filter_chimera_borderline_model_table = self.filter_chimera_borderline_model.__table__
         with self.engine.connect() as conn:
-            for row in conn.execute(stmt_filter_codon_stop).fetchall():
-                variant_to_chimera_borderline_list.append(row)
+            for df_row in variant_df.itertuples():
+                variant_id = df_row.Index
+                stmt_select = sqlalchemy.select([filter_chimera_borderline_model_table.c.filter_delete]) \
+                    .where(filter_chimera_borderline_model_table.c.variant_id == variant_id).distinct()
+                # variant_model_table = self.variant_model.__table__
+                variant_is_chimera_borderline = conn.execute(stmt_select).first()[0]
+                variant_to_chimera_borderline_list.append({'variant_id': variant_id,
+                                                           'chimera_borderline': variant_is_chimera_borderline})
         variant_to_chimera_borderline_df = pandas.DataFrame.from_records(variant_to_chimera_borderline_list,
-                                                     columns=['variant_id', 'marker_id', 'run_id', 'chimera_borderline'])
+                                                     index='variant_id')
         return variant_to_chimera_borderline_df
