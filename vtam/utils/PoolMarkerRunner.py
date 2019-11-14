@@ -15,25 +15,25 @@ from vtam.utils.VTAMexception import VTAMexception
 class PoolMarkerRunner(object):
     """Class for the Pool Marker wrapper"""
 
-    def __init__(self, otu_table_df):
+    def __init__(self, asv_table_df):
 
         try:
-            assert otu_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
+            assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
                                                          'read_count']
-            assert otu_table_df.columns.tolist()[-12:] == ['phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name', 'identity',
+            assert asv_table_df.columns.tolist()[-12:] == ['phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name', 'identity',
              'ltg_rank', 'chimera_borderline', 'sequence']
         except:
-            Logger.instance().error(VTAMexception("The OTU table structure is wrong. It is expected to start with these columns:"
+            Logger.instance().error(VTAMexception("The ASV table structure is wrong. It is expected to start with these columns:"
                                                   "'variant_id', 'marker_name', 'run_name', 'sequence_length', 'read_count'"
                                                   " followed by biosample names and ending with"
                                                   "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
                                                   "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
             sys.exit(1)
 
-        self.biosample_names = otu_table_df.columns.tolist()[5:-12]
+        self.biosample_names = asv_table_df.columns.tolist()[5:-12]
 
-        # self.otu_table_df = pandas.read_csv(otu_table_tsv, sep="\t", header=0)
-        self.otu_table_df = otu_table_df
+        # self.asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
+        self.asv_table_df = asv_table_df
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(self.tmp_dir)
 
@@ -45,9 +45,10 @@ class PoolMarkerRunner(object):
         # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant df
-        variant_df = self.otu_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
+        variant_df = self.asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
-        # Create fasta_path file from otu_table_df
+        variant_df.set_index('id', inplace=True)
+        # Create fasta_path file from asv_table_df
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output path
@@ -107,8 +108,8 @@ class PoolMarkerRunner(object):
         if self.cluster_df is None:
             self.get_vsearch_clusters_to_df()
 
-        # Merge cluster_df with otu_table
-        self.cluster_df = self.cluster_df.merge(self.otu_table_df, on='variant_id')
+        # Merge cluster_df with asv_table
+        self.cluster_df = self.cluster_df.merge(self.asv_table_df, on='variant_id')
         self.cluster_df.sort_values(by=self.cluster_df.columns.tolist(), inplace=True)
         #
         # Information to keep about each centroid

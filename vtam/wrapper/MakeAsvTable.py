@@ -4,16 +4,16 @@ from sqlalchemy import select
 import pandas
 
 from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.MakeOtuTableRunner import MakeOtuTableRunner
+from vtam.utils.MakeAsvTableRunner import MakeAsvTableRunner
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.Logger import Logger
 from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage, f01_taxonomy_sqlite_to_df
-from vtam.utils.constants import rank_hierarchy_otu_table
+from vtam.utils.constants import rank_hierarchy_asv_table
 
 
-class MakeOtuTable(ToolWrapper):
+class MakeAsvTable(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.MakeOtuTable"}
+        "polymorphic_identity": "vtam.wrapper.MakeAsvTable"}
 
     # Input file
     __input_file_fastainfo = "fastainfo"
@@ -29,29 +29,29 @@ class MakeOtuTable(ToolWrapper):
     __input_table_tax_assign = "TaxAssign"
 
     # Output table
-    __output_table_otu = "OTUTable"
+    __output_table_asv = "ASVTable"
 
     def specify_input_file(self):
         return[
-            MakeOtuTable.__input_file_fastainfo,
-            MakeOtuTable.__input_file_taxonomy,
+            MakeAsvTable.__input_file_fastainfo,
+            MakeAsvTable.__input_file_taxonomy,
         ]
 
     def specify_input_table(self):
         return [
-            MakeOtuTable.__input_table_marker,
-            MakeOtuTable.__input_table_run,
-            MakeOtuTable.__input_table_biosample,
-            MakeOtuTable.__input_table_replicate,
-            MakeOtuTable.__input_table_variant,
-            MakeOtuTable.__input_table_filter_chimera_borderline,
-            MakeOtuTable.__input_table_filter_codon_stop,
-            MakeOtuTable.__input_table_tax_assign,
+            MakeAsvTable.__input_table_marker,
+            MakeAsvTable.__input_table_run,
+            MakeAsvTable.__input_table_biosample,
+            MakeAsvTable.__input_table_replicate,
+            MakeAsvTable.__input_table_variant,
+            MakeAsvTable.__input_table_filter_chimera_borderline,
+            MakeAsvTable.__input_table_filter_codon_stop,
+            MakeAsvTable.__input_table_tax_assign,
         ]
 
     def specify_output_file(self):
         return[
-            MakeOtuTable.__output_table_otu,
+            MakeAsvTable.__output_table_asv,
 
         ]
 
@@ -76,20 +76,20 @@ class MakeOtuTable(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        input_file_fastainfo = self.input_file(MakeOtuTable.__input_file_fastainfo)
-        input_file_taxonomy = self.input_file(MakeOtuTable.__input_file_taxonomy)
+        input_file_fastainfo = self.input_file(MakeAsvTable.__input_file_fastainfo)
+        input_file_taxonomy = self.input_file(MakeAsvTable.__input_file_taxonomy)
         #
         # Input table models
-        marker_model = self.input_table(MakeOtuTable.__input_table_marker)
-        run_model = self.input_table(MakeOtuTable.__input_table_run)
-        biosample_model = self.input_table(MakeOtuTable.__input_table_biosample)
-        replicate_model = self.input_table(MakeOtuTable.__input_table_replicate)
-        filter_chimera_borderline_model = self.input_table(MakeOtuTable.__input_table_filter_chimera_borderline)
-        filter_codon_stop_model = self.input_table(MakeOtuTable.__input_table_filter_codon_stop)
-        variant_model = self.input_table(MakeOtuTable.__input_table_variant)
-        tax_assign_model = self.input_table(MakeOtuTable.__input_table_tax_assign)
+        marker_model = self.input_table(MakeAsvTable.__input_table_marker)
+        run_model = self.input_table(MakeAsvTable.__input_table_run)
+        biosample_model = self.input_table(MakeAsvTable.__input_table_biosample)
+        replicate_model = self.input_table(MakeAsvTable.__input_table_replicate)
+        filter_chimera_borderline_model = self.input_table(MakeAsvTable.__input_table_filter_chimera_borderline)
+        filter_codon_stop_model = self.input_table(MakeAsvTable.__input_table_filter_codon_stop)
+        variant_model = self.input_table(MakeAsvTable.__input_table_variant)
+        tax_assign_model = self.input_table(MakeAsvTable.__input_table_tax_assign)
         # Output table models
-        otu_table_tsv_path = self.output_file(MakeOtuTable.__output_table_otu)
+        asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
         #
         # Options
 
@@ -101,12 +101,12 @@ class MakeOtuTable(ToolWrapper):
         ##########################################################
 
         fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
-        variant_read_count_df = fasta_info.get_variant_read_count_df(filter_codon_stop_model)
-        variant_df = fasta_info.get_variant_df(filter_codon_stop_model, variant_model)
+        # variant_read_count_df = fasta_info.get_variant_read_count_df(filter_codon_stop_model)
+        # variant_df = fasta_info.get_variant_df(filter_codon_stop_model, variant_model)
 
-        otu_table_runner = MakeOtuTableRunner(engine, input_file_fastainfo, run_model, marker_model, biosample_model, replicate_model, filter_chimera_borderline_model,
-                 filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy)
-        otu_df_final = otu_table_runner.run()
+        asv_table_runner = MakeAsvTableRunner(engine, input_file_fastainfo, run_model, marker_model, biosample_model, replicate_model, filter_chimera_borderline_model,
+                                              filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy)
+        asv_df_final = asv_table_runner.run()
 
 
         # # #########################################################
@@ -250,20 +250,20 @@ class MakeOtuTable(ToolWrapper):
         #
         # #####
         # #
-        # # make Otu table & write it to a tsv file
+        # # make Asv table & write it to a tsv file
         # #
         # #####
         #
         #
         #
-        # otu_df = f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df,
+        # asv_df = f16_asv_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df,
         #                     taxonomy_db_df)
         #
-        otu_df_final.to_csv(otu_table_tsv_path, sep='\t', index=False, header=True)
+        asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)
 
-# def f16_otu_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df, taxonomy_db_df):
+# def f16_asv_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df, taxonomy_db_df):
 #     """
-#     otu table maker
+#     asv table maker
 #     """
 #     #
 #     ############################
@@ -272,17 +272,17 @@ class MakeOtuTable(ToolWrapper):
 #     #
 #     ############################
 #     # Initialize out_df
-#     otu_df = variant_df.copy()
+#     asv_df = variant_df.copy()
 #     #
 #     # Add Variant Sequence length
 #     # variant_df_tmp = variant_df.copy()
-#     otu_df['sequence_length'] = otu_df['variant_sequence'].str.len()
-#     # otu_df = otu_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
+#     asv_df['sequence_length'] = asv_df['variant_sequence'].str.len()
+#     # asv_df = asv_df.merge(variant_df_tmp, on=['variant_id', 'variant_sequence'])
 #     #
 #     # Add read_count_sum_per_variant
 #     read_count_sum_per_variant = filter_codon_stop_df.groupby('variant_id').sum().reset_index()[
 #         ['variant_id', 'read_count']]
-#     otu_df = otu_df.merge(read_count_sum_per_variant, on='variant_id')
+#     asv_df = asv_df.merge(read_count_sum_per_variant, on='variant_id')
 #     #
 #     ############################
 #     #
@@ -291,26 +291,26 @@ class MakeOtuTable(ToolWrapper):
 #     ############################
 #     #
 #     # Sum read counts over replicates of each biosample
-#     otu_biosamples_df = filter_codon_stop_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id'])[
+#     asv_biosamples_df = filter_codon_stop_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id'])[
 #         'read_count'].sum().reset_index()
 #     #
 #     # Replace biosample ids with their name
-#     otu_biosamples_df = otu_biosamples_df.merge(biosample_df, left_on='biosample_id', right_on='id')
-#     otu_biosamples_df.drop(['biosample_id', 'id'], axis=1, inplace=True)
-#     otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'biosample_name'})
+#     asv_biosamples_df = asv_biosamples_df.merge(biosample_df, left_on='biosample_id', right_on='id')
+#     asv_biosamples_df.drop(['biosample_id', 'id'], axis=1, inplace=True)
+#     asv_biosamples_df = asv_biosamples_df.rename(columns={'name': 'biosample_name'})
 #     #
 #     # Replace marker ids with their name
-#     otu_biosamples_df = otu_biosamples_df.merge(marker_df, left_on='marker_id', right_on='id')
-#     otu_biosamples_df.drop(['marker_id', 'id'], axis=1, inplace=True)
-#     otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'marker_name'})
+#     asv_biosamples_df = asv_biosamples_df.merge(marker_df, left_on='marker_id', right_on='id')
+#     asv_biosamples_df.drop(['marker_id', 'id'], axis=1, inplace=True)
+#     asv_biosamples_df = asv_biosamples_df.rename(columns={'name': 'marker_name'})
 #     #
 #     # Replace run ids with their name
-#     otu_biosamples_df = otu_biosamples_df.merge(run_df, left_on='run_id', right_on='id')
-#     otu_biosamples_df.drop(['run_id', 'id'], axis=1, inplace=True)
-#     otu_biosamples_df = otu_biosamples_df.rename(columns={'name': 'run_name'})
+#     asv_biosamples_df = asv_biosamples_df.merge(run_df, left_on='run_id', right_on='id')
+#     asv_biosamples_df.drop(['run_id', 'id'], axis=1, inplace=True)
+#     asv_biosamples_df = asv_biosamples_df.rename(columns={'name': 'run_name'})
 #     #
 #     # Pivot biosamples
-#     otu_biosamples_df = otu_biosamples_df.pivot_table(index=['run_name', 'marker_name', 'variant_id'],
+#     asv_biosamples_df = asv_biosamples_df.pivot_table(index=['run_name', 'marker_name', 'variant_id'],
 #                                                       columns="biosample_name",
 #                                                       values='read_count', fill_value=0).reset_index()
 #     #
@@ -319,23 +319,23 @@ class MakeOtuTable(ToolWrapper):
 #     # Merge variant and biosample information
 #     #
 #     ############################
-#     otu_df = otu_df.merge(otu_biosamples_df, on='variant_id')
+#     asv_df = asv_df.merge(asv_biosamples_df, on='variant_id')
 #     #
 #     #
 #     # Merge ltg tax assign results
-#     otu_df = otu_df.merge(ltg_tax_assign_df, on='variant_id')
+#     asv_df = asv_df.merge(ltg_tax_assign_df, on='variant_id')
 #     list_lineage = []
-#     for tax_id in otu_df['ltg_tax_id'].unique().tolist():
+#     for tax_id in asv_df['ltg_tax_id'].unique().tolist():
 #         dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
 #         list_lineage.append(dic_lineage)
 #     lineage_df = pandas.DataFrame(data=list_lineage)
-#     lineage_list_df_columns_sorted = list(filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_otu_table))
+#     lineage_list_df_columns_sorted = list(filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
 #     lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
 #     lineage_df = lineage_df[lineage_list_df_columns_sorted]
 #
-#     # Merge Otu_df with the lineage df
-#     otu_df = otu_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
-#     otu_df.drop('tax_id', axis=1, inplace=True)
+#     # Merge Asv_df with the lineage df
+#     asv_df = asv_df.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id')
+#     asv_df.drop('tax_id', axis=1, inplace=True)
 #
 #
 #     ##########################
@@ -343,22 +343,22 @@ class MakeOtuTable(ToolWrapper):
 #     # Reorganize columns
 #     #
 #     ##########################
-#     otu_df_columns = otu_df.columns.tolist()
+#     asv_df_columns = asv_df.columns.tolist()
 #     # move items to given positions
-#     otu_df_columns.insert(1, otu_df_columns.pop(otu_df_columns.index('marker_name')))
-#     otu_df_columns.insert(2, otu_df_columns.pop(otu_df_columns.index('run_name')))
-#     otu_df_columns.insert(3, otu_df_columns.pop(otu_df_columns.index('sequence_length')))
-#     otu_df_columns.insert(4, otu_df_columns.pop(otu_df_columns.index('read_count')))
+#     asv_df_columns.insert(1, asv_df_columns.pop(asv_df_columns.index('marker_name')))
+#     asv_df_columns.insert(2, asv_df_columns.pop(asv_df_columns.index('run_name')))
+#     asv_df_columns.insert(3, asv_df_columns.pop(asv_df_columns.index('sequence_length')))
+#     asv_df_columns.insert(4, asv_df_columns.pop(asv_df_columns.index('read_count')))
 #     #
 #     # append at the end
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('ltg_tax_id'))]
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('ltg_tax_name'))]
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('identity'))]
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('ltg_rank'))]
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('chimera_borderline'))]
-#     otu_df_columns = otu_df_columns + [otu_df_columns.pop(otu_df_columns.index('variant_sequence'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('ltg_tax_id'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('ltg_tax_name'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('identity'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('ltg_rank'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('chimera_borderline'))]
+#     asv_df_columns = asv_df_columns + [asv_df_columns.pop(asv_df_columns.index('variant_sequence'))]
 #     #
 #     # reorder
-#     otu_df = otu_df[otu_df_columns]
+#     asv_df = asv_df[asv_df_columns]
 #
-#     return otu_df
+#     return asv_df

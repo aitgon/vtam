@@ -181,6 +181,8 @@ class VariantReadCount(ToolWrapper):
             "file: {}; line: {}; Insert variants".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
         sample_instance_list = []
+        variant_read_count_df.sort_values(
+            by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate_id'], inplace=True)
         for row in variant_read_count_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
@@ -194,7 +196,7 @@ class VariantReadCount(ToolWrapper):
                     stmt_result_var = conn.execute(stmt_ins_var)
                 variant_id = stmt_result_var.inserted_primary_key[0]
             except sqlalchemy.exc.IntegrityError:
-                stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
+                stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence == variant_sequence)
                 with engine.connect() as conn:
                     variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,

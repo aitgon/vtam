@@ -13,7 +13,7 @@ class PoolMarkers(ToolWrapper):
         "polymorphic_identity": "vtam.wrapper.PoolMarkers"}
 
     # Input file
-    __input_file_tax_assign = "OTUtable"
+    __input_file_tax_assign = "ASVtable"
 
     # Output table
     __output_file_pooled_markers = "PooledMarkers"
@@ -55,13 +55,13 @@ class PoolMarkers(ToolWrapper):
                                                                                  inspect.currentframe().f_lineno, ))
         #
         # Input file
-        input_file_otu_table = self.input_file(PoolMarkers.__input_file_tax_assign)
+        input_file_asv_table = self.input_file(PoolMarkers.__input_file_tax_assign)
 
         # Output table models
         output_file_pooled_markers = self.output_file(PoolMarkers.__output_file_pooled_markers)
 
-        input_file_otu_table_df = pandas.read_csv(input_file_otu_table, sep="\t", header=0)
-        pool_marker_runner = PoolMarkerRunner(input_file_otu_table_df)
+        input_file_asv_table_df = pandas.read_csv(input_file_asv_table, sep="\t", header=0)
+        pool_marker_runner = PoolMarkerRunner(input_file_asv_table_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(output_file_pooled_markers, sep="\t", index=False)
 

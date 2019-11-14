@@ -1,4 +1,4 @@
-{% from 'macros.txt' import param_log %}{% extends "block_wopfile_otu_optimize.yml" %}
+{% from 'macros.txt' import param_log %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_optimize %}rule OptimizeLFNbiosampleReplicate:
     tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
     input:
