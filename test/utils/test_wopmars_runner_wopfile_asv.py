@@ -188,7 +188,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: 0.1
+        upper_renkonen_tail: 0.1
 
 
 rule FilterIndel:
@@ -474,7 +474,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: 0.1
+        upper_renkonen_tail: 0.1
 
 
 rule FilterIndel:
@@ -755,7 +755,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: 0.1
+        upper_renkonen_tail: 0.1
 
 
 rule FilterIndel:
