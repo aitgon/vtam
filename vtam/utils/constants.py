@@ -29,7 +29,7 @@ parameters_numerical = {
     'minseqlength': 32,
     'overhang': 0,
     'pcr_error_var_prop': 0.1,
-    'renkonen_threshold': 0.1,
+    'upper_renkonen_tail': 0.1,
     'threads': 8,
 }
 

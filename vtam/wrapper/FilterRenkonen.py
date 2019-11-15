@@ -48,7 +48,7 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_params(self):
         return {
-            "renkonen_threshold": "float",
+            "upper_renkonen_tail": "float",
             # "log_verbosity": "int",
             # "log_file": "str"
         }
@@ -78,7 +78,7 @@ class FilterRenkonen(ToolWrapper):
         #
         # Options
         # PoolMarkers parameters
-        renkonen_threshold = float(self.option("renkonen_threshold"))
+        upper_renkonen_tail = float(self.option("upper_renkonen_tail"))
         #
         # Output table models
         output_filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
@@ -116,7 +116,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
+        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail)
 
 
         ##########################################################
@@ -206,7 +206,7 @@ def renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, le
     return distance_left_right
 
 
-def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
+def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
     dfout = variant_read_count_df.copy()
     # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
@@ -246,8 +246,8 @@ def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
             df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
                     & (df3.left_replicate_id == left_replicate_id) & (
                                 df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
-        # compare the renkonen distance to the renkonen_threshold
-        df3['is_distance_gt_rthr'] = df3.renkonen_distance > renkonen_threshold
+        # compare the renkonen distance to the upper_renkonen_tail
+        df3['is_distance_gt_rthr'] = df3.renkonen_distance > upper_renkonen_tail
         # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
         df4 = pandas.DataFrame(
             data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},
