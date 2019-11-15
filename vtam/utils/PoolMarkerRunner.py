@@ -37,11 +37,11 @@ class PoolMarkerRunner(object):
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(self.tmp_dir)
 
-        self.cluster_path = None # returned by cluster_sequences_with_vsearch
+        self.cluster_path = None # returned by run_vsearch_to_cluster_sequences
 
         self.cluster_df = None # returned by get_vsearch_clusters_to_df
 
-    def cluster_sequences_with_vsearch(self):
+    def run_vsearch_to_cluster_sequences(self):
         # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant df
@@ -77,7 +77,7 @@ class PoolMarkerRunner(object):
         :return: pandas.DataFrame with columns: variant_id_centroid and variant_id
         """
         if self.cluster_path is None:
-            self.cluster_sequences_with_vsearch()
+            self.run_vsearch_to_cluster_sequences()
 
         clusters_dir = os.path.dirname(self.cluster_path)
         clusters_basename = os.path.basename(self.cluster_path)
