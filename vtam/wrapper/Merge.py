@@ -49,6 +49,7 @@ class Merge(ToolWrapper):
         # if not self.option("log_verbosity") is None:
         #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # TODO replace this env vars with VTAMTHREADS, VTAMF...
         threads = int(os.getenv('THREADS'))
         fastq_dir = str(os.getenv('FASTQDIR'))
         fasta_dir = str(os.getenv('FASTADIR'))
@@ -114,6 +115,7 @@ class Merge(ToolWrapper):
         # Loop of fastq pairs and run vsearch
         #
         #########################################
+        # TODO Use user threads parameter in all vsearch commands
         for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
             command = "vsearch -fastq_mergepairs {} --reverse {}".format(fastq_fw_abspath, fastq_rv_abspath)
             command += " --fastaout {} --fastq_minovlen {}".format(fasta_abspath, fastq_minovlen)
