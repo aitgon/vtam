@@ -116,7 +116,12 @@ class ReadTrimmer(object):
         :return: void
         """
         # TODO Emese: ask where overhang parameter is used.
-
+        # It is described here vtam/SRS_vtam.v1.odt
+        # These two criteria must be verified in the code
+        # 1. first position of target in the alignment (tilo) is 1
+        # 2. last position of target in the alignment (tihi) equals length of the target (tl)
+        # 3. lower case part of the target (tag) has an exact match (non-case sensitive) to the aligned part of query (qrow)
+        # 4. this match is within -overhang bases in the 5’ end of qrow
         if self.alignements_tsv_path is None:
             self.align_tag_primer_to_reads()
 
