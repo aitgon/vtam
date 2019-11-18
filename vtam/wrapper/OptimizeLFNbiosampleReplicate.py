@@ -4,12 +4,13 @@ import sys
 import sqlalchemy
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.OptionManager import OptionManager
 from sqlalchemy import select
 import pandas
 
-from vtam.utils.Logger import Logger
 from vtam.utils.VariantKnown import VariantKnown
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
 class OptimizeLFNbiosampleReplicate(ToolWrapper):
@@ -30,7 +31,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     # Output file
     __output_file_optimize_lfn_biosample_replicate = "optimize_lfn_biosample_replicate"
 
-
     def specify_input_file(self):
         return[
             OptimizeLFNbiosampleReplicate.__input_file_fastainfo,
@@ -47,7 +47,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             OptimizeLFNbiosampleReplicate.__input_table_variant_read_count,
         ]
 
-
     def specify_output_file(self):
         return [
             OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate,
@@ -55,17 +54,17 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     def specify_params(self):
         return {
-            "foo": "int",
-            "log_verbosity": "int",
-            "log_file": "str"
+            # "foo": "int",
+            # "log_verbosity": "int",
+            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -110,34 +109,34 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         ################################################################################################################
         #
-        # For run, marker and mock biosamples, create the variant_read_count df
+        # Get variant read count df
         #
         ################################################################################################################
 
-        variant_read_count_list = []
-        with engine.connect() as conn:
-            for row in run_marker_biosample_mock_df.itertuples():
-                run_id = row.run_id
-                marker_id = row.marker_id
-                biosample_id = row.biosample_id
-                stmt_select = sqlalchemy.select([
-                    variant_read_count_model.__table__.c.run_id,
-                    variant_read_count_model.__table__.c.marker_id,
-                    variant_read_count_model.__table__.c.biosample_id,
-                    variant_read_count_model.__table__.c.replicate_id,
-                    variant_read_count_model.__table__.c.variant_id,
-                    variant_read_count_model.__table__.c.read_count,
-                ]) \
-                    .where(variant_read_count_model.__table__.c.run_id == run_id) \
-                    .where(variant_read_count_model.__table__.c.marker_id == marker_id) \
-                    .where(variant_read_count_model.__table__.c.biosample_id == biosample_id)\
-                    .distinct()
-                variant_read_count_list = variant_read_count_list + conn.execute(stmt_select).fetchall()
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
+        variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
+        N_jk_df = variant_read_count_df_obj.get_N_jk_df()
 
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list, columns=['run_id', 'marker_id',
-                                                        'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
-        variant_read_count_df.drop_duplicates(inplace=True)
+        ################################################################################################
+        #
+        # Get delete variants, that are not keep in mock samples
+        #
+        ################################################################################################
 
+        # These columns: run_id  marker_id  biosample_id  variant_id
+        variant_keep_df = variant_known.get_run_marker_biosample_variant_keep_df()
+
+
+        ################################################################################################################
+        #
+        # variant_read_count for keep variants only
+        #
+        ################################################################################################################
+
+        variant_read_count_keep_df = variant_read_count_df.merge(variant_keep_df, on=['run_id', 'marker_id',
+                                                                                                    'biosample_id',
+                                                                                                    'variant_id'])
 
         ##########################################################
         #
@@ -145,12 +144,15 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df = variant_read_count_df.rename(columns={'read_count': 'N_ijk'})
-        aggregate_df = output_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'N_ijk']].groupby(
-            by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).sum().reset_index()
-        aggregate_df = aggregate_df.rename(columns={'N_ijk': 'N_jk'})
-        output_df = output_df.merge(aggregate_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
-        output_df['lfn_biosample_replicate: N_ijk/N_jk'] = output_df['N_ijk'] / output_df['N_jk']
+        # lfn_biosample_replicate_df = variant_read_count_keep_df.rename(columns={'read_count': 'N_ijk'})
+        variant_read_count_keep_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_keep_df)
+        # N_jk_df = lfn_biosample_replicate_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).agg({'N_ijk': sum})
+        # N_jk_df = N_jk_df.rename(columns={'N_ijk': 'N_jk'})
+        # Todo Emese to confirm that N_jk_df is calculated with all variants as above, not just keep
+        # N_jk_df = variant_read_count_keep_df_obj.get_N_jk_df()
+        optimize_output_df = variant_read_count_keep_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
+        optimize_output_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
+        optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_output_df['N_ijk'] / optimize_output_df['N_jk']
 
         ##########################################################
         #
@@ -158,10 +160,10 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df=output_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
+        optimize_output_df=optimize_output_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
         round_down_4_decimals = lambda x: int(x * 10 ** 4) / 10 ** 4
-        output_df['round_down'] = output_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
+        optimize_output_df['round_down'] = optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
 
         ##########################################################
         #
@@ -180,18 +182,18 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
                 sqlalchemy.select([replicate_model.__table__.c.id, replicate_model.__table__.c.name])).fetchall()
 
         run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
-        output_df = output_df.merge(run_id_to_name_df, on='run_id')
+        optimize_output_df = optimize_output_df.merge(run_id_to_name_df, on='run_id')
 
         marker_id_to_name_df = pandas.DataFrame.from_records(data=marker_id_to_name, columns=['marker_id', 'marker_name'])
-        output_df = output_df.merge(marker_id_to_name_df, on='marker_id')
+        optimize_output_df = optimize_output_df.merge(marker_id_to_name_df, on='marker_id')
 
         biosample_id_to_name_df = pandas.DataFrame.from_records(data=biosample_id_to_name, columns=['biosample_id', 'biosample_name'])
-        output_df = output_df.merge(biosample_id_to_name_df, on='biosample_id')
+        optimize_output_df = optimize_output_df.merge(biosample_id_to_name_df, on='biosample_id')
 
         replicate_id_to_name_df = pandas.DataFrame.from_records(data=replicate_id_to_name, columns=['replicate_id', 'replicate_name'])
-        output_df = output_df.merge(replicate_id_to_name_df, on='replicate_id')
+        optimize_output_df = optimize_output_df.merge(replicate_id_to_name_df, on='replicate_id')
 
-        output_df = output_df[['run_name', 'marker_name', 'biosample_name', 'replicate_name', 'variant_id',
+        optimize_output_df = optimize_output_df[['run_name', 'marker_name', 'biosample_name', 'replicate_name', 'variant_id',
        'N_ijk', 'N_jk', 'lfn_biosample_replicate: N_ijk/N_jk', 'round_down']]
 
         ##########################################################
@@ -200,7 +202,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
+        optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
                                        ascending=[True, True, True, True, True], inplace=True)
-        output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.10f', index=False)
+        optimize_output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
 

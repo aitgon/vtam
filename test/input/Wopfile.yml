@@ -8,7 +8,7 @@ rule Merge:
           fastainfo: data/fastainfo.csv
   params:
       fastq_directory: data/input/fastq
-      fasta_dir: data/output/fasta/
+      fasta_dir: data/output/fasta_path/
       fastq_minovlen: 50
       fastq_maxmergelen: 300
       fastq_minmergelen: 100
@@ -37,7 +37,7 @@ rule SampleInformation:
         fasta_dir: {{FASTA_DIR}}
 
 rule SortReads:
-    tool: vtam.wrapper.VariantReadCount
+    tool: vtam.wrapper.VariantReadCountDF
     input:
         table:
             File: vtam.model.File

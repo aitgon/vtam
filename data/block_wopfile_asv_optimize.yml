@@ -13,9 +13,6 @@
             PrimerPair: vtam.model.PrimerPair
             TagPair: vtam.model.TagPair
             SampleInformation: vtam.model.SampleInformation
-    params:
-        fasta_dir: {{fastadir}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule SortReads:
@@ -24,7 +21,10 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: {{fastainfo}}
     output:
@@ -34,7 +34,6 @@ rule SortReads:
         min_id: {{min_id}}
         minseqlength: {{minseqlength}}
         overhang: {{overhang}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule VariantReadCount:
@@ -52,8 +51,6 @@ rule VariantReadCount:
         table:
             Variant: vtam.model.Variant
             VariantReadCount: vtam.model.VariantReadCount
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
-{% block wopfile_otu %}{% endblock %}{% block wopfile_optimize %}{% endblock %}
+{% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

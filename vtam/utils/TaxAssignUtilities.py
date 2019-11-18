@@ -1,12 +1,8 @@
-import os
 import pandas
 import sqlite3
 
-from vtam.utils.constants import rank_hierarchy
+from vtam.utils.constants import rank_hierarchy,identity_list
 
-from vtam.utils.constants import identity_list
-
-from Bio.Blast.Applications import NcbiblastnCommandline
 
 def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     """
@@ -25,60 +21,6 @@ def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
     taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
     con.close()
     return taxonomy_db_df
-
-
-def f02_variant_df_to_fasta(variant_df, fasta_path):
-    """
-    Takes variant DF with two columns (variant_id, variant_sequence) and return FASTA file output
-
-    Args:
-        variant_df (pandas.DataFrame): DF with two columns (variant_id, variant_sequence)
-        fasta_path (str): Path to FASTA file
-
-
-    Returns:
-        None
-
-    """
-    with open(fasta_path, "w") as fout:
-        for row in variant_df.itertuples():
-            fout.write(">{}\n{}\n".format(row.variant_id, row.variant_sequence))
-
-
-def f03_lblast(variant_fasta_path, variant_tsv_path):
-    """
-    Runs Blast
-
-    Args:
-        variant_id (Integer): Internal ID of variant
-        variant_sequence (String): Sequence of variant
-
-    Returns:
-        String: Path to output of qblast in TSV format
-    """
-    # http://biopython.org/DIST/docs/tutorial/Tutorial.html#htoc98
-    # Create FASTA
-    blastn_cline = NcbiblastnCommandline(query=variant_fasta_path, db="nt", evalue=1e-5,
-                                         outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                         qcov_hsp_perc=80, num_threads=1, out=variant_tsv_path)
-    stdout, stderr = blastn_cline()
-
-
-def f04_import_qblast_output_into_df(qblast_output_tsv_path):
-    """
-    Imports Blast output TSV into DataFrame
-
-    Args:
-        qblast_output_tsv_path (String): Path to output of qblast in TSV format
-
-    Returns:
-        DataFrame: with three columns: target_id, identity, target_tax_id
-    """
-    qblast_out_df = pandas.read_csv(qblast_output_tsv_path, sep="\t", header=None, names=['target_id', 'identity', 'target_tax_id'], usecols=[1, 2, 5])
-    # extract the target_id
-    qblast_out_df.target_id = qblast_out_df.target_id.str.split('|', 2).str[1]
-    qblast_out_df.target_id = pandas.to_numeric(qblast_out_df.target_id)
-    return qblast_out_df
 
 
 def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
@@ -141,14 +83,14 @@ def f05_blast_result_subset(qblast_result_subset_df, taxonomy_db_df):
     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
     return tax_lineage_df
 
-# def f06_select_ltg(tax_lineage_df, identity, identity_threshold, include_prop, min_number_of_taxa):
+# def f06_select_ltg(tax_lineage_df, identity, ltg_rule_threshold, include_prop, min_number_of_taxa):
 def f06_select_ltg(tax_lineage_df, include_prop):
     """
     Given tax_lineage_df, selects the Ltg
 
     Args:
         tax_lineage_df (pandas.DataFrame): DF where each column is a rank, rows are different target_ids and values are putative_ltg_ids
-        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=identity_threshold
+        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=ltg_rule_threshold
 
     Returns:
         ltg_tax_id (int): Taxonomical ID of Ltg
@@ -160,7 +102,7 @@ def f06_select_ltg(tax_lineage_df, include_prop):
     lineage_list_df_columns_sorted = list(filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy))
     tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
     putative_ltg_df = pandas.DataFrame({'putative_ltg_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0),'putative_ltg_count': tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)})
-    # if identity >= identity_threshold: # rule for include_prop
+    # if identity >= ltg_rule_threshold: # rule for include_prop
     putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / tax_lineage_df.shape[0] * 100
     ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].tail(1).values[0]
     ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].index[-1]
@@ -169,7 +111,7 @@ def f06_select_ltg(tax_lineage_df, include_prop):
     #     ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_count >= min_number_of_taxa, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank
 
-def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold, include_prop, min_number_of_taxa):
+def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_threshold, include_prop, min_number_of_taxa):
     """
     Main function that takes blast result with variant_id, target_id, identity and tax_id and returns ltg_tax_id and ltg_rank
 
@@ -188,9 +130,9 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
 
     Args:
         variantid_identity_lineage_df (pandas.DataFrame): DF with columns: variant_id, identity, target_tax_id and lineage_columns.
-        identity_threshold (int): Identity value where we change of using include_prop method to min_number_of_taxa, default 97
-        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=identity_threshold
-        min_number_of_taxa (int): Minimal number of taxa, where LTF must be present when identity<identity_threshold
+        ltg_rule_threshold (int): Identity value where we change of using include_prop method to min_number_of_taxa, default 97
+        include_prop (int): Percentage out of total selected qblast hits for Ltg to be present when identity>=ltg_rule_threshold
+        min_number_of_taxa (int): Minimal number of taxa, where LTF must be present when identity<ltg_rule_threshold
 
     Returns:
         ltg_df (pandas.DataFrame): DF with variant_id, ltg_tax_id and ltg_tax_rank
@@ -213,13 +155,13 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
                 ###########
                 #
                 # Carry out analysis if one of thise case
-                # Case 1: identity >= identity_threshold
-                # Case 2: identity < identity_threshold and target_tax_id.unique.count > min_number_of_taxa
+                # Case 1: identity >= ltg_rule_threshold
+                # Case 2: identity < ltg_rule_threshold and target_tax_id.unique.count > min_number_of_taxa
                 #
                 ###########
-                if (identity < identity_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist()) >= min_number_of_taxa) or (identity >= identity_threshold):
+                if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist()) >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
                     # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
-                    #if identity < identity_threshold:
+                    #if identity < ltg_rule_threshold:
                     #    import pdb; pdb.set_trace()
                     ltg_tax_id, ltg_rank = None, None
                     lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
@@ -230,7 +172,7 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_thres
                     #
                     ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
                     # ltg_tax_id, ltg_rank = None, None
-                    # if identity >= identity_threshold:
+                    # if identity >= ltg_rule_threshold:
                     #     #
                     #     ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
                     #     #

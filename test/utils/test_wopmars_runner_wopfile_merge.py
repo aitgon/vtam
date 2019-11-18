@@ -43,8 +43,6 @@ class TestWorpmarsRunnerMerge(TestCase):
         file:
             fastainfo: foo
     params:
-        fastq_dir: test/utils
-        fasta_dir: foo
         fastq_minovlen: 50
         fastq_maxmergelen: 500
         fastq_minmergelen: 100
@@ -52,10 +50,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         fastq_maxee: 1
         fastq_truncqual: 10
         fastq_maxns: 0
-        threads: 8
-        fastq_ascii: 33
-        log_verbosity: 0"""
-
+        fastq_ascii: 33"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
         ###############################################################
         #
@@ -64,7 +59,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         ###############################################################
         wopmars_command = wopmars_runner.get_wopmars_command()
         wopmars_runner.wopfile_path = "Wopfile_merge"
-        self.assertTrue(wopmars_command == 'wopmars -w test/output/wopfile -D sqlite:///db.sqlite -p -v')
+        self.assertTrue(wopmars_command == 'wopmars -w test/output/wopfile -D sqlite:///db.sqlite --toolwrapper-log ')
 
 
     def test_wopmars_runner_merge_with_log(self):
@@ -99,8 +94,6 @@ class TestWorpmarsRunnerMerge(TestCase):
         file:
             fastainfo: foo
     params:
-        fastq_dir: test/utils
-        fasta_dir: foo
         fastq_minovlen: 50
         fastq_maxmergelen: 500
         fastq_minmergelen: 100
@@ -108,10 +101,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         fastq_maxee: 1
         fastq_truncqual: 10
         fastq_maxns: 0
-        threads: 8
-        fastq_ascii: 33
-        log_verbosity: 2
-        log_file: log"""
+        fastq_ascii: 33"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
 
 

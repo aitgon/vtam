@@ -1,5 +1,5 @@
-{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_otu_optimize.yml" %}
-{% block wopfile_otu %}rule FilterLFN:
+{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
@@ -19,7 +19,6 @@
         lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterMinReplicateNumber:
@@ -38,11 +37,10 @@ rule FilterMinReplicateNumber:
             FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
     params:
         min_replicate_number: {{min_replicate_number}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
-rule FilterPCRError:
-    tool: vtam.wrapper.FilterPCRError
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
     input:
         table:
             Marker: vtam.model.Marker
@@ -55,10 +53,9 @@ rule FilterPCRError:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
     params:
         pcr_error_var_prop: {{pcr_error_var_prop}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterChimera:
@@ -70,15 +67,13 @@ rule FilterChimera:
             Biosample: vtam.model.Biosample
             Replicate: vtam.model.Replicate
             Variant: vtam.model.Variant
-            FilterPCRError: vtam.model.FilterPCRError
+            FilterPCRerror: vtam.model.FilterPCRerror
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
             FilterChimera: vtam.model.FilterChimera
             FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterRenkonen:
@@ -96,8 +91,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.model.FilterRenkonen
     params:
-        renkonen_threshold: {{renkonen_threshold}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
+        upper_renkonen_tail: {{upper_renkonen_tail}}
 
 
 rule FilterIndel:
@@ -115,8 +109,6 @@ rule FilterIndel:
     output:
         table:
             FilterIndel: vtam.model.FilterIndel
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule FilterCodonStop:
@@ -136,7 +128,6 @@ rule FilterCodonStop:
             FilterCodonStop: vtam.model.FilterCodonStop
     params:
         genetic_table_number: {{genetic_table_number}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule ReadCountAverageOverReplicates:
@@ -153,8 +144,6 @@ rule ReadCountAverageOverReplicates:
     output:
         table:
             ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
 rule TaxAssign:
@@ -174,16 +163,14 @@ rule TaxAssign:
         table:
             TaxAssign: vtam.model.TaxAssign
     params:
-        identity_threshold: {{identity_threshold}}
+        ltg_rule_threshold: {{ltg_rule_threshold}}
         include_prop: {{include_prop}}
         min_number_of_taxa: {{min_number_of_taxa}}
         blast_db: {{blast_db}}
-        num_threads: {{ num_threads }}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}
 
 
-rule MakeOtuTable:
-    tool: vtam.wrapper.MakeOtuTable
+rule MakeAsvTable:
+    tool: vtam.wrapper.MakeAsvTable
     input:
         table:
             Marker: vtam.model.Marker
@@ -199,6 +186,14 @@ rule MakeOtuTable:
             taxonomy: {{taxonomy}}
     output:
         file:
-            OTUTable: {{otutable}}
-    params:
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}{% endblock %}
+            ASVTable: {{asvtable}}
+
+
+rule PoolMarkers:
+    tool: vtam.wrapper.PoolMarkers
+    input:
+        file:
+            ASVtable: {{asvtable}}
+    output:
+        file:
+            PooledMarkers: {{pooled_markers}}{% endblock %}

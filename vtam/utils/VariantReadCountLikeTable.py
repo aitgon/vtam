@@ -5,74 +5,28 @@ import pandas
 import sys
 
 
-class FilterCommon(object):
+class VariantReadCountLikeTable(object):
+    """Takes a any type of VariantReadCount model/table with at least run_id, marker_id, biosample_id, replicate_id, variant_id
+    attributes/columns and performs various operations on it"""
 
-
-    def __init__(self, filter_name, engine, run_model, marker_model, biosample_model, replicate_model, input_filter_model, output_filter_models):
-        self.filter_name = filter_name
+    def __init__(self, engine, variant_read_count_like_model):
+        # self.filter_name = filter_name
         self.engine = engine
-        self.run_model = run_model
-        self.marker_model = marker_model
-        self.biosample_model = biosample_model
-        self.replicate_model = replicate_model
-        self.input_filter_model = input_filter_model
-        self.output_filter_models = output_filter_models
+        self.variant_read_count_like_model = variant_read_count_like_model
 
-    def get_fastainfo_instance_list_with_ids(self, input_file_fastainfo):
-        """
-        Returns a list of dictionnaries with the the ids of the TSV file with the fasta informations. Example
-    [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 2, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 3, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 4, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 5, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 6, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 7, 'replicate_id': 1}, {'run_id': 1, 'marker_id': 1, 'biosample_id': 8, 'replicate_id': 1}
-
-        :param input_file_fastainfo: TSV file with the fasta information
-        :return: list of dictionnaries
-        """
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
-            names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
-        fastainfo_instance_list = []
-        for row in fastainfo_df.itertuples():
-            marker_name = row.marker_name
-            run_name = row.run_name
-            biosample_name = row.biosample_name
-            replicate_name = row.replicate_name
-            with self.engine.connect() as conn:
-                # get run_id ###########
-                stmt_select_run_id = select([self.run_model.__table__.c.id]).where(self.run_model.__table__.c.name==run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
-                # get marker_id ###########
-                stmt_select_marker_id = select([self.marker_model.__table__.c.id]).where(self.marker_model.__table__.c.name==marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = select([self.biosample_model.__table__.c.id]).where(self.biosample_model.__table__.c.name==biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
-                stmt_select_replicate_id = select([self.replicate_model.__table__.c.id]).where(self.replicate_model.__table__.c.name==replicate_name)
-                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
-                # add this sample_instance ###########
-                fastainfo_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
-                                             'replicate_id':replicate_id})
-        return fastainfo_instance_list
-
-
-
-    def delete_output_filter_model(self, fastainfo_instance_list):
+    def delete_output_filter_model(self, fasta_info_record_list):
         """Deletes the entries in the output filter model based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate_id"""
+
         with self.engine.connect() as conn:
-            if isinstance(self.output_filter_models, list):
-                for output_filter_model in self.output_filter_models:
-                    conn.execute(output_filter_model.__table__.delete(), fastainfo_instance_list)
-            else:
-                conn.execute(self.output_filter_models.__table__.delete(), fastainfo_instance_list)
+            conn.execute(self.variant_read_count_like_model.__table__.delete(), fasta_info_record_list)
 
-
-
-    def get_variant_read_count_model(self, fastainfo_instance_list, filter_id=None):
+    def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
         """Get variant_read_count df from input filter model
 
-        :param input_file_fastainfo: TSV file with the fasta information
+        :param input_file_fastainfo: TSV file with the fasta_path information
         :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
         """
-        filter_min_replicate_number_table = self.input_filter_model.__table__
+        filter_min_replicate_number_table = self.input_variant_read_count_like_model.__table__
 
         variant_read_count_list = []
         for sample_instance in fastainfo_instance_list:
@@ -120,8 +74,6 @@ class FilterCommon(object):
                                                     "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
         return variant_read_count_df
-
-
 
     ##########################################################
     #

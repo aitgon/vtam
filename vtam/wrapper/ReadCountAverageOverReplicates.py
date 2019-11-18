@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from vtam.utils.FilterCommon import FilterCommon
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.OptionManager import OptionManager
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
@@ -52,9 +52,9 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
     def specify_params(self):
         return {
-            "foo": "int",
-            "log_verbosity": "int",
-            "log_file": "str",
+            # "foo": "int",
+            # "log_verbosity": "int",
+            # "log_file": "str",
         }
 
 
@@ -62,9 +62,9 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # if not self.option("log_verbosity") is None:
+        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
         #
         # Input file output
         input_file_fastainfo = self.input_file(ReadCountAverageOverReplicates.__input_file_fastainfo)
@@ -90,7 +90,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ##########################################################
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
@@ -181,13 +181,13 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # #
         # ##########################################################
         # records = df_out.to_dict('records')
-        # with engine.connect() as conn:
+        # with __engine.connect() as conn:
         #         conn.execute(consensus_model.__table__.insert(), records)
 
         ############################################
         # Write to DB
         ############################################
-        records = FilterCommon.filter_delete_df_to_dict(df_out)
+        records = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
             conn.execute(consensus_model.__table__.insert(), records)
 
