@@ -55,15 +55,15 @@ class FilterLFNthresholdspecific(ToolWrapper):
             "lfn_variant_replicate_threshold": "float",
             "lfn_biosample_replicate_threshold": "required|float",
             "lfn_read_count_threshold": "required|float",
-            "log_verbosity": "int",
-            "log_file": "str"
+            # "log_verbosity": "int",
+            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+        # OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -117,7 +117,7 @@ class FilterLFNthresholdspecific(ToolWrapper):
         ##########################################################
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=None,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
@@ -176,9 +176,9 @@ class FilterLFNthresholdspecific(ToolWrapper):
         Logger.instance().info("Launching LFN filter:")
         #
         ############################################
-        # TaxAssign 2: f2_f4_lfn_delete_variant
+        # PoolMarkers 2: f2_f4_lfn_delete_variant
         # Or
-        # TaxAssign  3: f3_f5_lfn_delete_variant_replicate
+        # PoolMarkers  3: f3_f5_lfn_delete_variant_replicate
         ############################################
         if bool(filter_lfn_variant):
             lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold, threshold_specific_df=threshold_specific_df)
@@ -189,18 +189,18 @@ class FilterLFNthresholdspecific(ToolWrapper):
         lfn_filter_runner.variant_read_count_filter_delete_df.head()
 
         ############################################
-        # TaxAssign 6:  f6_lfn_delete_biosample_replicate_delete
+        # PoolMarkers 6:  f6_lfn_delete_biosample_replicate_delete
         ############################################
 
         lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
 
         ############################################
-        # TaxAssign  7:f7_lfn_delete_absolute_read_count
+        # PoolMarkers  7:f7_lfn_delete_absolute_read_count
         ############################################
         lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
 
         ############################################
-        # TaxAssign 8:f8_lfn_delete_do_not_pass_all_filters
+        # PoolMarkers 8:f8_lfn_delete_do_not_pass_all_filters
         ############################################
         lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
 
