@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import pandas
 from unittest import TestCase
@@ -10,16 +11,17 @@ from vtam.utils.PathManager import PathManager
 class TestFilterPCRError(TestCase):
 
     def setUp(self):
+        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
+
         # Input from min_replicate_number
         self.variant_df = pandas.DataFrame({
-            'id': list(range(1,5)),
             'sequence': [
                 'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
                 'TGTTCTTTATTTATTATTTGATGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
                 'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTCGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
                 'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTCGCTGTAACTTTATCATTATCAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
                          ],
-        })
+        }, index=list(range(1,5)))
         #
         self.variant_read_count_df = pandas.DataFrame({
             'run_id': [1]*8,
@@ -61,5 +63,13 @@ class TestFilterPCRError(TestCase):
         #
         pcr_error_var_prop = 0.05
         filter_output_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)
-        self.assertTrue(filter_output_df.read_count.tolist() == [350, 300, 300, 220, 60, 0, 2, 0])
-        self.assertTrue(filter_output_df.filter_delete.tolist() == [False, False, False, False, False, False, True, True])
+        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate_id  variant_id  read_count  filter_delete
+0       1          1             1             1           1         350          False
+1       1          1             1             2           1         300          False
+2       1          1             1             1           2         300          False
+3       1          1             1             2           2         220          False
+4       1          1             1             1           3          60          False
+5       1          1             1             2           3           0          False
+6       1          1             1             1           4           2           True
+7       1          1             1             2           4           0           True"""
+        self.assertTrue(filter_output_df_bak_str == filter_output_df.to_string())

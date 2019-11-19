@@ -52,6 +52,7 @@ class TestTaxAssign(TestCase):
                                   , 'ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC']
         }
         variant_df = pandas.DataFrame(data=variant_dic)
+        variant_df.set_index('id', inplace=True)
 
         #
         Logger.instance().debug(
