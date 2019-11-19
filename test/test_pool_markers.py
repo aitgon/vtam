@@ -38,9 +38,12 @@ class TestPoolMarkers(TestCase):
         vsearch_cluster_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'cluster.fa')
         #
         # Create object and run vsearch
-        vsearch_parameters = {'--cluster_size': fasta_path, '--clusters':  vsearch_cluster_output_path,
+        vsearch_parameters = {'--cluster_size': fasta_path,
+                              '--clusters':  vsearch_cluster_output_path,
                               '--id': 1, '--sizein': None,
-                              '--centroids': vsearch_output_path}
+                              '--centroids': vsearch_output_path,
+                              "--threads": int(os.getenv('VTAM_THREADS')),
+                              }
         vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
 

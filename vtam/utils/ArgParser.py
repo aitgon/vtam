@@ -91,8 +91,7 @@ class ArgParser():
                                  help="Execute the workflow from the given RULE.",
                                  required=False)
         parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0, required=False,
-                                 help="Set verbosity level, eg. None (Error level) -v (Info level)"
-                                 )
+                                 help="Set verbosity level, eg. None (Error level) -v (Info level)")
         subparsers = parser_vtam.add_subparsers()
 
         #############################################
@@ -171,23 +170,24 @@ class ArgParser():
                                                                   error_message="Verify the '--threshold_specific' argument",
                                                                   is_abspath=is_abspath))
         parser_vtam_asv.set_defaults(command='asv')  # This attribute will trigget the good command
+
         #############################################
         #
         # create the parser for the "optimize" command
         #
         #############################################
+
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True, parents=[parser_vtam])
         parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
                                           required=True, type=lambda x:
             PathManager.check_file_exists_and_is_nonempty(x,
                                                           error_message="Verify the '--fastainfo' argument"))
-        # TODO is this argument really necessary
-        parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED:Directory with FASTA files",
-                                          required=True,
-                                          type=lambda x:
-                                          PathManager.check_file_exists_and_is_nonempty(x,
-                                                                                        error_message="Verify the '--fastadir' argument",
-                                                                                        is_abspath=is_abspath))
+        # parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED:Directory with FASTA files",
+        #                                   required=True,
+        #                                   type=lambda x:
+        #                                   PathManager.check_file_exists_and_is_nonempty(x,
+        #                                                              error_message="Verify the '--fastadir' argument",
+        #                                                              is_abspath=is_abspath))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",

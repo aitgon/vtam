@@ -13,11 +13,11 @@ from vtam.utils.constants import rank_hierarchy_asv_table
 
 class MakeAsvTableRunner(object):
 
-    def __init__(self, engine, input_file_fastainfo, run_model, marker_model, biosample_model, replicate_model,
+    def __init__(self, engine, fasta_info_tsv, run_model, marker_model, biosample_model, replicate_model,
                  filter_chimera_borderline_model, filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy):
 
         self.engine = engine
-        self.input_file_fastainfo = input_file_fastainfo
+        self.fasta_info_tsv = fasta_info_tsv
         self.run_model = run_model
         self.marker_model = marker_model
         self.biosample_model = biosample_model
@@ -30,7 +30,7 @@ class MakeAsvTableRunner(object):
 
     def run(self):
 
-        fasta_info_obj = FastaInformation(self.input_file_fastainfo, self.engine, self.run_model, self.marker_model, self.biosample_model, self.replicate_model)
+        fasta_info_obj = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model, self.replicate_model)
         variant_read_count_df = fasta_info_obj.get_variant_read_count_df(self.filter_codon_stop_model)
         variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=self.filter_codon_stop_model,
                                                variant_model=self.variant_model)
@@ -93,9 +93,8 @@ class MakeAsvTableRunner(object):
 
         asv_df3 = asv_df[['variant_id', 'marker_id', 'run_id']]
 
-        # TODO: ask emese: is Chimera borderline per biosample?, how to add this information in asvtable?
-        variant_to_chimera_borderline_df = self.get_chimera_borderline_df(variant_df)
-        asv_df3 = asv_df3.merge(variant_to_chimera_borderline_df, on=['variant_id'])
+        variant_to_chimera_borderline_df = self.get_chimera_borderline_df()
+        asv_df3 = asv_df3.merge(variant_to_chimera_borderline_df, on=['run_id', 'marker_id', 'variant_id'])
 
         #####
         #
@@ -128,9 +127,6 @@ class MakeAsvTableRunner(object):
                     tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank, 'ltg_tax_id': ltg_tax_id})
                 except TypeError: # no result
                     pass
-        # with self.engine.connect() as conn:
-        #     for row in conn.execute(stmt_ltg_tax_assign).fetchall():
-        #         tax_assign_list.append(row)
         ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
         #
         ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_db_df,
@@ -175,7 +171,7 @@ class MakeAsvTableRunner(object):
 
         return asv_df_final
 
-    def get_chimera_borderline_df(self, variant_df):
+    def get_chimera_borderline_df(self):
         # #########################################################
         #
         # Get variants that passed the filter
@@ -188,15 +184,36 @@ class MakeAsvTableRunner(object):
         # filter_codon_stop_model_table = self.filter_codon_stop_model.__table__
         variant_to_chimera_borderline_list = []
         filter_chimera_borderline_model_table = self.filter_chimera_borderline_model.__table__
-        with self.engine.connect() as conn:
-            for df_row in variant_df.itertuples():
-                variant_id = df_row.Index
-                stmt_select = sqlalchemy.select([filter_chimera_borderline_model_table.c.filter_delete]) \
-                    .where(filter_chimera_borderline_model_table.c.variant_id == variant_id).distinct()
-                # variant_model_table = self.variant_model.__table__
-                variant_is_chimera_borderline = conn.execute(stmt_select).first()[0]
-                variant_to_chimera_borderline_list.append({'variant_id': variant_id,
-                                                           'chimera_borderline': variant_is_chimera_borderline})
-        variant_to_chimera_borderline_df = pandas.DataFrame.from_records(variant_to_chimera_borderline_list,
-                                                     index='variant_id')
+
+        # run_marker_biosample_df = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id']].drop_duplicates(inplace=False)
+
+
+        ##########################################################
+        #
+        #
+        # 3. Select marker/run/biosample/replicate from variant_read_count_model
+        #
+        ##########################################################
+
+        fasta_info = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model, self.replicate_model)
+
+        filter_chimera_borderline_df = fasta_info.get_full_table_df(model=self.filter_chimera_borderline_model)
+
+        variant_to_chimera_borderline_df = filter_chimera_borderline_df[['run_id', 'marker_id', 'variant_id', 'filter_delete']]
+        variant_to_chimera_borderline_df = variant_to_chimera_borderline_df.sort_values(by='filter_delete', ascending=False)
+        variant_to_chimera_borderline_df = variant_to_chimera_borderline_df\
+            .drop_duplicates(subset=['run_id', 'marker_id', 'variant_id'], keep='first', inplace=False)
+        variant_to_chimera_borderline_df.rename({'filter_delete': 'chimera_borderline'}, axis=1, inplace=True)
+
+        # import pdb; pdb.set_trace()
+        # with self.engine.connect() as conn:
+        #     for df_row in variant_df.itertuples():
+        #         variant_id = df_row.Index
+        #         stmt_select = sqlalchemy.select([filter_chimera_borderline_model_table.c.filter_delete]) \
+        #             .where(filter_chimera_borderline_model_table.c.variant_id == variant_id).distinct()
+        #         variant_is_chimera_borderline = conn.execute(stmt_select).first()[0]
+        #         variant_to_chimera_borderline_list.append({'variant_id': variant_id,
+        #                                                    'chimera_borderline': variant_is_chimera_borderline})
+        # variant_to_chimera_borderline_df = pandas.DataFrame.from_records(variant_to_chimera_borderline_list,
+        #                                              index='variant_id')
         return variant_to_chimera_borderline_df

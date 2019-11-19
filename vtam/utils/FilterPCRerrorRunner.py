@@ -60,6 +60,7 @@ class FilterPCRerrorRunner(object):
                                        '--maxaccepts': 0,
                                        '--userout': vsearch_pcr_error_tsv,
                                        '--userfields': "query+target+alnlen+ids+mism+gaps",
+                                        '--threads': int(os.getenv('VTAM_THREADS')),
                                        }
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()

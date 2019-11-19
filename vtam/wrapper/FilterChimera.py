@@ -58,19 +58,11 @@ class FilterChimera(ToolWrapper):
 
     def specify_params(self):
         return{
-            # "foo": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str"
         }
-
-
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
         this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_step_tmp_dir)
 
@@ -130,30 +122,12 @@ class FilterChimera(ToolWrapper):
                                                variant_model=variant_model,
                                                filter_id=filter_id)
 
-        # ##########################################################
-        # #
-        # #
-        # ##########################################################
-        #
-        # # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
-        # variant_model_table = variant_model.__table__
-        # stmt_variant = select([variant_model_table.c.id,
-        #                        variant_model_table.c.sequence])
-        #
-        # # TODO variant_df = fasta_info.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model, filter_id=filter_id)
-        # # Select to DataFrame
-        # variant_filter_lfn_passed_list = []
-        # with engine.connect() as conn:
-        #     for row in conn.execute(stmt_variant).fetchall():
-        #         variant_filter_lfn_passed_list.append(row)
-        # variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
-        #                                                       columns=['id', 'sequence'])
         ##########################################################
         #
         # 4. Run Filter
         #
         ##########################################################
-        # filter_chimera_df, df_chimera_borderline = f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir)
+
         filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df)
         filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_step_tmp_dir)
 
@@ -182,104 +156,3 @@ class FilterChimera(ToolWrapper):
         except AssertionError:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
-
-
-# def f11_filter_chimera(variant_read_count_df, variant_df, this_step_tmp_dir):
-#     """
-#     filter chimera
-#     """
-#
-#     Logger.instance().debug(
-#         "file: {}; line: {}".format(__file__, inspect.currentframe().f_lineno))
-#     #
-#     filter_output_df = variant_read_count_df.copy()
-#     filter_output_df['filter_delete'] = False
-#     #
-#     filter_borderline_output_df = variant_read_count_df.copy()
-#     filter_borderline_output_df['filter_delete'] = False
-#     #
-#     df_grouped_variant_read_count = variant_read_count_df.groupby(
-#         by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-#     df_grouped_variant_read_count = df_grouped_variant_read_count[
-#         ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'read_count']]  # keep columns
-#     #
-#     df_grouped_run_marker_biosample = variant_read_count_df.groupby(
-#         by=['run_id', 'marker_id', 'biosample_id']).sum().reset_index()
-#     df_grouped_run_marker_biosample = df_grouped_run_marker_biosample[
-#         ['run_id', 'marker_id', 'biosample_id']]  # keep columns
-#     ###################################################################
-#     #
-#     # 1. Make a fasta_path file with all variants for each run, marker, biosample
-#     #
-#     ###################################################################
-#     for row_run_marker_biosample in df_grouped_run_marker_biosample.iterrows():
-#         run_id = row_run_marker_biosample[1].run_id
-#         marker_id = row_run_marker_biosample[1].marker_id
-#         biosample_id = row_run_marker_biosample[1].biosample_id
-#         #
-#         df_grouped_biosample_id = df_grouped_variant_read_count.loc[
-#             df_grouped_variant_read_count.biosample_id == biosample_id, ['variant_id', 'read_count']]
-#
-#         ###################################################################
-#         #
-#         # 2. Sort variants by abundance and write to fasta_path
-#         #
-#         ###################################################################
-#         df_grouped_biosample_id.sort_values(by='read_count', ascending=False, inplace=True)
-#         #
-#         chimera1_fasta = os.path.join(this_step_tmp_dir,
-#                                       'chimera1_biosample_id_{}.fasta_path'.format(biosample_id))
-#         #
-#         #  Prepare 1 fasta_path file
-#         with open(chimera1_fasta, 'w') as fasta_fout:
-#             for variant_id in df_grouped_biosample_id.variant_id.unique():
-#                 variant_sequence = variant_df.loc[variant_df.id == variant_id, 'sequence'].values[0]
-#                 read_count = df_grouped_biosample_id.loc[
-#                     df_grouped_variant_read_count.variant_id == variant_id, 'read_count'].values[0]
-#                 fasta_fout.write('>{};size={}\n{}\n'.format(variant_id, read_count, variant_sequence))
-#
-#         ###################################################################
-#         #
-#         # 3. Run uchime_denovo
-#         #
-#         ###################################################################
-#         chimera2_borderline_fasta = os.path.join(this_step_tmp_dir,
-#                                                  'chimera2_biosample_id_{}_borderline.fasta_path'.format(biosample_id))
-#         chimera2_nonchimeras_fasta = os.path.join(this_step_tmp_dir,
-#                                                   'chimera2_biosample_id_{}_nonchimeras.fasta_path'.format(biosample_id))
-#         chimera2_chimeras_fasta = os.path.join(this_step_tmp_dir,
-#                                                'chimera2_biosample_id_{}_chimeras.fasta_path'.format(biosample_id))
-#         #
-#         vsearch_chimera_args = {
-#             "uchime_denovo": chimera1_fasta,
-#             "borderline": chimera2_borderline_fasta,
-#             "nonchimeras": chimera2_nonchimeras_fasta,
-#             "chimeras": chimera2_chimeras_fasta
-#         }
-#         vsearch_chimera = VsearchChimera(**vsearch_chimera_args)
-#         vsearch_chimera.run()
-#
-#         ###################################################################
-#         #
-#         # 4. Delete variant from replicate/sample if chimeras
-#         #
-#         ###################################################################
-#         with open(chimera2_chimeras_fasta, "r") as handle:
-#             for chimera_seqrecord in SeqIO.parse(handle, "fasta_path"):
-#                 variant_id = int(chimera_seqrecord.id.split(';')[0])
-#                 filter_output_df.loc[(filter_output_df['run_id'] == run_id)
-#                                      & (filter_output_df['marker_id'] == marker_id)
-#                                      & (filter_output_df['biosample_id'] == biosample_id)
-#                                      & (filter_output_df['variant_id'] == variant_id), 'filter_delete'] = True
-#
-#         with open(chimera2_borderline_fasta, "r") as handle:
-#             for chimera_seqrecord in SeqIO.parse(handle, "fasta_path"):
-#                 variant_id = int(chimera_seqrecord.id.split(';')[0])
-#                 filter_borderline_output_df.loc[(filter_borderline_output_df['run_id'] == run_id)
-#                                      & (filter_borderline_output_df['marker_id'] == marker_id)
-#                                      & (filter_borderline_output_df['biosample_id'] == biosample_id)
-#                                      & (filter_borderline_output_df['variant_id'] == variant_id), 'filter_delete'] = True
-#         #
-#
-#     return filter_output_df, filter_borderline_output_df
-

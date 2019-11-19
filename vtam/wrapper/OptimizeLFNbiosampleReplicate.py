@@ -54,17 +54,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     def specify_params(self):
         return {
-            # "foo": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -144,12 +138,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        # lfn_biosample_replicate_df = variant_read_count_keep_df.rename(columns={'read_count': 'N_ijk'})
-        variant_read_count_keep_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_keep_df)
-        # N_jk_df = lfn_biosample_replicate_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).agg({'N_ijk': sum})
-        # N_jk_df = N_jk_df.rename(columns={'N_ijk': 'N_jk'})
-        # Todo Emese to confirm that N_jk_df is calculated with all variants as above, not just keep
-        # N_jk_df = variant_read_count_keep_df_obj.get_N_jk_df()
         optimize_output_df = variant_read_count_keep_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
         optimize_output_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
         optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_output_df['N_ijk'] / optimize_output_df['N_jk']

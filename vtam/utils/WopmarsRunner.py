@@ -46,8 +46,6 @@ class WopmarsRunner(Singleton):
         if wopfile_path is None:
             wopfile_path = tempfile.NamedTemporaryFile().name
         self.wopfile_path = wopfile_path
-        # wopfile_template_path\
-        #     = os.output.join(os.output.dirname(__file__), '../../data/Wopfile_{}.yml'.format(self.command))
         #####################
         #
         # Create Wopfile content
@@ -113,15 +111,17 @@ class WopmarsRunner(Singleton):
         if self.wopfile_path is None:
             self.wopfile_path = os.path.join(self.tempdir, 'Wopfile_{}.yml'.format(self.command))
             self.wopfile_path, wopfile_content = self.create_wopfile(path=self.wopfile_path)
-        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} --toolwrapper-log "
+        wopmars_command_template = "wopmars -w {wopfile_path} -D sqlite:///{db} "
         wopmars_command = wopmars_command_template\
             .format(wopfile_path=self.wopfile_path, **self.parameters)
         if self.parameters['dryrun']:
             wopmars_command += " -n"
         if self.parameters['forceall']:
             wopmars_command += " -F"
-        if self.parameters['log_verbosity'] > 0:
+        if self.parameters['log_verbosity'] > 0: # -v then pass this verbosity to wopmars
             wopmars_command += " -v"
+            if self.parameters['log_verbosity'] > 1: # -vv or higher, then do no pass it through environmental variables
+                os.environ['VTAM_LOG_VERBOSITY'] = str(self.parameters['log_verbosity'])
         if not self.parameters['log_file'] is None:
             wopmars_command += " --log " + self.parameters['log_file']
         if not self.parameters['targetrule'] is None:

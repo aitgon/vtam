@@ -56,9 +56,6 @@ class FilterRenkonen(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -178,7 +175,6 @@ def renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, le
         & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
         & (variant_read_proportion_per_replicate_df.replicate_id == right_replicate_id)
         ]
-
 
     #  Merge left and right replicate
     variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge( \
