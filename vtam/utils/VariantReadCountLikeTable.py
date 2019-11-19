@@ -23,7 +23,7 @@ class VariantReadCountLikeTable(object):
     def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
         """Get variant_read_count df from input filter model
 
-        :param input_file_fastainfo: TSV file with the fasta_path information
+        :param fasta_info_tsv: TSV file with the fasta_path information
         :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
         """
         filter_min_replicate_number_table = self.input_variant_read_count_like_model.__table__

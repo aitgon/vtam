@@ -72,11 +72,7 @@ class TaxAssign(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
-        threads = int(os.getenv('THREADS'))
-
+        threads = int(os.getenv('VTAM_THREADS'))
 
         #########################################################
         #
@@ -90,7 +86,6 @@ class TaxAssign(ToolWrapper):
         # Input file
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
-        # map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
         #
         # Input table models
         marker_model = self.input_table(TaxAssign.__input_table_marker)
