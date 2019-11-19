@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import pandas
 
@@ -8,20 +9,20 @@ from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
 class TestFilterPCRError(TestCase):
 
     def setUp(self):
+        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
+
         # Input from min_replicate_number
         self.variant_expected_df = pandas.DataFrame({
-            'id': list([1]),
             'sequence': [
                 'TGTTCTTTATTTATTATTTGCTGGTTTTGCTG',
                          ],
-        })
+        }, index=[1])
         # Input from min_replicate_number
         self.variant_unexpected_df = pandas.DataFrame({
-            'id': list([2]),
             'sequence': [
                 'TGTTCTTTATTTATTATTTGCTGGTTTTGCTT',
                          ],
-        })
+        }, index=[2])
         #
         self.variant_read_count_df = pandas.DataFrame({
             'run_id': [1]*4,
@@ -44,16 +45,9 @@ class TestFilterPCRError(TestCase):
                              variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
         vsearch_alignement_df = filter_pcr_error_runner.get_vsearch_alignement_df()
 
-        vsearch_alignement_df_bak = pandas.DataFrame({
-            'variant_id_unexpected' : [2],
-            'variant_id_expected' : [1],
-            'alnlen' : [32],
-            'ids' : [31],
-            'mism' : [1],
-            'gaps' : [0],
-        })
-
-        pandas.testing.assert_frame_equal(vsearch_alignement_df, vsearch_alignement_df_bak)
+        vsearch_alignement_df_bak_str = """   variant_id_unexpected  variant_id_expected  alnlen  ids  mism  gaps
+0                      2                    1      32   31     1     0"""
+        self.assertTrue(vsearch_alignement_df_bak_str==vsearch_alignement_df.to_string())
 
     def test_get_filter_pcr_error_df(self):
 
