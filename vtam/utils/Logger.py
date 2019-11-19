@@ -80,7 +80,7 @@ class Logger(Singleton):
             except KeyError:
                 log_file_path = None
 
-        if not log_file_path is None:
+        if not log_file_path is None and not log_file_path == 'None':
 
             log_stdout_path = log_file_path.rsplit(".", 1)[0]
 
