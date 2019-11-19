@@ -1,4 +1,4 @@
-
+import multiprocessing
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
@@ -9,6 +9,36 @@ class TestChimera(TestCase):
 
 
     def setUp(self):
+        """>parent1;size=650
+TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTG
+CTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+>parent2;size=700
+AACTATGTACACAAATTTTAGTATATTGGCAGGGATAGTAGGAACTTTACTATCGTTAGTTATCAGAATGGAATTATCAA
+CAGGAAACATGTTAGATGGAGACGGTCAACAATATAACGTAATCGTAACCGCACATGGATTAATAATGATATTCTTCGTGGTTATGCCGGCAATGTTAGGAGGATTTGCAAACTGGTTCATACCAATAATGGTAGGATCACCAGATGTAGCTTTTCCAAGATTAAACAACATTAGCTTATGGTTAATATTATTGCCCCCTAGTTTATTATTATTAGTTGG
+>Chimera1;size=50
+TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTATTCTTCGTGGTTATGCCGGCAATGTTAGGAGGATTTGCAAACTGGTTCATACCAATAATGGTAGGATCACCAGATGTAGCTTTTCCAAGATTAAACAACATTAGCTTATGGTTAATATTATTGCCCCCTAGTTTATTATTATTAGTTGG
+>Chimera2;size=300
+TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTG
+CAGGAAACATGTTAGATGGAGACGGTCAACAATATAACGTAATCGTAACCGCACATGGATTAATAATGATATTCTTCGTGGTTATGCCGGCAATGTTAGGAGGATTTGCAAACTGGTTCATACCAATAATGGTAGGATCACCAGATGTAGCTTTTCCAAGATTAAACAACATTAGCTTATGGTTAATATTATTGCCCCCTAGTTTATTATTATTAGTTGG
+>Chimera3;size=50
+TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG"""
+
+        """(vtam_appli) gonzalez@milan:~/tmp/vsearch_uchime$ vsearch --uchime_denovo i.fa --borderline borderline.fa --nonchimeras nonchimeras.fa --chimeras chimeras.fa
+vsearch v2.7.0_linux_x86_64, 15.5GB RAM, 8 cores
+https://github.com/torognes/vsearch
+
+Reading file i.fa 100%  
+1500 nt in 5 seqs, min 300, max 300, avg 300
+Masking 100% 
+Sorting by abundance 100%
+Counting k-mers 100% 
+Detecting chimeras 100%  
+Found 2 (40.0%) chimeras, 2 (40.0%) non-chimeras,
+and 1 (20.0%) borderline sequences in 5 unique sequences.
+Taking abundance information into account, this corresponds to
+350 (20.0%) chimeras, 1350 (77.1%) non-chimeras,
+and 50 (2.9%) borderline sequences in 1750 total sequences"""
+
         # Input from min_replicate_number
         # Variants 1 and 2 are ok but 3-5 are chimeras
         self.variant_df = pandas.DataFrame({
@@ -36,16 +66,18 @@ class TestChimera(TestCase):
         })
         self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(self.this_step_tmp_dir)
+        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count()-1)
 
     def test_filter_chimera_runner(self):
         filter_chimera_runner = FilterChimeraRunner(variant_df=self.variant_df, variant_read_count_df=self.variant_read_count_df)
         filter_output_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=self.this_step_tmp_dir)
 
+        import pdb; pdb.set_trace()
         self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
                                       & (filter_output_df.marker_id == 1)
-                                      & (filter_output_df.variant_id == 6)
                                       & (filter_output_df.biosample_id == 1)
-                                      & (filter_output_df.replicate_id == 1),
+                                      & (filter_output_df.replicate_id == 1)
+                                      & (filter_output_df.variant_id == 6),
                                       'filter_delete'].values[0])
         #
 

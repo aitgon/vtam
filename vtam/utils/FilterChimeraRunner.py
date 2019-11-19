@@ -2,6 +2,7 @@ import os
 
 from Bio import SeqIO
 
+from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
@@ -27,7 +28,7 @@ class FilterChimeraRunner(object):
         filter_output_borderline_df = self.variant_read_count_df.copy()
         filter_output_borderline_df['filter_delete'] = False
 
-        run_marker_biosample_df = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id']].drop_duplicates()
+        run_marker_biosample_df = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id']].drop_duplicates(inplace=False)
         for row in run_marker_biosample_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
@@ -91,6 +92,7 @@ class FilterChimeraRunner(object):
             #
             ###################################################################
 
+            Logger.instance().debug("Vsearch uchime chimera path: {}".format(uchime_chimeras_fasta_path))
             with open(uchime_chimeras_fasta_path, "r") as handle:
                 for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])
@@ -99,6 +101,8 @@ class FilterChimeraRunner(object):
                                          & (filter_output_chimera_df['biosample_id'] == biosample_id)
                                          & (filter_output_chimera_df['variant_id'] == variant_id), 'filter_delete'] = True
 
+            Logger.instance().debug("Vsearch uchime chimera borderline path: {}".format(uchime_borderline_fasta_path))
+            import pdb; pdb.set_trace()
             with open(uchime_borderline_fasta_path, "r") as handle:
                 for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])

@@ -58,9 +58,12 @@ class PoolMarkerRunner(object):
 
         #
         # Create object and run vsearch
-        vsearch_parameters = {'--cluster_size': fasta_path, '--clusters':  vsearch_output_cluster_path,
+        vsearch_parameters = {'--cluster_size': fasta_path,
+                              '--clusters':  vsearch_output_cluster_path,
                               '--id': 1, '--sizein': None,
-                              '--centroids': vsearch_output_centroid_fasta}
+                              '--centroids': vsearch_output_centroid_fasta,
+                              "--threads": int(os.getenv('VTAM_THREADS')),
+                              }
         vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
         self.cluster_path = vsearch_output_cluster_path

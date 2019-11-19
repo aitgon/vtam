@@ -93,6 +93,7 @@ class ReadTrimmer(object):
                               '--minseqlength': self.align_parameters["minseqlength"],
                               '--userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
                               '--userout': self.alignements_tsv_path,
+                              '--threads': int(os.getenv('VTAM_THREADS')),
                               }
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()

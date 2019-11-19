@@ -108,6 +108,43 @@ class FastaInformation(object):
             sys.exit(0)
         return variant_read_count_df
 
+    def get_full_table_df(self, model):
+        """Based on the Fasta samples returns all the columns of the table as df
+
+        :param model: SQLalchemy model
+        :return: DataFrame with all columns and rows of fasta info
+        """
+
+        table = model.__table__
+
+        variant_read_count_list = []
+        for sample_instance in self.get_fasta_information_record_list():
+            run_id = sample_instance['run_id']
+            marker_id = sample_instance['marker_id']
+            biosample_id = sample_instance['biosample_id']
+            replicate_id = sample_instance['replicate_id']
+            stmt_select = table.select().distinct()\
+                                    .where(table.c.run_id == run_id)\
+                                    .where(table.c.marker_id == marker_id)\
+                                    .where(table.c.biosample_id == biosample_id)\
+                                    .where(table.c.replicate_id == replicate_id)
+
+            with self.__engine.connect() as conn:
+                for row in conn.execute(stmt_select).fetchall():
+                    variant_read_count_list.append(row)
+        #
+        table_df = pandas.DataFrame.from_records(variant_read_count_list,
+            columns=[column.key for column in table.c])
+
+        # Exit if no variants for analysis
+        try:
+            assert table_df.shape[0] > 0
+        except AssertionError:
+            Logger.instance().warning(VTAMexception("No variants available for this Filter: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
+            sys.exit(0)
+        return table_df
+
     def get_variant_df(self, variant_read_count_like_model, variant_model, filter_id=None):
         """Based on the Fasta information TSV and variant_model, returns the variant_df
 

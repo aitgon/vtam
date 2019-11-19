@@ -142,9 +142,7 @@ class FilterPCRerror(ToolWrapper):
             run_id = row.run_id
             marker_id = row.marker_id
             biosample_id = row.biosample_id
-            # for biosample_id in variant_read_count_df.biosample_id.unique().tolist():
 
-            # variant_read_count_per_biosample_df = variant_read_count_df.loc[variant_read_count_df.biosample_id==biosample_id]
             variant_read_count_per_biosample_df = variant_read_count_df.loc[(variant_read_count_df.run_id == run_id)
                                                                    & (variant_read_count_df.marker_id == marker_id)
                                                                    & (variant_read_count_df.biosample_id == biosample_id)]
@@ -194,6 +192,7 @@ class FilterPCRerror(ToolWrapper):
         try:
             assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
         except AssertionError:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
 
