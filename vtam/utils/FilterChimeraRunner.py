@@ -102,7 +102,6 @@ class FilterChimeraRunner(object):
                                          & (filter_output_chimera_df['variant_id'] == variant_id), 'filter_delete'] = True
 
             Logger.instance().debug("Vsearch uchime chimera borderline path: {}".format(uchime_borderline_fasta_path))
-            import pdb; pdb.set_trace()
             with open(uchime_borderline_fasta_path, "r") as handle:
                 for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])

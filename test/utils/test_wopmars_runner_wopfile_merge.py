@@ -59,7 +59,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         ###############################################################
         wopmars_command = wopmars_runner.get_wopmars_command()
         wopmars_runner.wopfile_path = "Wopfile_merge"
-        self.assertTrue(wopmars_command == 'wopmars -w test/output/wopfile -D sqlite:///db.sqlite --toolwrapper-log ')
+        self.assertTrue(wopmars_command == 'wopmars -w test/output/wopfile -D sqlite:///db.sqlite ')
 
 
     def test_wopmars_runner_merge_with_log(self):

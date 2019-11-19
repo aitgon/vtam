@@ -22,7 +22,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
 
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {outdir}'\
+        args_str = 'optimize --fastainfo {foofile} --variant_known {foofile} --outdir {outdir}'\
             .format(**self.foopaths)
         parser = ArgParser.get_arg_parser(is_abspath=False)
         # import pdb; pdb.set_trace()
