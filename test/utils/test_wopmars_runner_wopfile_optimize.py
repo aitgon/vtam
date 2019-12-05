@@ -50,26 +50,26 @@ class TestWorpmarsRunnerOptimize(TestCase):
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Fasta: vtam.model.Fasta
-            PrimerPair: vtam.model.PrimerPair
-            TagPair: vtam.model.TagPair
-            SampleInformation: vtam.model.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Fasta: vtam.models.Fasta
+            PrimerPair: vtam.models.PrimerPair
+            TagPair: vtam.models.TagPair
+            SampleInformation: vtam.models.SampleInformation
 
 
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: vtam.model.Fasta
-            SampleInformation: vtam.model.SampleInformation
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Fasta: vtam.models.Fasta
+            SampleInformation: vtam.models.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
@@ -88,26 +88,26 @@ rule VariantReadCount:
             sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
     output:
         table:
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
 
 
 rule OptimizeLFNbiosampleReplicate:
     tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
@@ -120,12 +120,12 @@ rule OptimizePCRerror:
     tool: vtam.wrapper.OptimizePCRerror
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
@@ -138,12 +138,12 @@ rule OptimizeLFNreadCountAndLFNvariant:
     tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
@@ -163,12 +163,12 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
     tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
             variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py

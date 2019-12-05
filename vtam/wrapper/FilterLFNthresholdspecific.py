@@ -2,7 +2,6 @@ import sys
 from wopmars.models.ToolWrapper import ToolWrapper
 from wopmars.utils.Logger import Logger
 
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from sqlalchemy import select
