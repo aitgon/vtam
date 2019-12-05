@@ -8,6 +8,15 @@ from vtam.utils.OptionManager import OptionManager
 
 from termcolor import colored
 
+class LessThanFilter(logging.Filter):
+    def __init__(self, exclusive_maximum, name=""):
+        super(LessThanFilter, self).__init__(name)
+        self.max_level = exclusive_maximum
+
+    def filter(self, record):
+        #non-zero return means we log this message
+        return 1 if record.levelno < self.max_level else 0
+
 class Logger(Singleton):
     """
     This class defines the vtam logger.
@@ -60,6 +69,7 @@ class Logger(Singleton):
             self.stream_handler_stdout.setLevel(logging.INFO)
         elif verbosity >= 2:
             self.stream_handler_stdout.setLevel(logging.DEBUG)
+        self.stream_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
         self.__logger.addHandler(self.stream_handler_stdout)
 
         ################################################################################################################
@@ -86,24 +96,23 @@ class Logger(Singleton):
 
             # log file in append mode of size 1 Mo and 1 backup
             # handler equivalent to stream_handler in term of logging level but write in .log file
-            self.__file_handler_out = RotatingFileHandler(log_stdout_path + ".log", 'a', 1000000, 1)
-            # formatter_file = logging.Formatter('%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s')
-            self.__file_handler_out.setFormatter(formatter)
+            self.__file_handler_stdout = RotatingFileHandler(log_stdout_path + ".log", 'a', 1000000, 1)
+            self.__file_handler_stdout.setFormatter(formatter)
             if verbosity <= 0:
-                self.__file_handler_out.setLevel(logging.WARNING)
+                self.__file_handler_stdout.setLevel(logging.WARNING)
             if verbosity == 1:
-                self.__file_handler_out.setLevel(logging.INFO)
+                self.__file_handler_stdout.setLevel(logging.INFO)
             elif verbosity >= 2:
-                self.__file_handler_out.setLevel(logging.DEBUG)
-            self.__logger.addHandler(self.__file_handler_out)
+                self.__file_handler_stdout.setLevel(logging.DEBUG)
+            self.__file_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
+            self.__logger.addHandler(self.__file_handler_stdout)
 
             # err file in append mode of size 1 Mo and 1 backup
             # this handler will write everything in the .err file.
-            self.__file_handler_err = RotatingFileHandler(log_stdout_path + ".err", 'a', 1000000, 1)
-            # formatter_err = logging.Formatter('%(asctime)s :: %(levelname)s :: %(name)s :: %(message)s')
-            self.__file_handler_err.setFormatter(formatter)
-            self.__file_handler_err.setLevel(logging.WARNING)
-            self.__logger.addHandler(self.__file_handler_err)
+            self.__file_handler_stderr = RotatingFileHandler(log_stdout_path + ".err", 'a', 1000000, 1)
+            self.__file_handler_stderr.setFormatter(formatter)
+            self.__file_handler_stderr.setLevel(logging.WARNING)
+            self.__logger.addHandler(self.__file_handler_stderr)
 
     def debug(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
