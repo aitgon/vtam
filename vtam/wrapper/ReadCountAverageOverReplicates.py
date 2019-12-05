@@ -1,8 +1,7 @@
 from sqlalchemy import select
 
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
-from vtam.utils.OptionManager import OptionManager
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 import os
 import pandas

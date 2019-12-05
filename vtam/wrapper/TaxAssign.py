@@ -5,7 +5,7 @@ import os
 import pandas
 from Bio.Blast.Applications import NcbiblastnCommandline
 from sqlalchemy import select
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
