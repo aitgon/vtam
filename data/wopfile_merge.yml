@@ -1,4 +1,4 @@
-{% from 'macros.txt' import param_log %}rule Merge:
+rule Merge:
     tool: vtam.wrapper.Merge
     input:
         file:
