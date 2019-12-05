@@ -62,7 +62,7 @@ class FastaInformation(object):
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
         """Based on the Fasta samples and the variant_read_count_model, returns the variant_read_count_df
 
-        :param variant_read_count_like_model: SQLalchemy model with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
+        :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
         :param filter_id:
         :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
         """
@@ -111,7 +111,7 @@ class FastaInformation(object):
     def get_full_table_df(self, model):
         """Based on the Fasta samples returns all the columns of the table as df
 
-        :param model: SQLalchemy model
+        :param model: SQLalchemy models
         :return: DataFrame with all columns and rows of fasta info
         """
 

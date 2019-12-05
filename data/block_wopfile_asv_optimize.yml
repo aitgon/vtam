@@ -5,26 +5,26 @@
             fastainfo: {{fastainfo}}
     output:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Fasta: vtam.model.Fasta
-            PrimerPair: vtam.model.PrimerPair
-            TagPair: vtam.model.TagPair
-            SampleInformation: vtam.model.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Fasta: vtam.models.Fasta
+            PrimerPair: vtam.models.PrimerPair
+            TagPair: vtam.models.TagPair
+            SampleInformation: vtam.models.SampleInformation
 
 
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: vtam.model.Fasta
-            SampleInformation: vtam.model.SampleInformation
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Fasta: vtam.models.Fasta
+            SampleInformation: vtam.models.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
         file:
             fastainfo: {{fastainfo}}
     output:
@@ -43,14 +43,14 @@ rule VariantReadCount:
             sortreads: {{sortreads}}
             fastainfo: {{fastainfo}}
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
     output:
         table:
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
 
 
 {% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

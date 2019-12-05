@@ -48,26 +48,26 @@ class TestWorpmarsRunnerASV(TestCase):
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Fasta: vtam.model.Fasta
-            PrimerPair: vtam.model.PrimerPair
-            TagPair: vtam.model.TagPair
-            SampleInformation: vtam.model.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Fasta: vtam.models.Fasta
+            PrimerPair: vtam.models.PrimerPair
+            TagPair: vtam.models.TagPair
+            SampleInformation: vtam.models.SampleInformation
 
 
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: vtam.model.Fasta
-            SampleInformation: vtam.model.SampleInformation
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Fasta: vtam.models.Fasta
+            SampleInformation: vtam.models.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
@@ -86,30 +86,30 @@ rule VariantReadCount:
             sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
     output:
         table:
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
 
 
 rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterLFN: vtam.model.FilterLFN
+            FilterLFN: vtam.models.FilterLFN
     params:
         filter_lfn_variant: 1
         lfn_variant_threshold: 0.001
@@ -122,16 +122,16 @@ rule FilterMinReplicateNumber:
     tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterLFN: vtam.model.FilterLFN
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterLFN: vtam.models.FilterLFN
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
         min_replicate_number: 2
 
@@ -140,17 +140,17 @@ rule FilterPCRerror:
     tool: vtam.wrapper.FilterPCRerror
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterPCRerror: vtam.model.FilterPCRerror
+            FilterPCRerror: vtam.models.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
 
@@ -159,34 +159,34 @@ rule FilterChimera:
     tool: vtam.wrapper.FilterChimera
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterPCRerror: vtam.model.FilterPCRerror
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterPCRerror: vtam.models.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterChimera: vtam.model.FilterChimera
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterChimera: vtam.models.FilterChimera
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
 
 
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterChimera: vtam.model.FilterChimera
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterChimera: vtam.models.FilterChimera
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterRenkonen: vtam.model.FilterRenkonen
+            FilterRenkonen: vtam.models.FilterRenkonen
     params:
         upper_renkonen_tail: 0.1
 
@@ -195,34 +195,34 @@ rule FilterIndel:
     tool: vtam.wrapper.FilterIndel
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterRenkonen: vtam.model.FilterRenkonen
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterRenkonen: vtam.models.FilterRenkonen
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterIndel: vtam.model.FilterIndel
+            FilterIndel: vtam.models.FilterIndel
 
 
 rule FilterCodonStop:
     tool: vtam.wrapper.FilterCodonStop
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterIndel: vtam.model.FilterIndel
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterIndel: vtam.models.FilterIndel
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterCodonStop: vtam.model.FilterCodonStop
+            FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: 5
 
@@ -231,34 +231,34 @@ rule ReadCountAverageOverReplicates:
     tool: vtam.wrapper.ReadCountAverageOverReplicates
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+            ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
 rule TaxAssign:
     tool: vtam.wrapper.TaxAssign
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            TaxAssign: vtam.model.TaxAssign
+            TaxAssign: vtam.models.TaxAssign
     params:
         ltg_rule_threshold: 97
         include_prop: 90
@@ -270,14 +270,14 @@ rule MakeAsvTable:
     tool: vtam.wrapper.MakeAsvTable
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
-            FilterCodonStop: vtam.model.FilterCodonStop
-            TaxAssign: vtam.model.TaxAssign
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+            FilterCodonStop: vtam.models.FilterCodonStop
+            TaxAssign: vtam.models.TaxAssign
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
@@ -334,26 +334,26 @@ rule PoolMarkers:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Fasta: vtam.model.Fasta
-            PrimerPair: vtam.model.PrimerPair
-            TagPair: vtam.model.TagPair
-            SampleInformation: vtam.model.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Fasta: vtam.models.Fasta
+            PrimerPair: vtam.models.PrimerPair
+            TagPair: vtam.models.TagPair
+            SampleInformation: vtam.models.SampleInformation
 
 
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: vtam.model.Fasta
-            SampleInformation: vtam.model.SampleInformation
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Fasta: vtam.models.Fasta
+            SampleInformation: vtam.models.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
@@ -372,30 +372,30 @@ rule VariantReadCount:
             sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
     output:
         table:
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
 
 
 rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterLFN: vtam.model.FilterLFN
+            FilterLFN: vtam.models.FilterLFN
     params:
         filter_lfn_variant: 1
         lfn_variant_threshold: 0.001
@@ -408,16 +408,16 @@ rule FilterMinReplicateNumber:
     tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterLFN: vtam.model.FilterLFN
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterLFN: vtam.models.FilterLFN
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
         min_replicate_number: 2
 
@@ -426,17 +426,17 @@ rule FilterPCRerror:
     tool: vtam.wrapper.FilterPCRerror
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterPCRerror: vtam.model.FilterPCRerror
+            FilterPCRerror: vtam.models.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
 
@@ -445,34 +445,34 @@ rule FilterChimera:
     tool: vtam.wrapper.FilterChimera
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterPCRerror: vtam.model.FilterPCRerror
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterPCRerror: vtam.models.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterChimera: vtam.model.FilterChimera
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterChimera: vtam.models.FilterChimera
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
 
 
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterChimera: vtam.model.FilterChimera
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterChimera: vtam.models.FilterChimera
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterRenkonen: vtam.model.FilterRenkonen
+            FilterRenkonen: vtam.models.FilterRenkonen
     params:
         upper_renkonen_tail: 0.1
 
@@ -481,34 +481,34 @@ rule FilterIndel:
     tool: vtam.wrapper.FilterIndel
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterRenkonen: vtam.model.FilterRenkonen
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterRenkonen: vtam.models.FilterRenkonen
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterIndel: vtam.model.FilterIndel
+            FilterIndel: vtam.models.FilterIndel
 
 
 rule FilterCodonStop:
     tool: vtam.wrapper.FilterCodonStop
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterIndel: vtam.model.FilterIndel
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterIndel: vtam.models.FilterIndel
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterCodonStop: vtam.model.FilterCodonStop
+            FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: 5
 
@@ -517,34 +517,34 @@ rule ReadCountAverageOverReplicates:
     tool: vtam.wrapper.ReadCountAverageOverReplicates
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+            ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
 rule TaxAssign:
     tool: vtam.wrapper.TaxAssign
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            TaxAssign: vtam.model.TaxAssign
+            TaxAssign: vtam.models.TaxAssign
     params:
         ltg_rule_threshold: 97
         include_prop: 90
@@ -556,14 +556,14 @@ rule MakeAsvTable:
     tool: vtam.wrapper.MakeAsvTable
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
-            FilterCodonStop: vtam.model.FilterCodonStop
-            TaxAssign: vtam.model.TaxAssign
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+            FilterCodonStop: vtam.models.FilterCodonStop
+            TaxAssign: vtam.models.TaxAssign
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
@@ -614,26 +614,26 @@ rule PoolMarkers:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Fasta: vtam.model.Fasta
-            PrimerPair: vtam.model.PrimerPair
-            TagPair: vtam.model.TagPair
-            SampleInformation: vtam.model.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Fasta: vtam.models.Fasta
+            PrimerPair: vtam.models.PrimerPair
+            TagPair: vtam.models.TagPair
+            SampleInformation: vtam.models.SampleInformation
 
 
 rule SortReads:
     tool: vtam.wrapper.SortReads
     input:
         table:
-            Fasta: vtam.model.Fasta
-            SampleInformation: vtam.model.SampleInformation
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Fasta: vtam.models.Fasta
+            SampleInformation: vtam.models.SampleInformation
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
@@ -652,31 +652,31 @@ rule VariantReadCount:
             sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
     output:
         table:
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
 
 
 rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             threshold_specific: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterLFN: vtam.model.FilterLFN
+            FilterLFN: vtam.models.FilterLFN
     params:
         filter_lfn_variant: 1
         lfn_variant_threshold: 0.001
@@ -689,16 +689,16 @@ rule FilterMinReplicateNumber:
     tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterLFN: vtam.model.FilterLFN
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterLFN: vtam.models.FilterLFN
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
         min_replicate_number: 2
 
@@ -707,17 +707,17 @@ rule FilterPCRerror:
     tool: vtam.wrapper.FilterPCRerror
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterPCRerror: vtam.model.FilterPCRerror
+            FilterPCRerror: vtam.models.FilterPCRerror
     params:
         pcr_error_var_prop: 0.1
 
@@ -726,34 +726,34 @@ rule FilterChimera:
     tool: vtam.wrapper.FilterChimera
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterPCRerror: vtam.model.FilterPCRerror
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterPCRerror: vtam.models.FilterPCRerror
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterChimera: vtam.model.FilterChimera
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterChimera: vtam.models.FilterChimera
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
 
 
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterChimera: vtam.model.FilterChimera
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterChimera: vtam.models.FilterChimera
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterRenkonen: vtam.model.FilterRenkonen
+            FilterRenkonen: vtam.models.FilterRenkonen
     params:
         upper_renkonen_tail: 0.1
 
@@ -762,34 +762,34 @@ rule FilterIndel:
     tool: vtam.wrapper.FilterIndel
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterRenkonen: vtam.model.FilterRenkonen
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterRenkonen: vtam.models.FilterRenkonen
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterIndel: vtam.model.FilterIndel
+            FilterIndel: vtam.models.FilterIndel
 
 
 rule FilterCodonStop:
     tool: vtam.wrapper.FilterCodonStop
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterIndel: vtam.model.FilterIndel
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterIndel: vtam.models.FilterIndel
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            FilterCodonStop: vtam.model.FilterCodonStop
+            FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: 5
 
@@ -798,34 +798,34 @@ rule ReadCountAverageOverReplicates:
     tool: vtam.wrapper.ReadCountAverageOverReplicates
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+            ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
 rule TaxAssign:
     tool: vtam.wrapper.TaxAssign
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         table:
-            TaxAssign: vtam.model.TaxAssign
+            TaxAssign: vtam.models.TaxAssign
     params:
         ltg_rule_threshold: 97
         include_prop: 90
@@ -837,14 +837,14 @@ rule MakeAsvTable:
     tool: vtam.wrapper.MakeAsvTable
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
-            FilterCodonStop: vtam.model.FilterCodonStop
-            TaxAssign: vtam.model.TaxAssign
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+            FilterCodonStop: vtam.models.FilterCodonStop
+            TaxAssign: vtam.models.TaxAssign
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py

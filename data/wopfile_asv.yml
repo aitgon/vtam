@@ -1,18 +1,18 @@
-{% from 'macros.txt' import param_log, rule_filter_lfn, param_map_taxids, input_file_threshold_specific %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.txt' import input_file_threshold_specific %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}{{ input_file_threshold_specific(threshold_specific) }}
     output:
         table:
-            FilterLFN: vtam.model.FilterLFN
+            FilterLFN: vtam.models.FilterLFN
     params:
         filter_lfn_variant: {{filter_lfn_variant}}
         lfn_variant_threshold: {{lfn_variant_threshold}}
@@ -25,16 +25,16 @@ rule FilterMinReplicateNumber:
     tool: vtam.wrapper.FilterMinReplicateNumber
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterLFN: vtam.model.FilterLFN
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterLFN: vtam.models.FilterLFN
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
         min_replicate_number: {{min_replicate_number}}
 
@@ -43,17 +43,17 @@ rule FilterPCRerror:
     tool: vtam.wrapper.FilterPCRerror
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterMinReplicateNumber: vtam.model.FilterMinReplicateNumber
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterPCRerror: vtam.model.FilterPCRerror
+            FilterPCRerror: vtam.models.FilterPCRerror
     params:
         pcr_error_var_prop: {{pcr_error_var_prop}}
 
@@ -62,34 +62,34 @@ rule FilterChimera:
     tool: vtam.wrapper.FilterChimera
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterPCRerror: vtam.model.FilterPCRerror
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterPCRerror: vtam.models.FilterPCRerror
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterChimera: vtam.model.FilterChimera
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
+            FilterChimera: vtam.models.FilterChimera
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
 
 
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterChimera: vtam.model.FilterChimera
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterChimera: vtam.models.FilterChimera
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterRenkonen: vtam.model.FilterRenkonen
+            FilterRenkonen: vtam.models.FilterRenkonen
     params:
         upper_renkonen_tail: {{upper_renkonen_tail}}
 
@@ -98,34 +98,34 @@ rule FilterIndel:
     tool: vtam.wrapper.FilterIndel
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterRenkonen: vtam.model.FilterRenkonen
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterRenkonen: vtam.models.FilterRenkonen
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterIndel: vtam.model.FilterIndel
+            FilterIndel: vtam.models.FilterIndel
 
 
 rule FilterCodonStop:
     tool: vtam.wrapper.FilterCodonStop
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterIndel: vtam.model.FilterIndel
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterIndel: vtam.models.FilterIndel
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            FilterCodonStop: vtam.model.FilterCodonStop
+            FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: {{genetic_table_number}}
 
@@ -134,34 +134,34 @@ rule ReadCountAverageOverReplicates:
     tool: vtam.wrapper.ReadCountAverageOverReplicates
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: {{fastainfo}}
     output:
         table:
-            ReadCountAverageOverReplicates: vtam.model.ReadCountAverageOverReplicates
+            ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
 rule TaxAssign:
     tool: vtam.wrapper.TaxAssign
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterCodonStop: vtam.model.FilterCodonStop
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: {{fastainfo}}
             taxonomy: {{taxonomy}}
     output:
         table:
-            TaxAssign: vtam.model.TaxAssign
+            TaxAssign: vtam.models.TaxAssign
     params:
         ltg_rule_threshold: {{ltg_rule_threshold}}
         include_prop: {{include_prop}}
@@ -173,14 +173,14 @@ rule MakeAsvTable:
     tool: vtam.wrapper.MakeAsvTable
     input:
         table:
-            Marker: vtam.model.Marker
-            Run: vtam.model.Run
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            FilterChimeraBorderline: vtam.model.FilterChimeraBorderline
-            FilterCodonStop: vtam.model.FilterCodonStop
-            TaxAssign: vtam.model.TaxAssign
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+            FilterCodonStop: vtam.models.FilterCodonStop
+            TaxAssign: vtam.models.TaxAssign
         file:
             fastainfo: {{fastainfo}}
             taxonomy: {{taxonomy}}

@@ -4,7 +4,7 @@ import os
 import sys
 
 import sqlalchemy
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner

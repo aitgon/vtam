@@ -1,5 +1,5 @@
 import inspect
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 from sqlalchemy import select
 import pandas
 

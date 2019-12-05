@@ -7,7 +7,7 @@ from vtam.utils.OptionManager import OptionManager
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 import os
 import pandas

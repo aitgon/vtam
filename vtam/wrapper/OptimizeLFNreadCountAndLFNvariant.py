@@ -2,7 +2,7 @@ import inspect
 import pandas
 import sqlalchemy
 
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.Logger import Logger
