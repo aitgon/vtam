@@ -1,14 +1,14 @@
-{% from 'macros.txt' import param_log %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_optimize %}rule OptimizeLFNbiosampleReplicate:
     tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}
@@ -21,12 +21,12 @@ rule OptimizePCRerror:
     tool: vtam.wrapper.OptimizePCRerror
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}
@@ -39,12 +39,12 @@ rule OptimizeLFNreadCountAndLFNvariant:
     tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}
@@ -64,12 +64,12 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
     tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
     input:
         table:
-            Run: vtam.model.Run
-            Marker: vtam.model.Marker
-            Biosample: vtam.model.Biosample
-            Replicate: vtam.model.Replicate
-            Variant: vtam.model.Variant
-            VariantReadCount: vtam.model.VariantReadCount
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            Replicate: vtam.models.Replicate
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}
             variant_known: {{variant_known}}

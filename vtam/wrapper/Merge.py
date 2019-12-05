@@ -1,6 +1,6 @@
 import sys
 
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 import os
 
 import subprocess

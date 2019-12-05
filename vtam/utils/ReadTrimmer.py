@@ -112,7 +112,7 @@ class ReadTrimmer(object):
         M00842:118:000000000-ABGKE:1:1101:19826:1953|acgatccacagtg|AGATATTGGAACWTTATATTTTATTTTTGG	tctcgatgatcagWACTAATCAATTWCCAAATCCTCC	37	1	37	1	37	TCTCGATGATCAGAACTAATCAATTTCCAAATCCTCC
 
         :param session: Current session of the database
-        :param model: Model of the table
+        :param models: Model of the table
         :param vsearch_output_tsv: csv containing the results of the alignment
         :return: void
         """
