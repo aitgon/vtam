@@ -44,7 +44,9 @@ class SampleInformation(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
+        session = self.session
+        engine = session._session().get_bind()
+
         fasta_dir = str(os.getenv('VTAM_FASTA_DIR'))
 
         ##########################################################

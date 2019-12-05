@@ -62,8 +62,8 @@ class FilterIndel(ToolWrapper):
 
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
+        session = self.session
+        engine = session._session().get_bind()
 
         ##########################################################
         #

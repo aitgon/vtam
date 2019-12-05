@@ -43,7 +43,7 @@ class Merge(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
+        session = self.session
 
         fastq_dir = str(os.getenv('VTAM_FASTQ_DIR'))
         fasta_dir = str(os.getenv('VTAM_FASTA_DIR'))
