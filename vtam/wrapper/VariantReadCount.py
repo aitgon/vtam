@@ -3,7 +3,7 @@ import inspect
 import pandas
 import sqlalchemy
 from sqlalchemy import select
-from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
+from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
