@@ -1,8 +1,6 @@
 from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
