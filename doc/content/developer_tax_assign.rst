@@ -8,7 +8,7 @@ Input
 - database_fasta: Fasta file with all reference sequence to be aligned on the variant sequence.
 - tax assign parameters: TSV table file  with four columns
 
-    * identity_threshold
+    * ltg_rule_threshold
     * min_tax_level
     * max_tax_resolution
     * min_tax_n

@@ -7,8 +7,6 @@
         file:
             fastainfo: {{fastainfo}}
     params:
-        fastq_dir: {{fastqdir}}
-        fasta_dir: {{fastadir}}
         fastq_minovlen: {{fastq_minovlen}}
         fastq_maxmergelen: {{fastq_maxmergelen}}
         fastq_minmergelen: {{fastq_minmergelen}}
@@ -16,6 +14,4 @@
         fastq_maxee: {{fastq_maxee}}
         fastq_truncqual: {{fastq_truncqual}}
         fastq_maxns: {{fastq_maxns}}
-        threads: {{threads}}
         fastq_ascii: {{fastq_ascii}}
-        log_verbosity: {{log_verbosity}}{{ param_log(log_file) }}

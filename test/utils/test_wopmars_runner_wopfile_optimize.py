@@ -22,7 +22,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
 
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {outdir}'\
+        args_str = 'optimize --fastainfo {foofile} --variant_known {foofile} --outdir {outdir}'\
             .format(**self.foopaths)
         parser = ArgParser.get_arg_parser(is_abspath=False)
         # import pdb; pdb.set_trace()
@@ -58,9 +58,6 @@ class TestWorpmarsRunnerOptimize(TestCase):
             PrimerPair: vtam.model.PrimerPair
             TagPair: vtam.model.TagPair
             SampleInformation: vtam.model.SampleInformation
-    params:
-        fasta_dir: test/utils
-        log_verbosity: 0
 
 
 rule SortReads:
@@ -69,7 +66,10 @@ rule SortReads:
         table:
             Fasta: vtam.model.Fasta
             SampleInformation: vtam.model.SampleInformation
+            Run: vtam.model.Run
             Marker: vtam.model.Marker
+            Biosample: vtam.model.Biosample
+            Replicate: vtam.model.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
@@ -79,7 +79,6 @@ rule SortReads:
         min_id: 0.8
         minseqlength: 32
         overhang: 0
-        log_verbosity: 0
 
 
 rule VariantReadCount:
@@ -97,8 +96,6 @@ rule VariantReadCount:
         table:
             Variant: vtam.model.Variant
             VariantReadCount: vtam.model.VariantReadCount
-    params:
-        log_verbosity: 0
 
 
 rule OptimizeLFNbiosampleReplicate:
@@ -117,8 +114,6 @@ rule OptimizeLFNbiosampleReplicate:
     output:
         file:
             optimize_lfn_biosample_replicate: test/output/optimize_lfn_biosample_replicate.tsv
-    params:
-        log_verbosity: 0
 
 
 rule OptimizePCRerror:
@@ -137,8 +132,6 @@ rule OptimizePCRerror:
     output:
         file:
             optimize_pcr_error: test/output/optimize_pcr_error.tsv
-    params:
-        log_verbosity: 0
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -164,7 +157,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
         min_replicate_number: 2
-        log_verbosity: 0
 
 
 rule OptimizeLFNreadCountAndLFNvariantReplicate:
@@ -189,6 +181,5 @@ rule OptimizeLFNreadCountAndLFNvariantReplicate:
         lfn_variant_or_variant_replicate_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
-        min_replicate_number: 2
-        log_verbosity: 0"""
+        min_replicate_number: 2"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
