@@ -6,7 +6,7 @@ import sys
 
 
 class VariantReadCountLikeTable(object):
-    """Takes a any type of VariantReadCount model/table with at least run_id, marker_id, biosample_id, replicate_id, variant_id
+    """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, biosample_id, replicate_id, variant_id
     attributes/columns and performs various operations on it"""
 
     def __init__(self, engine, variant_read_count_like_model):
@@ -15,13 +15,13 @@ class VariantReadCountLikeTable(object):
         self.variant_read_count_like_model = variant_read_count_like_model
 
     def delete_output_filter_model(self, fasta_info_record_list):
-        """Deletes the entries in the output filter model based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate_id"""
+        """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate_id"""
 
         with self.engine.connect() as conn:
             conn.execute(self.variant_read_count_like_model.__table__.delete(), fasta_info_record_list)
 
     def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
-        """Get variant_read_count df from input filter model
+        """Get variant_read_count df from input filter models
 
         :param fasta_info_tsv: TSV file with the fasta_path information
         :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count

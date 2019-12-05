@@ -4,7 +4,7 @@ import pandas
 import sqlalchemy
 
 from vtam.utils.Logger import Logger
-from vtam.model.Biosample import Biosample
+from vtam.models.Biosample import Biosample
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
