@@ -64,7 +64,7 @@ class MakeAsvTable(ToolWrapper):
 
     def run(self):
         session = self.session()
-        engine = session._WopMarsSession__session.bind
+        engine = session.get_WopMarsSession__session.bind
         # if not self.option("log_verbosity") is None:
         #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         #     OptionManager.instance()['log_file'] = str(self.option("log_file"))

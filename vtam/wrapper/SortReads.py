@@ -1,5 +1,3 @@
-import inspect
-
 import os
 import shutil
 
@@ -7,9 +5,9 @@ import pandas
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
 from vtam.utils.SortReadsRunner import SortReadsRunner
+
 
 class SortReads(ToolWrapper):
     __mapper_args__ = {
@@ -66,8 +64,8 @@ class SortReads(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
+        session = self.session
+        engine = session._session().get_bind()
         this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_step_tmp_dir)
         fasta_dir = str(os.getenv('VTAM_FASTA_DIR'))
