@@ -7,8 +7,10 @@ from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
-from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
+
+# from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
 
 
 class VariantReadCount(ToolWrapper):
@@ -56,17 +58,14 @@ class VariantReadCount(ToolWrapper):
         :return:
         """
         return {
-            "foo": "int",
-            "log_verbosity": "int",
-            "log_file": "str",
+            # "foo": "int",
+            # "log_verbosity": "int",
+            # "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -96,7 +95,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete singleton
-        # 6. Insert into Variant and VariantReadCount tables
+        # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################
 
@@ -108,7 +107,7 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             Logger.instance().debug(row)
@@ -148,35 +147,39 @@ class VariantReadCount(ToolWrapper):
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
-                             header=None,
-                             names=['read_id', 'fasta_id', 'run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_sequence'])
-        read_annotation_df.drop('read_id', axis=1, inplace=True)
+                             header=0,)
+        read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
         ##########################################################
         #
-        # 4. Group by read sequence
+        # 4. Group by read sequence to variant_read_count with run_id, marker, ...
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = read_annotation_df.groupby(['fasta_id', 'run_id', 'marker_id', 'biosample_id',
-                                    'replicate_id', 'variant_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_sequence']).size().reset_index(name='read_count')
+        # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
+        variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
 
         ##########################################################
         #
-        # 5. Remove singleton
+        # 5. Remove singletons
         #
         ##########################################################
+        variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = f1_lfn_delete_singleton(variant_read_count_df)
+        variant_read_count_df = variant_read_count_lfn.filter_out_singletons() # returns variant_read_count wout singletons
+        variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
         ################################
         #
-        # 6. Insert into Variant and VariantReadCount tables
+        # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################
         Logger.instance().debug(
             "file: {}; line: {}; Insert variants".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
         sample_instance_list = []
+        variant_read_count_df.sort_values(
+            by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate_id'], inplace=True)
         for row in variant_read_count_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
@@ -190,7 +193,7 @@ class VariantReadCount(ToolWrapper):
                     stmt_result_var = conn.execute(stmt_ins_var)
                 variant_id = stmt_result_var.inserted_primary_key[0]
             except sqlalchemy.exc.IntegrityError:
-                stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence==variant_sequence)
+                stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence == variant_sequence)
                 with engine.connect() as conn:
                     variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,

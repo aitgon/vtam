@@ -17,7 +17,7 @@ parameters_numerical = {
     'fastq_truncqual': 10,
     'filter_lfn_variant': 1,
     'genetic_table_number': 5,
-    'identity_threshold': 97,
+    'ltg_rule_threshold': 97,
     'include_prop': 90,
     'lfn_biosample_replicate_threshold': 0.001,
     'lfn_read_count_threshold': 10,
@@ -29,7 +29,7 @@ parameters_numerical = {
     'minseqlength': 32,
     'overhang': 0,
     'pcr_error_var_prop': 0.1,
-    'renkonen_threshold': 0.1,
+    'upper_renkonen_tail': 0.1,
     'threads': 8,
 }
 
@@ -40,7 +40,7 @@ parameters_numerical = {
 ##########################################################
 rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
-rank_hierarchy_otu_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
+rank_hierarchy_asv_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
 
 public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
 url_taxonomy_sqlite = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.sqlite"

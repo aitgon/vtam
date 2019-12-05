@@ -2,8 +2,9 @@
 from vtam.utils.PathManager import PathManager
 from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
-from vtam.wrapper.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
-    f06_select_ltg, f05_blast_result_subset, f02_variant_df_to_fasta, f07_blast_result_to_ltg_tax_id
+from vtam.utils.VariantDFutils import VariantDFutils
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage, \
+    f06_select_ltg, f05_blast_result_subset, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 
 import inspect
@@ -21,7 +22,7 @@ class TestTaxAssign(TestCase):
         #
         #####################################
         #
-        self.identity_threshold = 97
+        self.ltg_rule_threshold = 97
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
@@ -44,20 +45,24 @@ class TestTaxAssign(TestCase):
         cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
 
 
-    def test_f02_variant_df_to_fasta(self):
+    def test_variant_df_to_fasta(self):
         variant_dic = {
-            'variant_id' : [57, 107],
-            'variant_sequence' : ['ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC'
+            'id' : [57, 107],
+            'sequence' : ['ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC'
                                   , 'ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC']
         }
         variant_df = pandas.DataFrame(data=variant_dic)
+        variant_df.set_index('id', inplace=True)
+
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'TaxAssign'))
+            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         PathManager.mkdir_p(this_tempdir)
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
-        f02_variant_df_to_fasta(variant_df, variant_fasta)
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
+        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils.to_fasta(fasta_path=variant_fasta)
+        # f02_variant_df_to_fasta(variant_df, variant_fasta)
         #
         variant_fasta_content_expected =""">57\nACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC\n>107\nACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC\n"""
         with open(variant_fasta, 'r') as fin:
@@ -212,7 +217,7 @@ class TestTaxAssign(TestCase):
                                                                right_on='tax_id')
         variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
         #
-        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, identity_threshold=self.identity_threshold,
+        ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_threshold=self.ltg_rule_threshold,
                                                 include_prop=self.include_prop, min_number_of_taxa=self.min_number_of_taxa)
         #
         # Output

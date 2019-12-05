@@ -1,5 +1,6 @@
 from vtam import Logger
-from vtam.utils.FilterCommon import FilterCommon
+from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
@@ -47,17 +48,14 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_params(self):
         return {
-            "renkonen_threshold": "float",
-            "log_verbosity": "int",
-            "log_file": "str"
+            "upper_renkonen_tail": "float",
+            # "log_verbosity": "int",
+            # "log_file": "str"
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -73,14 +71,14 @@ class FilterRenkonen(ToolWrapper):
         run_model = self.input_table(FilterRenkonen.__input_table_run)
         biosample_model = self.input_table(FilterRenkonen.__input_table_biosample)
         replicate_model = self.input_table(FilterRenkonen.__input_table_replicate)
-        input_filter_model = self.input_table(FilterRenkonen.__input_table_chimera)
+        input_filter_chimera_model = self.input_table(FilterRenkonen.__input_table_chimera)
         #
         # Options
-        # TaxAssign parameters
-        renkonen_threshold = float(self.option("renkonen_threshold"))
+        # PoolMarkers parameters
+        upper_renkonen_tail = float(self.option("upper_renkonen_tail"))
         #
         # Output table models
-        output_filter_models = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
+        output_filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
 
         ##########################################################
         #
@@ -88,27 +86,26 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        filter_various = FilterCommon(self.__class__.__name__, engine, run_model, marker_model, biosample_model, replicate_model,
-                                      input_filter_model,
-                                      output_filter_models=output_filter_models)
-        fastainfo_instance_list = filter_various.get_fastainfo_instance_list_with_ids(input_file_fastainfo)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
         #
-        # 2. Delete /run/markerbiosample/replicate from this filter table
+        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-        filter_various.delete_output_filter_model(fastainfo_instance_list)
-
+        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_renkonen_model, engine=engine)
+        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
 
         ##########################################################
         #
-        # 3. Select variant_read_count_model
+        # variant_read_count_df
         #
         ##########################################################
 
-        variant_read_count_df = filter_various.get_variant_read_count_model(fastainfo_instance_list)
+        filter_id = None
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_chimera_model, filter_id=filter_id)
 
         ##########################################################
         #
@@ -116,7 +113,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold)
+        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail)
 
 
         ##########################################################
@@ -125,9 +122,9 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
+        records = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(output_filter_models.__table__.insert(), records)
+            conn.execute(output_filter_renkonen_model.__table__.insert(), records)
 
         ##########################################################
         #
@@ -142,7 +139,7 @@ class FilterRenkonen(ToolWrapper):
             sys.exit(0)
 
 
-def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
+def renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate_id, right_replicate_id):
     #  Compute sum of read_count per 'run_id', 'marker_id', 'biosample_id', 'replicate_id'
     variant_read_proportion_per_replicate_df = variant_read_count_df[
         ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_count']].groupby(
@@ -179,7 +176,6 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
         & (variant_read_proportion_per_replicate_df.replicate_id == right_replicate_id)
         ]
 
-
     #  Merge left and right replicate
     variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge( \
         right_variant_read_proportion_per_replicate_per_biosample_df,
@@ -206,7 +202,7 @@ def  renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, l
     return distance_left_right
 
 
-def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
+def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
     dfout = variant_read_count_df.copy()
     # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
@@ -246,8 +242,8 @@ def f12_filter_delete_renkonen(variant_read_count_df, renkonen_threshold):
             df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
                     & (df3.left_replicate_id == left_replicate_id) & (
                                 df3.right_replicate_id == right_replicate_id), 'renkonen_distance'] = d
-        # compare the renkonen distance to the renkonen_threshold
-        df3['is_distance_gt_rthr'] = df3.renkonen_distance > renkonen_threshold
+        # compare the renkonen distance to the upper_renkonen_tail
+        df3['is_distance_gt_rthr'] = df3.renkonen_distance > upper_renkonen_tail
         # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
         df4 = pandas.DataFrame(
             data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate_id': [], 'is_distance_gt_rthr': []},
