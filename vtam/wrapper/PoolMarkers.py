@@ -4,7 +4,6 @@ import pandas
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PoolMarkerRunner import PoolMarkerRunner
 
 
@@ -39,11 +38,8 @@ class PoolMarkers(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
-        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        session = self.session
+        engine = session._session().get_bind()
 
         #########################################################
         #

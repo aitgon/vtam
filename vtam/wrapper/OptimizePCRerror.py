@@ -1,7 +1,4 @@
-import inspect
-
 import os
-import sys
 
 import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -9,16 +6,9 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
 from vtam.utils.VariantKnown import VariantKnown
-# from vtam.wrapper.FilterPCRerror import f10_get_maximal_pcr_error_value, f10_pcr_error_run_vsearch
-
-from sqlalchemy import select
 import pandas
 
 from vtam.utils.PathManager import PathManager
-
-from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
-
 
 
 class OptimizePCRerror(ToolWrapper):
@@ -73,8 +63,8 @@ class OptimizePCRerror(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
+        session = self.session
+        engine = session._session().get_bind()
         # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
         # if not self.option("log_verbosity") is None:
         #     OptionManager.instance()['log_file'] = str(self.option("log_file"))

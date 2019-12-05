@@ -59,11 +59,8 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
-        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        session = self.session
+        engine = session._session().get_bind()
         #
         # Input file output
         input_file_fastainfo = self.input_file(ReadCountAverageOverReplicates.__input_file_fastainfo)

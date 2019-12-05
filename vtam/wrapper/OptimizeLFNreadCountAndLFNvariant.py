@@ -7,7 +7,6 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.VariantKnown import VariantKnown
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
@@ -61,8 +60,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             "lfn_biosample_replicate_threshold": "float",
             "lfn_read_count_threshold": "float",
             "min_replicate_number": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self, f7_lfn_delete_absolute_read_count=None):
@@ -90,11 +87,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         2. Filter if not min replicate number
 
         """
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
-        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        session = self.session
+        engine = session._session().get_bind()
 
         ##########################################################
         #

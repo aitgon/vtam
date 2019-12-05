@@ -1,7 +1,6 @@
 from vtam import Logger
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -54,8 +53,8 @@ class FilterRenkonen(ToolWrapper):
         }
 
     def run(self):
-        session = self.session()
-        engine = session._WopMarsSession__session.bind
+        session = self.session
+        engine = session._session().get_bind()
 
         ##########################################################
         #
