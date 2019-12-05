@@ -1,8 +1,5 @@
-{% macro param_log(log_file) -%}
-
 {% macro input_file_threshold_specific(threshold_specific) -%}
 {% if threshold_specific is not none %}
             threshold_specific: {{threshold_specific}}{% endif %}
 {%- endmacro%}
-
 
