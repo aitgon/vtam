@@ -7,12 +7,13 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 from sqlalchemy import select
 from wopmars.framework.database.tables.ToolWrapper import ToolWrapper
 
+from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
-from vtam.wrapper.TaxAssignUtilities import f02_variant_df_to_fasta, f01_taxonomy_sqlite_to_df
-from vtam.wrapper.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
-from vtam.wrapper.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
 
 
 class TaxAssign(ToolWrapper):
@@ -59,7 +60,7 @@ class TaxAssign(ToolWrapper):
 
     def specify_params(self):
         return {
-            "identity_threshold": "float",  # percentage
+            "ltg_rule_threshold": "float",  # percentage
             "include_prop": "float",  # percentage
             "min_number_of_taxa": "int",  # count
             "log_verbosity": "int",
@@ -71,9 +72,7 @@ class TaxAssign(ToolWrapper):
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
+        threads = int(os.getenv('VTAM_THREADS'))
 
         #########################################################
         #
@@ -87,7 +86,6 @@ class TaxAssign(ToolWrapper):
         # Input file
         input_file_fastainfo = self.input_file(TaxAssign.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(TaxAssign.__input_file_taxonomy)
-        # map_taxids_tsv_path = self.input_file(TaxAssign.__input_file_map_taxids)
         #
         # Input table models
         marker_model = self.input_table(TaxAssign.__input_table_marker)
@@ -100,11 +98,11 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
-        identity_threshold = float(self.option("identity_threshold"))  # percentage
+        ltg_rule_threshold = float(self.option("ltg_rule_threshold"))  # percentage
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
         blast_db = str(self.option("blast_db"))  # count
-        num_threads = str(self.option("num_threads"))  # count
+        # num_threads = str(self.option("num_threads"))  # count
 
         ##########################################################
         #
@@ -114,7 +112,7 @@ class TaxAssign(ToolWrapper):
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
                                        names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
                                               'marker_name', 'biosample_name', \
-                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta'])
+                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
@@ -190,10 +188,10 @@ class TaxAssign(ToolWrapper):
         variant_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
-                variant_list.append(row)
-        variant_df = pandas.DataFrame.from_records(variant_list, columns=['variant_id', 'variant_sequence'])
+                variant_list.append({'id': row.variant_id, 'sequence': row.sequence})
+        variant_df = pandas.DataFrame.from_records(variant_list, index='id')
 
-        # creation one fasta file containing all the variant
+        # creation one fasta_path file containing all the variant
         #
         ##########################################################
         #
@@ -209,8 +207,10 @@ class TaxAssign(ToolWrapper):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
-        f02_variant_df_to_fasta(variant_df, variant_fasta)
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
+        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils.to_fasta(variant_fasta)
+        # VariantDFutils.to_fasta(variant_df, variant_fasta)
         #
 
         ##########################################################
@@ -236,7 +236,7 @@ class TaxAssign(ToolWrapper):
         # map_taxids_tsv_path, coi_blast_db_dir = download_coi_db()
         blastn_cline = NcbiblastnCommandline(query=variant_fasta, db='nt', evalue=1e-5,
                                              outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                             qcov_hsp_perc=80, num_threads=num_threads, out=blast_output_tsv)
+                                             qcov_hsp_perc=80, num_threads=threads, out=blast_output_tsv)
         Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, str(blastn_cline)))
         #
@@ -321,11 +321,11 @@ class TaxAssign(ToolWrapper):
             "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
             "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
         #
-        # f07_blast_result_to_ltg_tax_id(tax_lineage_df,identity_threshold=97, include_prop=90, min_number_of_taxa=3):
+        # f07_blast_result_to_ltg_tax_id(tax_lineage_df,ltg_rule_threshold=97, include_prop=90, min_number_of_taxa=3):
         # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
         #
         ltg_df = f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df,
-                                                identity_threshold=int(identity_threshold),
+                                                ltg_rule_threshold=int(ltg_rule_threshold),
                                                 include_prop=int(include_prop), min_number_of_taxa=min_number_of_taxa)
         ##########################################################
         #

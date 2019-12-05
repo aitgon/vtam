@@ -1,4 +1,6 @@
-from vtam.utils.FilterCommon import FilterCommon
+from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
@@ -20,8 +22,8 @@ class FilterMinReplicateNumber(ToolWrapper):
     # Input file
     __input_file_fastainfo = "fastainfo"
     # Input table
-    __input_table_marker = "Marker"
     __input_table_run = "Run"
+    __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
     __input_table_replicate = "Replicate"
     __input_table_variant_filter_lfn = "FilterLFN"
@@ -37,8 +39,8 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_table(self):
         return [
-            FilterMinReplicateNumber.__input_table_marker,
             FilterMinReplicateNumber.__input_table_run,
+            FilterMinReplicateNumber.__input_table_marker,
             FilterMinReplicateNumber.__input_table_biosample,
             FilterMinReplicateNumber.__input_table_replicate,
             FilterMinReplicateNumber.__input_table_variant_filter_lfn,
@@ -53,16 +55,13 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
-            "log_verbosity": "int",
-            "log_file": "str",
+            # "log_verbosity": "int",
+            # "log_file": "str",
         }
 
     def run(self):
         session = self.session()
         engine = session._WopMarsSession__session.bind
-        if not self.option("log_verbosity") is None:
-            OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-            OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #
@@ -70,21 +69,21 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
         #
-        # Input file output
+        # Input files
         input_file_fastainfo = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
         #
-        # Input table models
-        marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
+        # Input tables
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
+        marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
         biosample_model = self.input_table(FilterMinReplicateNumber.__input_table_biosample)
         replicate_model = self.input_table(FilterMinReplicateNumber.__input_table_replicate)
-        input_filter_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
+        input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
         #
-        # Output table models
-        output_filter_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
+        # Output tables
+        output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
 
         ##########################################################
         #
@@ -92,27 +91,27 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        filter_various = FilterCommon(self.__class__.__name__, engine, run_model, marker_model, biosample_model, replicate_model,
-                                      input_filter_model, output_filter_model)
-        fastainfo_instance_list = filter_various.get_fastainfo_instance_list_with_ids(input_file_fastainfo)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
         #
-        # 2. Delete /run/markerbiosample/replicate from this filter table
+        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-
-        filter_various.delete_output_filter_model(fastainfo_instance_list)
+        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_min_replicate_model, engine=engine)
+        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
 
         ##########################################################
         #
-        # 3. Select variant_read_count_model
+        #
+        # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-        # filter_id=8 is the all filter from LFN
-        variant_read_count_df = filter_various.get_variant_read_count_model(fastainfo_instance_list, filter_id=8)
+        filter_id = 8 # Is filter_id from all FilterLFN all
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
 
         ##########################################################
         #
@@ -127,9 +126,9 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        records = FilterCommon.filter_delete_df_to_dict(filter_output_df)
+        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(output_filter_model.__table__.insert(), records)
+            conn.execute(output_filter_min_replicate_model.__table__.insert(), record_list)
 
         ##########################################################
         #
