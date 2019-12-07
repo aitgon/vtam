@@ -3,14 +3,12 @@ import sys
 from wopmars.models.ToolWrapper import ToolWrapper
 import os
 
-import subprocess
 import pathlib
 
 from vtam.utils.VSearch import VSearch
 
 from vtam import VTAMexception
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
 
 
@@ -94,7 +92,7 @@ class Merge(ToolWrapper):
                         Logger.instance().error(VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
                         sys.exit(1)
                     fasta_merged_basename = '.'.join(os.path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
-                    PathManager.mkdir_p(fasta_dir)
+                    pathlib.Path(fasta_dir).mkdir(exist_ok=True)
                     fastainfo_line = line.strip() + '\t' + fasta_merged_basename + '\n'
                     fastainfo_fout.write(fastainfo_line) # write fastainfo line
                     fasta_abspath = os.path.join(fasta_dir, fasta_merged_basename)

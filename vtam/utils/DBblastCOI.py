@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import pathlib
 import urllib.request
 
 from vtam.utils.PathManager import PathManager
@@ -28,13 +29,10 @@ class DBblastCOI(object):
             Updated:
                 May 31, 2019
 
-            Args:
-                None
-
             Returns:
                 String: The output to the taxonomy.sqlite database
         """
-        PathManager.mkdir_p(os.path.join(self.coi_blast_db))
+        pathlib.Path(os.path.join(self.coi_blast_db)).mkdir(exist_ok=True)
 
         ####################################################################
         #

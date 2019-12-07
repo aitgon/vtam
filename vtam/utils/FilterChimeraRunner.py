@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 from Bio import SeqIO
 
@@ -20,7 +21,7 @@ class FilterChimeraRunner(object):
     def run(self, tmp_dir):
 
         this_step_tmp_dir = os.path.join(tmp_dir, os.path.basename(__name__))
-        PathManager.instance().mkdir_p(this_step_tmp_dir)
+        pathlib.Path(this_step_tmp_dir).mkdir(exist_ok=True)
 
         filter_output_chimera_df = self.variant_read_count_df.copy()
         filter_output_chimera_df['filter_delete'] = False

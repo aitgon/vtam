@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import sqlite3
 from unittest import TestCase
 
@@ -35,8 +36,9 @@ TGATCGATGATCAGTCCACTAATCACAAGGATATTGGTACCCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGA
 TCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAAT
 TGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATTGGAGGATTTGGTAATTGATTAGTAG
 CTGTAGATCGACA"""
-        this_tempdir = os.path.relpath(os.path.join(PathManager.get_module_test_path(), 'output'), PathManager.get_package_path())
-        PathManager.instance().mkdir_p(this_tempdir)
+        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_tempdir).mkdir(exist_ok=True)
+
         fasta_file_name = 'reads.fasta'
         fasta_path = os.path.join(this_tempdir, fasta_file_name)
         fasta_id = 1

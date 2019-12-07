@@ -1,5 +1,7 @@
 import multiprocessing
 import os
+import pathlib
+
 import pandas
 
 from unittest import TestCase
@@ -35,14 +37,12 @@ class TestFilterPCRError(TestCase):
                   ],
         })
 
-        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(self.this_step_tmp_dir)
-
-
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(self.this_tempdir).mkdir(parents=True, exist_ok=True)
 
     def test_get_vsearch_alignement_df(self):
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_expected_df, variant_unexpected_df=self.variant_unexpected_df,
-                             variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
+                                                       variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         vsearch_alignement_df = filter_pcr_error_runner.get_vsearch_alignement_df()
 
         vsearch_alignement_df_bak_str = """   variant_id_unexpected  variant_id_expected  alnlen  ids  mism  gaps
@@ -52,7 +52,7 @@ class TestFilterPCRError(TestCase):
     def test_get_filter_pcr_error_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_expected_df, variant_unexpected_df=self.variant_unexpected_df,
-                             variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
+                                                       variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         variant_unexpected_to_expected_ratio_df = filter_pcr_error_runner.get_variant_unexpected_to_expected_ratio_df()
 
         variant_unexpected_to_expected_ratio_df_bak = pandas.DataFrame({
@@ -73,7 +73,7 @@ class TestFilterPCRError(TestCase):
     def test_get_filter_output_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_expected_df, variant_unexpected_df=self.variant_unexpected_df,
-                             variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
+                                                       variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         pcr_error_var_prop = 0.05
 
         filter_output_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)

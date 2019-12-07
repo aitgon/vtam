@@ -67,9 +67,6 @@ class FilterCodonStop(ToolWrapper):
     def run(self):
         session = self.session
         engine = session._session().get_bind()
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
 
         ##########################################################
         #

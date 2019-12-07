@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pathlib
 import sqlite3
 from unittest import TestCase
 
@@ -12,12 +13,9 @@ from vtam.utils.ReadTrimmer import ReadTrimmer
 class TestReadTrimmer(TestCase):
 
     def setUp(self):
-        pass
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
 
     def test_01(self):
-
-
-        # bak="read:18229:biosample_id=2,repli=2;read 19104:biosample_id=5,repli=2,2756:biosample_id=5,repli=2;read 2443:biosample_id=5,repli=2"
 
         read_fasta_str = """>M00842:118:000000000-ABGKE:1:1101:18229:3444 1:N:0:5
 TCGATCACGATGTTCCACTAATCACAAGGATATTGGTACCCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGAT
@@ -37,8 +35,8 @@ CTGTAGATCGACA"""
 
         align_parameters = {'min_id': 0.8, 'minseqlength': 32}
 
-        this_tempdir_fwd = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'fwd')
-        PathManager.instance().mkdir_p(this_tempdir_fwd)
+        this_tempdir_fwd = os.path.join(self.this_tempdir, 'fwd')
+        pathlib.Path(this_tempdir_fwd).mkdir(parents=True, exist_ok=True)
         read_fasta_path = os.path.join(this_tempdir_fwd, "read.fasta_path")
 
         fasta_information_df = pandas.DataFrame(

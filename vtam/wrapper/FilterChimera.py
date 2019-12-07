@@ -1,3 +1,5 @@
+import pathlib
+
 from sqlalchemy import select
 
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
@@ -63,8 +65,9 @@ class FilterChimera(ToolWrapper):
     def run(self):
         session = self.session
         engine = session._session().get_bind()
-        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_step_tmp_dir)
+
+        this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
         ##########################################################
         #
@@ -129,7 +132,7 @@ class FilterChimera(ToolWrapper):
         ##########################################################
 
         filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df)
-        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_step_tmp_dir)
+        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_temp_dir)
 
         ##########################################################
         #
