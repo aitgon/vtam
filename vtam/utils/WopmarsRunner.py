@@ -57,7 +57,10 @@ class WopmarsRunner(Singleton):
         template = None
         if self.command == 'merge':
             template = jinja2_env.get_template('wopfile_merge.yml')
-            wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
+            if not self.parameters['outdir'] is None:
+                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
+            else:
+                wopfile_path = os.path.join(self.tempdir, 'wopfile_merge.yml')
         elif self.command in ['asv', 'optimize']:
             # Add output to sortreads file
             self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
