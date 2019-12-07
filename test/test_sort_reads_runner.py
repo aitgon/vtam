@@ -46,7 +46,7 @@ CTGTAGATCGACA"""
         with open(fasta_path, 'w') as fout:
             fout.write(reads_fasta_str)
 
-        alignement_parameters = {'min_id': 0.8, 'minseqlength': 32}
+        alignement_parameters = {'min_id': 0.8, 'minseqlength': 32, 'overhang': 0}
 
         fasta_information_df = pandas.DataFrame(
             {
