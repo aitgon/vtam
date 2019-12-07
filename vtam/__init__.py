@@ -39,10 +39,9 @@ class VTAM(object):
         #
         #####################
 
-        # for k in vars(self.args):
-        #     OptionManager.instance()[k] = vars(self.args)[k]
         option_dic = vars(self.args)
         OptionManager.instance().add_options(option_dic) # Add options to OptionManager
+
         # Some arguments will be passed through environmental variables
         if 'threads' in vars(self.args):
             os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
