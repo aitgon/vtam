@@ -116,6 +116,9 @@ class ArgParser():
                                        type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
 
+        parser_vtam_merge.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
+                                     required=False)
+
         #############################################
         #
         # create the parser for the "asv" command
