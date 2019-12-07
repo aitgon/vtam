@@ -27,13 +27,16 @@ class TestWorpmarsRunnerOptimize(TestCase):
         parser = ArgParser.get_arg_parser(is_abspath=False)
         # import pdb; pdb.set_trace()
         args = parser.parse_args(args_str.split())
-        option_dic = vars(args) # Dictionnary with options
+
         #####################
         #
         # Add argparser attributes to optionmanager
         #
         #####################
+
+        option_dic = vars(args) # Dictionnary with options
         OptionManager.instance().add_options(option_dic) # Add options to OptionManager
+
         ###############################################################
         #
         # Test wopfile

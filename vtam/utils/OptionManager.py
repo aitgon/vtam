@@ -30,3 +30,11 @@ class OptionManager(dict, Singleton):
                         params_dic = yaml.load(fin_params_yml, Loader=yaml.SafeLoader)
                         for params_key in params_dic:
                             self[params_key] = params_dic[params_key]
+
+
+    def clear(self):
+        """Clear content"""
+        for k in list(OptionManager.instance()):
+            del (OptionManager.instance()[k])
+
+
