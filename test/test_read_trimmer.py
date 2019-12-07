@@ -33,7 +33,7 @@ TCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAAT
 TGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATTGGAGGATTTGGTAATTGATTAGTAG
 CTGTAGATCGACA"""
 
-        align_parameters = {'min_id': 0.8, 'minseqlength': 32}
+        align_parameters = {'min_id': 0.8, 'minseqlength': 32, 'overhang': 0}
 
         this_tempdir_fwd = os.path.join(self.this_tempdir, 'fwd')
         pathlib.Path(this_tempdir_fwd).mkdir(parents=True, exist_ok=True)
@@ -102,8 +102,7 @@ M00842:118:000000000-ABGKE:1:1101:15187:2443	tgatcgatgatcagTCCACTAATCACAARGATATT
         #
         #######################################################################
 
-        # overhang = 0 TODO EMESE where is overhang used
-        sort_reads_runner_fwd.keep_alignements_with_high_quality()
+        sort_reads_runner_fwd.keep_alignements_where_tag_is_well_aligned_to_read(overhang=align_parameters['overhang'])
 
         with open(sort_reads_runner_fwd.alignements_with_high_quality_tsv_path) as fout:
             vsearch_align_high_quality_str = fout.read()
