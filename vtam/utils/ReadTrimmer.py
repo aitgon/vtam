@@ -5,7 +5,6 @@ import sqlite3
 from Bio import SeqIO
 
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 
 
@@ -99,8 +98,7 @@ class ReadTrimmer(object):
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
-
-    def keep_alignements_with_high_quality(self):
+    def keep_alignements_where_tag_is_well_aligned_to_read(self, overhang):
         """
         Function to select lines of vsearch_align_tsv according to these SRS criteria:
         1. first position of target in the alignment (tilo) is 1
@@ -117,37 +115,35 @@ class ReadTrimmer(object):
         :param vsearch_output_tsv: csv containing the results of the alignment
         :return: void
         """
-        # TODO Emese: ask where overhang parameter is used.
-        # It is described here vtam/SRS_vtam.v1.odt
-        # These two criteria must be verified in the code
-        # 1. first position of target in the alignment (tilo) is 1
-        # 2. last position of target in the alignment (tihi) equals length of the target (tl)
-        # 3. lower case part of the target (tag) has an exact match (non-case sensitive) to the aligned part of query (qrow)
-        # 4. this match is within -overhang bases in the 5’ end of qrow
         if self.alignements_tsv_path is None:
             self.align_tag_primer_to_reads()
 
         self.alignements_with_high_quality_tsv_path = os.path.join(self.tempdir, "vsearch_align_high_quality.tsv")
-
-        vsearch_align_tsv_columns = ['fasta_entry_id', 'tag_primer_sequence', 'tl', 'qilo', 'qihi', 'tilo', 'tihi', 'tag_primer_to_read_alignment']
+        "query + target + tl + qilo + qihi + tilo + tihi + qrow"
+        vsearch_align_tsv_columns = ['query_fasta_entry_id', 'target_tag_primer_sequence', 'tl', 'qilo', 'qihi', 'tilo', 'tihi',
+                                     'qrow_tag_primer_to_read_alignment']
         with open(self.alignements_with_high_quality_tsv_path, 'w') as fout:
             with open(self.alignements_tsv_path, 'r') as fin:
                 nb_discarded_reads = 0
                 for line in fin:
+                    nb_discarded_reads += 1 # Default is to discard read
                     line_values = line.strip().split()
                     line_dic = dict(zip(vsearch_align_tsv_columns, line_values))
+                    tag_primer_sequence = line_dic['target_tag_primer_sequence']
+                    tag_sequence = re.sub('[A-Z]', '', tag_primer_sequence)
+                    tag_sequence = tag_sequence.upper()
+                    # Criteria 1: first position of target in the alignment (tilo) is 1
                     if line_dic['tilo'] == "1":
-                        tag_primer_sequence = line_dic['tag_primer_sequence']
-                        tag_sequence = re.sub('[A-Z]', '', tag_primer_sequence)
-                        tag_sequence = tag_sequence.upper()
-                        vsearch_tl = line_dic['tl']
-                        vsearch_tilo = line_dic['tilo']
-                        vsearch_tihi = line_dic['tihi']
-                        alignement_of_tag_primer_and_read_sequences = line_dic['tag_primer_to_read_alignment']
-                        if vsearch_tilo == "1" and vsearch_tihi == vsearch_tl and tag_sequence in alignement_of_tag_primer_and_read_sequences:
-                            fout.write(line)
-                        else:
-                            nb_discarded_reads += 1
+                        # Criteria 2: last position of target in the alignment (tihi) equals length of the target (tl)
+                        if line_dic['tihi'] == line_dic['tl']:
+                            # 5' tag position in match is zero-based
+                            tag_position_in_match = line_dic['qrow_tag_primer_to_read_alignment'].find(tag_sequence)
+                            # Criteria 3: Exact match of target (tag) with the query/read (qrow)
+                            if tag_position_in_match >= 0: # -1 if no match
+                                # Criteria 4: number of bases allowed (overhang parameter) in the read before the exact match of the tag
+                                if tag_position_in_match <= self.align_parameters['overhang']:
+                                    nb_discarded_reads -= 1  # If passed all filters we remove from discarded read
+                                    fout.write(line)
         Logger.instance().info("Number of discarded reads: {}".format(nb_discarded_reads))
 
 
@@ -158,10 +154,8 @@ class ReadTrimmer(object):
 
         :return:
         """
-
-
         if self.alignements_with_high_quality_tsv_path is None:
-            self.keep_alignements_with_high_quality()
+            self.keep_alignements_where_tag_is_well_aligned_to_read(overhang=self.align_parameters['overhang'])
 
         temp_db_sqlite = os.path.join(self.tempdir, "reads.db")
         self.reads_trimmed_fasta_path = os.path.join(self.tempdir, "read_trimmed.fasta")

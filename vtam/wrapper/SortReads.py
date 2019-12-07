@@ -56,12 +56,9 @@ class SortReads(ToolWrapper):
         :return:
         """
         return {
-            # "fasta_dir": "str",
             "min_id": "float",
             "minseqlength": "int",
             "overhang": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self):
@@ -96,6 +93,7 @@ class SortReads(ToolWrapper):
         # Options
         min_id = str(self.option("min_id"))
         minseqlength = str(self.option("minseqlength"))
+        overhang = int(self.option("overhang"))
 
         ##########################################################
         #
@@ -124,7 +122,7 @@ class SortReads(ToolWrapper):
             fasta_file_id = session.query(fasta_model.id).filter(fasta_model.name == fasta_file_name).one()[0]
             fasta_path = os.path.join(fasta_dir, fasta_file_name)
 
-            alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength}
+            alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength, 'overhang': overhang}
 
             sort_reads_tsv_i = os.path.join(this_temp_dir, "sort_reads_fasta_id_{}.tsv".format(fasta_file_id))
 
