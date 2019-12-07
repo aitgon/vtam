@@ -11,7 +11,7 @@ help:
 	@echo "Usage: make install REPOSITORIES=${REPOSITORIES}"
 
 wopmars_branch=develop
-wopmars_sha=028d327
+wopmars_sha=2cd5179edf24a3741aca53176ed22cdef01ca47f
 wopmars_path=${REPOSITORIES}/wopmars
 
 install_wopmars:
