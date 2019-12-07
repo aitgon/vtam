@@ -1,4 +1,5 @@
 import os
+import pathlib
 import shutil
 
 import pandas
@@ -66,9 +67,10 @@ class SortReads(ToolWrapper):
     def run(self):
         session = self.session
         engine = session._session().get_bind()
-        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_step_tmp_dir)
         fasta_dir = str(os.getenv('VTAM_FASTA_DIR'))
+
+        this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
         ##########################################################
         #
@@ -124,7 +126,7 @@ class SortReads(ToolWrapper):
 
             alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength}
 
-            sort_reads_tsv_i = os.path.join(this_step_tmp_dir, "sort_reads_fasta_id_{}.tsv".format(fasta_file_id))
+            sort_reads_tsv_i = os.path.join(this_temp_dir, "sort_reads_fasta_id_{}.tsv".format(fasta_file_id))
 
             # Create SortReadsRunner
             sort_reads_runner = SortReadsRunner(fasta_path=fasta_path, fasta_id=fasta_file_id, alignement_parameters=alignement_parameters,

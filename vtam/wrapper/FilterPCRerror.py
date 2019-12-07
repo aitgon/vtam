@@ -1,3 +1,5 @@
+import pathlib
+
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam import Logger
@@ -65,11 +67,8 @@ class FilterPCRerror(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
-        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_step_tmp_dir)
+        this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
         ##########################################################
         #
@@ -149,8 +148,8 @@ class FilterPCRerror(ToolWrapper):
                                                                    & (variant_read_count_df.biosample_id == biosample_id)]
 
             variant_per_biosample_df = variant_df.loc[variant_df.index.isin(variant_read_count_df.variant_id.unique().tolist())]
-            this_step_tmp_per_biosample_dir = os.path.join(this_step_tmp_dir, "run_{}_marker_{}_biosample{}".format(run_id, marker_id, biosample_id))
-            PathManager.instance().mkdir_p(this_step_tmp_per_biosample_dir)
+            this_step_tmp_per_biosample_dir = os.path.join(this_temp_dir, "run_{}_marker_{}_biosample{}".format(run_id, marker_id, biosample_id))
+            pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
 
             ##########################################################
             #

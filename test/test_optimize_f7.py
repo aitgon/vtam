@@ -1,4 +1,5 @@
 import os
+import pathlib
 from unittest import TestCase
 
 import pandas
@@ -16,9 +17,8 @@ class TestOptimizeF7(TestCase):
                                                   "optimize_f7", "variant_read_count.tsv")
         self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_known.tsv")
-        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(self.this_step_tmp_dir)
-        #
+        self.this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(self.this_temp_dir).mkdir(exist_ok=True)
 
     def test_01(self):
 

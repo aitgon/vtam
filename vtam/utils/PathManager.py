@@ -61,17 +61,6 @@ class PathManager(Singleton):
         test_dir_path = os.path.join(os.path.dirname(__file__), "../../test")
         return test_dir_path
 
-
-    @staticmethod
-    def mkdir_p(path):
-        """ Does not fail if directory already exists"""
-        try:
-            os.makedirs(path)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise
-
-
     @staticmethod
     def check_file_exists_and_is_nonempty(path, error_message=None, is_abspath=False):
         """Checks if file exists and is not empty

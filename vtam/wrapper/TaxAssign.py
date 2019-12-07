@@ -1,6 +1,7 @@
 import errno
 import inspect
 import os
+import pathlib
 
 import pandas
 from Bio.Blast.Applications import NcbiblastnCommandline
@@ -72,6 +73,9 @@ class TaxAssign(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
         threads = int(os.getenv('VTAM_THREADS'))
+
+        this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
         #########################################################
         #
@@ -199,14 +203,7 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
-        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_tempdir)
-        try:
-            os.makedirs(this_tempdir)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
+        variant_fasta = os.path.join(this_temp_dir, 'variant.fasta_path')
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(variant_fasta)
         # VariantDFutils.to_fasta(variant_df, variant_fasta)
@@ -223,7 +220,7 @@ class TaxAssign(ToolWrapper):
                                                                                  variant_fasta))
         #
         # Run and read local blast result
-        blast_output_tsv = os.path.join(this_tempdir, 'blast_output.tsv')
+        blast_output_tsv = os.path.join(this_temp_dir, 'blast_output.tsv')
         # blast_output_tsv = "/home/gonzalez/tmp/blast/blast_output.tsv" # uncomment for testing
         # get blast db dir and filename prefix from NHR file
         os.environ['BLASTDB'] = blast_db
@@ -307,7 +304,7 @@ class TaxAssign(ToolWrapper):
         variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
                                                                right_on='tax_id')
         variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
-        variantid_identity_lineage_tsv = os.path.join(this_tempdir, 'variantid_identity_lineage.tsv')
+        variantid_identity_lineage_tsv = os.path.join(this_temp_dir, 'variantid_identity_lineage.tsv')
         variantid_identity_lineage_df.to_csv(variantid_identity_lineage_tsv, sep="\t", header=True)
 
         ##########################################################

@@ -35,7 +35,7 @@ class PoolMarkerRunner(object):
         # self.asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
         self.asv_table_df = asv_table_df
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(self.tmp_dir)
+        pathlib.Path(self.tmp_dir).mkdir(exist_ok=True)
 
         self.cluster_path = None # returned by run_vsearch_to_cluster_sequences
 

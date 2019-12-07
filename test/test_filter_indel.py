@@ -1,4 +1,4 @@
-
+import pathlib
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
 
@@ -26,8 +26,6 @@ class TestIndel(TestCase):
 
                          ],
         })
-        # output
-        # seq_indel1(var1) and seq_indel7(var7) should be detected as potential pseudogenes/sequencing errors
         #
         self.variant_read_count_df = pandas.DataFrame({
             'run_id': [1] * 12,
@@ -40,9 +38,8 @@ class TestIndel(TestCase):
                   ],
         })
 
-        self.tempdir = os.path.join(PathManager.instance().get_tempdir(), "FilterUtilities", self.__class__.__name__)
-        PathManager.mkdir_p(self.tempdir)
-
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), "FilterUtilities", self.__class__.__name__)
+        pathlib.Path(os.path.dirname(self.this_tempdir)).mkdir(exist_ok=True)
 
     def test_01_f13_indel(self):
 

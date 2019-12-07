@@ -10,7 +10,7 @@ from vtam.utils.PathManager import PathManager
 class TestWorpmarsRunnerMerge(TestCase):
 
 
-    def test_wopmars_runner_merge_without_log(self):
+    def test_wopmars_runner_merge(self):
         #
         # Minimal merge command
         args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(
@@ -62,20 +62,26 @@ class TestWorpmarsRunnerMerge(TestCase):
         self.assertTrue(wopmars_command == 'wopmars -w test/output/wopfile -D sqlite:///db.sqlite ')
 
 
-    def test_wopmars_runner_merge_with_log(self):
+    def test_wopmars_runner_merge_change_params(self):
+        tempdir = PathManager.instance().get_tempdir()
+        params_yml_str = "fastq_minovlen: 100"
+        params_yml_path = os.path.join(tempdir, "params.yml")
+        with open(params_yml_path, "w") as fout:
+            fout.write(params_yml_str)
         #
-        args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo -vv --log log'.format(
+        args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo -vv --params {}'.format(
             os.path.relpath(__file__, PathManager.get_package_path()),
-            os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path()))
+            os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path()),
+            params_yml_path)
         parser = ArgParser.get_arg_parser(is_abspath=False)
         args = parser.parse_args(args_str.split())
+        option_dic = vars(args) # Dictionnary with options
         #####################
         #
         # Add argparser attributes to optionmanager
         #
         #####################
-        for k in vars(args):
-            OptionManager.instance()[k] = vars(args)[k]
+        OptionManager.instance().add_options(option_dic) # Add options to OptionManager
         ###############################################################
         #
         # Test wopfile
@@ -94,7 +100,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         file:
             fastainfo: foo
     params:
-        fastq_minovlen: 50
+        fastq_minovlen: 100
         fastq_maxmergelen: 500
         fastq_minmergelen: 100
         fastq_minlen: 50

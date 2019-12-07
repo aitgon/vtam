@@ -1,4 +1,6 @@
+import multiprocessing
 import os
+import pathlib
 import sys
 
 from Bio import SeqIO
@@ -41,6 +43,9 @@ class SortReadsRunner(object):
         self.fasta_information_df = fasta_information_df
 
         self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(self.this_tempdir).mkdir(exist_ok=True)
+
+        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
 
         #######################################################################
         #
@@ -62,7 +67,7 @@ class SortReadsRunner(object):
         primer_fwd_sequence_list = self.fasta_information_df.primer_fwd_sequence.tolist()
 
         this_tempdir_fwd = os.path.join(self.this_tempdir, 'fwd')
-        PathManager.instance().mkdir_p(this_tempdir_fwd)
+        pathlib.Path(this_tempdir_fwd).mkdir(exist_ok=True)
 
         # Create ReadTrimmer
         reads_trimmer_fwd = ReadTrimmer(reads_fasta_path=self.fasta_path, tag_sequence_list=tag_fwd_sequence_list,

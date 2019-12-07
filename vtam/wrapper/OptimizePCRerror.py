@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -65,11 +66,9 @@ class OptimizePCRerror(ToolWrapper):
     def run(self):
         session = self.session
         engine = session._session().get_bind()
-        # OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
-        # if not self.option("log_verbosity") is None:
-        #     OptionManager.instance()['log_file'] = str(self.option("log_file"))
-        this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_step_tmp_dir)
+
+        this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
         ################################################################################################################
         #
@@ -159,8 +158,8 @@ class OptimizePCRerror(ToolWrapper):
 
             variant_read_count_per_biosample_df = variant_read_count_df.loc[variant_read_count_df.biosample_id==biosample_id]
 
-            this_step_tmp_per_biosample_dir = os.path.join(this_step_tmp_dir, str(biosample_id))
-            PathManager.instance().mkdir_p(this_step_tmp_per_biosample_dir)
+            this_step_tmp_per_biosample_dir = os.path.join(this_temp_dir, str(biosample_id))
+            pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
 
             ##########################################################
             #

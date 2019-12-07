@@ -1,9 +1,4 @@
 from wopmars.models.ToolWrapper import ToolWrapper
-
-# from vtam.utils.utilities import get_or_create
-from vtam.utils.OptionManager import OptionManager
-
-
 import os
 
 class SampleInformation(ToolWrapper):
@@ -39,8 +34,6 @@ class SampleInformation(ToolWrapper):
     def specify_params(self):
         return{
             "fasta_dir": "str",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self):

@@ -1,11 +1,12 @@
 import multiprocessing
+import pathlib
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
 import os
 import pandas
 
-class TestChimera(TestCase):
+class TestFilterChimera(TestCase):
 
 
     def setUp(self):
@@ -59,13 +60,13 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
             'variant_id': list(range(1,6)),
             'read_count':[650, 700, 50, 350, 50],
         })
-        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(self.this_step_tmp_dir)
-        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count()-1)
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(self.this_tempdir).mkdir(parents=True, exist_ok=True)
+        os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
 
     def test_filter_chimera_runner(self):
         filter_chimera_runner = FilterChimeraRunner(variant_df=self.variant_df, variant_read_count_df=self.variant_read_count_df)
-        filter_output_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=self.this_step_tmp_dir)
+        filter_output_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=self.this_tempdir)
 
         filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate_id  variant_id  read_count  filter_delete
 0       1          1             1             1           1         650          False

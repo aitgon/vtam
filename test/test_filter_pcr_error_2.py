@@ -1,5 +1,7 @@
 import multiprocessing
 import os
+import pathlib
+
 import pandas
 from unittest import TestCase
 
@@ -44,22 +46,22 @@ class TestFilterPCRError(TestCase):
             'gaps' : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         })
 
-        self.this_step_tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(self.this_step_tmp_dir)
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(self.this_tempdir).mkdir(parents=True, exist_ok=True)
 
 
 
     def test_get_vsearch_alignement_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_df, variant_unexpected_df=self.variant_df,
-                             variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
+                                                       variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         vsearch_alignement_df = filter_pcr_error_runner.get_vsearch_alignement_df()
         self.assertTrue(sorted(vsearch_alignement_df.ids.unique().tolist()) == [297, 298, 299, 300])
 
     def test_get_filter_output_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_df, variant_unexpected_df=self.variant_df,
-                             variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_step_tmp_dir)
+                                                       variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         #
         pcr_error_var_prop = 0.05
         filter_output_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)
