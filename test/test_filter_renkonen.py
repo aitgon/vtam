@@ -1,3 +1,4 @@
+import pathlib
 from unittest import TestCase
 
 from vtam.utils.PathManager import PathManager
@@ -22,8 +23,9 @@ class TestFilterRenkonen(TestCase):
             ],
         })
 
-        self.tempdir = os.path.join(PathManager.instance().get_tempdir(), "FilterUtilities", self.__class__.__name__)
-        PathManager.mkdir_p(self.tempdir)
+        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), self.__class__.__name__)
+        pathlib.Path(self.this_tempdir).mkdir(exist_ok=True)
+
 
     def test_f12_delete_filter_renkonen(self):
         #

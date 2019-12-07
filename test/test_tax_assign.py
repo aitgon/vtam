@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import pathlib
+
 from vtam.utils.PathManager import PathManager
 from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
@@ -58,11 +60,10 @@ class TestTaxAssign(TestCase):
         Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
-        PathManager.mkdir_p(this_tempdir)
-        variant_fasta = os.path.join(this_tempdir, 'variant.fasta_path')
+        pathlib.Path(this_tempdir).mkdir(exist_ok=True)
+        variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path=variant_fasta)
-        # f02_variant_df_to_fasta(variant_df, variant_fasta)
         #
         variant_fasta_content_expected =""">57\nACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC\n>107\nACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC\n"""
         with open(variant_fasta, 'r') as fin:

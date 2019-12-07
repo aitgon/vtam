@@ -1,4 +1,5 @@
 import os
+import pathlib
 import tempfile
 
 import jinja2
@@ -56,6 +57,7 @@ class WopmarsRunner(Singleton):
         template = None
         if self.command == 'merge':
             template = jinja2_env.get_template('wopfile_merge.yml')
+            wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
         elif self.command in ['asv', 'optimize']:
             # Add output to sortreads file
             self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
@@ -90,7 +92,7 @@ class WopmarsRunner(Singleton):
         # Write to wopfile
         #
         ################
-        PathManager.mkdir_p(os.path.dirname(wopfile_path))
+        pathlib.Path(os.path.dirname(wopfile_path)).mkdir(exist_ok=True)
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
         return wopfile_path, wopfile_content

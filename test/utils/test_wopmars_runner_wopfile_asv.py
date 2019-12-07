@@ -27,13 +27,13 @@ class TestWorpmarsRunnerASV(TestCase):
                    '{blastdb}'.format(**self.foopaths)
         parser = ArgParser.get_arg_parser(is_abspath=False)
         args = parser.parse_args(args_str.split())
+        option_dic = vars(args) # Dictionnary with options
         #####################
         #
         # Add argparser attributes to optionmanager
         #
         #####################
-        for k in vars(args):
-            OptionManager.instance()[k] = vars(args)[k]
+        OptionManager.instance().add_options(option_dic) # Add options to OptionManager
         ###############################################################
         #
         # Test wopfile

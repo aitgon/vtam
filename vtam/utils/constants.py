@@ -1,5 +1,3 @@
-import os
-
 ##########################################################
 #
 # Default VTAM parameters_numerical

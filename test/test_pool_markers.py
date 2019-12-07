@@ -1,5 +1,6 @@
 import io
 import os
+import pathlib
 from unittest import TestCase
 
 import pandas
@@ -22,8 +23,9 @@ class TestPoolMarkers(TestCase):
 83683	MFZR	prerun	175	484	0	28	456	Chordata	Actinopteri	Cypriniformes	Cyprinidae	Phoxinus	Phoxinus phoxinus	58324	Phoxinus phoxinus	100	species	False	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT"""
         asv_table_df = pandas.read_csv(io.StringIO(asv_table_str), sep="\t", header=0)
         self.asv_table_df = asv_table_df
-        # Create tempdir
-        PathManager.mkdir_p(os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__)))
+        # Create this_tempdir
+        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         # Define fasta_path path
         fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
         # Create variant df

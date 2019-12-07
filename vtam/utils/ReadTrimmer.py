@@ -1,4 +1,5 @@
 import os
+import pathlib
 import re
 import sqlite3
 from Bio import SeqIO
@@ -38,7 +39,7 @@ class ReadTrimmer(object):
         self.primer_sequence_list = [x.upper() for x in primer_sequence_list] # UPPER
 
         self.tempdir = tempdir
-        PathManager.instance().mkdir_p(tempdir)
+        pathlib.Path(tempdir).mkdir(exist_ok=True)
         self.tag_primer_fasta_path = None
 
         # TSV file with alignement from vsearch

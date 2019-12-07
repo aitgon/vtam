@@ -2,12 +2,13 @@ from setuptools import setup
 from setuptools import find_packages
 
 install_requires = [
-    'biopython>=1.14.2',
-    'wopmars>y=0.0.5',
     'Jinja2>=2.10',
-    'pandas==0.23.3',
+    'PyYAML>=5.1.2',
     'SQLAlchemy>=1.3.0',
+    'biopython>=1.14.2',
+    'pandas==0.23.3',
     'termcolor>=1.1.0',
+    'wopmars>y=0.0.5',
 ]
 
 setup(
