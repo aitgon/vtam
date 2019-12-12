@@ -52,7 +52,6 @@ class FilterLFN(ToolWrapper):
 
     def specify_params(self):
         return {
-            "filter_lfn_variant": "required|int",
             "lfn_variant_threshold": "float",
             "lfn_variant_replicate_threshold": "float",
             "lfn_biosample_replicate_threshold": "required|float",
@@ -85,7 +84,6 @@ class FilterLFN(ToolWrapper):
         output_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
         #
         # Options
-        filter_lfn_variant = int(self.option("filter_lfn_variant"))
         lfn_variant_threshold = self.option("lfn_variant_threshold")
         lfn_variant_replicate_threshold = self.option("lfn_variant_replicate_threshold")
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
@@ -146,27 +144,31 @@ class FilterLFN(ToolWrapper):
         # Or
         # Filter  3: f3_f5_lfn_delete_variant_replicate
         ############################################
-        if bool(filter_lfn_variant):
-            lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
-        else:
-            lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
+
+        if lfn_variant_replicate_threshold is None:  # run lfn_variant
+            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_variant_threshold)
+        else:  # run lfn_variant_replicate
+            # lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_variant_replicate_threshold)
         #
 
         ############################################
         # Filter 6:  f6_lfn_delete_biosample_replicate_delete
         ############################################
 
-        lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
+        # lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
+        lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_biosample_replicate_threshold)
 
         ############################################
-        # Filter  7:f7_lfn_delete_absolute_read_count
+        # Filter  7:mark_delete_lfn_absolute_read_count
         ############################################
-        lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
+        lfn_filter_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
 
         ############################################
-        # Filter 8:f8_lfn_delete_do_not_pass_all_filters
+        # Filter 8:mark_delete_lfn_do_not_pass_all_filters
         ############################################
-        lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
+        lfn_filter_runner.mark_delete_lfn_do_not_pass_all_filters()
 
         ############################################
         # Write to DB

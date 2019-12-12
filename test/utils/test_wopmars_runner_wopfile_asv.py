@@ -28,6 +28,7 @@ class TestWorpmarsRunnerASV(TestCase):
 
         cls.minseqlength_value_32 = 32
         cls.minseqlength_value_40 = 40
+        cls.lfn_variant_replicate_threshold = 0.002
 
     def setUp(self):
         OptionManager.instance().clear()
@@ -128,9 +129,7 @@ rule FilterLFN:
         table:
             FilterLFN: vtam.models.FilterLFN
     params:
-        filter_lfn_variant: 1
         lfn_variant_threshold: 0.001
-        lfn_variant_replicate_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
 
@@ -392,3 +391,48 @@ rule PoolMarkers:
                         == self.minseqlength_value_32)
         self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
                         == self.minseqlength_value_40)
+
+    def test_wopmars_runner_asv_with_lfn_variant_replicate(self):
+
+        #####################
+        #
+        # Params yml
+        #
+        #####################
+
+        params_yml_str = "lfn_variant_replicate_threshold: {}".format(self.lfn_variant_replicate_threshold)
+        params_yml_path = os.path.join(self.tempdir, "params.yml")
+        with open(params_yml_path, "w") as fout:
+            fout.write(params_yml_str)
+        this_foopaths = self.foopaths.copy()
+        this_foopaths['params_yml'] = params_yml_path
+
+        args_str = 'asv --fastainfo {foofile} --fastadir {foodir} --outdir {outdir} --taxonomy {foofile} --blast_db ' \
+                   '{blastdb} --threshold_specific {foofile} --params {params_yml}'.format(**this_foopaths)
+        parser = ArgParser.get_arg_parser(is_abspath=False)
+        args = parser.parse_args(args_str.split())
+
+        #####################
+        #
+        # Add argparser attributes to optionmanager
+        #
+        #####################
+
+        option_dic = vars(args)  # Dictionnary with options
+        OptionManager.instance().add_options(option_dic)  # Add options to OptionManager
+
+        ###############################################################
+        #
+        # Test wopfile
+        #
+        ###############################################################
+
+        wopmars_runner = WopmarsRunner(command='asv', parameters=OptionManager.instance())
+        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"),
+                                    PathManager.get_package_path())
+        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
+
+        self.assertTrue('lfn_variant_replicate_threshold' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
+        self.assertFalse('lfn_variant_threshold' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
+        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params']['lfn_variant_replicate_threshold']
+                        == self.lfn_variant_replicate_threshold)

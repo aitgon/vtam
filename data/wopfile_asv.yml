@@ -1,4 +1,4 @@
-{% from 'macros.txt' import input_file_threshold_specific %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.txt' import input_file_threshold_specific, input_lfn_variant_replicate_threshold %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
@@ -13,10 +13,7 @@
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
-    params:
-        filter_lfn_variant: {{filter_lfn_variant}}
-        lfn_variant_threshold: {{lfn_variant_threshold}}
-        lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
+    params:{{ input_lfn_variant_replicate_threshold(lfn_variant_threshold, lfn_variant_replicate_threshold) }}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
 
