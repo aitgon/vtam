@@ -43,8 +43,6 @@ class FilterLFNrunner:
                                                                           'filter_delete': []},
                                                                     dtype='uint32')
 
-
-
     def f2_f4_lfn_delete_variant(self, lfn_variant_threshold, threshold_specific_df=None):
         """
         This filter deletes the variant i in biosample j and replicate k
@@ -78,22 +76,6 @@ class FilterLFNrunner:
 
         """
         this_filter_id = 2
-        # # Write log
-        # # Logger.instance().debug(
-        # #     "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, this_filter_id))
-        # ######################
-        # # Calculating the total of reads by variant
-        # df2 = self.variant_read_count_df.copy()
-        # df2 = df2[['run_id', 'marker_id', 'variant_id', 'read_count']].groupby(
-        #     by=['run_id', 'marker_id', 'variant_id']).sum().reset_index()
-        # # Merge the column with the total reads by variant for calculate the ratio
-        # df2 = self.variant_read_count_df.merge(df2, left_on=['run_id', 'marker_id', 'variant_id'],
-        #                                        right_on=['run_id', 'marker_id', 'variant_id'])
-        # df2 = df2.rename(columns={'read_count_x': 'read_count'})
-        # df2 = df2.rename(columns={'read_count_y': 'read_count_per_variant'})
-        # # Calculate the ratio
-        # df2['low_frequence_noice_per_variant'] = df2.read_count / df2.read_count_per_variant
-        ######################
         #
         # Compute N_i_df, merge and add to filter_df
         N_i_df = self.variant_read_count_lfn_df.get_N_i_df() # Compute N_i_df

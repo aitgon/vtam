@@ -130,8 +130,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
                                      biosample_model, replicate_model)
-        run_marker_biosample_variant_keep_df = variant_known.get_run_marker_biosample_variant_keep_df()
-        # variant_known_ids_df = variant_known.variant_known_ids_df
+        keep_run_marker_biosample_variant_df = variant_known.get_keep_run_marker_biosample_variant_df(
+            variant_tolerate=False)
 
         ################################################################################################################
         #
@@ -150,7 +150,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         # These columns: run_id  marker_id  biosample_id  variant_id
         variant_delete_df, variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df \
-            = variant_known.get_run_marker_biosample_variant_delete_df(variant_read_count_df)
+            = variant_known.get_delete_run_marker_biosample_variant_df(variant_read_count_df)
 
         ################################################################################################
         #
@@ -174,7 +174,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, count_keep_max, count_keep))
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
-                is_optimize_lfn_variant_replicate, variant_read_count_df, run_marker_biosample_variant_keep_df,
+                is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
                 lfn_biosample_replicate_threshold,
                 lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
             if count_keep > count_keep_max:
@@ -208,7 +208,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                 is_optimize_lfn_variant_replicate,
-                variant_read_count_df, run_marker_biosample_variant_keep_df, lfn_biosample_replicate_threshold,
+                variant_read_count_df, keep_run_marker_biosample_variant_df, lfn_biosample_replicate_threshold,
                 lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
             if count_keep > count_keep_max:
@@ -241,7 +241,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                 lfn_variant_or_variant_replicate_threshold, count_keep_max, count_keep))
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
-                    is_optimize_lfn_variant_replicate, variant_read_count_df, run_marker_biosample_variant_keep_df,
+                    is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
                     lfn_biosample_replicate_threshold,
                     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
