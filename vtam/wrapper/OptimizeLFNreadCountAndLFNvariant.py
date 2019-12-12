@@ -306,19 +306,14 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ##########################################################
         variant_read_count_delete_df = variant_read_count_df.merge(variant_delete_df, on=['run_id',
-                                                                                                    'marker_id',
-                                                                                                    'biosample_id',
-                                                                                                    'variant_id'])
-        variant_read_count_instance = VariantReadCountDF(variant_read_count_delete_df)
+                                                                          'marker_id', 'biosample_id', 'variant_id'])
+        variant_read_count_df_instance = VariantReadCountDF(variant_read_count_df)
 
         if not is_optimize_lfn_variant_replicate:  # optimize lfn variant
-            N_i_df = variant_read_count_instance.get_N_i_df()
+            N_i_df = variant_read_count_df_instance.get_N_i_df()
 
             lfn_variant_or_variant_replicate_specific_threshold_df = variant_read_count_delete_df.merge(N_i_df,
-                                                                                                        on=['run_id',
-                                                                                                            'marker_id',
-                                                                                                            'variant_id'])
-            del (N_i_df)
+                                                                        on=['run_id', 'marker_id', 'variant_id'])
             lfn_variant_or_variant_replicate_specific_threshold_df[
                 'lfn_variant_threshold'] = lfn_variant_or_variant_replicate_specific_threshold_df.read_count \
                                            / lfn_variant_or_variant_replicate_specific_threshold_df.N_i
@@ -331,12 +326,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 ['run_id', 'marker_id', 'variant_id', 'read_count', 'N_i', 'lfn_variant_threshold']]).drop_duplicates(
                 inplace=False)
         else:  # optimize lfn variant replicate
-            N_ik_df = variant_read_count_instance.get_N_ik_df()
+            N_ik_df = variant_read_count_df_instance.get_N_ik_df()
             lfn_variant_or_variant_replicate_specific_threshold_df = variant_read_count_delete_df.merge(N_ik_df,
-                                                                                                        on=['run_id',
-                                                                                                            'marker_id',
-                                                                                                            'variant_id',
-                                                                                                            'replicate_id'])
+                                                            on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
             lfn_variant_or_variant_replicate_specific_threshold_df[
                 'lfn_variant_replicate_threshold'] = lfn_variant_or_variant_replicate_specific_threshold_df.read_count \
                                                      / lfn_variant_or_variant_replicate_specific_threshold_df.N_ik
