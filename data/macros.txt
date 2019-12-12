@@ -3,3 +3,10 @@
             threshold_specific: {{threshold_specific}}{% endif %}
 {%- endmacro%}
 
+{% macro input_lfn_variant_replicate_threshold(lfn_variant_threshold, lfn_variant_replicate_threshold) -%}
+{% if lfn_variant_replicate_threshold is not none %}
+        lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}{% else %}
+        lfn_variant_threshold: {{lfn_variant_threshold}}{% endif %}
+{%- endmacro%}
+
+
