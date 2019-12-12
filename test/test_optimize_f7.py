@@ -81,7 +81,8 @@ class TestOptimizeF7(TestCase):
             #
             ####################
 
-            lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_variant_threshold)
 
             ###################
             #
@@ -89,7 +90,8 @@ class TestOptimizeF7(TestCase):
             #
             ####################
 
-            lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
+            # lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_biosample_replicate_threshold)
 
             ###################
             #
@@ -97,15 +99,15 @@ class TestOptimizeF7(TestCase):
             #
             ####################
 
-            lfn_filter_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
+            lfn_filter_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
 
             ###################
             #
-            # f8_lfn_delete_do_not_pass_all_filters
+            # mark_delete_lfn_do_not_pass_all_filters
             #
             ####################
 
-            lfn_filter_runner.f8_lfn_delete_do_not_pass_all_filters()
+            lfn_filter_runner.mark_delete_lfn_do_not_pass_all_filters()
 
             variant_read_count_remained_df = lfn_filter_runner.variant_read_count_filter_delete_df
 

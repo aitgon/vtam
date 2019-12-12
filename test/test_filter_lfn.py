@@ -119,7 +119,8 @@ class TestFilterLFN(TestCase):
 
     def test_02_f2_f4_lfn_delete_variant(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        # self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_per_variant_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
                             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 22)
@@ -149,7 +150,7 @@ class TestFilterLFN(TestCase):
         # for  row in lfn_var_threshold_specific_df.itertuples():
         #    lfn_var_threshold_specific[row.variant_id]= float(row.variant_id_threshold)
 
-        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_var_threshold,
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_var_threshold,
                                                         threshold_specific_df=lfn_var_threshold_specific_df)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
@@ -174,8 +175,8 @@ class TestFilterLFN(TestCase):
 
     def test_04_f3_f5_lfn_delete_variant_replicate(self):
         lfn_per_replicate_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(
-            lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        # self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
                             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 12)
@@ -194,8 +195,8 @@ class TestFilterLFN(TestCase):
 
     def test_05_f3_f5_lfn_variant_replicate_threshold_specific(self):
         lfn_per_replicate_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(
-            lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        # self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
                             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 12)
@@ -213,7 +214,7 @@ class TestFilterLFN(TestCase):
 
     def test_06_f7_lfn_delete_absolute_read_count(self):
         lfn_read_count_threshold = 10
-        self.filter_lfn_runner.f7_lfn_delete_absolute_read_count(lfn_read_count_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
                             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 12)
@@ -239,8 +240,8 @@ class TestFilterLFN(TestCase):
     def test_07_f6_lfn_delete_per_sum_biosample_replicate(self):
         lfn_per_replicate_threshold = 0.001
 
-        self.filter_lfn_runner.f6_lfn_delete_biosample_replicate(lfn_per_replicate_threshold)
-        #import pdb; pdb.set_trace()
+        # self.filter_lfn_runner.f6_lfn_delete_biosample_replicate(lfn_per_replicate_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_per_replicate_threshold)
         #
         self.assertTrue(not self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[(self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 9)
                                                                                            & (self.filter_lfn_runner.variant_read_count_filter_delete_df.biosample_id == 2)
@@ -275,12 +276,14 @@ class TestFilterLFN(TestCase):
 
     def test_08_f8_lfn_delete_do_not_pass_all_filters(self):
         lfn_per_variant_threshold = 0.001
-        self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        # self.filter_lfn_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold=lfn_per_variant_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_per_variant_threshold)
+
         lfn_per_replicate_threshold = 0.005
-        self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(
-            lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        # self.filter_lfn_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold=lfn_per_replicate_threshold)
+        self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_per_replicate_threshold)
         #
-        self.filter_lfn_runner.f8_lfn_delete_do_not_pass_all_filters()
+        self.filter_lfn_runner.mark_delete_lfn_do_not_pass_all_filters()
         #
         self.assertTrue(not self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[(self.filter_lfn_runner.variant_read_count_filter_delete_df.run_id == 1)
                                                                                            & (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 1)
