@@ -144,18 +144,9 @@ class ArgParser():
 
         parser_vtam_asv.add_argument('--blast_db', action='store',
                                      help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
-                                          # "-First argument: Blast DB directory (Full or custom one)"
-                                          # "-Second argument: Blast DB file basename", default="blast_dir",
                                      required=True,
                                      type=lambda x:
                                      ArgParser.verify_an_store_blast_db_argument(x, is_abspath=is_abspath))
-        # parser_vtam_asv.add_argument('--map_taxids', action='store',
-        #                              help="TSV file with mapping from NCBI sequence IDs to tax IDs."
-        #                                   "Required if working with custome DB.",
-        #                              required=False, type=lambda x:
-        #     PathManager.check_file_exists_and_is_nonempty(x,
-        #                                                   error_message="Verify the file in the '--map_taxids' argument",
-        #                                                   is_abspath=is_abspath))
         parser_vtam_asv.add_argument('--taxonomy', dest='taxonomy', action='store',
                                      help="""REQUIRED: SQLITE DB with taxonomy information.
 
@@ -185,12 +176,6 @@ class ArgParser():
                                           required=True, type=lambda x:
             PathManager.check_file_exists_and_is_nonempty(x,
                                                           error_message="Verify the '--fastainfo' argument"))
-        # parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED:Directory with FASTA files",
-        #                                   required=True,
-        #                                   type=lambda x:
-        #                                   PathManager.check_file_exists_and_is_nonempty(x,
-        #                                                              error_message="Verify the '--fastadir' argument",
-        #                                                              is_abspath=is_abspath))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
