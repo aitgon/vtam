@@ -114,7 +114,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         ################################################################################################
 
         # These columns: run_id  marker_id  biosample_id  variant_id
-        variant_keep_df = variant_known.get_run_marker_biosample_variant_keep_df()
+        variant_keep_df = variant_known.get_keep_run_marker_biosample_variant_df()
 
 
         ################################################################################################################

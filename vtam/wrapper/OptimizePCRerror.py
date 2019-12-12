@@ -132,10 +132,10 @@ class OptimizePCRerror(ToolWrapper):
         #
         ################################################################################################################
 
-        run_marker_biosample_variant_keep_df = variant_known.get_run_marker_biosample_variant_keep_df()
+        run_marker_biosample_variant_keep_df = variant_known.get_keep_run_marker_biosample_variant_df()
 
         variant_delete_df, variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df\
-            = variant_known.get_run_marker_biosample_variant_delete_df(variant_read_count_df=variant_read_count_df)
+            = variant_known.get_delete_run_marker_biosample_variant_df(variant_read_count_df=variant_read_count_df)
 
         ################################################################################################################
         #

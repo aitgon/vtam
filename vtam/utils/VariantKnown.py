@@ -135,35 +135,38 @@ class VariantKnown(object):
                                                       "are defined in the --fasta_info file"))
                 sys.exit(1)
 
-    def get_run_marker_biosample_variant_keep_df(self):
+    def get_keep_run_marker_biosample_variant_df(self, variant_tolerate=False):
         """Returns the 'keep' and 'tolerates' variants together with run_id, marker_id, biosample_id, variant_id
 
 
-
+        :param: variant_tolerate: Boolean: Default False. include "variant_tolerate" variants or not?
         :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
         """
-        run_marker_biosample_variant_keep = self.variant_known_ids_df.loc[
-            (self.variant_known_df.action.isin(['keep', 'tolerate']))]
-        run_marker_biosample_variant_keep = run_marker_biosample_variant_keep.merge(self.variant_known_ids_df,
-                                                on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
-        run_marker_biosample_variant_keep = run_marker_biosample_variant_keep[
+        # Get portion of variant_known_tsv with either keep or keep+variant_tolerate
+        if variant_tolerate:  # get also variant_tolerate variant
+            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[
+                (self.variant_known_df.action.isin(['keep', 'variant_tolerate']))]
+        else:  # do only get keep variants
+            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[self.variant_known_df.action == 'keep']
+        # run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df.merge(self.variant_known_ids_df,
+        #                                         on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+        # Select run_id, marker_id, biosample_id and variant_id
+        run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df[
             ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
-        # Change types to int
-        run_marker_biosample_variant_keep.variant_id = run_marker_biosample_variant_keep.variant_id.astype('int')
-        return run_marker_biosample_variant_keep
+        # Change variant_id type to int
+        run_marker_biosample_variant_keep_df.variant_id = run_marker_biosample_variant_keep_df.variant_id.astype('int')
+        return run_marker_biosample_variant_keep_df
 
 
-    def get_run_marker_biosample_variant_delete_df(self, variant_read_count_df):
+    def get_delete_run_marker_biosample_variant_df(self, variant_read_count_df):
         """Returns the 'delete' variants together with run_id, marker_id, biosample_id, variant_id
-
-
 
         :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
         """
 
         ##########################################################
         #
-        # Get delete variants, that are not keep in mock samples
+        # Get delete variants, that are not keep and/or tolerate in mock or real
         #
         ##########################################################
         # Get mock biosamples
@@ -172,13 +175,11 @@ class VariantKnown(object):
         # Get variant_read_count_mock
         variant_read_count_mock = run_marker_biosample_mock_df.merge(variant_read_count_df,
                                                                      on=['run_id', 'marker_id', 'biosample_id'])
-        # Get keep variants
-        run_marker_biosample_variant_keep_df = self.get_run_marker_biosample_variant_keep_df()
-        # Get variant read count not in variant know
+        # Get keep and tolerates variants to remove from mock
+        run_marker_biosample_variant_keep_df = self.get_keep_run_marker_biosample_variant_df(variant_tolerate=True)
+        # Compute variants that are 1) mock and keep/tolerate (both). 2) Mock but not keep/tolerate (left_only)
         variant_delete_mock_df = variant_read_count_mock.merge(run_marker_biosample_variant_keep_df,
-                                                               on=['run_id', 'marker_id', 'biosample_id', 'variant_id'],
-                                                               how='left', indicator=True)
-
+                                   on=['run_id', 'marker_id', 'biosample_id', 'variant_id'], how='left', indicator=True)
         # Throw replicate_id and read count
         variant_delete_mock_df = variant_delete_mock_df.loc[variant_delete_mock_df._merge=='left_only',
                                     ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
