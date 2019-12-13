@@ -37,7 +37,7 @@ CTGTAGATCGACA"""
 
         this_tempdir_fwd = os.path.join(self.this_tempdir, 'fwd')
         pathlib.Path(this_tempdir_fwd).mkdir(parents=True, exist_ok=True)
-        read_fasta_path = os.path.join(this_tempdir_fwd, "read.fasta_path")
+        read_fasta_path = os.path.join(this_tempdir_fwd, "read.fasta")
 
         fasta_information_df = pandas.DataFrame(
             {
@@ -134,7 +134,7 @@ CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTC
         #
         #######################################################################
 
-        reads_reversed_5prime_trimmed_fasta_path = os.path.join(this_tempdir_fwd, "reads_5prime_trimmed_reversed.fasta_path")
+        reads_reversed_5prime_trimmed_fasta_path = os.path.join(this_tempdir_fwd, "reads_5prime_trimmed_reversed.fasta")
         ReadTrimmer.fasta_file_to_reverse_complement(sort_reads_runner_fwd.reads_trimmed_fasta_path,
                                                      reads_reversed_5prime_trimmed_fasta_path)
 

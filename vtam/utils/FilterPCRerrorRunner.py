@@ -42,11 +42,11 @@ class FilterPCRerrorRunner(object):
         # 5-1. Make a fasta_path file with all variants of the sample or replicate
         ###################################################################
 
-        variant_expected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta_path'.format("variant_expected"))
+        variant_expected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta'.format("variant_expected"))
         variant_expected_df_utils_obj = VariantDFutils(variant_df=self.__variant_expected_df)
         variant_expected_df_utils_obj.to_fasta(fasta_path=variant_expected_fasta_path)
 
-        variant_unexpected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta_path'.format("variant_unexpected"))
+        variant_unexpected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta'.format("variant_unexpected"))
         variant_unexpected_df_utils_obj = VariantDFutils(variant_df=self.__variant_unexpected_df)
         variant_unexpected_df_utils_obj.to_fasta(fasta_path=variant_unexpected_fasta_path)
 
