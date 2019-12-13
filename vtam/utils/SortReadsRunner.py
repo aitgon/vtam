@@ -81,7 +81,7 @@ class SortReadsRunner(object):
         #
         #######################################################################
 
-        reads_reversed_5prime_trimmed_fasta_path = os.path.join(this_tempdir_fwd, "reads_5prime_trimmed_reversed.fasta_path")
+        reads_reversed_5prime_trimmed_fasta_path = os.path.join(this_tempdir_fwd, "reads_5prime_trimmed_reversed.fasta")
         ReadTrimmer.fasta_file_to_reverse_complement(reads_trimmer_fwd.reads_trimmed_fasta_path,
                                                      reads_reversed_5prime_trimmed_fasta_path)
 
