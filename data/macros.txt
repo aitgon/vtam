@@ -49,7 +49,7 @@
             optimize_lfn_variant_specific: {{optimize_lfn_variant_replicate_specific}}
     params:
         is_optimize_lfn_variant_replicate: 1
-        lfn_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
+        lfn_variant_or_variant_replicate_threshold: {{lfn_variant_replicate_threshold}}
         lfn_biosample_replicate_threshold: {{lfn_biosample_replicate_threshold}}
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}{% endif %}

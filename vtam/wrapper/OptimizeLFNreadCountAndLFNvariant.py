@@ -403,9 +403,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 sqlalchemy.select([run_model.__table__.c.id, run_model.__table__.c.name])).fetchall()
             marker_id_to_name = conn.execute(
                 sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
-            if is_optimize_lfn_variant_replicate:  # optimize lfn variant
-                replicate_to_name = conn.execute(
-                    sqlalchemy.select([replicate_model.__table__.c.id, replicate_model.__table__.c.name])).fetchall()
 
         run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
         lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.merge(run_id_to_name_df, on='run_id')
@@ -421,9 +418,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                'variant_id', 'N_ijk_max', 'N_i', 'lfn_variant_threshold', 'biosample_type']
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by=column_names, inplace=True)
         else:  # optimize lfn variant replicate
-            replicate_to_name_df = pandas.DataFrame.from_records(data=replicate_to_name, columns=['replicate', 'replicate_name'])
-            lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.merge(replicate_to_name_df, on='replicate')
-            column_names = ['run_name', 'marker_name', 'variant_id', 'replicate_name',
+            column_names = ['run_name', 'marker_name', 'variant_id', 'replicate',
                                'N_ijk_max', 'N_ik', 'lfn_variant_replicate_threshold', 'biosample_type']
             lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df[column_names]
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by=column_names, inplace=True)
