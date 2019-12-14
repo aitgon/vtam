@@ -23,16 +23,16 @@ class SortReadsRunner(object):
 
 
         # This is the only order allowed of variant_read_count_df columns
-        column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'tag_fwd_sequence',
+        column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate', 'tag_fwd_sequence',
                             'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'fasta_file_name']
         try:
             fasta_information_df = fasta_information_df[column_list]
             assert fasta_information_df.columns.tolist() == \
-                   ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'tag_fwd_sequence', 'primer_fwd_sequence',
+                   ['run_id', 'marker_id', 'biosample_id', 'replicate', 'tag_fwd_sequence', 'primer_fwd_sequence',
                     'tag_rev_sequence', 'primer_rev_sequence', 'fasta_file_name']
         except:
             Logger.instance().error(VTAMexception("This fasta_information_df DataFrame must be composed of columns: "
-                                                  "'run_id', 'marker_id', 'biosample_id', 'replicate_id', "
+                                                  "'run_id', 'marker_id', 'biosample_id', 'replicate', "
                                                   "'tag_fwd_sequence, primer_fwd_sequence', 'tag_rev_sequence', "
                                                   "'primer_rev_sequence', 'fasta_file_name'. The workflow will exit"))
             sys.exit(1)
@@ -123,7 +123,7 @@ class SortReadsRunner(object):
             tag_seq...
         :param fasta_information: DataFrame with FASTA information in these columns:
             tag_sequence_fwd, tag_sequence_rev, primer_sequence_fwd, primer_sequence_rev, run_id, marker_id, biosample_id
-            replicate_id, fasta_path
+            replicate, fasta_path
         :param sort_reads_tsv_path: Path to TSV with final read annotations
         """
 
@@ -146,8 +146,8 @@ class SortReadsRunner(object):
                     run_id = annotation_series.run_id
                     marker_id = annotation_series.marker_id
                     biosample_id = annotation_series.biosample_id
-                    replicate_id = annotation_series.replicate_id
-                    out_line = "\t".join([str(i) for i in [read_id, run_id, fasta_id, marker_id, biosample_id, replicate_id, read_sequence]]) + "\n"
+                    replicate = annotation_series.replicate
+                    out_line = "\t".join([str(i) for i in [read_id, run_id, fasta_id, marker_id, biosample_id, replicate, read_sequence]]) + "\n"
                     fout.write(out_line)
 
 

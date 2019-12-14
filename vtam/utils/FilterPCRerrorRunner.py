@@ -17,7 +17,7 @@ class FilterPCRerrorRunner(object):
 
         :param variant_expected_df: DataFrame (id, sequence) with expected variants
         :param variant_unexpected_df: DataFrame (id, sequence) with unexpected variants
-        :param variant_read_count_df: DataFrame (run_id, marker_id, biosample_id, replicate_id, variant_id, read_count)
+        :param variant_read_count_df: DataFrame (run_id, marker_id, biosample_id, replicate, variant_id, read_count)
         """
         self.__variant_expected_df = variant_expected_df
         self.__variant_unexpected_df = variant_unexpected_df
@@ -95,7 +95,7 @@ class FilterPCRerrorRunner(object):
         variant_unexpected_to_expected_ratio_df = vsearch_output_df.loc[
             vsearch_output_df.sum_mism_gaps == 1, ['variant_id_expected', 'variant_id_unexpected']]
 
-        # Annotate variants (expected and unexpected) with run_id, marker_id, biosample_id, replicate_id and read_count
+        # Annotate variants (expected and unexpected) with run_id, marker_id, biosample_id, replicate and read_count
         # Add two colum the first for the variant id sequence query and the second for the target sequance variant id
         variant_unexpected_to_expected_ratio_df = N_ij_df.merge(variant_unexpected_to_expected_ratio_df, left_on=['variant_id'],
                                                                   right_on=['variant_id_expected'])

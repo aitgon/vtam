@@ -16,7 +16,7 @@ class TestReadCountAverageOverReplicates(TestCase):
             'marker_id': [1] * 5,
             'variant_id': [1] * 2 + [2] * 3,
             'biosample_id': [1] * 2 + [2] * 2 + [1],
-            'replicate_id': [1, 2] + [1, 2] + [3],
+            'replicate': [1, 2] + [1, 2] + [3],
             'read_count':[
                 156, 341, 99, 140, 116
                   ],

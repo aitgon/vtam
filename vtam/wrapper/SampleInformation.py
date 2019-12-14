@@ -11,7 +11,6 @@ class SampleInformation(ToolWrapper):
     __output_table_fasta = "Fasta"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
-    __output_table_replicate = "Replicate"
     __output_table_run = "Run"
     __output_table_sample_information = "SampleInformation"
     __output_table_tagpair = "TagPair"
@@ -25,7 +24,6 @@ class SampleInformation(ToolWrapper):
             SampleInformation.__output_table_fasta,
             SampleInformation.__output_table_marker,
             SampleInformation.__output_table_primerpair,
-            SampleInformation.__output_table_replicate,
             SampleInformation.__output_table_run,
             SampleInformation.__output_table_sample_information,
             SampleInformation.__output_table_tagpair,
@@ -56,7 +54,6 @@ class SampleInformation(ToolWrapper):
         fasta_model = self.output_table(SampleInformation.__output_table_fasta)
         marker_model = self.output_table(SampleInformation.__output_table_marker)
         primerpair_model = self.output_table(SampleInformation.__output_table_primerpair)
-        replicate_model = self.output_table(SampleInformation.__output_table_replicate)
         run_model = self.output_table(SampleInformation.__output_table_run)
         sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
         tagpair_model = self.output_table(SampleInformation.__output_table_tagpair)
@@ -70,7 +67,8 @@ class SampleInformation(ToolWrapper):
                 primer_reverse = line.strip().split('\t')[3]
                 marker_name = line.strip().split('\t')[4]
                 biosample_name = line.strip().split('\t')[5]
-                replicate_name = line.strip().split('\t')[6]
+                # replicate_name = line.strip().split('\t')[6]
+                replicate = line.strip().split('\t')[6]
                 if len(line.strip().split('\t')) == 9: # No fastq file columns
                     fasta_file_name = line.strip().split('\t')[8]
                     # fasta_file_full_path = os.path.join(self.option("fasta_dir"), line.strip().split('\t')[8])
@@ -101,11 +99,6 @@ class SampleInformation(ToolWrapper):
                 biosample_instance = SampleInformation.get_or_create(session, biosample_model, **biosample_obj)
                 biosample_id = biosample_instance.id
                 #
-                # Insert replicate
-                replicate_obj = {'name': replicate_name}
-                replicate_instance = SampleInformation.get_or_create(session, replicate_model, **replicate_obj)
-                replicate_id = replicate_instance.id
-                #
                 # Insert file output
                 is_trimmed = False # Default
                 fasta_obj = {'name': fasta_file_name, 'is_trimmed': is_trimmed, 'run_id': run_id}
@@ -113,7 +106,9 @@ class SampleInformation(ToolWrapper):
                 fasta_id = fasta_instance.id
 
                 # Insert sample_information
-                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse': tag_reverse, 'primer_reverse': primer_reverse, 'biosample_id': biosample_id, 'replicate_id': replicate_id, 'run_id': run_id}
+                sample_information_obj = {'tag_forward': tag_forward, 'primer_forward': primer_forward, 'tag_reverse':
+                    tag_reverse, 'primer_reverse': primer_reverse, 'biosample_id': biosample_id, 'replicate': replicate,
+                                          'run_id': run_id}
                 sample_information_obj['fasta_id'] = fasta_id
                 sample_information_obj['marker_id'] = marker_id
                 SampleInformation.get_or_create(session, sampleinformation_model, **sample_information_obj)
