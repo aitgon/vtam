@@ -25,7 +25,6 @@ class FilterCodonStop(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_filter_indel = "FilterIndel"
     __input_table_Variant = "Variant"
     # Output table
@@ -43,7 +42,6 @@ class FilterCodonStop(ToolWrapper):
             FilterCodonStop.__input_table_marker,
             FilterCodonStop.__input_table_run,
             FilterCodonStop.__input_table_biosample,
-            FilterCodonStop.__input_table_replicate,
             FilterCodonStop.__input_table_filter_indel,
             FilterCodonStop.__input_table_Variant,
         ]
@@ -58,9 +56,6 @@ class FilterCodonStop(ToolWrapper):
     def specify_params(self):
         return {
             "genetic_table_number": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str"
-
         }
 
 
@@ -81,7 +76,6 @@ class FilterCodonStop(ToolWrapper):
         marker_model = self.input_table(FilterCodonStop.__input_table_marker)
         run_model = self.input_table(FilterCodonStop.__input_table_run)
         biosample_model = self.input_table(FilterCodonStop.__input_table_biosample)
-        replicate_model = self.input_table(FilterCodonStop.__input_table_replicate)
         variant_model = self.input_table(FilterCodonStop.__input_table_Variant)
         input_filter_indel_model = self.input_table(FilterCodonStop.__input_table_filter_indel)
         #options
@@ -92,11 +86,11 @@ class FilterCodonStop(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
         fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
@@ -123,7 +117,7 @@ class FilterCodonStop(ToolWrapper):
         ##########################################################
 
         # else:
-        # run_id, marker_id, variant_id, biosample_id, replicate_id, read_count, filter_delete
+        # run_id, marker_id, variant_id, biosample_id, replicate, read_count, filter_delete
         variant_model_table = variant_model.__table__
         stmt_variant = select([variant_model_table.c.id,
                                variant_model_table.c.sequence])

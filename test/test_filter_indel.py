@@ -32,7 +32,7 @@ class TestIndel(TestCase):
             'marker_id': [1]*12,
             'variant_id': [7]*1 + [6]*1 + [1]*2 + [2]*2 + [3]*2 + [4]*2 + [5]*2,
             'biosample_id': [1] * 12,
-            'replicate_id': [1, 2] * 6,
+            'replicate': [1, 2] * 6,
             'read_count':[
                 25, 25, 350, 360, 335, 325, 350, 350, 325, 325, 35, 25
                   ],
@@ -50,7 +50,7 @@ class TestIndel(TestCase):
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 1)
                                          & (df_out.biosample_id == 1)
-                                         & (df_out.replicate_id == 1),
+                                         & (df_out.replicate == 1),
                                          # & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
         # Variant 7 passes
@@ -58,7 +58,7 @@ class TestIndel(TestCase):
                                          & (df_out.marker_id == 1)
                                          & (df_out.variant_id == 7)
                                          & (df_out.biosample_id == 1)
-                                         & (df_out.replicate_id == 1),
+                                         & (df_out.replicate == 1),
                                          # & (df_out.filter_id == 13),
                                          'filter_delete'].values[0])
 

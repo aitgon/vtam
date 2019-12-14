@@ -26,7 +26,6 @@ class OptimizePCRerror(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_variant = "Variant"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
     __output_file_optimize_pcr_error = "optimize_pcr_error"
@@ -46,7 +45,6 @@ class OptimizePCRerror(ToolWrapper):
             OptimizePCRerror.__input_table_run,
             OptimizePCRerror.__input_table_variant,
             OptimizePCRerror.__input_table_biosample,
-            OptimizePCRerror.__input_table_replicate,
             OptimizePCRerror.__input_table_variant_read_count,
         ]
 
@@ -58,9 +56,6 @@ class OptimizePCRerror(ToolWrapper):
 
     def specify_params(self):
         return {
-            # "foo": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self):
@@ -85,7 +80,6 @@ class OptimizePCRerror(ToolWrapper):
         marker_model = self.input_table(OptimizePCRerror.__input_table_marker)
         variant_model = self.input_table(OptimizePCRerror.__input_table_variant)
         biosample_model = self.input_table(OptimizePCRerror.__input_table_biosample)
-        replicate_model = self.input_table(OptimizePCRerror.__input_table_replicate)
         variant_read_count_model = self.input_table(OptimizePCRerror.__input_table_variant_read_count)
         #
         # Output file paths
@@ -98,7 +92,7 @@ class OptimizePCRerror(ToolWrapper):
         ################################################################################################################
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
-                                     biosample_model, replicate_model)
+                                     biosample_model)
         variant_known_ids_df = variant_known.variant_known_ids_df
 
         ################################################################################################################
@@ -117,7 +111,7 @@ class OptimizePCRerror(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
         filter_id = None
 
         variant_read_count_df = fasta_info.get_variant_read_count_df(
@@ -152,11 +146,11 @@ class OptimizePCRerror(ToolWrapper):
             variant_expected_per_biosample_df = variant_df.loc[
                 variant_df.index.isin(run_marker_biosample_variant_keep_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
 
-            variant_delete_mock_per_biosample_df = variant_delete_mock_df.loc[variant_delete_mock_df.biosample_id==biosample_id]
+            variant_delete_mock_per_biosample_df = variant_delete_mock_df.loc[variant_delete_mock_df.biosample_id == biosample_id]
             variant_unexpected_per_biosample_df = variant_df.loc[
                 variant_df.index.isin(variant_delete_mock_per_biosample_df.variant_id.unique().tolist())].drop_duplicates()
 
-            variant_read_count_per_biosample_df = variant_read_count_df.loc[variant_read_count_df.biosample_id==biosample_id]
+            variant_read_count_per_biosample_df = variant_read_count_df.loc[variant_read_count_df.biosample_id == biosample_id]
 
             this_step_tmp_per_biosample_dir = os.path.join(this_temp_dir, str(biosample_id))
             pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)

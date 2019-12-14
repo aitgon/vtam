@@ -29,7 +29,7 @@ class TestFilterPCRError(TestCase):
             'run_id': [1]*8,
             'marker_id': [1]*8,
             'biosample_id': [1]*8,
-            'replicate_id': [1, 2]*4,
+            'replicate': [1, 2]*4,
             'variant_id': [1]*2 + [2]*2 + [3]*2 + [4]*2,
             'read_count':[
                 350, 300, 300, 220, 60, 0, 2, 0,
@@ -49,8 +49,6 @@ class TestFilterPCRError(TestCase):
         self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.this_tempdir).mkdir(parents=True, exist_ok=True)
 
-
-
     def test_get_vsearch_alignement_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=self.variant_df, variant_unexpected_df=self.variant_df,
@@ -65,13 +63,13 @@ class TestFilterPCRError(TestCase):
         #
         pcr_error_var_prop = 0.05
         filter_output_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)
-        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate_id  variant_id  read_count  filter_delete
-0       1          1             1             1           1         350          False
-1       1          1             1             2           1         300          False
-2       1          1             1             1           2         300          False
-3       1          1             1             2           2         220          False
-4       1          1             1             1           3          60          False
-5       1          1             1             2           3           0          False
-6       1          1             1             1           4           2           True
-7       1          1             1             2           4           0           True"""
+        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
+0       1          1             1          1           1         350          False
+1       1          1             1          2           1         300          False
+2       1          1             1          1           2         300          False
+3       1          1             1          2           2         220          False
+4       1          1             1          1           3          60          False
+5       1          1             1          2           3           0          False
+6       1          1             1          1           4           2           True
+7       1          1             1          2           4           0           True"""
         self.assertTrue(filter_output_df_bak_str == filter_output_df.to_string())

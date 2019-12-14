@@ -152,8 +152,8 @@ class TestOptimizeF7(TestCase):
                            + variant_read_count_remained_delete_real_df.shape[0]
 
             # variant_read_count_remained_df[
-            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'filter_delete']].groupby(
-            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id']).sum().reset_index()
+            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'filter_delete']].groupby(
+            #     ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate']).sum().reset_index()
             #
             # variant_read_count_remained_df = variant_read_count_remained_df.loc[
             #     variant_read_count_remained_df.filter_delete == 0]

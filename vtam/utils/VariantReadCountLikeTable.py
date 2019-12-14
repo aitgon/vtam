@@ -6,7 +6,7 @@ import sys
 
 
 class VariantReadCountLikeTable(object):
-    """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, biosample_id, replicate_id, variant_id
+    """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, biosample_id, replicate, variant_id
     attributes/columns and performs various operations on it"""
 
     def __init__(self, engine, variant_read_count_like_model):
@@ -15,7 +15,7 @@ class VariantReadCountLikeTable(object):
         self.variant_read_count_like_model = variant_read_count_like_model
 
     def delete_output_filter_model(self, fasta_info_record_list):
-        """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate_id"""
+        """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate"""
 
         with self.engine.connect() as conn:
             conn.execute(self.variant_read_count_like_model.__table__.delete(), fasta_info_record_list)
@@ -24,7 +24,7 @@ class VariantReadCountLikeTable(object):
         """Get variant_read_count df from input filter models
 
         :param fasta_info_tsv: TSV file with the fasta_path information
-        :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate_id, variant_id, read_count
+        :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
         """
         filter_min_replicate_number_table = self.input_variant_read_count_like_model.__table__
 
@@ -33,30 +33,30 @@ class VariantReadCountLikeTable(object):
             run_id = sample_instance['run_id']
             marker_id = sample_instance['marker_id']
             biosample_id = sample_instance['biosample_id']
-            replicate_id = sample_instance['replicate_id']
+            replicate = sample_instance['replicate']
             if filter_id is None:
                 stmt_select = select([filter_min_replicate_number_table.c.run_id,
                                       filter_min_replicate_number_table.c.marker_id,
                                       filter_min_replicate_number_table.c.biosample_id,
-                                      filter_min_replicate_number_table.c.replicate_id,
+                                      filter_min_replicate_number_table.c.replicate,
                                       filter_min_replicate_number_table.c.variant_id,
                                       filter_min_replicate_number_table.c.read_count]).distinct()\
                                         .where(filter_min_replicate_number_table.c.run_id == run_id)\
                                         .where(filter_min_replicate_number_table.c.marker_id == marker_id)\
                                         .where(filter_min_replicate_number_table.c.biosample_id == biosample_id)\
-                                        .where(filter_min_replicate_number_table.c.replicate_id == replicate_id)\
+                                        .where(filter_min_replicate_number_table.c.replicate == replicate)\
                                         .where(filter_min_replicate_number_table.c.filter_delete == 0)
             else:
                 stmt_select = select([filter_min_replicate_number_table.c.run_id,
                                       filter_min_replicate_number_table.c.marker_id,
                                       filter_min_replicate_number_table.c.biosample_id,
-                                      filter_min_replicate_number_table.c.replicate_id,
+                                      filter_min_replicate_number_table.c.replicate,
                                       filter_min_replicate_number_table.c.variant_id,
                                       filter_min_replicate_number_table.c.read_count]).distinct()\
                                         .where(filter_min_replicate_number_table.c.run_id == run_id)\
                                         .where(filter_min_replicate_number_table.c.marker_id == marker_id)\
                                         .where(filter_min_replicate_number_table.c.biosample_id == biosample_id)\
-                                        .where(filter_min_replicate_number_table.c.replicate_id == replicate_id)\
+                                        .where(filter_min_replicate_number_table.c.replicate == replicate)\
                                         .where(filter_min_replicate_number_table.c.filter_id == filter_id)\
                                         .where(filter_min_replicate_number_table.c.filter_delete == 0)
             with self.engine.connect() as conn:
@@ -64,7 +64,7 @@ class VariantReadCountLikeTable(object):
                     variant_read_count_list.append(row2)
         #
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count'])
 
         # Exit if no variants for analysis
         try:
@@ -98,8 +98,8 @@ class VariantReadCountLikeTable(object):
                 instance['filter_delete'] = row.filter_delete
             if 'filter_id' in dir(row):
                 instance['filter_id'] = row.filter_id
-            if 'replicate_id' in dir(row):
-                instance['replicate_id'] = row.replicate_id
+            if 'replicate' in dir(row):
+                instance['replicate'] = row.replicate
             if 'replicate_count' in dir(row):
                 instance['replicate_count'] = row.replicate_count
             if 'read_count_average' in dir(row):

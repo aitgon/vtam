@@ -6,7 +6,6 @@ from vtam import Logger
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 
@@ -26,7 +25,6 @@ class FilterPCRerror(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant = "Variant"
     __input_table_filter_min_replicate_number = "FilterMinReplicateNumber"
     # Output table
@@ -44,7 +42,6 @@ class FilterPCRerror(ToolWrapper):
             FilterPCRerror.__input_table_marker,
             FilterPCRerror.__input_table_run,
             FilterPCRerror.__input_table_biosample,
-            FilterPCRerror.__input_table_replicate,
             FilterPCRerror.__input_table_variant,
             FilterPCRerror.__input_table_filter_min_replicate_number,
         ]
@@ -58,8 +55,6 @@ class FilterPCRerror(ToolWrapper):
     def specify_params(self):
         return {
             "pcr_error_var_prop": "float",
-            # "log_verbosity": "int",
-            # "log_file": "str"
 
         }
 
@@ -83,7 +78,6 @@ class FilterPCRerror(ToolWrapper):
         marker_model = self.input_table(FilterPCRerror.__input_table_marker)
         run_model = self.input_table(FilterPCRerror.__input_table_run)
         biosample_model = self.input_table(FilterPCRerror.__input_table_biosample)
-        replicate_model = self.input_table(FilterPCRerror.__input_table_replicate)
         variant_model = self.input_table(FilterPCRerror.__input_table_variant)
         input_filter_min_replicate_model = self.input_table(FilterPCRerror.__input_table_filter_min_replicate_number)
         #
@@ -95,11 +89,11 @@ class FilterPCRerror(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
         fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
