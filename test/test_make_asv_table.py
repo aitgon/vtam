@@ -42,7 +42,7 @@ class TestMakeAsvTable(TestCase):
         }
         filter_codon_stop_dic = {'run_id': [1, 1, 1, 1, 1, 1,1,1,1], 'marker_id': [1, 1, 1, 1, 1, 1,1,1,1],
                                  'variant_id': [30, 30, 30, 30, 30, 30,15,15,15], 'biosample_id': [1, 1, 1, 2, 2, 2,1,2,1],
-                                 'replicate_id': [1, 2, 3, 1, 2, 3,1,2,3], 'read_count': [183, 93, 42, 175, 31, 63,20,40,60],
+                                 'replicate': [1, 2, 3, 1, 2, 3,1,2,3], 'read_count': [183, 93, 42, 175, 31, 63,20,40,60],
                                  'fiter_id': [14, 14, 14, 14, 14, 14,14,14,14], 'filter_delete': [0, 0, 0, 0, 0, 0,0,0,0]}
         #
         biosample_dic = {'id': [1, 2], 'name': ['Tpos1_prerun', 'Tpos2_prerun']}

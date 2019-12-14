@@ -21,7 +21,6 @@ class SortReads(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     #Input file
     __input_file_fastainfo = "fastainfo"
     # Output
@@ -36,8 +35,6 @@ class SortReads(ToolWrapper):
             SortReads.__input_table_run,
             SortReads.__input_table_marker,
             SortReads.__input_table_biosample,
-            SortReads.__input_table_replicate,
-
         ]
 
     def specify_input_file(self):
@@ -81,13 +78,12 @@ class SortReads(ToolWrapper):
         marker_model = self.input_table(SortReads.__input_table_marker)
         run_model = self.input_table(SortReads.__input_table_run)
         biosample_model = self.input_table(SortReads.__input_table_biosample)
-        replicate_model = self.input_table(SortReads.__input_table_replicate)
         #
         # Input files
         input_file_fastainfo = self.input_file(SortReads.__input_file_fastainfo)
         #
         # Output files
-        # sortreads with columns: read_name, fasta_id, run_id, marker_id, biosample_id, replicate_id
+        # sortreads with columns: read_name, fasta_id, run_id, marker_id, biosample_id, replicate
         sort_reads_tsv = self.output_file(SortReads.__output_file_sort_reads)
         #
         # Options
@@ -97,11 +93,11 @@ class SortReads(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_information_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_information_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
         fasta_information_record_list = fasta_information_obj.get_fasta_information_record_list(extended_information=True)
         fasta_information_df = pandas.DataFrame(data=fasta_information_record_list)
 
@@ -139,7 +135,7 @@ class SortReads(ToolWrapper):
         #
         ########################################################
         with open(sort_reads_tsv, 'w') as fout: # header
-            fout.write('read_id\trun_id\tfasta_id\tmarker_id\tbiosample_id\treplicate_id\tread_sequence\n')
+            fout.write('read_id\trun_id\tfasta_id\tmarker_id\tbiosample_id\treplicate\tread_sequence\n')
         with open(sort_reads_tsv, 'ab') as wfd:
             for f in sort_reads_tsv_list:
                 with open(f, 'rb') as fd:

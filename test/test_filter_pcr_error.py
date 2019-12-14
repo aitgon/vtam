@@ -30,7 +30,7 @@ class TestFilterPCRError(TestCase):
             'run_id': [1]*4,
             'marker_id': [1]*4,
             'biosample_id': [1]*4,
-            'replicate_id': [1, 2]*2,
+            'replicate': [1, 2]*2,
             'variant_id': [1]*2 + [2]*2,
             'read_count':[
                 100, 100, 1, 1,
@@ -82,7 +82,7 @@ class TestFilterPCRError(TestCase):
             'run_id': [1]*4,
             'marker_id': [1]*4,
             'biosample_id': [1]*4,
-            'replicate_id': [1, 2]*2,
+            'replicate': [1, 2]*2,
             'variant_id': [1]*2 + [2]*2,
             'read_count': [100, 100, 1, 1,],
             'filter_delete': [False, False, True, True],

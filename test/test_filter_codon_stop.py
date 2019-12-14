@@ -29,7 +29,7 @@ class TestFilterChimera(TestCase):
             'marker_id': [1] * 12,
             'variant_id': [7] * 1 + [6] * 1 + [1] * 2 + [2] * 2 + [3] * 2 + [4] * 2 + [5] * 2,
             'biosample_id': [1] * 12,
-            'replicate_id': [1, 2] * 6,
+            'replicate': [1, 2] * 6,
             'read_count': [
                 25, 25, 350, 360, 335, 325, 350, 350, 325, 325, 35, 25
             ],

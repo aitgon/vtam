@@ -23,7 +23,6 @@ class FilterMinReplicateNumber(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant_filter_lfn = "FilterLFN"
     # Output table
     __output_table_filter_min_replicate_number = "FilterMinReplicateNumber"
@@ -40,7 +39,6 @@ class FilterMinReplicateNumber(ToolWrapper):
             FilterMinReplicateNumber.__input_table_run,
             FilterMinReplicateNumber.__input_table_marker,
             FilterMinReplicateNumber.__input_table_biosample,
-            FilterMinReplicateNumber.__input_table_replicate,
             FilterMinReplicateNumber.__input_table_variant_filter_lfn,
         ]
 
@@ -53,8 +51,6 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self):
@@ -74,7 +70,6 @@ class FilterMinReplicateNumber(ToolWrapper):
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
         marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
         biosample_model = self.input_table(FilterMinReplicateNumber.__input_table_biosample)
-        replicate_model = self.input_table(FilterMinReplicateNumber.__input_table_replicate)
         input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
         #
         # Options
@@ -85,11 +80,11 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
         fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################
@@ -178,13 +173,13 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     df_filter_output=variant_read_count_df.copy()
     # replicate count
     df_grouped = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-    df_grouped = df_grouped[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id']] # keep columns
-    df_grouped = df_grouped.rename(columns={'replicate_id': 'replicate_count'})
+    df_grouped = df_grouped[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate']] # keep columns
+    df_grouped = df_grouped.rename(columns={'replicate': 'replicate_count'})
     #
     df_filter_output['filter_delete'] = False
     df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
     df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
     #
-    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count', 'filter_delete']]
+    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count', 'filter_delete']]
     return df_filter_output
 

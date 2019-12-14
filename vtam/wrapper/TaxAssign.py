@@ -28,7 +28,6 @@ class TaxAssign(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_filter_codon_stop = "FilterCodonStop"
     __input_table_variant = "Variant"
 
@@ -47,7 +46,6 @@ class TaxAssign(ToolWrapper):
             TaxAssign.__input_table_marker,
             TaxAssign.__input_table_run,
             TaxAssign.__input_table_biosample,
-            TaxAssign.__input_table_replicate,
             TaxAssign.__input_table_variant,
             TaxAssign.__input_table_filter_codon_stop,
         ]
@@ -94,7 +92,6 @@ class TaxAssign(ToolWrapper):
         marker_model = self.input_table(TaxAssign.__input_table_marker)
         run_model = self.input_table(TaxAssign.__input_table_run)
         biosample_model = self.input_table(TaxAssign.__input_table_biosample)
-        replicate_model = self.input_table(TaxAssign.__input_table_replicate)
         filter_codon_stop_model = self.input_table(TaxAssign.__input_table_filter_codon_stop)
         variant_model = self.input_table(TaxAssign.__input_table_variant)
         # Output table models
@@ -109,19 +106,19 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
                                        names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
                                               'marker_name', 'biosample_name', \
-                                              'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
+                                              'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
-            replicate_name = row.replicate_name
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
@@ -134,13 +131,9 @@ class TaxAssign(ToolWrapper):
                 stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
                     biosample_model.__table__.c.name == biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(
-                    replicate_model.__table__.c.name == replicate_name)
-                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
                 sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                             'replicate_id': replicate_id})
+                                             'replicate': replicate})
 
         ##########################################################
         #
@@ -157,7 +150,7 @@ class TaxAssign(ToolWrapper):
                 .where(filter_codon_stop_model.__table__.c.run_id == sample_instance['run_id']) \
                 .where(filter_codon_stop_model.__table__.c.marker_id == sample_instance['marker_id']) \
                 .where(filter_codon_stop_model.__table__.c.biosample_id == sample_instance['biosample_id']) \
-                .where(filter_codon_stop_model.__table__.c.replicate_id == sample_instance['replicate_id'])
+                .where(filter_codon_stop_model.__table__.c.replicate == sample_instance['replicate'])
             # Select to DataFrame
             with engine.connect() as conn:
                 for row in conn.execute(stmt_select_variant_id_delete).fetchall():

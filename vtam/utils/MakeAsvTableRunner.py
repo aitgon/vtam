@@ -13,7 +13,7 @@ from vtam.utils.constants import rank_hierarchy_asv_table
 
 class MakeAsvTableRunner(object):
 
-    def __init__(self, engine, fasta_info_tsv, run_model, marker_model, biosample_model, replicate_model,
+    def __init__(self, engine, fasta_info_tsv, run_model, marker_model, biosample_model,
                  filter_chimera_borderline_model, filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy):
 
         self.engine = engine
@@ -21,7 +21,6 @@ class MakeAsvTableRunner(object):
         self.run_model = run_model
         self.marker_model = marker_model
         self.biosample_model = biosample_model
-        self.replicate_model = replicate_model
         self.filter_chimera_borderline_model = filter_chimera_borderline_model
         self.filter_codon_stop_model = filter_codon_stop_model
         self.variant_model = variant_model
@@ -30,7 +29,7 @@ class MakeAsvTableRunner(object):
 
     def run(self):
 
-        fasta_info_obj = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model, self.replicate_model)
+        fasta_info_obj = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model)
         variant_read_count_df = fasta_info_obj.get_variant_read_count_df(self.filter_codon_stop_model)
         variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=self.filter_codon_stop_model,
                                                variant_model=self.variant_model)
@@ -195,7 +194,7 @@ class MakeAsvTableRunner(object):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model, self.replicate_model)
+        fasta_info = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model)
 
         filter_chimera_borderline_df = fasta_info.get_full_table_df(model=self.filter_chimera_borderline_model)
 
