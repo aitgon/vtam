@@ -27,7 +27,6 @@ class FilterChimera(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_filter_pcr_error = "FilterPCRerror"
     __input_table_Variant = "Variant"
     # Output table
@@ -46,7 +45,6 @@ class FilterChimera(ToolWrapper):
             FilterChimera.__input_table_marker,
             FilterChimera.__input_table_run,
             FilterChimera.__input_table_biosample,
-            FilterChimera.__input_table_replicate,
             FilterChimera.__input_table_filter_pcr_error,
             FilterChimera.__input_table_Variant,
         ]
@@ -82,7 +80,6 @@ class FilterChimera(ToolWrapper):
         marker_model = self.input_table(FilterChimera.__input_table_marker)
         run_model = self.input_table(FilterChimera.__input_table_run)
         biosample_model = self.input_table(FilterChimera.__input_table_biosample)
-        replicate_model = self.input_table(FilterChimera.__input_table_replicate)
         variant_model = self.input_table(FilterChimera.__input_table_Variant)
         input_filter_pcr_error_model = self.input_table(FilterChimera.__input_table_filter_pcr_error)
         #
@@ -92,11 +89,11 @@ class FilterChimera(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
         fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################

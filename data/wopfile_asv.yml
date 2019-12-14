@@ -6,7 +6,6 @@
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             VariantReadCount: vtam.models.VariantReadCount
         file:
             fastainfo: {{fastainfo}}{{ input_file_threshold_specific(threshold_specific) }}
@@ -25,7 +24,6 @@ rule FilterMinReplicateNumber:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             FilterLFN: vtam.models.FilterLFN
         file:
             fastainfo: {{fastainfo}}
@@ -43,7 +41,6 @@ rule FilterPCRerror:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
@@ -62,7 +59,6 @@ rule FilterChimera:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
@@ -80,7 +76,6 @@ rule FilterRenkonen:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             FilterChimera: vtam.models.FilterChimera
         file:
             fastainfo: {{fastainfo}}
@@ -98,7 +93,6 @@ rule FilterIndel:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterRenkonen
         file:
@@ -115,7 +109,6 @@ rule FilterCodonStop:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
@@ -134,7 +127,6 @@ rule ReadCountAverageOverReplicates:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
             fastainfo: {{fastainfo}}
@@ -150,7 +142,6 @@ rule TaxAssign:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
@@ -173,7 +164,6 @@ rule MakeAsvTable:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
