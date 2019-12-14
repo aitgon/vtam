@@ -48,7 +48,7 @@ CTGTAGATCGACA"""
                 'run_id': [1, 1],
                 'marker_id': [1, 1],
                 'biosample_id': [2, 5],
-                'replicate_id': [2, 2],
+                'replicate': [2, 2],
                 'reads_fasta_path': [read_fasta_path, read_fasta_path],
              }
         )

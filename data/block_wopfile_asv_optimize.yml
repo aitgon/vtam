@@ -8,7 +8,6 @@
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Fasta: vtam.models.Fasta
             PrimerPair: vtam.models.PrimerPair
             TagPair: vtam.models.TagPair
@@ -24,7 +23,6 @@ rule SortReads:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
         file:
             fastainfo: {{fastainfo}}
     output:
@@ -46,7 +44,6 @@ rule VariantReadCount:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
     output:
         table:
             Variant: vtam.models.Variant

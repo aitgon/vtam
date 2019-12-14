@@ -29,7 +29,7 @@ class FilterLFNrunner:
 
     def __init__(self, variant_read_count_df):
         self.variant_read_count_df = variant_read_count_df[
-            ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count']]
+            ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate', 'read_count']]
         # Instance for all the calculations N_i, N_ij, etc
         self.variant_read_count_lfn_df = VariantReadCountDF(variant_read_count_df)
         #
@@ -40,7 +40,7 @@ class FilterLFNrunner:
         #  Output df with deleted variants
         ################################
         self.variant_read_count_filter_delete_df = pandas.DataFrame(data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
-                                                                          'replicate_id': [],
+                                                                          'replicate': [],
                                                                           'read_count': [], 'filter_id': [],
                                                                           'filter_delete': []},
                                                                     dtype='uint32')
@@ -74,8 +74,8 @@ class FilterLFNrunner:
         elif lfn_denominator == 'N_ik':  # variant_replicate
             this_filter_id = 3
             N_df = self.variant_read_count_lfn_df.get_N_ik_df() # Compute N_ik_df
-            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'],
-                                                   right_on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'variant_id', 'replicate'],
+                                                   right_on=['run_id', 'marker_id', 'variant_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
@@ -84,15 +84,15 @@ class FilterLFNrunner:
                 this_filter_id = 5
                 for rowtuple in threshold_specific_df.itertuples():
                     variant_id = rowtuple.variant_id
-                    replicate_id = rowtuple.replicate_id
+                    replicate = rowtuple.replicate
                     threshold = rowtuple.threshold
                     filter_df['filter_id'] = this_filter_id
-                    filter_df.loc[(filter_df.variant_id == variant_id) & (filter_df.replicate_id == replicate_id), 'threshold'] = threshold
+                    filter_df.loc[(filter_df.variant_id == variant_id) & (filter_df.replicate == replicate), 'threshold'] = threshold
         elif lfn_denominator == 'N_jk':  # biosample_replicate
             this_filter_id = 6
             N_df = self.variant_read_count_lfn_df.get_N_jk_df() # Compute N_jk_df
-            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'],
-                                                   right_on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
+            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
+                                                   right_on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_jk
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
@@ -113,7 +113,7 @@ class FilterLFNrunner:
 
         #
         #  Keep important columns
-        filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count',
+        filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count',
                    'filter_id', 'filter_delete']]
         #
         # Prepare output df and concatenate vertically output df to self.variant_read_count_filter_delete_df
@@ -160,15 +160,15 @@ class FilterLFNrunner:
 
         # do_not_pass_variant_id_list = self.variant_read_count_df.loc[
         #     self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
-        # do_not_pass_replicate_id_list = self.variant_read_count_df.loc[
-        #     self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate_id.tolist()
+        # do_not_pass_replicate_list = self.variant_read_count_df.loc[
+        #     self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate.tolist()
 
         filter_df['filter_id'] = this_filter_id  #  set this filter
         filter_df['filter_delete'] = False
 
         filter_df.loc[
             filter_df.read_count < lfn_read_count_threshold, 'filter_delete'] = True
-        filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
+        filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
                    'filter_id', 'filter_delete']]
         #
         # Concatenate vertically output df
@@ -181,16 +181,16 @@ class FilterLFNrunner:
         this_filter_id = 8
         # Calculating the total of reads by variant
         filter_df = self.variant_read_count_filter_delete_df[
-            ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id',
+            ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate',
              'filter_delete']].groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                        'replicate_id']).agg({'filter_delete': sum})
+                                        'replicate']).agg({'filter_delete': sum})
         filter_df = filter_df.rename(columns={'filter_delete': 'filter_delete_aggregate'})
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
         filter_df = self.variant_read_count_df.merge(filter_df, left_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                             'replicate_id'],
+                                                             'replicate'],
                                                right_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                         'replicate_id'])
+                                                         'replicate'])
         #
         # Initialize
         filter_df['filter_id'] = this_filter_id
@@ -202,7 +202,7 @@ class FilterLFNrunner:
             filter_df.filter_delete_aggregate > 0, 'filter_delete'] = True
         #
         # Let only interest columns
-        filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate_id', 'read_count',
+        filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
                    'filter_id', 'filter_delete']]
         #
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],

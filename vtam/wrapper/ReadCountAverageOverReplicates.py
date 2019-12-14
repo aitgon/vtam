@@ -18,7 +18,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_file_fastainfo = "fastainfo"
     __input_table_filter_codon_stop = "FilterCodonStop"
     # Output table
@@ -37,7 +36,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
             ReadCountAverageOverReplicates.__input_table_marker,
             ReadCountAverageOverReplicates.__input_table_run,
             ReadCountAverageOverReplicates.__input_table_biosample,
-            ReadCountAverageOverReplicates.__input_table_replicate,
             ReadCountAverageOverReplicates.__input_table_filter_codon_stop,
 
         ]
@@ -51,9 +49,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
     def specify_params(self):
         return {
-            # "foo": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
 
@@ -70,9 +65,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         run_model = self.input_table(ReadCountAverageOverReplicates.__input_table_run)
         codon_stop_model = self.input_table(ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
         biosample_model = self.input_table(ReadCountAverageOverReplicates.__input_table_biosample)
-        replicate_model = self.input_table(ReadCountAverageOverReplicates.__input_table_replicate)
-
-        #
 
         #
         # Output table models
@@ -81,18 +73,18 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
+            'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
-            replicate_name = row.replicate_name
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
@@ -103,11 +95,8 @@ class ReadCountAverageOverReplicates(ToolWrapper):
                 # get biosample_id ###########
                 stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
-                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate':replicate})
 
         ##########################################################
         #
@@ -133,24 +122,24 @@ class ReadCountAverageOverReplicates(ToolWrapper):
             run_id = sample_instance['run_id']
             marker_id = sample_instance['marker_id']
             biosample_id = sample_instance['biosample_id']
-            replicate_id = sample_instance['replicate_id']
+            replicate = sample_instance['replicate']
             stmt_select = select([codon_stop_model_table.c.run_id,
                                   codon_stop_model_table.c.marker_id,
                                   codon_stop_model_table.c.biosample_id,
-                                  codon_stop_model_table.c.replicate_id,
+                                  codon_stop_model_table.c.replicate,
                                   codon_stop_model_table.c.variant_id,
                                   codon_stop_model_table.c.read_count]).distinct()\
                                     .where(codon_stop_model_table.c.run_id == run_id)\
                                     .where(codon_stop_model_table.c.marker_id == marker_id)\
                                     .where(codon_stop_model_table.c.biosample_id == biosample_id)\
-                                    .where(codon_stop_model_table.c.replicate_id == replicate_id)\
+                                    .where(codon_stop_model_table.c.replicate == replicate)\
                                     .where(codon_stop_model_table.c.filter_delete == 0)
             with engine.connect() as conn:
                 for row2 in conn.execute(stmt_select).fetchall():
                     variant_read_count_list.append(row2)
         #
         variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count'])
+            columns=['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count'])
 
         # Exit if no variants for analysis
         try:
@@ -200,13 +189,13 @@ def read_count_average_over_replicates(variant_read_count_df):
 
     # sum of read_count over variant_id and biosample_id
     read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate_id', axis=1, inplace=True)
+    read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate', axis=1, inplace=True)
     read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(columns={'read_count': 'read_count'})
 
     #  count of replicate number per variant_id and biosample_id
     replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
     replicate_count_over_variant_id_and_biosample_id_df.drop('read_count', axis=1, inplace=True)
-    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate_id': 'replicate_count'})
+    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate': 'replicate_count'})
 
     # merge
     df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(replicate_count_over_variant_id_and_biosample_id_df, left_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'),right_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'))
