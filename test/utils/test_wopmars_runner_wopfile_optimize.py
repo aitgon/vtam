@@ -56,7 +56,6 @@ class TestWorpmarsRunnerOptimize(TestCase):
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Fasta: vtam.models.Fasta
             PrimerPair: vtam.models.PrimerPair
             TagPair: vtam.models.TagPair
@@ -72,7 +71,6 @@ rule SortReads:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
     output:
@@ -94,7 +92,6 @@ rule VariantReadCount:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
     output:
         table:
             Variant: vtam.models.Variant
@@ -108,7 +105,6 @@ rule OptimizeLFNbiosampleReplicate:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -126,7 +122,6 @@ rule OptimizePCRerror:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -144,7 +139,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -156,31 +150,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
             optimize_lfn_variant_specific: test/output/optimize_lfn_variant_specific.tsv
     params:
         is_optimize_lfn_variant_replicate: 0
-        lfn_variant_or_variant_replicate_threshold: 0.001
-        lfn_biosample_replicate_threshold: 0.001
-        lfn_read_count_threshold: 10
-        min_replicate_number: 2
-
-
-rule OptimizeLFNreadCountAndLFNvariantReplicate:
-    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
-    input:
-        table:
-            Run: vtam.models.Run
-            Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
-            Replicate: vtam.models.Replicate
-            Variant: vtam.models.Variant
-            VariantReadCount: vtam.models.VariantReadCount
-        file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
-            variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
-    output:
-        file:
-            optimize_lfn_read_count_and_lfn_variant: test/output/optimize_lfn_read_count_and_lfn_variant_replicate.tsv
-            optimize_lfn_variant_specific: test/output/optimize_lfn_variant_replicate_specific.tsv
-    params:
-        is_optimize_lfn_variant_replicate: 1
         lfn_variant_or_variant_replicate_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10

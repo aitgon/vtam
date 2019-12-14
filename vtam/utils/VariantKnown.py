@@ -10,7 +10,7 @@ from vtam.utils.FastaInformation import FastaInformation
 
 class VariantKnown(object):
 
-    def __init__(self, variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model, biosample_model, replicate_model):
+    def __init__(self, variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model, biosample_model):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
@@ -22,7 +22,6 @@ class VariantKnown(object):
         self.run_model = run_model
         self.marker_model = marker_model
         self.biosample_model = biosample_model
-        self.replicate_model = replicate_model
         self.fasta_info_tsv = fasta_info_tsv
 
         ################################################################################################################
@@ -33,7 +32,7 @@ class VariantKnown(object):
         self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
                                                      'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
-        # columns: run_id, marker_id, biosample_id, replicate_id, variant_id, biosample_type, action, variant_sequence
+        # columns: run_id, marker_id, biosample_id, replicate, variant_id, biosample_type, action, variant_sequence
         self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
 
         ################################################################################################################
@@ -52,9 +51,9 @@ class VariantKnown(object):
 
 
     def get_ids_of_run_marker_biosample_replicate(self):
-        """Returns a list of dictionnaries with run_id, marker_id, biosample_id and replicate_id entries (See return)
+        """Returns a list of dictionnaries with run_id, marker_id, biosample_id and replicate entries (See return)
 
-        :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate_id': 1}, {'run_id': 1, ...
+        :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate': 1}, {'run_id': 1, ...
         """
         instance_list = []
         for row in self.variant_known_df.itertuples():
@@ -71,7 +70,7 @@ class VariantKnown(object):
                 # get biosample_id ###########
                 stmt_select_biosample_id = sqlalchemy.select([self.biosample_model.__table__.c.id]).where(self.biosample_model.__table__.c.name==biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
+                # get replicate ###########
                 # add this sample_instance ###########
                 instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'variant_id': row.variant_id,
                                         'biosample_type': row.biosample_type, 'action': row.action, 'variant_sequence': row.variant_sequence})
@@ -112,7 +111,7 @@ class VariantKnown(object):
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
         fasta_info = FastaInformation(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
-                                      marker_model=self.marker_model, biosample_model=self.biosample_model, replicate_model=self.replicate_model)
+                                      marker_model=self.marker_model, biosample_model=self.biosample_model)
         fasta_info_records = fasta_info.get_fasta_information_record_list()
         fasta_info_df = pandas.DataFrame.from_records(data=fasta_info_records)
 
@@ -180,7 +179,7 @@ class VariantKnown(object):
         # Compute variants that are 1) mock and keep/tolerate (both). 2) Mock but not keep/tolerate (left_only)
         variant_delete_mock_df = variant_read_count_mock.merge(run_marker_biosample_variant_keep_df,
                                    on=['run_id', 'marker_id', 'biosample_id', 'variant_id'], how='left', indicator=True)
-        # Throw replicate_id and read count
+        # Throw replicate and read count
         variant_delete_mock_df = variant_delete_mock_df.loc[variant_delete_mock_df._merge=='left_only',
                                     ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
 
@@ -195,7 +194,7 @@ class VariantKnown(object):
         # Inner merge of variants and negative biosamples
         variant_delete_negative_df = variant_delete_negative_df.merge(variant_read_count_df, on=['run_id', 'marker_id',
                                                                                                'biosample_id'])
-        # Throw replicate_id and read count
+        # Throw replicate and read count
         variant_delete_negative_df = variant_delete_negative_df[['run_id', 'marker_id', 'biosample_id', 'variant_id']] \
             .drop_duplicates(inplace=False)
 
@@ -208,7 +207,7 @@ class VariantKnown(object):
         variant_delete_real_df = self.variant_known_ids_df.loc[self.variant_known_df.action == 'delete']
         # Remove delete variant that are not explicite, ie in negative biosamples
         variant_delete_real_df = variant_delete_real_df[~variant_delete_real_df.variant_id.isnull()]
-        #  Throw replicate_id and read count
+        #  Throw replicate and read count
         variant_delete_real_df = variant_delete_real_df[
             ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
 

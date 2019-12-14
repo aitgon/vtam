@@ -24,7 +24,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
@@ -42,7 +41,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             OptimizeLFNreadCountAndLFNvariant.__input_table_marker,
             OptimizeLFNreadCountAndLFNvariant.__input_table_run,
             OptimizeLFNreadCountAndLFNvariant.__input_table_biosample,
-            OptimizeLFNreadCountAndLFNvariant.__input_table_replicate,
             OptimizeLFNreadCountAndLFNvariant.__input_table_variant,
             OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count,
         ]
@@ -104,7 +102,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         run_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_run)
         marker_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_marker)
         biosample_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_biosample)
-        replicate_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_replicate)
         variant_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant)
 
         variant_read_count_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count)
@@ -129,7 +126,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         ################################################################################################################
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
-                                     biosample_model, replicate_model)
+                                     biosample_model)
         keep_run_marker_biosample_variant_df = variant_known.get_keep_run_marker_biosample_variant_df(
             variant_tolerate=False)
 
@@ -139,7 +136,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
         variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
 
         ################################################################################################
@@ -165,7 +162,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         count_keep_max = 0
         #
         variant_read_count_df = variant_read_count_df[
-            ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']]
+            ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
         lfn_read_count_threshold_previous = 10
         #  loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
@@ -197,7 +194,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         count_keep_max = 0
         #
         variant_read_count_df = variant_read_count_df[
-            ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']].drop_duplicates(
+            ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']].drop_duplicates(
             inplace=False)
         lfn_variant_or_variant_replicate_previous = 0.001  # is divided by 1000
         # loop over lfn_variant_or_variant_replicate: 0.001, 0.002, ...
@@ -228,7 +225,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         out_lfn_variant_list = []
 
         variant_read_count_df = variant_read_count_df[
-            ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']].drop_duplicates(
+            ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']].drop_duplicates(
             inplace=False)
         # loop over lfn_read_count_threshold
         for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max + 1, 5)):
@@ -328,17 +325,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         else:  # optimize lfn variant replicate
             N_ik_df = variant_read_count_df_instance.get_N_ik_df()
             lfn_variant_or_variant_replicate_specific_threshold_df = variant_read_count_delete_df.merge(N_ik_df,
-                                                            on=['run_id', 'marker_id', 'variant_id', 'replicate_id'])
+                                                            on=['run_id', 'marker_id', 'variant_id', 'replicate'])
             lfn_variant_or_variant_replicate_specific_threshold_df[
                 'lfn_variant_replicate_threshold'] = lfn_variant_or_variant_replicate_specific_threshold_df.read_count \
                                                      / lfn_variant_or_variant_replicate_specific_threshold_df.N_ik
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by='lfn_variant_replicate_threshold',
                                                                                ascending=False, inplace=True)
-            lfn_variant_or_variant_replicate_specific_threshold_df.drop_duplicates(['variant_id', 'replicate_id'],
+            lfn_variant_or_variant_replicate_specific_threshold_df.drop_duplicates(['variant_id', 'replicate'],
                                                                                    keep='first', inplace=True)
             lfn_variant_or_variant_replicate_specific_threshold_df = (
             lfn_variant_or_variant_replicate_specific_threshold_df[
-                ['run_id', 'marker_id', 'variant_id', 'replicate_id', 'read_count', 'N_ik',
+                ['run_id', 'marker_id', 'variant_id', 'replicate', 'read_count', 'N_ik',
                  'lfn_variant_replicate_threshold']]).drop_duplicates(inplace=False)
 
         ##########################################################
@@ -407,7 +404,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             marker_id_to_name = conn.execute(
                 sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
             if is_optimize_lfn_variant_replicate:  # optimize lfn variant
-                replicate_id_to_name = conn.execute(
+                replicate_to_name = conn.execute(
                     sqlalchemy.select([replicate_model.__table__.c.id, replicate_model.__table__.c.name])).fetchall()
 
         run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
@@ -424,8 +421,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                                'variant_id', 'N_ijk_max', 'N_i', 'lfn_variant_threshold', 'biosample_type']
             lfn_variant_or_variant_replicate_specific_threshold_df.sort_values(by=column_names, inplace=True)
         else:  # optimize lfn variant replicate
-            replicate_id_to_name_df = pandas.DataFrame.from_records(data=replicate_id_to_name, columns=['replicate_id', 'replicate_name'])
-            lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.merge(replicate_id_to_name_df, on='replicate_id')
+            replicate_to_name_df = pandas.DataFrame.from_records(data=replicate_to_name, columns=['replicate', 'replicate_name'])
+            lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.merge(replicate_to_name_df, on='replicate')
             column_names = ['run_name', 'marker_name', 'variant_id', 'replicate_name',
                                'N_ijk_max', 'N_ik', 'lfn_variant_replicate_threshold', 'biosample_type']
             lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df[column_names]

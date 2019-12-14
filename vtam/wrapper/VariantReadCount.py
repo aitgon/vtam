@@ -24,7 +24,6 @@ class VariantReadCount(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     # Output
     # Output file
     # Output table
@@ -36,7 +35,6 @@ class VariantReadCount(ToolWrapper):
             VariantReadCount.__input_table_run,
             VariantReadCount.__input_table_marker,
             VariantReadCount.__input_table_biosample,
-            VariantReadCount.__input_table_replicate,
         ]
 
     def specify_input_file(self):
@@ -57,9 +55,6 @@ class VariantReadCount(ToolWrapper):
         :return:
         """
         return {
-            # "foo": "int",
-            # "log_verbosity": "int",
-            # "log_file": "str",
         }
 
     def run(self):
@@ -80,7 +75,6 @@ class VariantReadCount(ToolWrapper):
         run_model = self.input_table(VariantReadCount.__input_table_run)
         marker_model = self.input_table(VariantReadCount.__input_table_marker)
         biosample_model = self.input_table(VariantReadCount.__input_table_biosample)
-        replicate_model = self.input_table(VariantReadCount.__input_table_replicate)
         #
         # Output
         # Output table
@@ -89,7 +83,7 @@ class VariantReadCount(ToolWrapper):
 
         ################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
@@ -100,20 +94,20 @@ class VariantReadCount(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read sample information to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read sample information to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate_name', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
+            'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
         sample_instance_list = []
         for row in fastainfo_df.itertuples():
             Logger.instance().debug(row)
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
-            replicate_name = row.replicate_name
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
@@ -124,11 +118,9 @@ class VariantReadCount(ToolWrapper):
                 # get biosample_id ###########
                 stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # get replicate_id ###########
-                stmt_select_replicate_id = select([replicate_model.__table__.c.id]).where(replicate_model.__table__.c.name==replicate_name)
-                replicate_id = conn.execute(stmt_select_replicate_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id, 'replicate_id':replicate_id})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
+                                             'replicate' : replicate})
 
         ##########################################################
         #
@@ -154,7 +146,7 @@ class VariantReadCount(ToolWrapper):
         #
         ##########################################################
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'read_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).size().reset_index(name='read_count')
         # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
         variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
 
@@ -178,12 +170,12 @@ class VariantReadCount(ToolWrapper):
         variant_read_count_instance_list = []
         sample_instance_list = []
         variant_read_count_df.sort_values(
-            by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate_id'], inplace=True)
+            by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate'], inplace=True)
         for row in variant_read_count_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
             biosample_id = row.biosample_id
-            replicate_id = row.replicate_id
+            replicate = row.replicate
             variant_sequence = row.variant_sequence
             read_count = row.read_count
             try:
@@ -196,9 +188,9 @@ class VariantReadCount(ToolWrapper):
                 with engine.connect() as conn:
                     variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
-                'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate_id': replicate_id, 'read_count': read_count})
+                'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
             sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                         'replicate_id': replicate_id})
+                                         'replicate': replicate})
             #
         ############################################
         # Write variant_read_count table

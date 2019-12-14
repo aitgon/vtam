@@ -11,7 +11,7 @@ from Bio.Alphabet import IUPAC
 class SampleInformation(Base):
     __tablename__ = 'SampleInformation'
     __table_args__ = (
-        UniqueConstraint('run_id', 'marker_id', 'biosample_id', 'replicate_id'),
+        UniqueConstraint('run_id', 'marker_id', 'biosample_id', 'replicate'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -23,7 +23,8 @@ class SampleInformation(Base):
     tag_reverse = Column(String(100), nullable=False)
     fasta_id = Column(Integer, ForeignKey("Fasta.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     biosample_id = Column(Integer, ForeignKey("Biosample.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    replicate_id = Column(Integer, ForeignKey("Replicate.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    # replicate = Column(Integer, ForeignKey("Replicate.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    replicate = Column(Integer, nullable=False)
 
     @validates('name', 'sample_name', 'run_name')
     def validates_names(self, key, name):

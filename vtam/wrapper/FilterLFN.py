@@ -26,7 +26,6 @@ class FilterLFN(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
     __output_table_filter_lfn = "FilterLFN"
@@ -41,7 +40,6 @@ class FilterLFN(ToolWrapper):
             FilterLFN.__input_table_marker,
             FilterLFN.__input_table_run,
             FilterLFN.__input_table_biosample,
-            FilterLFN.__input_table_replicate,
             FilterLFN.__input_table_variant_read_count,
         ]
 
@@ -77,7 +75,6 @@ class FilterLFN(ToolWrapper):
         run_model = self.input_table(FilterLFN.__input_table_run)
         marker_model = self.input_table(FilterLFN.__input_table_marker)
         biosample_model = self.input_table(FilterLFN.__input_table_biosample)
-        replicate_model = self.input_table(FilterLFN.__input_table_replicate)
         input_variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
         #
         # Output table models
@@ -91,7 +88,7 @@ class FilterLFN(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         # 4. Apply filters
@@ -101,11 +98,11 @@ class FilterLFN(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate_id for current analysis
+        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
         fasta_info_record_list = fasta_info.get_fasta_information_record_list()
 
         ##########################################################

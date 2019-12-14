@@ -6,26 +6,26 @@ from vtam.utils.VTAMexception import VTAMexception
 
 class VariantReadCountDF(object):
     """
-    Takes as input a variant_read_count_df (run_id, marker_id, biosample_id, replicate_id, N_ijk) and returns
+    Takes as input a variant_read_count_df (run_id, marker_id, biosample_id, replicate, N_ijk) and returns
     the different LFN calculation, that is N_i, N_ik, ...
 
-    N_ijk stands for the read count for each variant_id i, biosample_id j and replicate_id k
+    N_ijk stands for the read count for each variant_id i, biosample_id j and replicate k
     """
 
     def __init__(self, variant_read_count_df):
         """
 
-        :param variant_read_count_df: DataFrame with columns run_id, marker_id, biosample_id, replicate_id, N_ijk
+        :param variant_read_count_df: DataFrame with columns run_id, marker_id, biosample_id, replicate, N_ijk
         """
 
         # This is the only order allowed of variant_read_count_df columns
-        self.column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']
+        self.column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']
         try:
             assert variant_read_count_df.columns.tolist() == \
-                   ['run_id', 'marker_id', 'biosample_id', 'replicate_id', 'variant_id', 'read_count']
+                   ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']
         except:
             Logger.instance().error(VTAMexception("This DataFrame is not composed of columns: 'run_id', 'marker_id', "
-                                                  "'biosample_id', 'replicate_id', 'variant_id', 'read_count'. The workflow will exit"))
+                                                  "'biosample_id', 'replicate', 'variant_id', 'read_count'. The workflow will exit"))
             sys.exit(1)
 
         self.variant_read_count_df = variant_read_count_df
@@ -74,7 +74,7 @@ class VariantReadCountDF(object):
 
         """
 
-        N_ik_df = self.variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate_id']).agg({'read_count': sum})\
+        N_ik_df = self.variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'replicate']).agg({'read_count': sum})\
             .reset_index()
         N_ik_df = N_ik_df.rename(columns={'read_count': 'N_ik'})
         N_ik_df.drop_duplicates(inplace=True)
@@ -88,7 +88,7 @@ class VariantReadCountDF(object):
 
         """
 
-        N_jk_df = self.variant_read_count_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate_id']).agg({'read_count': sum})\
+        N_jk_df = self.variant_read_count_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate']).agg({'read_count': sum})\
             .reset_index()
         N_jk_df = N_jk_df.rename(columns={'read_count': 'N_jk'})
         N_jk_df.drop_duplicates(inplace=True)
@@ -114,8 +114,8 @@ class VariantReadCountDF(object):
                 instance['filter_delete'] = row.filter_delete
             if 'filter_id' in dir(row):
                 instance['filter_id'] = row.filter_id
-            if 'replicate_id' in dir(row):
-                instance['replicate_id'] = row.replicate_id
+            if 'replicate' in dir(row):
+                instance['replicate'] = row.replicate
             if 'replicate_count' in dir(row):
                 instance['replicate_count'] = row.replicate_count
             if 'read_count_average' in dir(row):

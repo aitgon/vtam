@@ -20,7 +20,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_biosample = "Biosample"
-    __input_table_replicate = "Replicate"
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
@@ -37,7 +36,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             OptimizeLFNbiosampleReplicate.__input_table_marker,
             OptimizeLFNbiosampleReplicate.__input_table_run,
             OptimizeLFNbiosampleReplicate.__input_table_biosample,
-            OptimizeLFNbiosampleReplicate.__input_table_replicate,
             OptimizeLFNbiosampleReplicate.__input_table_variant,
             OptimizeLFNbiosampleReplicate.__input_table_variant_read_count,
         ]
@@ -69,7 +67,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         run_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_run)
         marker_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_marker)
         biosample_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_biosample)
-        replicate_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_replicate)
         variant_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant)
         variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
         #
@@ -83,7 +80,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         ################################################################################################################
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
-                                     biosample_model, replicate_model)
+                                     biosample_model)
         variant_known_ids_df = variant_known.variant_known_ids_df
 
         ################################################################################################################
@@ -102,7 +99,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model)
+        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
         variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
         variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
         N_jk_df = variant_read_count_df_obj.get_N_jk_df()
@@ -133,7 +130,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        optimize_output_df = variant_read_count_keep_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate_id'])
+        optimize_output_df = variant_read_count_keep_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
         optimize_output_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
         optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_output_df['N_ijk'] / optimize_output_df['N_jk']
 
@@ -161,8 +158,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
                 sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
             biosample_id_to_name = conn.execute(
                 sqlalchemy.select([biosample_model.__table__.c.id, biosample_model.__table__.c.name])).fetchall()
-            replicate_id_to_name = conn.execute(
-                sqlalchemy.select([replicate_model.__table__.c.id, replicate_model.__table__.c.name])).fetchall()
 
         run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
         optimize_output_df = optimize_output_df.merge(run_id_to_name_df, on='run_id')
@@ -173,10 +168,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         biosample_id_to_name_df = pandas.DataFrame.from_records(data=biosample_id_to_name, columns=['biosample_id', 'biosample_name'])
         optimize_output_df = optimize_output_df.merge(biosample_id_to_name_df, on='biosample_id')
 
-        replicate_id_to_name_df = pandas.DataFrame.from_records(data=replicate_id_to_name, columns=['replicate_id', 'replicate_name'])
-        optimize_output_df = optimize_output_df.merge(replicate_id_to_name_df, on='replicate_id')
-
-        optimize_output_df = optimize_output_df[['run_name', 'marker_name', 'biosample_name', 'replicate_name', 'variant_id',
+        optimize_output_df = optimize_output_df[['run_name', 'marker_name', 'biosample_name', 'replicate', 'variant_id',
        'N_ijk', 'N_jk', 'lfn_biosample_replicate: N_ijk/N_jk', 'round_down']]
 
         ##########################################################
@@ -185,7 +177,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ##########################################################
 
-        optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate_name'],
+        optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate'],
                                        ascending=[True, True, True, True, True], inplace=True)
         optimize_output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
 
