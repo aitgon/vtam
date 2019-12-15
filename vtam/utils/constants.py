@@ -13,7 +13,6 @@ parameters_numerical = {
     'fastq_minmergelen': 100,
     'fastq_minovlen': 50,
     'fastq_truncqual': 10,
-    # 'filter_lfn_variant': 1,
     'genetic_table_number': 5,
     'ltg_rule_threshold': 97,
     'include_prop': 90,
@@ -27,6 +26,8 @@ parameters_numerical = {
     'minseqlength': 32,
     'overhang': 0,
     'pcr_error_var_prop': 0.1,
+    'skip_filter_codon_stop': 0,
+    'skip_filter_indel': 0,
     'upper_renkonen_tail': 0.1,
     'threads': 8,
 }

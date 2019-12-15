@@ -56,6 +56,7 @@ class FilterCodonStop(ToolWrapper):
     def specify_params(self):
         return {
             "genetic_table_number": "int",
+            "skip_filter_codon_stop": "int",
         }
 
 
@@ -78,8 +79,10 @@ class FilterCodonStop(ToolWrapper):
         biosample_model = self.input_table(FilterCodonStop.__input_table_biosample)
         variant_model = self.input_table(FilterCodonStop.__input_table_Variant)
         input_filter_indel_model = self.input_table(FilterCodonStop.__input_table_filter_indel)
-        #options
+        #
+        # Options
         genetic_table_number = int(self.option("genetic_table_number"))
+        skip_filter_codon_stop = bool(int(self.option("genetic_table_number")))
         #
         # Output table models
         output_filter_codon_stop_model = self.output_table(FilterCodonStop.__output_table_filter_codon_stop)
@@ -131,10 +134,17 @@ class FilterCodonStop(ToolWrapper):
                                                               columns=['id', 'sequence'])
         ##########################################################
         #
-        # 4. Run Filter
+        # 4. Run Filter or not according to skip_filter_codon_stop
         #
         ##########################################################
-        filter_output_df = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
+
+        if skip_filter_codon_stop:  # do not run filter
+
+            filter_output_df = variant_read_count_df.copy()
+            filter_output_df['filter_delete'] = False
+
+        else:  # run filter
+            filter_output_df = f14_filter_codon_stop(variant_read_count_df, variant_df, genetic_table_number)
 
 
         ##########################################################
