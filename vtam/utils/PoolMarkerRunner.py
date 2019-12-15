@@ -15,7 +15,7 @@ from vtam.utils.VTAMexception import VTAMexception
 class PoolMarkerRunner(object):
     """Class for the Pool Marker wrapper"""
 
-    def __init__(self, asv_table_df):
+    def __init__(self, asv_table_df, run_marker_df=None):
 
         try:
             assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
@@ -32,8 +32,11 @@ class PoolMarkerRunner(object):
 
         self.biosample_names = asv_table_df.columns.tolist()[5:-12]
 
-        # self.asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
-        self.asv_table_df = asv_table_df
+        if run_marker_df is None:  # Default: pool all marker
+            self.asv_table_df = asv_table_df
+        else:  # if run_marker_df: pool only markers in this df
+            self.asv_table_df = asv_table_df.merge(run_marker_df, on=['marker_name', 'run_name'])
+
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.tmp_dir).mkdir(exist_ok=True)
 
@@ -122,10 +125,6 @@ class PoolMarkerRunner(object):
                                       'ltg_rank']]
         centroid_df.drop_duplicates(inplace=True)
         #
-        # Centroid to aggregated variants
-        # centroid_to_variant_id_df = self.cluster_df[['centroid_variant_id', 'variant_id']].drop_duplicates(inplace=False)
-        # centroid_to_variant_id_df = centroid_to_variant_id_df.groupby('centroid_variant_id')['variant_id'].apply(lambda x: ','.join(map(str, sorted(x))))
-        #
         # Centroid to aggregated variants and biosamples
         self.cluster_df_col = self.cluster_df.columns
         # biosample_columns = list(set(self.cluster_df_col[6:]).difference(set(list(self.cluster_df_col[-12:]))))
@@ -140,3 +139,14 @@ class PoolMarkerRunner(object):
         pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
         return pooled_marker_df
+
+    @classmethod
+    def main(cls, asv_table_tsv, pooled_marker_tsv, run_marker_tsv):
+        asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
+        if not (run_marker_tsv is None):
+            run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
+        else:
+            run_marker_df = None
+        pool_marker_runner = PoolMarkerRunner(asv_table_df=asv_table_df, run_marker_df=run_marker_df)
+        pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
+        pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)
