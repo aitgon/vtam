@@ -6,9 +6,9 @@ import sys
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
+from vtam.utils.PoolMarkerRunner import PoolMarkerRunner
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
-
 
 class VTAM(object):
 
@@ -49,7 +49,14 @@ class VTAM(object):
             os.environ['VTAM_FASTQ_DIR'] = vars(self.args)['fastqdir']
         if 'fastadir' in vars(self.args):
             os.environ['VTAM_FASTA_DIR'] = vars(self.args)['fastadir']
-        try:
+
+        ###############################################################
+        #
+        # Subcommands: wopfile-dependent, merge, asv, optimize
+        #
+        ###############################################################
+
+        if vars(self.args)['command'] in ['merge', 'asv', 'optimize']:
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
             ###############################################################
@@ -60,7 +67,18 @@ class VTAM(object):
             Logger.instance().info(wopmars_command)
             os.system(wopmars_command)
             sys.exit(0)
-        except KeyError:
+
+        ###############################################################
+        #
+        # Subcommands: pool_markers
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'pool_markers':
+            asv_table_tsv = OptionManager.instance()['asvtable']
+            pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
+            PoolMarkerRunner.main(asv_table_tsv=asv_table_tsv, pooled_marker_tsv=pooled_marker_tsv)
+        else:
             Logger.instance().error(VTAMexception(message=VTAM.usage_message))
 
 
