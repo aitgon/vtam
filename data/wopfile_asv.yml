@@ -176,14 +176,4 @@ rule MakeAsvTable:
             taxonomy: {{taxonomy}}
     output:
         file:
-            ASVTable: {{asvtable}}
-
-
-rule PoolMarkers:
-    tool: vtam.wrapper.PoolMarkers
-    input:
-        file:
-            ASVtable: {{asvtable}}
-    output:
-        file:
-            PooledMarkers: {{pooled_markers}}{% endblock %}
+            ASVTable: {{asvtable}}{% endblock %}
