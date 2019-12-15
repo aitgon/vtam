@@ -76,8 +76,10 @@ class VTAM(object):
 
         elif vars(self.args)['command'] == 'pool_markers':
             asv_table_tsv = OptionManager.instance()['asvtable']
+            run_marker_tsv = OptionManager.instance()['runmarker']
             pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
-            PoolMarkerRunner.main(asv_table_tsv=asv_table_tsv, pooled_marker_tsv=pooled_marker_tsv)
+            PoolMarkerRunner.main(asv_table_tsv=asv_table_tsv, pooled_marker_tsv=pooled_marker_tsv,
+                                  run_marker_tsv=run_marker_tsv)
         else:
             Logger.instance().error(VTAMexception(message=VTAM.usage_message))
 

@@ -15,7 +15,7 @@ from vtam.utils.VTAMexception import VTAMexception
 class PoolMarkerRunner(object):
     """Class for the Pool Marker wrapper"""
 
-    def __init__(self, asv_table_df):
+    def __init__(self, asv_table_df, run_marker_df=None):
 
         try:
             assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
@@ -32,8 +32,11 @@ class PoolMarkerRunner(object):
 
         self.biosample_names = asv_table_df.columns.tolist()[5:-12]
 
-        # self.asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
-        self.asv_table_df = asv_table_df
+        if run_marker_df is None:  # Default: pool all marker
+            self.asv_table_df = asv_table_df
+        else:  # if run_marker_df: pool only markers in this df
+            self.asv_table_df = asv_table_df.merge(run_marker_df, on=['marker_name', 'run_name'])
+
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.tmp_dir).mkdir(exist_ok=True)
 
@@ -138,8 +141,12 @@ class PoolMarkerRunner(object):
         return pooled_marker_df
 
     @classmethod
-    def main(cls, asv_table_tsv, pooled_marker_tsv):
+    def main(cls, asv_table_tsv, pooled_marker_tsv, run_marker_tsv):
         asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
-        pool_marker_runner = PoolMarkerRunner(asv_table_df)
+        if not (run_marker_tsv is None):
+            run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
+        else:
+            run_marker_df = None
+        pool_marker_runner = PoolMarkerRunner(asv_table_df=asv_table_df, run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)
