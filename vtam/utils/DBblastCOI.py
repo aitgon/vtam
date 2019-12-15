@@ -5,8 +5,8 @@ import os
 import pathlib
 import urllib.request
 
-from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import public_data_dir
+
 
 class DBblastCOI(object):
 
@@ -19,6 +19,7 @@ class DBblastCOI(object):
     # Define/create map_taxids and coi_blast_db
     #
     ##########################################################
+
     def download(self):
         """
         These function is used to define and return the output of the COI Blast database directory.
