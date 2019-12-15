@@ -100,6 +100,8 @@ rule FilterIndel:
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
+    params:
+        skip_filter_indel: {{skip_filter_indel}}
 
 
 rule FilterCodonStop:
@@ -118,6 +120,7 @@ rule FilterCodonStop:
             FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: {{genetic_table_number}}
+        skip_filter_codon_stop: {{skip_filter_codon_stop}}
 
 
 rule ReadCountAverageOverReplicates:

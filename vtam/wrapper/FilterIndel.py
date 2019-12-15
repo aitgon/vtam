@@ -52,6 +52,7 @@ class FilterIndel(ToolWrapper):
 
     def specify_params(self):
         return {
+            "skip_filter_indel": "int",
         }
 
 
@@ -75,6 +76,9 @@ class FilterIndel(ToolWrapper):
         biosample_model = self.input_table(FilterIndel.__input_table_biosample)
         variant_model = self.input_table(FilterIndel.__input_table_Variant)
         input_filter_renkonen_model = self.input_table(FilterIndel.__input_table_filter_renkonen)
+        #
+        # Options
+        skip_filter_indel = bool(self.option("skip_filter_indel"))
         #
         # Output table models
         output_filter_indel_model = self.output_table(FilterIndel.__output_table_filter_indel)
@@ -104,7 +108,8 @@ class FilterIndel(ToolWrapper):
         ##########################################################
 
         filter_id = None
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_renkonen_model, filter_id=filter_id)
+        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model
+                                                                     =input_filter_renkonen_model, filter_id=filter_id)
 
         ##########################################################
         #
@@ -124,12 +129,21 @@ class FilterIndel(ToolWrapper):
                 variant_filter_lfn_passed_list.append(row)
         variant_df = pandas.DataFrame.from_records(variant_filter_lfn_passed_list,
                                                               columns=['id', 'sequence'])
+
         ##########################################################
         #
-        # 5. Run Filter
+        # 4. Run Filter or not according to skip_filter_indel
         #
         ##########################################################
-        filter_output_df = f13_filter_indel(variant_read_count_df, variant_df)
+
+        if skip_filter_indel:  # do not run filter
+
+            filter_output_df = variant_read_count_df.copy()
+            filter_output_df['filter_delete'] = False
+
+        else:  # run filter
+
+            filter_output_df = f13_filter_indel(variant_read_count_df, variant_df)
 
         ##########################################################
         #
