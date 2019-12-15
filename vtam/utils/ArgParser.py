@@ -171,15 +171,30 @@ class ArgParser():
         #
         #############################################
 
-        parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True, parents=[parser_vtam])
+        parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
         parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-                                          required=True, type=lambda x:
-            PathManager.check_file_exists_and_is_nonempty(x,
+                                          required=True, type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
                                                           error_message="Verify the '--fastainfo' argument"))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
                                           required=True)
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigget the good command
+
+        #############################################
+        #
+        # create the parser for the "pool_markers" command
+        #
+        #############################################
+        parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True)
+        parser_vtam_pool_markers.add_argument('--asvtable', action='store',
+                                     help="REQUIRED: TSV file with ASV information that is returned by 'vtam asv'",
+                                     required=True, type=lambda x:
+                                            PathManager.check_file_exists_and_is_nonempty(x,
+                                                          error_message="Verify the '--asvtable' argument",
+                                                          is_abspath=is_abspath))
+        parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: TSV file with pooled markers",
+                                       required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
+        parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
 
         return parser_vtam

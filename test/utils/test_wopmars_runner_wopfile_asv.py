@@ -213,6 +213,8 @@ rule FilterIndel:
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
+    params:
+        skip_filter_indel: 0
 
 
 rule FilterCodonStop:
@@ -231,6 +233,7 @@ rule FilterCodonStop:
             FilterCodonStop: vtam.models.FilterCodonStop
     params:
         genetic_table_number: 5
+        skip_filter_codon_stop: 0
 
 
 rule ReadCountAverageOverReplicates:
@@ -286,17 +289,7 @@ rule MakeAsvTable:
             taxonomy: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
         file:
-            ASVTable: test/output/asvtable.tsv
-
-
-rule PoolMarkers:
-    tool: vtam.wrapper.PoolMarkers
-    input:
-        file:
-            ASVtable: test/output/asvtable.tsv
-    output:
-        file:
-            PooledMarkers: test/output/pooled_markers.tsv"""
+            ASVTable: test/output/asvtable.tsv"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
 
     def test_wopmars_runner_asv_with_threshold_specific(self):

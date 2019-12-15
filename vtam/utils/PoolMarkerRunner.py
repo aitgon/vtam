@@ -122,10 +122,6 @@ class PoolMarkerRunner(object):
                                       'ltg_rank']]
         centroid_df.drop_duplicates(inplace=True)
         #
-        # Centroid to aggregated variants
-        # centroid_to_variant_id_df = self.cluster_df[['centroid_variant_id', 'variant_id']].drop_duplicates(inplace=False)
-        # centroid_to_variant_id_df = centroid_to_variant_id_df.groupby('centroid_variant_id')['variant_id'].apply(lambda x: ','.join(map(str, sorted(x))))
-        #
         # Centroid to aggregated variants and biosamples
         self.cluster_df_col = self.cluster_df.columns
         # biosample_columns = list(set(self.cluster_df_col[6:]).difference(set(list(self.cluster_df_col[-12:]))))
@@ -140,3 +136,10 @@ class PoolMarkerRunner(object):
         pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
         return pooled_marker_df
+
+    @classmethod
+    def main(cls, asv_table_tsv, pooled_marker_tsv):
+        asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
+        pool_marker_runner = PoolMarkerRunner(asv_table_df)
+        pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
+        pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)
