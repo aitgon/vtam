@@ -1,6 +1,6 @@
 import argparse
 
-from vtam import VTAMexception
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 
 import inspect
@@ -12,7 +12,7 @@ import urllib
 import urllib.request
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import url_taxonomy_sqlite
+from vtam.utils.constants import url_taxonomy_tsv
 from sqlalchemy.exc import OperationalError
 
 class DBtaxonomy(object):
@@ -105,7 +105,7 @@ class DBtaxonomy(object):
             "file: {}; line: {}; __download_taxonomy_sqlite()".format(__file__,
                                                                     inspect.currentframe().f_lineno, ))
         if not os.path.isfile(self.output):
-            urllib.request.urlretrieve(url_taxonomy_sqlite, self.output)
+            urllib.request.urlretrieve(url_taxonomy_tsv, self.output)
 
     @staticmethod
     def create_parser():

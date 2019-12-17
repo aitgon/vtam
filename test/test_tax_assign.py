@@ -42,9 +42,9 @@ class TestTaxAssign(TestCase):
         super(TestTaxAssign, cls).setUpClass()
         # create_vtam_data_dir()
         taxonomydb = DBtaxonomy(precomputed=True)
-        taxonomy_sqlite_path = taxonomydb.get_path()
+        taxonomy_tsv_path = taxonomydb.get_path()
         #
-        cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        cls.taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_tsv_path)
 
 
     def test_variant_df_to_fasta(self):

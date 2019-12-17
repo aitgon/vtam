@@ -1,10 +1,9 @@
 import pandas
-import sqlite3
 
 from vtam.utils.constants import rank_hierarchy,identity_list
 
 
-def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
+def f01_taxonomy_sqlite_to_df(taxonomy_tsv):
     """
     Imports taxonomy_db.sqlite file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
     into DataFrame
@@ -17,9 +16,11 @@ def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
         pandas.DataFrame: with taxonomy information
 
     """
-    con = sqlite3.connect(taxonomy_sqlite)
-    taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
-    con.close()
+    taxonomy_db_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
+                                     dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+    # con = sqlite3.connect(taxonomy_sqlite)
+    # taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
+    # con.close()
     return taxonomy_db_df
 
 
