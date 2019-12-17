@@ -1,5 +1,3 @@
-import argparse
-
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 
@@ -23,7 +21,7 @@ class DBtaxonomy(object):
         self.precomputed = precomputed
         #
         # output to the taxonomy.sqlite file
-        self.output = os.path.join(os.getcwd(), "taxonomy.sqlite")
+        self.output = os.path.join(os.getcwd(), "taxonomy.tsv")
         if not output is None:
             self.output = output
         #
@@ -32,7 +30,7 @@ class DBtaxonomy(object):
     def get_path(self):
         if not os.path.isfile(self.output):
             if self.precomputed:
-                self.__download_taxonomy_sqlite()
+                self.download_taxonomy_tsv()
             else:
                 self.create_taxonomy_db()
         return self.output
@@ -82,9 +80,10 @@ class DBtaxonomy(object):
         #
         Logger.instance().debug(
             "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
-        engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.output), echo=False)
+        # engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.output), echo=False)
         try:
-            taxonomy_df.to_sql('taxonomy', con=engine, index = False)
+            taxonomy_df.to_csv(self.output, sep="\t", header=True, float_format='%.0f', index=False)
+            # taxonomy_df.to_sql('taxonomy', con=engine, index = False)
         except ValueError as valerr:
             Logger.instance().error(VTAMexception("{}. Error during the creation of the taxonomy DB".format(valerr)))
         except sqlalchemy.exc.OperationalError as opererr:
@@ -93,35 +92,34 @@ class DBtaxonomy(object):
 
     ##########################################################
     #
-    # Define/create taxonomy.sqlite output
+    # Define/create taxonomy.tsv output
     #
     ##########################################################
-    def __download_taxonomy_sqlite(self):
+    def download_taxonomy_tsv(self):
         """
         Copy the online SQLITE taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.sqlite"
         to the pathname output
         """
         Logger.instance().debug(
-            "file: {}; line: {}; __download_taxonomy_sqlite()".format(__file__,
+            "file: {}; line: {}; download_taxonomy_tsv()".format(__file__,
                                                                     inspect.currentframe().f_lineno, ))
         if not os.path.isfile(self.output):
             urllib.request.urlretrieve(url_taxonomy_tsv, self.output)
 
-    @staticmethod
-    def create_parser():
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-o', '--output', dest='output', action='store', help="Path to custom COI blast db",
-                            required=True)
-        parser.add_argument('--precomputed', dest='precomputed', action='store_true', default=True,
-                            help="Path to custom COI blast db",
-                            required=False)
-        return parser
-
-    @classmethod
-    def main(cls):
-        parser = DBtaxonomy.create_parser()
-        args = parser.parse_args()
-        taxonomydb = DBtaxonomy(output=vars(args)['output'], precomputed=vars(args)['precomputed'], )
-        taxonomydb.create_taxonomy_db()
-
+    # @staticmethod
+    # def create_parser():
+    #     parser = argparse.ArgumentParser()
+    #     parser.add_argument('-o', '--output', dest='output', action='store', help="Path to custom COI blast db",
+    #                         required=True)
+    #     parser.add_argument('--precomputed', dest='precomputed', action='store_true', default=True,
+    #                         help="Path to custom COI blast db",
+    #                         required=False)
+    #     return parser
+    #
+    # @classmethod
+    # def main(cls):
+    #     parser = DBtaxonomy.create_parser()
+    #     args = parser.parse_args()
+    #     taxonomydb = DBtaxonomy(output=vars(args)['output'], precomputed=vars(args)['precomputed'], )
+    #     taxonomydb.create_taxonomy_db()
 
