@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import os
 import pathlib
 import urllib.request
@@ -99,16 +98,16 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-    @staticmethod
-    def create_parser():
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
-                            required=True)
-        return parser
-
-    @classmethod
-    def main(cls):
-        parser = DBblastCOI.create_parser()
-        args = parser.parse_args()
-        coi_blast_db = DBblastCOI(coi_blast_db=vars(args)['coi_blast_db'])
-        coi_blast_db.download()
+    # @staticmethod
+    # def create_parser():
+    #     parser = argparse.ArgumentParser()
+    #     parser.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
+    #                         required=True)
+    #     return parser
+    #
+    # @classmethod
+    # def main(cls):
+    #     parser = DBblastCOI.create_parser()
+    #     args = parser.parse_args()
+    #     coi_blast_db = DBblastCOI(coi_blast_db=vars(args)['coi_blast_db'])
+    #     coi_blast_db.download()
