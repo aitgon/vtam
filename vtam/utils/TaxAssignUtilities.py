@@ -3,13 +3,13 @@ import pandas
 from vtam.utils.constants import rank_hierarchy,identity_list
 
 
-def f01_taxonomy_sqlite_to_df(taxonomy_tsv):
+def f01_taxonomy_tsv_to_df(taxonomy_tsv):
     """
-    Imports taxonomy_db.sqlite file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
+    Imports taxonomy_db.tsv file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
     into DataFrame
 
     Args:
-        taxonomy_sqlite (String): Path to taxonomy_db.sqlite
+        taxonomy_tsv (String): Path to taxonomy_db.tsv
 
 
     Returns:
@@ -18,15 +18,12 @@ def f01_taxonomy_sqlite_to_df(taxonomy_tsv):
     """
     taxonomy_db_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
                                      dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
-    # con = sqlite3.connect(taxonomy_sqlite)
-    # taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
-    # con.close()
     return taxonomy_db_df
 
 
 def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
     """
-    Takes tax_id and taxonomy_db.sqlite DB and create a dictionary with the taxonomy lineage
+    Takes tax_id and taxonomy_db.tsv DB and create a dictionary with the taxonomy lineage
 
     Args:
         tax_id (Integer): Identifier of taxon

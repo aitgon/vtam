@@ -14,5 +14,5 @@ doc/wopmetabarcoding.rst
 doc/wopmetabarcoding.utils.rst
 doc/wopmetabarcoding.wrapper.rst
 *.pyc
-taxonomy.sqlite
+taxonomy.tsv
 out

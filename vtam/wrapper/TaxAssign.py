@@ -11,7 +11,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df
 from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
 
@@ -275,12 +275,11 @@ class TaxAssign(ToolWrapper):
         ##########################################################
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Open taxonomy.sqlite DB".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
         blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
         # getting the taxonomy_db to df
-        # taxonomy_sqlite_path = download_taxonomy_tsv()
-        taxonomy_sqlite_path = input_file_taxonomy
-        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        taxonomy_tsv_path = input_file_taxonomy
+        taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
         #
         Logger.instance().debug(
             "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
