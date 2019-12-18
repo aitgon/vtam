@@ -6,7 +6,7 @@ import sqlalchemy
 from vtam.utils.Logger import Logger
 from vtam.models.Biosample import Biosample
 from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.constants import rank_hierarchy_asv_table
 
@@ -100,8 +100,8 @@ class MakeAsvTableRunner(object):
         # taxonomy_db to df
         #
         #####
-        taxonomy_sqlite_path = self.input_file_taxonomy
-        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        taxonomy_tsv_path = self.input_file_taxonomy
+        taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
 
         #####
         #

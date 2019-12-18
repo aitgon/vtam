@@ -20,7 +20,7 @@ class DBtaxonomy(object):
         # Download the precomputed database. The alternative to create a new DB with the create_db_taxonomy executable
         self.precomputed = precomputed
         #
-        # output to the taxonomy.sqlite file
+        # output to the taxonomy.tsv file
         self.output = os.path.join(os.getcwd(), "taxonomy.tsv")
         if not output is None:
             self.output = output
@@ -79,11 +79,9 @@ class DBtaxonomy(object):
         taxonomy_df = taxonomy_df.merge(merged_dmp_df, on='tax_id', how='left')
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Write to sqlite DB".format(__file__, inspect.currentframe().f_lineno))
-        # engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.output), echo=False)
+            "file: {}; line: {}; Write to TSV DB".format(__file__, inspect.currentframe().f_lineno))
         try:
             taxonomy_df.to_csv(self.output, sep="\t", header=True, float_format='%.0f', index=False)
-            # taxonomy_df.to_sql('taxonomy', con=engine, index = False)
         except ValueError as valerr:
             Logger.instance().error(VTAMexception("{}. Error during the creation of the taxonomy DB".format(valerr)))
         except sqlalchemy.exc.OperationalError as opererr:
@@ -97,7 +95,7 @@ class DBtaxonomy(object):
     ##########################################################
     def download_taxonomy_tsv(self):
         """
-        Copy the online SQLITE taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.sqlite"
+        Copy the online TSV taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
         to the pathname output
         """
         Logger.instance().debug(
@@ -105,21 +103,3 @@ class DBtaxonomy(object):
                                                                     inspect.currentframe().f_lineno, ))
         if not os.path.isfile(self.output):
             urllib.request.urlretrieve(url_taxonomy_tsv, self.output)
-
-    # @staticmethod
-    # def create_parser():
-    #     parser = argparse.ArgumentParser()
-    #     parser.add_argument('-o', '--output', dest='output', action='store', help="Path to custom COI blast db",
-    #                         required=True)
-    #     parser.add_argument('--precomputed', dest='precomputed', action='store_true', default=True,
-    #                         help="Path to custom COI blast db",
-    #                         required=False)
-    #     return parser
-    #
-    # @classmethod
-    # def main(cls):
-    #     parser = DBtaxonomy.create_parser()
-    #     args = parser.parse_args()
-    #     taxonomydb = DBtaxonomy(output=vars(args)['output'], precomputed=vars(args)['precomputed'], )
-    #     taxonomydb.create_taxonomy_db()
-
