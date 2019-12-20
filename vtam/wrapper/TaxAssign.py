@@ -164,7 +164,6 @@ class TaxAssign(ToolWrapper):
         with engine.connect() as conn:
             conn.execute(tax_assign_model.__table__.delete(), variant_instance_list)
 
-        #
         ##########################################################
         #
         # Get variants that passed the filter
@@ -199,7 +198,6 @@ class TaxAssign(ToolWrapper):
         variant_fasta = os.path.join(this_temp_dir, 'variant.fasta')
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(variant_fasta)
-        # VariantDFutils.to_fasta(variant_df, variant_fasta)
         #
 
         ##########################################################
@@ -234,10 +232,10 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # Process blast reults
+        # Process blast results
         #
         ##########################################################
-        # if os.path.basename(map_taxids_tsv_path) == 'None': # Process result from full DB
+
         Logger.instance().debug(
             "file: {}; line: {}; Reading Blast output from: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
         blast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
@@ -304,6 +302,7 @@ class TaxAssign(ToolWrapper):
         #  6 test_f05_select_ltg_identity
         #
         ##########################################################
+
         Logger.instance().debug(
             "file: {}; line: {}; Main loop over variant and identity to"
             "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
