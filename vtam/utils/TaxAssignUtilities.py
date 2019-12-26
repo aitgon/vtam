@@ -1,31 +1,29 @@
 import pandas
-import sqlite3
 
 from vtam.utils.constants import rank_hierarchy,identity_list
 
 
-def f01_taxonomy_sqlite_to_df(taxonomy_sqlite):
+def f01_taxonomy_tsv_to_df(taxonomy_tsv):
     """
-    Imports taxonomy_db.sqlite file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
+    Imports taxonomy_db.tsv file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)
     into DataFrame
 
     Args:
-        taxonomy_sqlite (String): Path to taxonomy_db.sqlite
+        taxonomy_tsv (String): Path to taxonomy_db.tsv
 
 
     Returns:
         pandas.DataFrame: with taxonomy information
 
     """
-    con = sqlite3.connect(taxonomy_sqlite)
-    taxonomy_db_df = pandas.read_sql_query("SELECT * FROM taxonomy", con=con)
-    con.close()
+    taxonomy_db_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
+                                     dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
     return taxonomy_db_df
 
 
 def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
     """
-    Takes tax_id and taxonomy_db.sqlite DB and create a dictionary with the taxonomy lineage
+    Takes tax_id and taxonomy_db.tsv DB and create a dictionary with the taxonomy lineage
 
     Args:
         tax_id (Integer): Identifier of taxon
@@ -158,8 +156,6 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                 ###########
                 if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist()) >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
                     # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
-                    #if identity < ltg_rule_threshold:
-                    #    import pdb; pdb.set_trace()
                     ltg_tax_id, ltg_rank = None, None
                     lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
                                                       value in rank_hierarchy]
