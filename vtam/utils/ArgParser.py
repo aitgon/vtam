@@ -212,7 +212,7 @@ class ArgParser():
         parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
                             required=True)
         parser_vtam_taxonomy.add_argument('--precomputed', dest='precomputed', action='store_true', default=False,
-                            help="Path to custom COI blast db",
+                            help="Will download precomputed taxonomy database, which is likely not the most recent one.",
                             required=False)
         parser_vtam_taxonomy.set_defaults(command='taxonomy')  # This attribute will trigger the good command
 
