@@ -4,6 +4,8 @@ import os
 import sys
 
 from vtam.utils.ArgParser import ArgParser
+from vtam.utils.DBblastCOI import DBblastCOI
+from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.PoolMarkerRunner import PoolMarkerRunner
@@ -16,9 +18,13 @@ class VTAM(object):
 
         These are the VTAM commands:
 
-   merge      Merge FASTQ files
-   asv        Carry out the whole pipeline, including sort and count reads, filter variants, tax assign and create ASV table
-   optimize   Show different variant characteristics to help select filter parameters
+   merge      Merge paired-end reads
+   asv        Run VTAM from sorting reads to biosamples/replicates till making ASV table
+   optimize   Find optimal parameters for filtering
+   pool_markers   Pool overlapping markers from the ASV table into one
+   taxonomy   Create the taxonomy TSV file used to create lineages 
+   coi_db   Download precomputed COI Blast database 
+
 """
 
     def __init__(self, sys_argv):
@@ -70,7 +76,7 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommands: pool_markers
+        # Subcommand: pool_markers
         #
         ###############################################################
 
@@ -80,6 +86,39 @@ class VTAM(object):
             pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
             PoolMarkerRunner.main(asv_table_tsv=asv_table_tsv, pooled_marker_tsv=pooled_marker_tsv,
                                   run_marker_tsv=run_marker_tsv)
+
+        ###############################################################
+        #
+        # Subcommand: taxonomy
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'taxonomy':
+            output = OptionManager.instance()['output']
+            precomputed = OptionManager.instance()['precomputed']
+            taxonomydb = DBtaxonomy(output=output, precomputed=precomputed, )
+            if precomputed:
+                taxonomydb.download_taxonomy_tsv()
+            else:
+                taxonomydb.create_taxonomy_db()
+
+        ###############################################################
+        #
+        # Subcommand: coi blast
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'coi_blast_db':
+            coi_blast_db = OptionManager.instance()['coi_blast_db']
+            coi_blast_db = DBblastCOI(coi_blast_db=coi_blast_db)
+            coi_blast_db.download()
+
+        ###############################################################
+        #
+        # Else: run usage message
+        #
+        ###############################################################
+
         else:
             Logger.instance().error(VTAMexception(message=VTAM.usage_message))
 

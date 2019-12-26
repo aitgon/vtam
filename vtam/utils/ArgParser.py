@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import multiprocessing
 import os
@@ -186,6 +184,7 @@ class ArgParser():
         # create the parser for the "pool_markers" command
         #
         #############################################
+
         parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True)
         parser_vtam_pool_markers.add_argument('--asvtable', action='store',
                                      help="REQUIRED: Input TSV file with ASV information that is returned by 'vtam asv'",
@@ -202,5 +201,30 @@ class ArgParser():
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
+
+        #############################################
+        #
+        # create the parser for the "taxonomy" command
+        #
+        #############################################
+
+        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True)
+        parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
+                            required=True)
+        parser_vtam_taxonomy.add_argument('--precomputed', dest='precomputed', action='store_true', default=False,
+                            help="Will download precomputed taxonomy database, which is likely not the most recent one.",
+                            required=False)
+        parser_vtam_taxonomy.set_defaults(command='taxonomy')  # This attribute will trigger the good command
+
+        #############################################
+        #
+        # create the parser for the "coi_db" command
+        #
+        #############################################
+
+        parser_vtam_coi_blast_db = subparsers.add_parser('coi_blast_db', add_help=True)
+        parser_vtam_coi_blast_db.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
+                            required=True)
+        parser_vtam_coi_blast_db.set_defaults(command='coi_blast_db')  # This attribute will trigger the good command
 
         return parser_vtam

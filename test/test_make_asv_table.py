@@ -7,7 +7,7 @@ import pandas
 
 from vtam import Logger
 from vtam.utils.DBtaxonomy import DBtaxonomy
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df
 
 # from vtam.wrapper.MakeAsvTable import f16_asv_table_maker
 
@@ -61,7 +61,7 @@ class TestMakeAsvTable(TestCase):
         ltg_tax_assign_df = pandas.DataFrame(ltg_tax_assign_dic, index=None)
         #
         # getting the taxonomy_db to df
-        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_sqlite_path)
 
         # asv_df = f16_asv_table_maker(run_df, marker_df, variant_df, biosample_df, filter_codon_stop_df, ltg_tax_assign_df, taxonomy_db_df)
         # # asv_final_df = asv_df[columns]
