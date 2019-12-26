@@ -1,12 +1,12 @@
 import inspect
+import math
 
 import pandas
 import sqlalchemy
 
 from vtam.utils.Logger import Logger
-from vtam.models.Biosample import Biosample
 from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_sqlite_to_df, f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.constants import rank_hierarchy_asv_table
 
@@ -100,8 +100,8 @@ class MakeAsvTableRunner(object):
         # taxonomy_db to df
         #
         #####
-        taxonomy_sqlite_path = self.input_file_taxonomy
-        taxonomy_db_df = f01_taxonomy_sqlite_to_df(taxonomy_sqlite_path)
+        taxonomy_tsv_path = self.input_file_taxonomy
+        taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
 
         #####
         #
@@ -135,19 +135,19 @@ class MakeAsvTableRunner(object):
 
         #
         # Merge ltg tax assign results
-        asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True).drop_duplicates(inplace=False)
+        asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
         list_lineage = []
         for tax_id in asv_df['ltg_tax_id'].unique().tolist():
-            dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
-            list_lineage.append(dic_lineage)
+            if not math.isnan(tax_id):
+                dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
+                list_lineage.append(dic_lineage)
         lineage_df = pandas.DataFrame(data=list_lineage)
         lineage_list_df_columns_sorted = list(
             filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
         lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
         lineage_df = lineage_df[lineage_list_df_columns_sorted]
-
-        asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True).drop_duplicates(inplace=False)
-        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id').drop_duplicates(inplace=False)
+        asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
+        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
         asv_df3.drop('tax_id', axis=1, inplace=True)
 
         # Add sequence
