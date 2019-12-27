@@ -52,7 +52,7 @@ class AsvTableRunner(object):
         variant_read_count_obj = VariantReadCountDF(self.variant_read_count_df)
         N_ij_df = variant_read_count_obj.get_N_ij_df()
 
-        asv_df = N_ij_df.merge(self.biosample_df, left_on='biosample_id', right_on='id')
+        asv_df = N_ij_df.merge(self.biosample_df, left_on='biosample_id', right_index=True)
         asv_df.rename({'name': 'biosample_name'}, axis=1, inplace=True)
         asv_df.drop('biosample_id', axis=1, inplace=True)
         asv_df = asv_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_name', values='N_ij',

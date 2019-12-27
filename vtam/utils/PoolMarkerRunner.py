@@ -1,15 +1,63 @@
 import os
+import pandas
 import pathlib
+import sqlalchemy
 import sys
 
-import pandas
 from Bio import SeqIO
+
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy import create_engine
 
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.VTAMexception import VTAMexception
+
+
+class RunMarkerTSVreader():
+    """Prepares different DFs: engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
+                                          variant_to_chimera_borderline_df based on run_marker_tsv and db"""
+
+    def __init__(self, db, run_marker_tsv):
+        self.__db = db
+        #
+        run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
+
+        engine = create_engine('sqlite:///{}'.format(db), echo=False)
+        Base = automap_base()
+        Base.prepare(engine, reflect=True)
+
+        run_declarative = Base.classes.Run
+        marker_declarative = Base.classes.Marker
+        sample_information_declarative = Base.classes.SampleInformation
+
+        conn = engine.connect()
+        for row in run_marker_df.itertuples():
+            # Get run_id
+            run_name = row.run_name
+            run_id = conn.execute(sqlalchemy.select([run_declarative.id]).where(run_declarative.name == run_name)).first()[0]
+            # Get marker_id
+            marker_name = row.marker_name
+            marker_id = conn.execute(sqlalchemy.select([marker_declarative.id])
+                                     .where(marker_declarative.name == marker_name)).first()[0]
+            # Get sample_information entries for this run and marker
+            select_query = sqlalchemy.select([sample_information_declarative])\
+                .where(sample_information_declarative.run_id == run_id)\
+                .where(sample_information_declarative.marker_id == marker_id).distinct()
+            result_proxy = conn.execute(select_query)
+            column_names = result_proxy.keys()
+            sample_information_records = result_proxy.fetchall()
+            sample_information_df = pandas.DataFrame.from_records(sample_information_records, columns=column_names)
+            import pdb; pdb.set_trace()
+            # biosample_list = [item[0] for item in sql_rows]
+            # replicate_list = [item[1] for item in sql_rows]
+            # run_marker_biosample_replicate_df = pandas.DataFrame(data={'run_id': [run_id]*len(biosample_list),
+            #                                                  'marker_id': [marker_id]*len(biosample_list),
+            #                                                  'biosample_id': biosample_list,
+            #                                                  'replicate': replicate_list,}).drop_duplicates()
+        conn.close()
 
 
 class PoolMarkerRunner(object):
@@ -143,6 +191,7 @@ class PoolMarkerRunner(object):
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv):
         # asv_table_df = pandas.read_csv(db, sep="\t", header=0)
+        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv=run_marker_tsv)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
