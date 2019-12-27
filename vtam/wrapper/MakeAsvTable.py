@@ -3,6 +3,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.FastaInformation import FastaInformation
 
 from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
 
 
 class MakeAsvTable(ToolWrapper):
@@ -87,17 +88,19 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
 
         fasta_info_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
+        sample_information_df = fasta_info_obj.get_sample_information_df()
 
-        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(filter_codon_stop_model)
-        variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
+        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine=engine, sample_information_df=sample_information_df)
+        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(filter_codon_stop_model)
+        variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
                                                variant_model=variant_model)
 
-        biosample_df = fasta_info_obj.get_biosample_df(variant_read_count_like_model=filter_codon_stop_model)
+        biosample_df = sample_information_df_analyzer.get_biosample_df(variant_read_count_like_model=filter_codon_stop_model)
 
-        marker_df = fasta_info_obj.get_marker_df(variant_read_count_like_model=filter_codon_stop_model)
-        run_df = fasta_info_obj.get_run_df(variant_read_count_like_model=filter_codon_stop_model)
+        marker_df = sample_information_df_analyzer.get_marker_df(variant_read_count_like_model=filter_codon_stop_model)
+        run_df = sample_information_df_analyzer.get_run_df(variant_read_count_like_model=filter_codon_stop_model)
 
-        variant_to_chimera_borderline_df = fasta_info_obj.get_variant_to_chimera_borderline_df(
+        variant_to_chimera_borderline_df = sample_information_df_analyzer.get_variant_to_chimera_borderline_df(
             filter_chimera_borderline_model=filter_chimera_borderline_model)
 
         ##########################################################
