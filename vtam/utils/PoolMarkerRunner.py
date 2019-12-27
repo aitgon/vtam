@@ -141,12 +141,12 @@ class PoolMarkerRunner(object):
         return pooled_marker_df
 
     @classmethod
-    def main(cls, asv_table_tsv, pooled_marker_tsv, run_marker_tsv):
-        asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
+    def main(cls, db, pooled_marker_tsv, run_marker_tsv):
+        # asv_table_df = pandas.read_csv(db, sep="\t", header=0)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
             run_marker_df = None
-        pool_marker_runner = PoolMarkerRunner(asv_table_df=asv_table_df, run_marker_df=run_marker_df)
+        pool_marker_runner = PoolMarkerRunner(asv_table_df=db, run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

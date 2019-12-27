@@ -1,6 +1,8 @@
+import pandas
 from wopmars.models.ToolWrapper import ToolWrapper
+from vtam.utils.FastaInformation import FastaInformation
 
-from vtam.utils.MakeAsvTableRunner import MakeAsvTableRunner
+from vtam.utils.AsvTableRunner import AsvTableRunner
 
 
 class MakeAsvTable(ToolWrapper):
@@ -80,12 +82,33 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
         #
         # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # Compute variant_read_count_df
+        # Compute variant_read_count_df and other dfs for the asv_table_runner
         #
         ##########################################################
 
-        asv_table_runner = MakeAsvTableRunner(engine, input_file_fastainfo, run_model, marker_model, biosample_model, filter_chimera_borderline_model,
-                                              filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy)
+        fasta_info_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
+
+        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(filter_codon_stop_model)
+        variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
+                                               variant_model=variant_model)
+
+        biosample_df = fasta_info_obj.get_biosample_df(variant_read_count_like_model=filter_codon_stop_model)
+
+        marker_df = fasta_info_obj.get_marker_df(variant_read_count_like_model=filter_codon_stop_model)
+        run_df = fasta_info_obj.get_run_df(variant_read_count_like_model=filter_codon_stop_model)
+
+        variant_to_chimera_borderline_df = fasta_info_obj.get_variant_to_chimera_borderline_df(
+            filter_chimera_borderline_model=filter_chimera_borderline_model)
+
+        ##########################################################
+        #
+        # Compute variant_to_chimera_borderline_df
+        #
+        ##########################################################
+
+        asv_table_runner = AsvTableRunner(engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
+                                          variant_to_chimera_borderline_df,
+                                          filter_codon_stop_model, tax_assign_model, input_file_taxonomy)
         asv_df_final = asv_table_runner.run()
 
         asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)
