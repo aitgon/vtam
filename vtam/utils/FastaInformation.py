@@ -8,14 +8,12 @@ from vtam import Logger, VTAMexception
 class FastaInformation(object):
     """This class defines various methods to retrieve data from the DB based on the Fasta Information TSV"""
 
-    # def __init__(self, fasta_info_tsv, engine, run_model, marker_model, biosample_model, replicate_model):
     def __init__(self, fasta_info_tsv, engine, run_model, marker_model, biosample_model):
         """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
         self.__engine = engine
         self.__run_model = run_model
         self.__marker_model = marker_model
         self.__biosample_model = biosample_model
-        # self.__replicate_model = replicate_model
         #
         self.df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, \
                                   names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name',\
@@ -23,11 +21,11 @@ class FastaInformation(object):
         #
         # self.fastainfo_instance_list = self.get_fasta_information_record_list()
 
-    def get_fasta_information_record_list(self, extended_information=False):
+    def get_sample_information_df(self, add_tag_primer_fasta=False):
         """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate entries (See return)
 
-        :param extended_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
+        :param tag_primer_fasta_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
         :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate': 1}, {'run_id': 1, ...
         """
         fasta_info_instance_list = []
@@ -51,7 +49,46 @@ class FastaInformation(object):
                 # stmt_select_replicate = sqlalchemy.select([self.__replicate_model.__table__.c.id]).where(self.__replicate_model.__table__.c.name == replicate_name)
                 # replicate = conn.execute(stmt_select_replicate).first()[0]
             fasta_information_obj = {'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'replicate': replicate}
-            if extended_information:
+            if add_tag_primer_fasta:
+                fasta_information_obj['tag_fwd_sequence'] = row.tag_fwd_sequence
+                fasta_information_obj['primer_fwd_sequence'] = row.primer_fwd_sequence
+                fasta_information_obj['tag_rev_sequence'] = row.tag_rev_sequence
+                fasta_information_obj['primer_rev_sequence'] = row.primer_rev_sequence
+                fasta_information_obj['fasta_file_name'] = row.fasta_file_name
+            # add this sample_instance ###########
+            fasta_info_instance_list.append(fasta_information_obj)
+            sample_information_df = pandas.DataFrame.from_records(data=fasta_info_instance_list).drop_duplicates()
+        return sample_information_df
+
+    def get_fasta_information_record_list(self, tag_primer_fasta_information=False):
+        """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
+        and replicate entries (See return)
+
+        :param tag_primer_fasta_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
+        :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate': 1}, {'run_id': 1, ...
+        """
+        fasta_info_instance_list = []
+        for row in self.df.itertuples():
+            marker_name = row.marker_name
+            run_name = row.run_name
+            biosample_name = row.biosample_name
+            # replicate_name = row.replicate_name
+            replicate = row.replicate
+            with self.__engine.connect() as conn:
+                # get run_id ###########
+                stmt_select_run_id = sqlalchemy.select([self.__run_model.__table__.c.id]).where(self.__run_model.__table__.c.name == run_name)
+                run_id = conn.execute(stmt_select_run_id).first()[0]
+                # get marker_id ###########
+                stmt_select_marker_id = sqlalchemy.select([self.__marker_model.__table__.c.id]).where(self.__marker_model.__table__.c.name == marker_name)
+                marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                # get biosample_id ###########
+                stmt_select_biosample_id = sqlalchemy.select([self.__biosample_model.__table__.c.id]).where(self.__biosample_model.__table__.c.name == biosample_name)
+                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                # get replicate ###########
+                # stmt_select_replicate = sqlalchemy.select([self.__replicate_model.__table__.c.id]).where(self.__replicate_model.__table__.c.name == replicate_name)
+                # replicate = conn.execute(stmt_select_replicate).first()[0]
+            fasta_information_obj = {'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'replicate': replicate}
+            if tag_primer_fasta_information:
                 fasta_information_obj['tag_fwd_sequence'] = row.tag_fwd_sequence
                 fasta_information_obj['primer_fwd_sequence'] = row.primer_fwd_sequence
                 fasta_information_obj['tag_rev_sequence'] = row.tag_rev_sequence
@@ -162,7 +199,6 @@ class FastaInformation(object):
             with self.__engine.connect() as conn:
                 for sequence in conn.execute(stmt_select).first():
                     record_list.append({'id': variant_id, 'sequence': sequence})
-
         variant_df = pandas.DataFrame.from_records(record_list, index='id')
 
         return variant_df

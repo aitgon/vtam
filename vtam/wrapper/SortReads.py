@@ -98,7 +98,8 @@ class SortReads(ToolWrapper):
         ##########################################################
 
         fasta_information_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        fasta_information_record_list = fasta_information_obj.get_fasta_information_record_list(extended_information=True)
+        fasta_information_record_list = fasta_information_obj.get_fasta_information_record_list(
+            tag_primer_fasta_information=True)
         fasta_information_df = pandas.DataFrame(data=fasta_information_record_list)
 
         ############################################

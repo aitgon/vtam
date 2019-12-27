@@ -7,6 +7,17 @@ from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.PathManager import PathManager
 
+class ArgParserChecker():
+    """Methods to check arguments"""
+
+    @staticmethod
+    def check_parser_vtam_pool_markers_arg_runmarker(runmarker_tsv):
+        # Check header and separator
+        with open(runmarker_tsv, 'r') as fin:
+            header_fields = fin.readline().strip().split('\t')
+        if not set(header_fields) == set(['run_name', 'marker_name']):
+            raise Logger.instance().error(VTAMexception("Verify the '--runmarker' argument"))
+        return runmarker_tsv
 
 class ArgParser():
 
@@ -31,15 +42,7 @@ class ArgParser():
                                                            'the first argument to the --blast_db argument',
                                                      is_abspath=is_abspath)
         OptionManager.instance()['blast_db'] = blast_db
-        # else:
-        #     OptionManager.instance()['blast_db_basename'] = blast_db
-        #     ###############################
-        #     #
-        #     # blast_nhr
-        #     #
-        #     ###############################
-        #     # blast_nhr = os.path.join(OptionManager.instance()['blast_db_dir'], blast_db + '.nhr')
-        #     # Verify presence of at least one copy of these files: nhr, nin, nog, nsd, nsi, nsq
+
         one_file_exists = {'nhr': 0, 'nin': 0, 'nog': 0, 'nsd': 0, 'nsi': 0, 'nsq': 0}
         for fname in os.listdir(OptionManager.instance()['blast_db']):
             if fname.endswith('.nhr'):
@@ -185,15 +188,17 @@ class ArgParser():
         #
         #############################################
 
-        parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True)
+        parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True,
                                  type=lambda x: os.path.abspath(x) if is_abspath else x, help="SQLITE file with DB")
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
-                                     help="Input TSV file with run marker combinations used for pooling. Default: alls",
-                                     required=False, type=lambda x:
-                                            PathManager.check_file_exists_and_is_nonempty(x,
-                                                          error_message="Verify the '--runmarker' argument",
-                                                          is_abspath=is_abspath))
+                                     help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
+                                        Default: Uses all runs and markers in the DB
+                                        Example:
+                                        run_name	marker_name
+                                        prerun	MFZR
+                                        prerun	ZFZR""",
+                                     required=False, type=ArgParserChecker.check_parser_vtam_pool_markers_arg_runmarker)
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
