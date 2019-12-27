@@ -66,7 +66,6 @@ class AsvTableRunner(object):
 
         asv_df2 = asv_df
         # biosample_name_list = fasta_info_obj.df.biosample_name.drop_duplicates(keep='first').tolist()
-        import pdb; pdb.set_trace()
         biosample_name_list = self.biosample_df.name.tolist()
         asv_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in asv_df2.iloc[:, 3:].columns.tolist()]
         asv_df2 = asv_df2[asv_df2_columns]
