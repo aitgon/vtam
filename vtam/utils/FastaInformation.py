@@ -185,6 +185,12 @@ class FastaInformation(object):
 
         biosample_df = pandas.DataFrame.from_records(record_list, index='id')
 
+        # Sort biosample names according to fastainfo biosample order
+        biosample_name_list = self.df.biosample_name.drop_duplicates(keep='first').tolist()
+        biosample_df['name'] = pandas.Categorical(biosample_df['name'], biosample_name_list)
+        biosample_df.sort_values(by='name', inplace=True)
+        biosample_df.name = biosample_df.name.astype(str)
+
         return biosample_df
 
     def get_marker_df(self, variant_read_count_like_model, filter_id=None):
@@ -227,23 +233,21 @@ class FastaInformation(object):
 
         return run_df
 
-    def get_chimera_borderline(self, variant_read_count_like_model, filter_id=None):
+    def get_variant_to_chimera_borderline_df(self, filter_chimera_borderline_model):
         """Based on the Fasta information TSV and run_model, returns the run_df
 
         :return: DataFrame with columns: index, name
         """
 
-        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, filter_id)
+        # fasta_info = FastaInformation(self.fasta_info_tsv, self.engine, self.run_model, self.marker_model, self.biosample_model)
 
-        record_list = []
-        run_model_table = self.__run_model.__table__
-        for run_id in variant_read_count_like_df.run_id.unique().tolist():
-            stmt_select = sqlalchemy.select([run_model_table.c.name]).where(run_model_table.c.id == run_id)
-            with self.__engine.connect() as conn:
-                for run_name in conn.execute(stmt_select).first():
-                    record_list.append({'id': run_id, 'name': run_name})
+        filter_chimera_borderline_df = self.get_full_table_df(model=filter_chimera_borderline_model)
 
-        run_df = pandas.DataFrame.from_records(record_list, index='id')
+        variant_to_chimera_borderline_df = filter_chimera_borderline_df[['run_id', 'marker_id', 'variant_id', 'filter_delete']]
+        variant_to_chimera_borderline_df = variant_to_chimera_borderline_df.sort_values(by='filter_delete', ascending=False)
+        variant_to_chimera_borderline_df = variant_to_chimera_borderline_df\
+            .drop_duplicates(subset=['run_id', 'marker_id', 'variant_id'], keep='first', inplace=False)
+        variant_to_chimera_borderline_df.rename({'filter_delete': 'chimera_borderline'}, axis=1, inplace=True)
 
-        return run_df
+        return variant_to_chimera_borderline_df
 

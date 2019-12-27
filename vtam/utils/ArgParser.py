@@ -186,12 +186,8 @@ class ArgParser():
         #############################################
 
         parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True)
-        parser_vtam_pool_markers.add_argument('--asvtable', action='store',
-                                     help="REQUIRED: Input TSV file with ASV information that is returned by 'vtam asv'",
-                                     required=True, type=lambda x:
-                                            PathManager.check_file_exists_and_is_nonempty(x,
-                                                          error_message="Verify the '--asvtable' argument",
-                                                          is_abspath=is_abspath))
+        parser_vtam_pool_markers.add_argument('--db', action='store', required=True,
+                                 type=lambda x: os.path.abspath(x) if is_abspath else x, help="SQLITE file with DB")
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
                                      help="Input TSV file with run marker combinations used for pooling. Default: alls",
                                      required=False, type=lambda x:
