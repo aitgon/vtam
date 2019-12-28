@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from vtam import Logger, VTAMexception
 from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
 
 
 class VariantKnown(object):
@@ -110,10 +111,9 @@ class VariantKnown(object):
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info = FastaInformation(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
+        fasta_info_obj = FastaInformation(fasta_info_tsv=self.fasta_info_tsv, engine=self.engine, run_model=self.run_model,
                                       marker_model=self.marker_model, biosample_model=self.biosample_model)
-        fasta_info_records = fasta_info.get_fasta_information_record_list()
-        fasta_info_df = pandas.DataFrame.from_records(data=fasta_info_records)
+        sample_information_df = fasta_info_obj.get_sample_information_df()
 
         ################################################################################################################
         #
@@ -126,9 +126,9 @@ class VariantKnown(object):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             try:
-                assert (fasta_info_df.loc[
-                    (fasta_info_df['biosample_id'] == biosample_id) & (fasta_info_df['marker_id'] == marker_id) & (
-                                fasta_info_df['run_id'] == run_id)]).shape[0] > 0
+                assert (sample_information_df.loc[
+                    (sample_information_df['biosample_id'] == biosample_id) & (sample_information_df['marker_id'] == marker_id) & (
+                                sample_information_df['run_id'] == run_id)]).shape[0] > 0
             except AssertionError:
                 Logger.instance().error(VTAMexception("Error: Verify in the --variant_known file that run_id, marker_id and biosample_id"
                                                       "are defined in the --fasta_info file"))

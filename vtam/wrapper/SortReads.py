@@ -98,9 +98,10 @@ class SortReads(ToolWrapper):
         ##########################################################
 
         fasta_information_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        fasta_information_record_list = fasta_information_obj.get_fasta_information_record_list(
-            tag_primer_fasta_information=True)
-        fasta_information_df = pandas.DataFrame(data=fasta_information_record_list)
+        sample_information_df = fasta_information_obj.get_sample_information_df(add_tag_primer_fasta=True)
+        # sample_information_df = fasta_information_obj.get_fasta_information_record_list(
+        #     tag_primer_fasta_information=True)
+        sample_information_df = pandas.DataFrame(data=sample_information_df)
 
         ############################################
         #
@@ -114,8 +115,8 @@ class SortReads(ToolWrapper):
 
         sort_reads_tsv_list = []
 
-        for fasta_file_name in sorted(fasta_information_df.fasta_file_name.unique().tolist()):
-            fasta_information_per_fasta_df = fasta_information_df.loc[fasta_information_df.fasta_file_name==fasta_file_name]
+        for fasta_file_name in sorted(sample_information_df.fasta_file_name.unique().tolist()):
+            fasta_information_per_fasta_df = sample_information_df.loc[sample_information_df.fasta_file_name==fasta_file_name]
             fasta_file_id = session.query(fasta_model.id).filter(fasta_model.name == fasta_file_name).one()[0]
             fasta_path = os.path.join(fasta_dir, fasta_file_name)
 

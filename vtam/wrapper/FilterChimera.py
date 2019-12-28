@@ -3,6 +3,7 @@ import pathlib
 from sqlalchemy import select
 
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
+from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
@@ -93,8 +94,10 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
+        fasta_info_obj = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
+        sample_information_df = fasta_info_obj.get_sample_information_df()
+        # sample_info_record_list = fasta_information_obj.get_fasta_information_record_list()
+        sample_info_record_list = list(sample_information_df.T.to_dict().values())
 
         ##########################################################
         #
@@ -103,10 +106,10 @@ class FilterChimera(ToolWrapper):
         ##########################################################
 
         variant_read_count_like_table_obj = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_chimera_model, engine=engine)
-        variant_read_count_like_table_obj.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
+        variant_read_count_like_table_obj.delete_output_filter_model(fasta_info_record_list=sample_info_record_list)
 
         variant_read_count_like_table_borderline_obj = VariantReadCountLikeTable(variant_read_count_like_model=filter_chimera_borderline_model, engine=engine)
-        variant_read_count_like_table_borderline_obj.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
+        variant_read_count_like_table_borderline_obj.delete_output_filter_model(fasta_info_record_list=sample_info_record_list)
 
         ##########################################################
         #
@@ -116,9 +119,11 @@ class FilterChimera(ToolWrapper):
         ##########################################################
 
         filter_id = None
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model
-                                                                     =input_filter_pcr_error_model, filter_id=filter_id)
-        variant_df = fasta_info.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model,
+        sample_information_df = fasta_info_obj.get_sample_information_df(add_tag_primer_fasta=False)
+        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine, sample_information_df)
+        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_pcr_error_model, filter_id=filter_id)
+        variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model,
                                                variant_model=variant_model,
                                                filter_id=filter_id)
 

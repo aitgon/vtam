@@ -6,6 +6,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.VariantKnown import VariantKnown
@@ -136,8 +137,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
+        fasta_info_obj = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
+        sample_information_df = fasta_info_obj.get_sample_information_df()
+        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine, sample_information_df)
+        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_model)
 
         ################################################################################################
         #
