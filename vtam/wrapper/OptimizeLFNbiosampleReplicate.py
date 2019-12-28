@@ -4,6 +4,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.FastaInformation import FastaInformation
 import pandas
 
+from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
 from vtam.utils.VariantKnown import VariantKnown
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
@@ -99,8 +100,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
+        fasta_info_obj = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
+        sample_information_df = fasta_info_obj.get_sample_information_df()
+        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine, sample_information_df)
+        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_model)
+
         variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
         N_jk_df = variant_read_count_df_obj.get_N_jk_df()
 
