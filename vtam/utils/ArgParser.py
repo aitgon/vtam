@@ -202,6 +202,16 @@ class ArgParser():
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
+        parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
+                                     help="""REQUIRED: SQLITE DB with taxonomy information.
+
+        This database is create with the command: create_db_taxonomy. For instance
+
+        create_db_taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
+                                     required=True,
+                                     type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
+                                                                  error_message="Verify the '--taxonomy' argument",
+                                                                  is_abspath=is_abspath))
 
         #############################################
         #

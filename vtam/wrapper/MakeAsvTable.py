@@ -75,8 +75,6 @@ class MakeAsvTable(ToolWrapper):
         tax_assign_model = self.input_table(MakeAsvTable.__input_table_tax_assign)
         # Output table models
         asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
-        #
-        # Options
 
         ##########################################################
         #
@@ -107,8 +105,7 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
 
         asv_table_runner = AsvTableRunner(engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
-                                          variant_to_chimera_borderline_df,
-                                          filter_codon_stop_model, tax_assign_model, input_file_taxonomy)
+                                          variant_to_chimera_borderline_df, tax_assign_model, taxonomy_tsv=input_file_taxonomy)
         asv_df_final = asv_table_runner.run()
 
         asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)
