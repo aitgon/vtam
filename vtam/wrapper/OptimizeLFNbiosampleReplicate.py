@@ -1,10 +1,8 @@
+import pandas
 import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInformation import FastaInformation
-import pandas
-
-from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
+from vtam.utils.SampleInformationId import FastaInformation2
 from vtam.utils.VariantKnown import VariantKnown
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
@@ -78,7 +76,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         # Read user known variant information and verify consistency with DB
         #
-        ################################################################################################################
+        ########################### #####################################################################################
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
                                      biosample_model)
@@ -100,10 +98,10 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_obj = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        sample_information_df = fasta_info_obj.get_sample_information_df()
-        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine, sample_information_df)
-        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_model)
+        fasta_info_obj = FastaInformation2(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
+        # sample_information_df = fasta_info_obj.get_sample_information_id_obj()
+        # fasta_info_obj = SampleInformationId(engine, sample_information_df)
+        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(variant_read_count_model)
 
         variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
         N_jk_df = variant_read_count_df_obj.get_N_jk_df()
@@ -184,4 +182,3 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate'],
                                        ascending=[True, True, True, True, True], inplace=True)
         optimize_output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
-

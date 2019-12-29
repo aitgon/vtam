@@ -2,11 +2,10 @@ import os
 import pathlib
 import shutil
 
-import pandas
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.PathManager import PathManager
+from vtam.utils.SampleInformationId import FastaInformation2
 from vtam.utils.SortReadsRunner import SortReadsRunner
 
 
@@ -97,11 +96,11 @@ class SortReads(ToolWrapper):
         #
         ##########################################################
 
-        fasta_information_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        sample_information_df = fasta_information_obj.get_sample_information_df(add_tag_primer_fasta=True)
-        # sample_information_df = fasta_information_obj.get_fasta_information_record_list(
+        fasta_info_obj = FastaInformation2(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
+        # sample_information_df = fasta_info_obj.get_sample_information_id_obj(add_tag_primer_fasta=True)
+        # sample_information_id_df = fasta_information_obj.get_fasta_information_record_list(
         #     tag_primer_fasta_information=True)
-        sample_information_df = pandas.DataFrame(data=sample_information_df)
+        sample_information_df = fasta_info_obj.sample_information_id_df
 
         ############################################
         #
