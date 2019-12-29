@@ -23,7 +23,6 @@ class SampleInformation(Base):
     tag_reverse = Column(String(100), nullable=False)
     fasta_id = Column(Integer, ForeignKey("Fasta.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     biosample_id = Column(Integer, ForeignKey("Biosample.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    # replicate = Column(Integer, ForeignKey("Replicate.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     replicate = Column(Integer, nullable=False)
 
     @validates('name', 'sample_name', 'run_name')

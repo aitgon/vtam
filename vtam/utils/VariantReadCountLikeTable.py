@@ -14,11 +14,11 @@ class VariantReadCountLikeTable(object):
         self.engine = engine
         self.variant_read_count_like_model = variant_read_count_like_model
 
-    def delete_records(self, record_list):
+    def delete_from_db(self, sample_record_list):
         """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate"""
 
         with self.engine.connect() as conn:
-            conn.execute(self.variant_read_count_like_model.__table__.delete(), record_list)
+            conn.execute(self.variant_read_count_like_model.__table__.delete(), sample_record_list)
 
     def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
         """Get variant_read_count df from input filter models
@@ -84,7 +84,6 @@ class VariantReadCountLikeTable(object):
     def filter_delete_df_to_dict(filter_df):
         """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
         records = []
-        # import pdb; pdb.set_trace()
         for row in filter_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
