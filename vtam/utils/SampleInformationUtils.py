@@ -6,13 +6,14 @@ from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
 
 
-class SampleInformationId(object):
+class SampleInformationUtils(object):
     """Takes an object as in the SampleInformation model and carries out several computations on and the DB"""
 
-    def __init__(self, engine, sample_information_id_df):
-        """Takes the engine and the sample_information_id_df to carry out several computations"""
+    def __init__(self, engine, sample_information_df):
+        """Takes the engine and the sample_information_df to carry out several computations"""
         self.__engine = engine
-        self.sample_information_id_df = sample_information_id_df
+        self.sample_information_df = sample_information_df
+        self.sample_record_list = list(self.sample_information_df.T.to_dict().values())
 
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
         """Based on the Fasta samples and the variant_read_count_model, returns the variant_read_count_df
@@ -26,7 +27,7 @@ class SampleInformationId(object):
 
         variant_read_count_list = []
         # for sample_instance in self.get_fasta_information_record_list():
-        for sample_instance_row in self.sample_information_id_df.itertuples():
+        for sample_instance_row in self.sample_information_df.itertuples():
             run_id = sample_instance_row.run_id
             marker_id = sample_instance_row.marker_id
             biosample_id = sample_instance_row.biosample_id
@@ -75,7 +76,7 @@ class SampleInformationId(object):
 
         variant_read_count_list = []
         # for sample_instance in self.get_fasta_information_record_list():
-        for sample_instance_row in self.sample_information_id_df.itertuples():
+        for sample_instance_row in self.sample_information_df.itertuples():
             run_id = sample_instance_row.run_id
             marker_id = sample_instance_row.marker_id
             biosample_id = sample_instance_row.biosample_id
@@ -129,7 +130,7 @@ class SampleInformationId(object):
         """
 
         record_list = []
-        for biosample_id in self.sample_information_id_df.biosample_id.unique().tolist():
+        for biosample_id in self.sample_information_df.biosample_id.unique().tolist():
             stmt_select = sqlalchemy.select([biosample_model.__table__.c.name]).where(biosample_model.__table__.c.id == biosample_id)
             with self.__engine.connect() as conn:
                 for biosample_name in conn.execute(stmt_select).first():
@@ -138,7 +139,7 @@ class SampleInformationId(object):
         biosample_df = pandas.DataFrame.from_records(record_list, index='id')
 
         # Sort biosample names according to fastainfo biosample order
-        biosample_id_list = self.sample_information_id_df.biosample_id.drop_duplicates(keep='first').tolist()
+        biosample_id_list = self.sample_information_df.biosample_id.drop_duplicates(keep='first').tolist()
         biosample_df.index = pandas.Categorical(biosample_df.index, biosample_id_list)
         biosample_df.sort_index(inplace=True)
         biosample_df.index = biosample_df.index.astype(int)
@@ -152,7 +153,7 @@ class SampleInformationId(object):
         """
 
         record_list = []
-        for marker_id in self.sample_information_id_df.marker_id.unique().tolist():
+        for marker_id in self.sample_information_df.marker_id.unique().tolist():
             stmt_select = sqlalchemy.select([marker_model.__table__.c.name]).where(marker_model.__table__.c.id == marker_id)
             with self.__engine.connect() as conn:
                 for marker_name in conn.execute(stmt_select).first():
@@ -169,7 +170,7 @@ class SampleInformationId(object):
         """
 
         record_list = []
-        for run_id in self.sample_information_id_df.run_id.unique().tolist():
+        for run_id in self.sample_information_df.run_id.unique().tolist():
             stmt_select = sqlalchemy.select([run_model.__table__.c.name]).where(run_model.__table__.c.id == run_id)
             with self.__engine.connect() as conn:
                 for run_name in conn.execute(stmt_select).first():
@@ -196,15 +197,16 @@ class SampleInformationId(object):
         return variant_to_chimera_borderline_df
 
 
-class FastaInformation2(SampleInformationId):
+class FastaInformationTSV(SampleInformationUtils):
     """Reads fasta information TSV file to a sample_information_id object"""
 
-    def __init__(self, engine, fasta_info_tsv, run_model, marker_model, biosample_model):
+    def __init__(self, fasta_info_tsv, engine, run_model, marker_model, biosample_model, include_tag_primer_fasta=False):
         """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
         #
-        self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name', 'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_file_name'])
+        self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0,
+                                                    names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name', 'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_file_name'])
         self.__engine = engine
-        sample_information_id_df = self.__get_sample_information_df(run_model, marker_model, biosample_model, include_tag_primer_fasta=False)
+        sample_information_id_df = self.__get_sample_information_df(run_model, marker_model, biosample_model, include_tag_primer_fasta=include_tag_primer_fasta)
         super().__init__(engine, sample_information_id_df)
 
 

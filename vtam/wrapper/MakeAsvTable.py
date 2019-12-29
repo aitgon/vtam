@@ -1,7 +1,7 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.AsvTableRunner import AsvTableRunner
-from vtam.utils.SampleInformationId import FastaInformation2
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 
 
 class MakeAsvTable(ToolWrapper):
@@ -84,21 +84,20 @@ class MakeAsvTable(ToolWrapper):
         # Compute variant_read_count_df and other dfs for the asv_table_runner
         #
         ##########################################################
-        fasta_info_obj = FastaInformation2(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
-                                           marker_model=marker_model, biosample_model=biosample_model)
-        # sample_information_df = fasta_info_obj.get_sample_information_id_obj()
+
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
         #
-        # fasta_info_obj = SampleInformationId(engine=engine, sample_information_df=sample_information_df)
-        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(filter_codon_stop_model)
-        variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(filter_codon_stop_model)
+        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
                                                variant_model=variant_model)
 
-        biosample_df = fasta_info_obj.get_biosample_df(biosample_model=biosample_model)
+        biosample_df = fasta_info_tsv.get_biosample_df(biosample_model=biosample_model)
 
-        marker_df = fasta_info_obj.get_marker_df(marker_model=marker_model)
-        run_df = fasta_info_obj.get_run_df(run_model=run_model)
+        marker_df = fasta_info_tsv.get_marker_df(marker_model=marker_model)
+        run_df = fasta_info_tsv.get_run_df(run_model=run_model)
 
-        variant_to_chimera_borderline_df = fasta_info_obj.get_variant_to_chimera_borderline_df(
+        variant_to_chimera_borderline_df = fasta_info_tsv.get_variant_to_chimera_borderline_df(
             filter_chimera_borderline_model=filter_chimera_borderline_model)
 
         ##########################################################

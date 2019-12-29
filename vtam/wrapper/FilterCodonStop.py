@@ -1,7 +1,7 @@
 from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 
-from vtam.utils.SampleInformationId import FastaInformation2
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
@@ -90,9 +90,8 @@ class FilterCodonStop(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info_obj = FastaInformation2(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
-                                           marker_model=marker_model, biosample_model=biosample_model)
-        sample_info_record_list = list(fasta_info_obj.sample_information_id_df.T.to_dict().values())
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
 
         ##########################################################
         #
@@ -101,7 +100,7 @@ class FilterCodonStop(ToolWrapper):
         ##########################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_codon_stop_model, engine=engine)
-        variant_read_count_like_utils.delete_records(record_list=sample_info_record_list)
+        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
         ##########################################################
         #
@@ -109,9 +108,9 @@ class FilterCodonStop(ToolWrapper):
         #
         ##########################################################
 
-        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_indel_model, filter_id=None)
-        variant_df = fasta_info_obj.get_variant_df(variant_read_count_like_model=input_filter_indel_model,
+        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=input_filter_indel_model,
                                                variant_model=variant_model)
 
         ##########################################################
