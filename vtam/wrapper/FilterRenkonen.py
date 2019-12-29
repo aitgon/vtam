@@ -1,6 +1,5 @@
 from vtam import Logger
-from vtam.utils.FastaInformation import FastaInformation
-from vtam.utils.SampleInformationDfAnalyzer import SampleInformationDfAnalyzer
+from vtam.utils.SampleInformationId import FastaInformation2
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -62,7 +61,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        input_file_fastainfo = self.input_file(FilterRenkonen.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterRenkonen.__input_table_marker)
@@ -83,10 +82,9 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info_obj = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        sample_information_df = fasta_info_obj.get_sample_information_df()
-        # sample_info_record_list = fasta_information_obj.get_fasta_information_record_list()
-        sample_info_record_list = list(sample_information_df.T.to_dict().values())
+        fasta_info_obj = FastaInformation2(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                           marker_model=marker_model, biosample_model=biosample_model)
+        sample_info_record_list = list(fasta_info_obj.sample_information_id_df.T.to_dict().values())
 
         ##########################################################
         #
@@ -95,7 +93,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_renkonen_model, engine=engine)
-        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=sample_info_record_list)
+        variant_read_count_like_utils.delete_records(record_list=sample_info_record_list)
 
         ##########################################################
         #
@@ -103,11 +101,8 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        filter_id = None
-        sample_information_df = fasta_info_obj.get_sample_information_df(add_tag_primer_fasta=False)
-        sample_information_df_analyzer = SampleInformationDfAnalyzer(engine, sample_information_df)
-        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(
-            variant_read_count_like_model=input_filter_chimera_model, filter_id=filter_id)
+        variant_read_count_df = fasta_info_obj.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_chimera_model, filter_id=None)
 
         ##########################################################
         #

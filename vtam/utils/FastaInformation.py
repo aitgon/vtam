@@ -1,8 +1,5 @@
 import pandas
 import sqlalchemy
-import sys
-
-from vtam import Logger, VTAMexception
 
 
 class FastaInformation(object):
@@ -18,10 +15,8 @@ class FastaInformation(object):
         self.df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0, \
                                   names=['tag_fwd_sequence', 'primer_fwd_sequence', 'tag_rev_sequence', 'primer_rev_sequence', 'marker_name', 'biosample_name',\
                                                     'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_file_name'])
-        #
-        # self.fastainfo_instance_list = self.get_fasta_information_record_list()
 
-    def get_sample_information_df(self, add_tag_primer_fasta=False):
+    def get_sample_information_id_obj(self, add_tag_primer_fasta=False):
         """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate entries (See return)
 
