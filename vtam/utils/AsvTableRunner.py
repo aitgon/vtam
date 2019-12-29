@@ -10,10 +10,9 @@ from vtam.utils.constants import rank_hierarchy_asv_table
 
 class AsvTableRunner(object):
 
-    # def __init__(self, engine, fasta_info_tsv, run_model, marker_model, biosample_model,
-    #              filter_chimera_borderline_model, filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy):
+
     def __init__(self, engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df, variant_to_chimera_borderline_df,
-                                          filter_codon_stop_model, tax_assign_model, input_file_taxonomy):
+                 tax_assign_model, taxonomy_tsv):
 
         # self.engine = engine
         # self.fasta_info_tsv = fasta_info_tsv
@@ -32,7 +31,7 @@ class AsvTableRunner(object):
         self.biosample_df = biosample_df
         self.variant_to_chimera_borderline_df = variant_to_chimera_borderline_df
         self.tax_assign_model = tax_assign_model
-        self.input_file_taxonomy = input_file_taxonomy
+        self.input_file_taxonomy = taxonomy_tsv
 
     def run(self):
 
