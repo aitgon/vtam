@@ -1,9 +1,8 @@
+import pandas
 import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInformation import FastaInformation
-import pandas
-
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantKnown import VariantKnown
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
@@ -77,7 +76,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         # Read user known variant information and verify consistency with DB
         #
-        ################################################################################################################
+        ########################### #####################################################################################
 
         variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
                                      biosample_model)
@@ -98,9 +97,10 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         # Get variant read count df
         #
         ################################################################################################################
+        fasta_info_tsv = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv, engine=engine, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(variant_read_count_model)
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
         variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
         N_jk_df = variant_read_count_df_obj.get_N_jk_df()
 
@@ -180,4 +180,3 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run_name', 'marker_name', 'biosample_name', 'replicate'],
                                        ascending=[True, True, True, True, True], inplace=True)
         optimize_output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
-
