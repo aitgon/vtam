@@ -1,6 +1,7 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.MakeAsvTableRunner import MakeAsvTableRunner
+from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 
 
 class MakeAsvTable(ToolWrapper):
@@ -61,7 +62,7 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        input_file_fastainfo = self.input_file(MakeAsvTable.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_fastainfo)
         input_file_taxonomy = self.input_file(MakeAsvTable.__input_file_taxonomy)
         #
         # Input table models
@@ -74,18 +75,37 @@ class MakeAsvTable(ToolWrapper):
         tax_assign_model = self.input_table(MakeAsvTable.__input_table_tax_assign)
         # Output table models
         asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
-        #
-        # Options
 
         ##########################################################
         #
         # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # Compute variant_read_count_df
+        # Compute variant_read_count_df and other dfs for the asv_table_runner
         #
         ##########################################################
 
-        asv_table_runner = MakeAsvTableRunner(engine, input_file_fastainfo, run_model, marker_model, biosample_model, filter_chimera_borderline_model,
-                                              filter_codon_stop_model, variant_model, tax_assign_model, input_file_taxonomy)
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
+        #
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(filter_codon_stop_model)
+        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=filter_codon_stop_model,
+                                               variant_model=variant_model)
+
+        biosample_df = fasta_info_tsv.get_biosample_df(biosample_model=biosample_model)
+
+        marker_df = fasta_info_tsv.get_marker_df(marker_model=marker_model)
+        run_df = fasta_info_tsv.get_run_df(run_model=run_model)
+
+        variant_to_chimera_borderline_df = fasta_info_tsv.get_variant_to_chimera_borderline_df(
+            filter_chimera_borderline_model=filter_chimera_borderline_model)
+
+        ##########################################################
+        #
+        # Compute variant_to_chimera_borderline_df
+        #
+        ##########################################################
+
+        asv_table_runner = AsvTableRunner(engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
+                                          variant_to_chimera_borderline_df, tax_assign_model, taxonomy_tsv=input_file_taxonomy)
         asv_df_final = asv_table_runner.run()
 
         asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)

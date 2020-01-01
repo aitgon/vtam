@@ -1,17 +1,12 @@
 import sqlalchemy
-from sqlalchemy import select
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
-from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
-import os
-import pandas
 import sys
 
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 
 
@@ -67,7 +62,7 @@ class FilterLFN(ToolWrapper):
         ##########################################################
 
         # Input file output
-        input_file_fastainfo = self.input_file(FilterLFN.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterLFN.__input_file_fastainfo)
         # Add FilterLFNthresholdspecific
         # input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
         #
@@ -102,8 +97,8 @@ class FilterLFN(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
 
         ##########################################################
         #
@@ -111,20 +106,18 @@ class FilterLFN(ToolWrapper):
         #
         ##########################################################
 
-        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_lfn_model, engine=engine)
-        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
-
-        # with __engine.connect() as conn:
-        #     conn.execute(filter_lfn_model.__table__.delete(), sample_instance_list)
+        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_lfn_model,
+                                                                  engine=engine)
+        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
         ##########################################################
-        #
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
         ##########################################################
 
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_variant_read_count_model, filter_id=None)
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
+            variant_read_count_like_model=input_variant_read_count_model, filter_id=None)
 
         ##########################################################
         #

@@ -3,8 +3,8 @@ import pathlib
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam import Logger
-from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
@@ -72,7 +72,7 @@ class FilterPCRerror(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        input_file_fastainfo = self.input_file(FilterPCRerror.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterPCRerror.__input_file_fastainfo)
         #
         # Input table models
         marker_model = self.input_table(FilterPCRerror.__input_table_marker)
@@ -93,8 +93,8 @@ class FilterPCRerror(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
 
         ##########################################################
         #
@@ -103,7 +103,7 @@ class FilterPCRerror(ToolWrapper):
         ##########################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_pcr_error_model, engine=engine)
-        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
+        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
         ##########################################################
         #
@@ -111,17 +111,10 @@ class FilterPCRerror(ToolWrapper):
         #
         ##########################################################
 
-        filter_id = None
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_min_replicate_model, filter_id=filter_id)
-
-        ##########################################################
-        #
-        # 4. Get variant_df: id, sequence
-        #
-        ##########################################################
-
-        variant_df = fasta_info.get_variant_df(variant_read_count_like_model=input_filter_min_replicate_model,
-                                                          variant_model=variant_model)
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_min_replicate_model, filter_id=None)
+        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=input_filter_min_replicate_model,
+                                               variant_model=variant_model)
 
         ################################################################################################################
         #
