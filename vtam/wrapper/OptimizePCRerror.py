@@ -4,8 +4,8 @@ import pathlib
 import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
+from vtam.utils.SampleInformationUtils import SampleInformationUtils, FastaInformationTSV
 from vtam.utils.VariantKnown import VariantKnown
 import pandas
 
@@ -111,14 +111,12 @@ class OptimizePCRerror(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        filter_id = None
+        fasta_info_tsv = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv, engine=engine, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
+        sample_information_df_analyzer = SampleInformationUtils(engine, fasta_info_tsv.sample_information_df)
+        variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_like_model=variant_read_count_model)
 
-        variant_read_count_df = fasta_info.get_variant_read_count_df(
-            variant_read_count_like_model=variant_read_count_model, filter_id=filter_id)
-
-        variant_df = fasta_info.get_variant_df(variant_read_count_like_model=variant_read_count_model,
-                                                          variant_model=variant_model)
+        variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=variant_read_count_model, variant_model=variant_model)
 
         ################################################################################################################
         #

@@ -4,8 +4,8 @@ import sqlalchemy
 
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.FastaInformation import FastaInformation
 from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.VariantKnown import VariantKnown
@@ -136,8 +136,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info = FastaInformation(fasta_info_tsv, engine, run_model, marker_model, biosample_model)
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_model)
+        fasta_info_tsv = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv, engine=engine, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(variant_read_count_model)
 
         ################################################################################################
         #

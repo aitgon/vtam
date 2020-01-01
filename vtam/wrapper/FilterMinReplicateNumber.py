@@ -1,4 +1,4 @@
-from vtam.utils.FastaInformation import FastaInformation
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
@@ -64,7 +64,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         #
         # Input files
-        input_file_fastainfo = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
         #
         # Input tables
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
@@ -84,8 +84,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info = FastaInformation(input_file_fastainfo, engine, run_model, marker_model, biosample_model)
-        fasta_info_record_list = fasta_info.get_fasta_information_record_list()
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
+                                             marker_model=marker_model, biosample_model=biosample_model)
 
         ##########################################################
         #
@@ -94,7 +94,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_min_replicate_model, engine=engine)
-        variant_read_count_like_utils.delete_output_filter_model(fasta_info_record_list=fasta_info_record_list)
+        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
         ##########################################################
         #
@@ -104,7 +104,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
 
         filter_id = 8 # Is filter_id from all FilterLFN all
-        variant_read_count_df = fasta_info.get_variant_read_count_df(variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
+        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
 
         ##########################################################
         #
