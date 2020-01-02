@@ -36,7 +36,8 @@ class VTAM(object):
         ################################################################################################################
 
         self.sys_argv = sys_argv
-        parser = ArgParser.get_arg_parser(is_abspath=True)
+        # AG do not use abspath for the moment. Maybe later it can be used as option
+        parser = ArgParser.get_arg_parser(is_abspath=False)
         self.args = parser.parse_args(sys_argv)
 
         #####################
