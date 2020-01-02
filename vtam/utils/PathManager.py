@@ -3,13 +3,10 @@ Example of module documentation which can be
 multiple-lined
 """
 
-import errno
 import os
 import tempfile
 
-from vtam.utils.Logger import Logger
 from vtam.utils.Singleton import Singleton
-from vtam.utils.VTAMexception import VTAMexception
 
 
 class PathManager(Singleton):
@@ -26,18 +23,6 @@ class PathManager(Singleton):
         if self.tempdir is None:
             self.tempdir = tempfile.mkdtemp()
         return self.tempdir
-
-
-    @staticmethod
-    def get_wopfile_test_path():
-        """
-        Find the Src directory of the project
-
-        :return: the output leading to the src file of the project
-        """
-
-        wopfile_test_path = os.path.join(os.path.dirname(__file__), "../../test/input/wopfile_merge.yml")
-        return wopfile_test_path
 
     @staticmethod
     def get_package_path():
@@ -60,39 +45,3 @@ class PathManager(Singleton):
 
         test_dir_path = os.path.join(os.path.dirname(__file__), "../../test")
         return test_dir_path
-
-    @staticmethod
-    def check_file_exists_and_is_nonempty(path, error_message=None, is_abspath=False):
-        """Checks if file exists and is not empty
-
-        :param error_message: Optional message to help debug the problem
-        :param is_abspath: If True, returns abspath
-        :return: void
-        """
-        try:
-            assert os.stat(path).st_size > 0
-        except AssertionError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        except FileNotFoundError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        if is_abspath:
-            return os.path.abspath(path)
-        return path
-
-
-    @staticmethod
-    def check_dir_exists_and_is_nonempty(path, error_message=None, is_abspath=False):
-        """Checks if directory exists and is not empty
-
-        :param error_message: Optional message to help debug the problem
-        :param is_abspath: If True, returns abspath
-        :return: void
-        """
-        try:
-            assert len(os.listdir(path)) > 0
-            # assert True
-        except AssertionError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        if is_abspath:
-            return os.path.abspath(path)
-        return path
