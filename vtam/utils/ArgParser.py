@@ -15,14 +15,27 @@ class ArgParserChecker():
         # Check header and separator
         with open(runmarker_tsv, 'r') as fin:
             header_fields = fin.readline().strip().split('\t')
-        if not set(header_fields) == set(['run_name', 'marker_name']):
+        if not set(header_fields) == {'run_name', 'marker_name'}:
             raise Logger.instance().error(VTAMexception("Verify the '--runmarker' argument"))
         return runmarker_tsv
 
-class ArgParser():
+    @staticmethod
+    def check_file_exists_and_is_nonempty(path, error_message=None):
+        """Checks if file exists and is not empty
+
+        :param error_message: Optional message to help debug the problem
+        :return: void
+        """
+        try:
+            assert os.stat(path).st_size > 0
+        except AssertionError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        except FileNotFoundError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        return path
 
     @staticmethod
-    def verify_an_store_blast_db_argument(blast_db, is_abspath=False):
+    def verify_and_store_blast_db_argument(blast_db, is_abspath=False):
         """Verifies --blast_db argument. Must be exactly two arguments.
 
         - First argument: REQUIRED. Blast DB directory
@@ -61,6 +74,9 @@ class ArgParser():
             raise Logger.instance().error(VTAMexception("Verify the Blast DB directory for files with 'nt' file name"
                                                         " and 'nhr', 'nin', 'nog', 'nsd', 'nsi' and 'nsq' file types."))
         return blast_db
+
+
+class ArgParser:
 
     @staticmethod
     def get_arg_parser(is_abspath=False):
@@ -103,11 +119,14 @@ class ArgParser():
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True, parents=[parser_vtam])
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
                                        required=True,
-                                       type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
-                                                                                                    error_message="Verify the '--fastqinfo' argument",
-                                                                                                    is_abspath=is_abspath))
-        parser_vtam_merge.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-                                       required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
+                                       type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+                                                                                                    error_message="Verify the '--fastqinfo' argument"))
+        # parser_vtam_merge.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
+        #                                required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
+        parser_vtam_merge\
+            .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
+                          required=True, type=lambda x: ArgParserChecker
+                          .check_file_exists_and_is_nonempty(x, error_message="Verify the '--fastainfo' argument"))
         parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
                                        type=lambda x:
                                        PathManager.check_dir_exists_and_is_nonempty(x,
@@ -126,13 +145,10 @@ class ArgParser():
         #
         #############################################
         parser_vtam_asv = subparsers.add_parser('asv', add_help=True, parents=[parser_vtam])
-        parser_vtam_asv.add_argument('--fastainfo', action='store',
-                                     help="REQUIRED: TSV file with FASTA sample information",
-                                     required=True, type=lambda x:
-                                            PathManager.check_file_exists_and_is_nonempty(x,
-                                                          error_message="Verify the '--fastainfo' argument",
-                                                          is_abspath=is_abspath))
-
+        parser_vtam_asv\
+            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
+                          required=True, type=lambda x: ArgParserChecker
+                          .check_file_exists_and_is_nonempty(x, error_message="Verify the '--fastainfo' argument"))
         parser_vtam_asv.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                      required=True,
                                      type=lambda x:
@@ -147,7 +163,7 @@ class ArgParser():
                                      help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
                                      required=True,
                                      type=lambda x:
-                                     ArgParser.verify_an_store_blast_db_argument(x, is_abspath=is_abspath))
+                                     ArgParserChecker.verify_and_store_blast_db_argument(x, is_abspath=is_abspath))
         parser_vtam_asv.add_argument('--taxonomy', dest='taxonomy', action='store',
                                      help="""REQUIRED: SQLITE DB with taxonomy information.
 
@@ -173,9 +189,13 @@ class ArgParser():
         #############################################
 
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
-        parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-                                          required=True, type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
-                                                          error_message="Verify the '--fastainfo' argument"))
+        # parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
+        #                                   required=True, type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
+        #                                                   error_message="Verify the '--fastainfo' argument"))
+        parser_vtam_optimize\
+            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
+                          required=True, type=lambda x: ArgParserChecker
+                          .check_file_exists_and_is_nonempty(x, error_message="Verify the '--fastainfo' argument"))
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
