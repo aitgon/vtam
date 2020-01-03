@@ -1,3 +1,5 @@
+import math
+
 import pandas
 import sys
 
@@ -29,9 +31,12 @@ class VariantKnown(object):
         # Create a DF
         #
         ################################################################################################################
+
         self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
                                               names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
-                                                     'variant_id', 'action', 'variant_sequence', 'note'], index_col=False)
+                                                     'variant_id', 'action', 'variant_sequence'], index_col=False,
+                                                usecols=list(range(7)))
+
         # columns: run_id, marker_id, biosample_id, replicate, variant_id, biosample_type, action, variant_sequence
         self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
 
@@ -40,6 +45,7 @@ class VariantKnown(object):
         # Quality control: Verify if user variant IDs and sequences are consistent with information in the database
         #
         ################################################################################################################
+
         self.__are_known_variants_coherent_with_db()
 
         ################################################################################################################
@@ -47,6 +53,7 @@ class VariantKnown(object):
         # Quality control: Verify if run_id, marker_id and biosample_id in known variants are coherent with current analysis (fasta_info)
         #
         ################################################################################################################
+
         self.__are_known_variants_coherent_with_fasta_info_file()
 
 
@@ -85,28 +92,70 @@ class VariantKnown(object):
         return self.variant_known_df
 
     def __are_known_variants_coherent_with_db(self):
-        """Raises an error and exists if some of the variant ID/sequence are not coherent with the database
+        """Raises an error and exists if some of these conditions
+            - the sequence is not None (negative biosample) and does not exist in the DB
+            - the variant ID/sequence are not coherent with the database
 
         :return void
         """
 
         variant_control_df = self.variant_known_df[['variant_id', 'variant_sequence']].drop_duplicates()
-        variant_control_df = variant_control_df.loc[~variant_control_df.variant_id.isnull()]
+        variant_control_df = variant_control_df.loc[~variant_control_df.variant_sequence.isnull()]
+
         with self.engine.connect() as conn:
+
             for row in variant_control_df.itertuples():
-                variant_id = row.variant_id
-                variant_sequence = row.variant_sequence
-                stmt_select = select([self.variant_model.__table__.c.id, self.variant_model.__table__.c.sequence])\
-                    .where(self.variant_model.__table__.c.id == variant_id)\
-                    .where(self.variant_model.__table__.c.sequence == variant_sequence)
-                try:
-                    assert not conn.execute(stmt_select).first() is None
-                except AssertionError:
-                    Logger.instance().error(VTAMexception("Error: The variant_id {} and variant_sequence {} from the "
-                                                          "known variant file do not match in the DB".format(str(variant_id), variant_sequence)))
-                    sys.exit(1)
 
+                ###########################################################################
+                #
+                # Checks if variant sequence exists in the DB
+                #
+                ###########################################################################
 
+                user_variant_id = row.variant_id
+                user_variant_sequence = row.variant_sequence
+
+                # Implicit 'delete' variants in 'negative' biosamples do not have sequence
+                if not (user_variant_sequence is None):
+
+                    stmt_select = select([self.variant_model.__table__.c.id, self.variant_model.__table__.c.sequence])\
+                        .where(self.variant_model.__table__.c.sequence == user_variant_sequence)
+
+                    known_variant_in_db = conn.execute(stmt_select).first()
+
+                    if known_variant_in_db is None:  # user sequence not found in db
+
+                        msg_error = 'Error: This variant sequence was not found in the DB. ' \
+                                    'Please verify this variant sequence: {}'\
+                            .format(user_variant_sequence)
+                        Logger.instance().error(VTAMexception(msg_error))
+                        sys.exit(1)
+
+                    db_variant_id, db_variant_sequence = known_variant_in_db
+
+                    if math.isnan(user_variant_id):  # User has not given variant id, then keep this variant id
+
+                        self.variant_known_df.loc[
+                            self.variant_known_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
+
+                        self.variant_known_ids_df.loc[
+                            self.variant_known_ids_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
+
+                    ###########################################################################
+                    #
+                    # Checks if variant id/sequence is coherent in the DB
+                    #
+                    ###########################################################################
+
+                    else:  # user has given variant id, check if coherent
+
+                        if not user_variant_id == db_variant_id: # user variant id does not correspond to sequence in DB
+
+                            msg_error = 'Error: This combination of variant id / sequence was not found in the DB. ' \
+                                    'Please verify the variant ID for the given sequence: {}'\
+                                    .format(user_variant_id, user_variant_sequence)
+                            Logger.instance().error(VTAMexception(msg_error))
+                            sys.exit(1)
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
@@ -152,7 +201,7 @@ class VariantKnown(object):
         run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df[
             ['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
         # Change variant_id type to int
-        run_marker_biosample_variant_keep_df.variant_id = run_marker_biosample_variant_keep_df.variant_id.astype('int')
+        # run_marker_biosample_variant_keep_df.variant_id = run_marker_biosample_variant_keep_df.variant_id.astype('int')
         return run_marker_biosample_variant_keep_df
 
 
@@ -221,4 +270,3 @@ class VariantKnown(object):
         variant_delete_df = variant_delete_df.reset_index(drop=True)
         variant_delete_df.drop_duplicates(inplace=True)
         return variant_delete_df, variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df
-
