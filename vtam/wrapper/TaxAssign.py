@@ -166,20 +166,33 @@ class TaxAssign(ToolWrapper):
 
         ##########################################################
         #
-        # Get variants that passed the filter
+        # Get variants that passed the filter and are not already assigned in TaxAssign
         #
         ##########################################################
+
         Logger.instance().debug(
             "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
                                                                                             inspect.currentframe().f_lineno,
                                                                                             'TaxAssign'))
 
+        tax_assign_model_table = tax_assign_model.__table__
+        stmt_variant_tax_assign = select([tax_assign_model_table.c.variant_id])
+
+        # These are the variants that are already in taxassign and do not need recalculate
+        variant_tax_assign_list = []
+        with engine.connect() as conn:
+            variant_tax_assign_list = [variant_id[0] for variant_id in conn.execute(stmt_variant_tax_assign).fetchall()]
+
         filter_codon_stop_model_table = filter_codon_stop_model.__table__
         variant_model_table = variant_model.__table__
         stmt_variant = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence]) \
+            .where(filter_codon_stop_model_table.c.variant_id.notin_(variant_tax_assign_list)) \
             .where(filter_codon_stop_model_table.c.variant_id == variant_model_table.c.id) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 0).distinct().order_by("variant_id")
-        # Select to DataFrame
+            .where(filter_codon_stop_model_table.c.filter_delete == 0)\
+            .distinct()\
+            .order_by("variant_id")
+
+        # Select to DataFrame the variants that will be tried to be assigned to taxa
         variant_list = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
@@ -187,7 +200,7 @@ class TaxAssign(ToolWrapper):
         variant_df = pandas.DataFrame.from_records(variant_list, index='id')
 
         # creation one fasta_path file containing all the variant
-        #
+
         ##########################################################
         #
         # 2 Create FASTA file with Variants
