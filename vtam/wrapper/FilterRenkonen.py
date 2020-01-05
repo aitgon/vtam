@@ -46,8 +46,6 @@ class FilterRenkonen(ToolWrapper):
     def specify_params(self):
         return {
             "upper_renkonen_tail": "float",
-            # "log_verbosity": "int",
-            # "log_file": "str"
         }
 
     def run(self):
