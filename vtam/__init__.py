@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import os
+import subprocess
 import sys
+
+from sqlalchemy.orm import sessionmaker
 
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.DBblastCOI import DBblastCOI
@@ -57,6 +60,30 @@ class VTAM(object):
         if 'fastadir' in vars(self.args):
             os.environ['VTAM_FASTA_DIR'] = vars(self.args)['fastadir']
 
+        #################################################################
+        #
+        # Create FilterLFNreference table
+        #
+        #################################################################
+
+        if vars(self.args)['command'] in ['asv', 'optimize']:
+            from sqlalchemy import create_engine
+            from sqlalchemy import Table, Column, Integer, String, MetaData
+            from vtam.utils.constants import FilterLFNreference_records
+            engine = create_engine('sqlite:///{}'.format(str(vars(self.args)['db'])), echo=True)
+            meta = MetaData()
+            filter_lfn_reference = Table(
+                'FilterLFNreference', meta,
+                Column('filter_id', Integer, primary_key=True),
+                Column('filter_name', String),
+            )
+            meta.create_all(engine)
+            with engine.connect() as conn:
+                try:
+                    conn.execute(filter_lfn_reference.insert(), FilterLFNreference_records)
+                except:
+                    pass
+
         ###############################################################
         #
         # Subcommands: wopfile-dependent, merge, asv, optimize
@@ -64,15 +91,18 @@ class VTAM(object):
         ###############################################################
 
         if vars(self.args)['command'] in ['merge', 'asv', 'optimize']:
+
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
+
             ###############################################################
             #
             # Create wopmars command and implicitely wopfile
             #
             ###############################################################
+
             Logger.instance().info(wopmars_command)
-            os.system(wopmars_command)
+            run_result = subprocess.run(wopmars_command.split(), stdout=subprocess.PIPE)
             sys.exit(0)
 
         ###############################################################
