@@ -37,6 +37,7 @@ parameters_numerical = {
 # Tax_assign parameters_numerical
 #
 ##########################################################
+
 rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 rank_hierarchy_asv_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
@@ -46,3 +47,18 @@ url_taxonomy_tsv = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.ts
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
+##########################################################
+#
+# FilterLFNreference
+#
+##########################################################
+
+FilterLFNreference_records = [
+    {'id': 2, 'name': 'lfn_per_variant'},
+    {'id': 3, 'name': 'lfn_per_variant_replicate'},
+    {'id': 4, 'name': 'lfn_per_variant_specific'},
+    {'id': 5, 'name': 'lfn_per_variant_replicate_specific'},
+    {'id': 6, 'name': 'lfn_biosample_replicate'},
+    {'id': 7, 'name': 'lfn_read_count'},
+    {'id': 8, 'name': 'lfn_did_not_passed_all'},
+]
