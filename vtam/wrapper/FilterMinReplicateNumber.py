@@ -51,6 +51,7 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
+            "input_filter_lfn": "int",
         }
 
     def run(self):
@@ -74,6 +75,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
+        input_filter_lfn = self.option("input_filter_lfn")
         #
         # Output tables
         output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
@@ -103,7 +105,12 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        filter_id = 8 # Is filter_id from all FilterLFN all
+        # Previous filter is FilterLFN
+        if input_filter_lfn:
+            filter_id = 8
+        # Previous filter is not FilterLFN
+        else:
+            filter_id = None
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
 
@@ -141,34 +148,26 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     """
     This filter deletes variants if present in less than min_replicate_number replicates
 
-    :param min_replicate_number: minimal number of replicates in which the variant must be present
-    :return: None
-    Non Low frequency noise filter minimum remplicant  (min_replicate_number) with a single threshold or several.
-    Function IDs: 9 (min_replicate_number is 2)
-
     This filters deletes the variant if the count of the combinaison variant i and biosample j
     is low then the min_replicate_number.
     The deletion condition is: count(comb (N_ij) < min_replicate_number.
-
 
     Pseudo-algorithm of this function:
 
     1. Compute count(comb (N_ij)
     2. Set variant/biosample/replicate for deletion if count  column is low the min_replicate_number
 
-
     Updated:
-    February 28, 2019
+    Jan 5, 2020
 
-    Args:
-       min_repln(float): Default deletion threshold
+    :param variant_read_count_df: Variant read count dataframe
+    :type variant_read_count_df: pandas.DataFrame
 
+    :param min_replicate_number: Minimal number of replicates
+    :type variant_read_count_df: int
 
-    Returns:
-        None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
-        with filter_id='9' and 'filter_delete'=1 or 0
-
-
+    :return: The output of this filter is added to the 'self.variant_read_count_filter_delete_df' with 'filter_delete'=1 or 0
+    :rtype: None
     """
     #
     df_filter_output=variant_read_count_df.copy()

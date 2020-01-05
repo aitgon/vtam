@@ -1,11 +1,10 @@
-from sqlalchemy import UniqueConstraint, Boolean, Float
 from wopmars.Base import Base
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import UniqueConstraint, Float, Column, Integer, ForeignKey
 
 
 class ReadCountAverageOverReplicates(Base):
-    __tablename__ = "ReadCountAverageOverReplicates"
+    __tablename__ = __qualname__
     __table_args__ = (
         UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id'),
     )

@@ -9,7 +9,7 @@ from Bio.Alphabet import IUPAC
 
 
 class SampleInformation(Base):
-    __tablename__ = 'SampleInformation'
+    __tablename__ = __qualname__
     __table_args__ = (
         UniqueConstraint('run_id', 'marker_id', 'biosample_id', 'replicate'),
     )
@@ -39,6 +39,3 @@ class SampleInformation(Base):
         if sequence != "":
             assert Seq(sequence, IUPAC.ambiguous_dna)
         return sequence
-
-
-
