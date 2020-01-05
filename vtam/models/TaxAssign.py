@@ -5,7 +5,7 @@ from sqlalchemy import UniqueConstraint
 
 
 class TaxAssign(Base):
-    __tablename__ = "TaxAssign"
+    __tablename__ = __qualname__
     __table_args__ = (
         UniqueConstraint('variant_id'),
     )
@@ -15,13 +15,3 @@ class TaxAssign(Base):
     identity = Column(Integer, nullable=True)
     ltg_rank = Column(Integer, nullable=True)
     ltg_tax_id = Column(Integer, nullable=True)
-
-
-
-
-
-
-
-
-
-

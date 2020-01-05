@@ -2,8 +2,9 @@ from wopmars.Base import Base
 
 from sqlalchemy import Column, String, Integer, UniqueConstraint, Boolean, ForeignKey
 
+
 class Fasta(Base):
-    __tablename__ = 'Fasta'
+    __tablename__ = __qualname__
     __table_args__ = (
         UniqueConstraint('name'),
     )
