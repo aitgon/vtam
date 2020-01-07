@@ -102,7 +102,6 @@ class TaxAssign(ToolWrapper):
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
         blast_db_dir = str(self.option("blast_db"))  # count
-        num_threads = str(self.option("num_threads"))  # count
 
         ##########################################################
         #
@@ -218,10 +217,13 @@ class TaxAssign(ToolWrapper):
         #
         ##########################################################
 
-        tax_assign_runner = TaxAssignRunner(variant_df=variant_df, taxonomy_tsv=input_file_taxonomy_tsv,
+        taxonomy_df = pandas.read_csv(input_file_taxonomy_tsv, sep="\t", header=0,
+                                         dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+
+        tax_assign_runner = TaxAssignRunner(variant_df=variant_df, taxonomy_df=taxonomy_df,
                                             blast_db_dir=blast_db_dir, ltg_rule_threshold=ltg_rule_threshold,
                                             include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
-                                            num_threads=num_threads)
+                                            num_threads=threads)
         ltg_df = tax_assign_runner.ltg_df
 
         #
@@ -303,14 +305,14 @@ class TaxAssign(ToolWrapper):
         # blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
         # # getting the taxonomy_db to df
         # taxonomy_tsv_path = input_file_taxonomy
-        # taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
         # #
         # Logger.instance().debug(
         #     "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
         #         __file__, inspect.currentframe().f_lineno))
         # lineage_list = []
         # for target_tax_id in blast_output_df.target_tax_id.unique().tolist():
-        #     lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
+        #     lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_df))
         # tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         # #
         # Logger.instance().debug(
