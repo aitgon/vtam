@@ -3,6 +3,10 @@ import pandas
 from vtam.utils.constants import rank_hierarchy,identity_list
 
 
+class TaxAssignRunner():
+    pass
+
+
 def f01_taxonomy_tsv_to_df(taxonomy_tsv):
     """
     Imports taxonomy_db.tsv file with taxonomy table (tax_id, parent_tax_id, rank, name_txt, old_tax_id)

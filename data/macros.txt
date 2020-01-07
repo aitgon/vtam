@@ -54,3 +54,27 @@
         lfn_read_count_threshold: {{lfn_read_count_threshold}}
         min_replicate_number: {{min_replicate_number}}{% endif %}
 {%- endmacro%}
+
+{% macro rule_taxassign(fastainfo, taxonomy, update_taxassign, ltg_rule_threshold, include_prop, min_number_of_taxa, blast_db) -%}
+rule TaxAssign:
+    tool: vtam.wrapper.TaxAssign
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Biosample: vtam.models.Biosample
+            Variant: vtam.models.Variant
+            FilterCodonStop: vtam.models.FilterCodonStop
+        file:
+            fastainfo: {{fastainfo}}
+            taxonomy: {{taxonomy}}
+    output:
+        table:
+            TaxAssign: vtam.models.TaxAssign
+    params:
+        update_taxassign: {{update_taxassign}}
+        ltg_rule_threshold: {{ltg_rule_threshold}}
+        include_prop: {{include_prop}}
+        min_number_of_taxa: {{min_number_of_taxa}}
+        blast_db: {{blast_db}}
+{%- endmacro%}

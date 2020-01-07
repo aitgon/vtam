@@ -144,6 +144,7 @@ rule FilterMinReplicateNumber:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
+        input_filter_lfn: 1
         min_replicate_number: 2
 
 
@@ -182,6 +183,24 @@ rule FilterChimera:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
 
 
+rule FilterMinReplicateNumber2:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            FilterLFN: vtam.models.FilterChimera
+        file:
+            fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
+    params:
+        input_filter_lfn: 0
+        min_replicate_number: 2
+
+
 rule FilterRenkonen:
     tool: vtam.wrapper.FilterRenkonen
     input:
@@ -189,7 +208,7 @@ rule FilterRenkonen:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
-            FilterChimera: vtam.models.FilterChimera
+            FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
@@ -197,6 +216,24 @@ rule FilterRenkonen:
             FilterRenkonen: vtam.models.FilterRenkonen
     params:
         upper_renkonen_tail: 0.1
+
+
+rule FilterMinReplicateNumber3:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            FilterLFN: vtam.models.FilterRenkonen
+        file:
+            fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
+    params:
+        input_filter_lfn: 0
+        min_replicate_number: 2
 
 
 rule FilterIndel:
@@ -207,7 +244,7 @@ rule FilterIndel:
             Run: vtam.models.Run
             Biosample: vtam.models.Biosample
             Variant: vtam.models.Variant
-            FilterRenkonen: vtam.models.FilterRenkonen
+            FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
             fastainfo: test/utils/test_wopmars_runner_wopfile_asv.py
     output:
@@ -267,6 +304,7 @@ rule TaxAssign:
         table:
             TaxAssign: vtam.models.TaxAssign
     params:
+        update_taxassign: 0
         ltg_rule_threshold: 97
         include_prop: 90
         min_number_of_taxa: 3

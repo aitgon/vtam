@@ -191,14 +191,33 @@ class ArgParser:
 
         ################################################################################################################
         #
+        # create the parser for the "taxassign" command
+        #
+        ################################################################################################################
+
+        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, parents=[parser_vtam])
+        parser_vtam_taxassign.add_argument('--blast_db', action='store',
+                                     help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
+                                     required=True,
+                                     type=lambda x: ArgParserChecker.check_blast_db_argument(x))
+        parser_vtam_taxassign.add_argument('--taxonomy', dest='taxonomy', action='store',
+                                     help="""REQUIRED: SQLITE DB with taxonomy information.
+
+        This database is create with the command: vtam taxonomy. For instance
+
+        vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
+                                     required=True,
+                                     type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+                                                                  error_message="Verify the '--taxonomy' argument"))
+        parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigget the good command
+
+        ################################################################################################################
+        #
         # create the parser for the "optimize" command
         #
         ################################################################################################################
 
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
-        # parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-        #                                   required=True, type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
-        #                                                   error_message="Verify the '--fastainfo' argument"))
         parser_vtam_optimize\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=lambda x: ArgParserChecker
