@@ -1,4 +1,4 @@
-{% from 'macros.txt' import input_file_threshold_specific, input_lfn_variant_replicate_threshold %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.txt' import input_file_threshold_specific, input_lfn_variant_replicate_threshold, rule_taxassign %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
@@ -175,26 +175,7 @@ rule ReadCountAverageOverReplicates:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
-rule TaxAssign:
-    tool: vtam.wrapper.TaxAssign
-    input:
-        table:
-            Marker: vtam.models.Marker
-            Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
-            Variant: vtam.models.Variant
-            FilterCodonStop: vtam.models.FilterCodonStop
-        file:
-            fastainfo: {{fastainfo}}
-            taxonomy: {{taxonomy}}
-    output:
-        table:
-            TaxAssign: vtam.models.TaxAssign
-    params:
-        ltg_rule_threshold: {{ltg_rule_threshold}}
-        include_prop: {{include_prop}}
-        min_number_of_taxa: {{min_number_of_taxa}}
-        blast_db: {{blast_db}}
+{{ rule_taxassign(fastainfo, taxonomy, update_taxassign, ltg_rule_threshold, include_prop, min_number_of_taxa, blast_db) }}
 
 
 rule MakeAsvTable:

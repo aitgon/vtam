@@ -43,11 +43,11 @@ class VTAM(object):
         parser = ArgParser.get_arg_parser(is_abspath=False)
         self.args = parser.parse_args(sys_argv)
 
-        #####################
+        ################################################################################################################
         #
         # Add argparser attributes to optionmanager
         #
-        #####################
+        ################################################################################################################
 
         option_dic = vars(self.args)
         OptionManager.instance().add_options(option_dic) # Add options to OptionManager
@@ -66,7 +66,7 @@ class VTAM(object):
         #
         #################################################################
 
-        if vars(self.args)['command'] in ['asv', 'optimize']:
+        if vars(self.args)['command'] in ['asv', 'optimize', 'taxassign']:
             from sqlalchemy import create_engine
             from sqlalchemy import Table, Column, Integer, String, MetaData
             from vtam.utils.constants import FilterLFNreference_records
@@ -86,11 +86,11 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommands: wopfile-dependent, merge, asv, optimize
+        # Subcommands: wopfile-dependent, merge, asv, optimize, taxassign
         #
         ###############################################################
 
-        if vars(self.args)['command'] in ['merge', 'asv', 'optimize']:
+        if vars(self.args)['command'] in ['merge', 'asv', 'optimize', 'taxassign']:
 
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()

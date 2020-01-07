@@ -1,0 +1,1 @@
+{% from 'macros.txt' import rule_taxassign %}{{ rule_taxassign(fastainfo, taxonomy, update_taxassign, ltg_rule_threshold, include_prop, min_number_of_taxa, blast_db) }}

@@ -61,18 +61,22 @@ class WopmarsRunner(Singleton):
                 wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
             else:
                 wopfile_path = os.path.join(self.tempdir, 'wopfile_merge.yml')
-        elif self.command in ['asv', 'optimize']:
+        elif self.command in ['asv', 'optimize', 'taxassign']:
             # Add output to sortreads file
-            self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
             if self.command == 'asv':
+                self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
+                self.parameters['update_taxassign'] = 0
                 self.parameters['asvtable'] = os.path.join(self.parameters['outdir'], "asvtable.tsv")
                 self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
                 template = jinja2_env.get_template('wopfile_asv.yml')
-                # else:
-                #     template = jinja2_env.get_template('wopfile_asv.yml')
                 # Create wopfile
                 wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_asv.yml')
+            elif self.command == 'taxassign':
+                self.parameters['update_taxassign'] = 1
+                template = jinja2_env.get_template('wopfile_taxassign.yml')
+                # Create wopfile
             elif self.command == 'optimize':
+                self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
                 #
                 self.parameters['optimize_lfn_biosample_replicate'] \
                     = os.path.join(self.parameters['outdir'], "optimize_lfn_biosample_replicate.tsv")

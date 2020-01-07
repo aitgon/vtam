@@ -11,9 +11,9 @@ from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df
-from vtam.utils.TaxAssignUtilities import f04_1_tax_id_to_taxonomy_lineage
-from vtam.utils.TaxAssignUtilities import f07_blast_result_to_ltg_tax_id
+from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df
+from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignRunner import f07_blast_result_to_ltg_tax_id
 
 
 class TaxAssign(ToolWrapper):
@@ -80,6 +80,7 @@ class TaxAssign(ToolWrapper):
         # 1. Wrapper inputs, outputs and parameters
         #
         #########################################################
+
         Logger.instance().debug(
             "file: {}; line: {}; Wrapper inputs, outputs and parameters.".format(__file__,
                                                                                  inspect.currentframe().f_lineno, ))
@@ -98,108 +99,117 @@ class TaxAssign(ToolWrapper):
         tax_assign_model = self.output_table(TaxAssign.__output_table_tax_assign)
         #
         # Options
+        update_taxassign = bool(int(self.option("update_taxassign")))  # percentage
         ltg_rule_threshold = float(self.option("ltg_rule_threshold"))  # percentage
         include_prop = float(self.option("include_prop"))  # percentage
         min_number_of_taxa = int(self.option("min_number_of_taxa"))  # count
         blast_db = str(self.option("blast_db"))  # count
         # num_threads = str(self.option("num_threads"))  # count
 
-        ##########################################################
+        ################################################################################################################
         #
-        # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # update_taxassign==False: 'asv' command, where only variants from current fastainfo will be taxassigned
+        # update_taxassign==True: 'tax_assign' command, where all variants in taxassigned command will be re-assigned
         #
-        ##########################################################
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
-                                       names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
-                                              'marker_name', 'biosample_name', \
-                                              'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
-        sample_instance_list = []
-        for row in fastainfo_df.itertuples():
-            marker_name = row.marker_name
-            run_name = row.run_name
-            biosample_name = row.biosample_name
-            replicate = row.replicate
+        ################################################################################################################
+
+        if not update_taxassign:
+
+            ##########################################################
+            #
+            # 2. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+            #
+            ##########################################################
+
+            fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0, \
+                                           names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse',
+                                                  'marker_name', 'biosample_name', \
+                                                  'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
+            sample_instance_list = []
+            for row in fastainfo_df.itertuples():
+                marker_name = row.marker_name
+                run_name = row.run_name
+                biosample_name = row.biosample_name
+                replicate = row.replicate
+                with engine.connect() as conn:
+                    # get run_id ###########
+                    stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
+                    run_id = conn.execute(stmt_select_run_id).first()[0]
+                    # get marker_id ###########
+                    stmt_select_marker_id = select([marker_model.__table__.c.id]).where(
+                        marker_model.__table__.c.name == marker_name)
+                    marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                    # get biosample_id ###########
+                    stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
+                        biosample_model.__table__.c.name == biosample_name)
+                    biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                    # add this sample_instance ###########
+                    sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                                 'replicate': replicate})
+
+            ##########################################################
+            #
+            # 3a. Select variants from this run/marker/biosample/replicate combination
+            # 3b. Delete variants from this run/marker/biosample/replicate combination
+            #
+            ##########################################################
+            #
+            # 3a. Select variants from this run/marker/biosample/replicate combination
+            #
+            variant_id_delete_list = []
+            for sample_instance in sample_instance_list:
+                stmt_select_variant_id_delete = select([filter_codon_stop_model.__table__.c.variant_id]) \
+                    .where(filter_codon_stop_model.__table__.c.run_id == sample_instance['run_id']) \
+                    .where(filter_codon_stop_model.__table__.c.marker_id == sample_instance['marker_id']) \
+                    .where(filter_codon_stop_model.__table__.c.biosample_id == sample_instance['biosample_id']) \
+                    .where(filter_codon_stop_model.__table__.c.replicate == sample_instance['replicate'])
+                # Select to DataFrame
+                with engine.connect() as conn:
+                    for row in conn.execute(stmt_select_variant_id_delete).fetchall():
+                        variant_id = row[0]
+                        if not variant_id in variant_id_delete_list:
+                            variant_id_delete_list.append(row)
+            #
+            # 3b. Delete variants from this run/markerbiosample/replicate combination
+            #
+            variant_instance_list = [{'variant_id': variant_id} for variant_id in variant_id_delete_list]
             with engine.connect() as conn:
-                # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
-                # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(
-                    marker_model.__table__.c.name == marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
-                    biosample_model.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
-                # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                             'replicate': replicate})
+                conn.execute(tax_assign_model.__table__.delete(), variant_instance_list)
 
-        ##########################################################
-        #
-        # 3a. Select variants from this run/marker/biosample/replicate combination
-        # 3b. Delete variants from this run/marker/biosample/replicate combination
-        #
-        ##########################################################
-        #
-        # 3a. Select variants from this run/marker/biosample/replicate combination
-        #
-        variant_id_delete_list = []
-        for sample_instance in sample_instance_list:
-            stmt_select_variant_id_delete = select([filter_codon_stop_model.__table__.c.variant_id]) \
-                .where(filter_codon_stop_model.__table__.c.run_id == sample_instance['run_id']) \
-                .where(filter_codon_stop_model.__table__.c.marker_id == sample_instance['marker_id']) \
-                .where(filter_codon_stop_model.__table__.c.biosample_id == sample_instance['biosample_id']) \
-                .where(filter_codon_stop_model.__table__.c.replicate == sample_instance['replicate'])
-            # Select to DataFrame
+            ##########################################################
+            #
+            # Get variants that passed the filter and are not already assigned in TaxAssign
+            #
+            ##########################################################
+
+            Logger.instance().debug(
+                "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
+                                                                                                inspect.currentframe().f_lineno,
+                                                                                                'TaxAssign'))
+
+            tax_assign_model_table = tax_assign_model.__table__
+            stmt_variant_tax_assign = select([tax_assign_model_table.c.variant_id])
+
+            # These are the variants that are already in taxassign and do not need recalculate
+            variant_tax_assign_list = []
             with engine.connect() as conn:
-                for row in conn.execute(stmt_select_variant_id_delete).fetchall():
-                    variant_id = row[0]
-                    if not variant_id in variant_id_delete_list:
-                        variant_id_delete_list.append(row)
-        #
-        # 3b. Delete variants from this run/markerbiosample/replicate combination
-        #
-        variant_instance_list = [{'variant_id': variant_id} for variant_id in variant_id_delete_list]
-        with engine.connect() as conn:
-            conn.execute(tax_assign_model.__table__.delete(), variant_instance_list)
+                variant_tax_assign_list = [variant_id[0] for variant_id in conn.execute(stmt_variant_tax_assign).fetchall()]
 
-        ##########################################################
-        #
-        # Get variants that passed the filter and are not already assigned in TaxAssign
-        #
-        ##########################################################
+            filter_codon_stop_model_table = filter_codon_stop_model.__table__
+            variant_model_table = variant_model.__table__
+            stmt_variant = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence]) \
+                .where(filter_codon_stop_model_table.c.variant_id.notin_(variant_tax_assign_list)) \
+                .where(filter_codon_stop_model_table.c.variant_id == variant_model_table.c.id) \
+                .where(filter_codon_stop_model_table.c.filter_delete == 0)\
+                .distinct()\
+                .order_by("variant_id")
 
-        Logger.instance().debug(
-            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
-                                                                                            inspect.currentframe().f_lineno,
-                                                                                            'TaxAssign'))
-
-        tax_assign_model_table = tax_assign_model.__table__
-        stmt_variant_tax_assign = select([tax_assign_model_table.c.variant_id])
-
-        # These are the variants that are already in taxassign and do not need recalculate
-        variant_tax_assign_list = []
-        with engine.connect() as conn:
-            variant_tax_assign_list = [variant_id[0] for variant_id in conn.execute(stmt_variant_tax_assign).fetchall()]
-
-        filter_codon_stop_model_table = filter_codon_stop_model.__table__
-        variant_model_table = variant_model.__table__
-        stmt_variant = select([filter_codon_stop_model_table.c.variant_id, variant_model_table.c.sequence]) \
-            .where(filter_codon_stop_model_table.c.variant_id.notin_(variant_tax_assign_list)) \
-            .where(filter_codon_stop_model_table.c.variant_id == variant_model_table.c.id) \
-            .where(filter_codon_stop_model_table.c.filter_delete == 0)\
-            .distinct()\
-            .order_by("variant_id")
-
-        # Select to DataFrame the variants that will be tried to be assigned to taxa
-        variant_list = []
-        with engine.connect() as conn:
-            for row in conn.execute(stmt_variant).fetchall():
-                variant_list.append({'id': row.variant_id, 'sequence': row.sequence})
-        variant_df = pandas.DataFrame.from_records(variant_list, index='id')
-
-        # creation one fasta_path file containing all the variant
+            # Select to DataFrame the variants that will be tried to be assigned to taxa
+            variant_list = []
+            with engine.connect() as conn:
+                for row in conn.execute(stmt_variant).fetchall():
+                    variant_list.append({'id': row.variant_id, 'sequence': row.sequence})
+            variant_df = pandas.DataFrame.from_records(variant_list, index='id')
 
         ##########################################################
         #

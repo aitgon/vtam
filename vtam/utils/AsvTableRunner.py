@@ -3,7 +3,7 @@ import math
 import pandas
 import sqlalchemy
 
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.constants import rank_hierarchy_asv_table
 

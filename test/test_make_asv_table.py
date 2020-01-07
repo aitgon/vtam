@@ -7,7 +7,7 @@ import pandas
 
 from vtam import Logger
 from vtam.utils.DBtaxonomy import DBtaxonomy
-from vtam.utils.TaxAssignUtilities import f01_taxonomy_tsv_to_df
+from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df
 
 # from vtam.wrapper.MakeAsvTable import f16_asv_table_maker
 
