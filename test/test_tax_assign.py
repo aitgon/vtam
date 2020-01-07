@@ -5,8 +5,8 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.DBtaxonomy import DBtaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage, \
-    f06_select_ltg, f05_blast_result_subset, f07_blast_result_to_ltg_tax_id
+# from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df
+from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage, f06_select_ltg, f05_blast_result_subset, f07_blast_result_to_ltg_tax_id
 from unittest import TestCase
 
 import inspect
@@ -44,7 +44,9 @@ class TestTaxAssign(TestCase):
         taxonomydb = DBtaxonomy(precomputed=True)
         taxonomy_tsv_path = taxonomydb.get_path()
         #
-        cls.taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        # cls.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        cls.taxonomy_db_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
+                                         dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
 
 
     def test_variant_df_to_fasta(self):
@@ -78,20 +80,20 @@ class TestTaxAssign(TestCase):
                          'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
                          'superkingdom': 2759} == taxonomy_lineage_dic)
 
-    def test_f05_blast_result_subset(self):
-        # From
-        # 'variant_id': 'MFZR_001274',
-        # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
-        qblast_out_dic = {
-            'target_id': [514884684, 514884680],
-            'identity': [80, 80],
-            'target_tax_id': [1344033, 1344033]}
-        qblast_result_subset_df = pandas.DataFrame(data=qblast_out_dic)
-        tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, TestTaxAssign.taxonomy_db_df)
-        self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
-            'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
-            'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
-            'species': [1344033, 1344033], 'superkingdom': [2759, 2759], 'superorder': [1709201, 1709201], 'tax_id': [1344033, 1344033]})
+    # def test_f05_blast_result_subset(self):
+    #     # From
+    #     # 'variant_id': 'MFZR_001274',
+    #     # 'variant_sequence': 'TTTATACTTTATTTTTGGTGTTTGAGCCGGAATAATTGGCTTAAGAATAAGCCTGCTAATCCGTTTAGAGCTTGGGGTTCTATGACCCTTCCTAGGAGATGAGCATTTGTACAATGTCATCGTTACCGCTCATGCTTTTATCATAATTTTTTTTATGGTTATTCCAATTTCTATA',
+    #     qblast_out_dic = {
+    #         'target_id': [514884684, 514884680],
+    #         'identity': [80, 80],
+    #         'target_tax_id': [1344033, 1344033]}
+    #     qblast_result_subset_df = pandas.DataFrame(data=qblast_out_dic)
+    #     tax_lineage_df = f05_blast_result_subset(qblast_result_subset_df, TestTaxAssign.taxonomy_db_df)
+    #     self.assertTrue(tax_lineage_df.to_dict('list')=={'identity': [80, 80], 'class': [10191, 10191],
+    #         'family': [204743, 204743], 'genus': [360692, 360692], 'kingdom': [33208, 33208],
+    #         'no rank': [131567, 131567], 'order': [84394, 84394], 'phylum': [10190, 10190],
+    #         'species': [1344033, 1344033], 'superkingdom': [2759, 2759], 'superorder': [1709201, 1709201], 'tax_id': [1344033, 1344033]})
 
     def test_f06_select_ltg_identity_80(self):
         # List of lineages that will correspond to list of tax_ids: One lineage per row

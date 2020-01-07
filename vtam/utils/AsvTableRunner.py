@@ -3,7 +3,7 @@ import math
 import pandas
 import sqlalchemy
 
-from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df, f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.constants import rank_hierarchy_asv_table
 
@@ -98,7 +98,9 @@ class AsvTableRunner(object):
         #
         #####
         taxonomy_tsv_path = self.input_file_taxonomy
-        taxonomy_db_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        taxonomy_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
+                                         dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+        # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
 
         #####
         #
