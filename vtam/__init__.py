@@ -70,7 +70,7 @@ class VTAM(object):
             from sqlalchemy import create_engine
             from sqlalchemy import Table, Column, Integer, String, MetaData
             from vtam.utils.constants import FilterLFNreference_records
-            engine = create_engine('sqlite:///{}'.format(str(vars(self.args)['db'])), echo=True)
+            engine = create_engine('sqlite:///{}'.format(str(vars(self.args)['db'])), echo=False)
             meta = MetaData()
             filter_lfn_reference = Table(
                 'FilterLFNreference', meta,
@@ -102,7 +102,8 @@ class VTAM(object):
             ###############################################################
 
             Logger.instance().info(wopmars_command)
-            run_result = subprocess.run(wopmars_command.split(), stdout=subprocess.PIPE)
+            # run_result = subprocess.run(wopmars_command.split(), stdout=subprocess.PIPE)
+            os.system(wopmars_command)
             sys.exit(0)
 
         ###############################################################
