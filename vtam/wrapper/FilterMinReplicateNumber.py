@@ -51,7 +51,6 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
-            "input_filter_lfn": "int",
         }
 
     def run(self):
@@ -71,11 +70,11 @@ class FilterMinReplicateNumber(ToolWrapper):
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
         marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
         biosample_model = self.input_table(FilterMinReplicateNumber.__input_table_biosample)
-        input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
+        # input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
-        input_filter_lfn = self.option("input_filter_lfn")
+        # input_filter_lfn = self.option("input_filter_lfn")
         #
         # Output tables
         output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
@@ -106,6 +105,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
 
         # Previous filter is FilterLFN
+        import pdb; pdb.set_trace()
         if input_filter_lfn:
             filter_id = 8
         # Previous filter is not FilterLFN
