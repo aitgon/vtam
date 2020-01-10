@@ -127,7 +127,7 @@ class AsvTableRunner(object):
                     pass
         ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
         #
-        ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_db_df,
+        ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_df,
                                                                   left_on='ltg_tax_id', right_on='tax_id', how="left").set_index('variant_id')
         ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
         ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
@@ -138,7 +138,7 @@ class AsvTableRunner(object):
         list_lineage = []
         for tax_id in asv_df['ltg_tax_id'].unique().tolist():
             if not math.isnan(tax_id):
-                dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=True)
+                dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_df, give_tax_name=True)
                 list_lineage.append(dic_lineage)
         lineage_df = pandas.DataFrame(data=list_lineage)
         lineage_list_df_columns_sorted = list(
