@@ -1,4 +1,4 @@
-{% from 'macros.txt' import input_file_threshold_specific, input_lfn_variant_replicate_threshold, rule_taxassign %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.txt' import input_file_threshold_specific, input_lfn_variant_replicate_threshold %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
