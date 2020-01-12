@@ -31,7 +31,6 @@ rule FilterMinReplicateNumber:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
     params:
-        input_filter_lfn: 1
         min_replicate_number: {{min_replicate_number}}
 
 
@@ -84,7 +83,6 @@ rule FilterMinReplicateNumber2:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
     params:
-        input_filter_lfn: 0
         min_replicate_number: {{min_replicate_number}}
 
 
@@ -119,7 +117,6 @@ rule FilterMinReplicateNumber3:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
     params:
-        input_filter_lfn: 0
         min_replicate_number: {{min_replicate_number}}
 
 

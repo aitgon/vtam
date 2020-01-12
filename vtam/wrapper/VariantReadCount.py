@@ -61,12 +61,12 @@ class VariantReadCount(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
-        #
+        ################################################################################################################
+
         # Input file
         sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
         input_file_fastainfo = self.input_file(VariantReadCount.__input_file_fastainfo)
@@ -81,7 +81,7 @@ class VariantReadCount(ToolWrapper):
         variant_model = self.output_table(VariantReadCount.__output_table_variant)
         variant_read_count_model = self.output_table(VariantReadCount.__output_table_variant_read_count)
 
-        ################################
+        ################################################################################################################
         #
         # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
@@ -90,13 +90,14 @@ class VariantReadCount(ToolWrapper):
         # 5. Delete singleton
         # 6. Insert into Variant and VariantReadCountDF tables
         #
-        ################################
+        ################################################################################################################
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read sample information to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
+
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
             names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
@@ -122,11 +123,12 @@ class VariantReadCount(ToolWrapper):
                 sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
                                              'replicate' : replicate})
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Remove marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
+
         Logger.instance().debug("file: {}; line: {}; Remove marker/run/biosample/replicate".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
@@ -136,35 +138,40 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         #
         ##########################################################
+
         Logger.instance().debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
         read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
                              header=0,)
         read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
-        ##########################################################
+
+        ################################################################################################################
         #
         # 4. Group by read sequence to variant_read_count with run_id, marker, ...
         #
-        ##########################################################
+        ################################################################################################################
+
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).size().reset_index(name='read_count')
         # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
         variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 5. Remove singletons
         #
-        ##########################################################
+        ################################################################################################################
+
         variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_df = variant_read_count_lfn.filter_out_singletons() # returns variant_read_count wout singletons
         variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
-        ################################
+        ################################################################################################################
         #
         # 6. Insert into Variant and VariantReadCountDF tables
         #
-        ################################
+        ################################################################################################################
+
         Logger.instance().debug(
             "file: {}; line: {}; Insert variants".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
@@ -178,25 +185,44 @@ class VariantReadCount(ToolWrapper):
             replicate = row.replicate
             variant_sequence = row.variant_sequence
             read_count = row.read_count
-            try:
-                stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
-                with engine.connect() as conn:
-                    stmt_result_var = conn.execute(stmt_ins_var)
-                variant_id = stmt_result_var.inserted_primary_key[0]
-            except sqlalchemy.exc.IntegrityError:
-                stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence == variant_sequence)
-                with engine.connect() as conn:
-                    variant_id = conn.execute(stmt_select_var).first()[0]
+            with engine.connect() as conn:
+                select_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.id])
+                                          .where(variant_model.__table__.c.sequence == variant_sequence)).first()
+                if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
+                    insert_row = conn.execute(variant_model.__table__.insert().values(sequence=variant_sequence))
+                    variant_id = insert_row.inserted_primary_key[0]
+                else: # variant_sequence IS in the database
+                    variant_id = select_row[0]
+            # try:
+            #     stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
+            #     with engine.connect() as conn:
+            #         stmt_result_var = conn.execute(stmt_ins_var)
+            #     variant_id = stmt_result_var.inserted_primary_key[0]
+            # except sqlalchemy.exc.IntegrityError:
+            #     stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence == variant_sequence)
+            #     with engine.connect() as conn:
+            #         variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
                 'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
             sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
                                          'replicate': replicate})
-            #
-        ############################################
+
+        ################################################################################################################
+        #
         # Write variant_read_count table
-        ############################################
+        #
+        ################################################################################################################
+
         Logger.instance().debug(
             "file: {}; line: {};  Insert variant read count".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
             conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)
+
+        # Touch variant table to update modification date
+        if len(sample_instance_list) > 0:
+            with engine.connect() as conn:
+                variant_id, variant_sequence = conn.execute(sqlalchemy.select([variant_model.__table__])).first()
+                stmt_update = variant_model.__table__.update()\
+                    .where(variant_model.__table__.c.id == variant_id).values(sequence=variant_sequence)
+                conn.execute(stmt_update)
