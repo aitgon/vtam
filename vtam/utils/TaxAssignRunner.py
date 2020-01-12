@@ -420,36 +420,6 @@ def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False
         tax_id = parent_tax_id
     return lineage_dic
 
-
-# def f05_blast_result_subset(qblast_result_subset_df, taxonomy_db_df):
-#     """
-#     Takes qblast_result_subset_df and returns tax_lineage_df with lineages of each target_tax_id
-#
-#     Args:
-#         qblast_result_subset_df (DataFrame): DataFrame with result subset for given identity
-#             where each column is target_id and target_tax_id
-#     target_id  target_tax_id
-# 0  1049499563         761875
-# 1  1049496963         761875
-#         taxonomy_df (pandas.DataFrame: DataFrame with taxonomy information
-#
-#     Returns:
-#         DataFrame: with a lineage per row that corresponds to the the lineage of each taxon from the qblast sequence targets
-#    class  cohort  family  genus  infraclass  kingdom  no rank  order  phylum  species  subclass  subfamily  suborder  subphylum  superfamily  superkingdom  superorder
-# 0  50557   33392   41030  50443       33340    33208   131567  30263    6656   761875      7496     147297     93873       6960        41029          2759       85604
-# 1  50557   33392   41030  50443       33340    33208   131567  30263    6656   761875      7496     147297     93873       6960        41029          2759       85604
-#
-#     """
-#     lineage_list = []
-#     for target_tax_id in qblast_result_subset_df.target_tax_id.unique().tolist():
-#         lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, taxonomy_db_df))
-#     tax_lineage_df = pandas.DataFrame(lineage_list)
-#     tax_lineage_df = qblast_result_subset_df.merge(tax_lineage_df, left_on='target_tax_id', right_on='tax_id')
-#     tax_lineage_df.drop('target_id', axis=1, inplace=True)
-#     tax_lineage_df.drop('target_tax_id', axis=1, inplace=True)
-#     return tax_lineage_df
-
-
 def f06_select_ltg(tax_lineage_df, include_prop):
     """
     Given tax_lineage_df, selects the Ltg
