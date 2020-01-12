@@ -103,7 +103,6 @@ class VTAM(object):
 
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
-            #os.system(wopmars_command)
             sys.exit(run_result.returncode)
 
         ###############################################################
