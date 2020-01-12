@@ -51,7 +51,6 @@ class FilterMinReplicateNumber(ToolWrapper):
     def specify_params(self):
         return {
             "min_replicate_number": "int",
-            "input_filter_lfn": "int",
         }
 
     def run(self):
@@ -75,7 +74,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
-        input_filter_lfn = self.option("input_filter_lfn")
+        # input_filter_lfn = self.option("input_filter_lfn")
         #
         # Output tables
         output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
@@ -95,7 +94,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_min_replicate_model, engine=engine)
+        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model
+                                                                  =output_filter_min_replicate_model, engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
         ##########################################################
@@ -105,8 +105,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ##########################################################
 
-        # Previous filter is FilterLFN
-        if input_filter_lfn:
+        # If filter_id exists, then previous Filter is FilterLFN and we select filter_id=8
+        if 'filter_id' in [c.key for c in input_filter_lfn_model.__table__.columns]:
             filter_id = 8
         # Previous filter is not FilterLFN
         else:
@@ -119,6 +119,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         # 4. Run Filter
         #
         ##########################################################
+
         filter_output_df = f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number)
 
         ##########################################################

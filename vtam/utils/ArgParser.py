@@ -90,8 +90,14 @@ class ArgParserChecker():
 
 class ArgParser:
 
-    @staticmethod
-    def get_arg_parser(is_abspath=False):
+    args_db = {'dest': 'db', 'action': 'store', 'default': 'db.sqlite', 'required': False,
+               'help': "Database in SQLITE format"}
+    args_log_file = {'dest': 'log_file', 'action': 'store', 'help': "Write log to file.", 'required': False}
+    args_log_verbosity = {'dest': 'log_verbosity', 'action': 'count', 'default': 0, 'required': False,
+                          'help': "Set verbosity level, eg. None (Error level) -v (Info level)."}
+
+    @classmethod
+    def get_arg_parser(cls):
         """
 
         :param is_abspath: If True, return absolute paths
@@ -99,28 +105,25 @@ class ArgParser:
         """
         # create the top-level parser
         parser_vtam = argparse.ArgumentParser(add_help=False)
-        parser_vtam.add_argument('--db', action='store', default='db.sqlite', required=False,
-                                 type=lambda x: os.path.abspath(x) if is_abspath else x, help="SQLITE file with DB")
+        parser_vtam.add_argument('--db', **cls.args_db)
+        parser_vtam.add_argument('--log', **cls.args_log_file)
+        parser_vtam.add_argument('--threads', action='store',
+                                     help="Number of threads",
+                                     required=False,
+                                     default=multiprocessing.cpu_count())
+        parser_vtam.add_argument('-v', **cls.args_log_verbosity)
         parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
                                  help="Only display what would have been done.")
         parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
                                  help="Force argument of WopMars", required=False)
-        parser_vtam.add_argument('--log', dest='log_file', action='store', help="Write log to file.", required=False,
-                                 type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values",
                                  required=False)
         parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
                                  help="Execute the workflow to the given target RULE: SampleInformation, ...",
                                  required=False)
-        parser_vtam.add_argument('--threads', action='store',
-                                     help="Number of threads",
-                                     required=False,
-                                     default=multiprocessing.cpu_count())
         parser_vtam.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
                                  help="Execute the workflow from the given RULE.",
                                  required=False)
-        parser_vtam.add_argument('-v', dest='log_verbosity', action='count', default=0, required=False,
-                                 help="Set verbosity level, eg. None (Error level) -v (Info level)")
         subparsers = parser_vtam.add_subparsers()
 
         ################################################################################################################
@@ -191,14 +194,36 @@ class ArgParser:
 
         ################################################################################################################
         #
+        # create the parser for the "taxassign" command
+        #
+        ################################################################################################################
+
+        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True)
+        parser_vtam_taxassign.add_argument('--db', **cls.args_db)
+        parser_vtam_taxassign.add_argument('--log', **cls.args_log_file)
+        parser_vtam_taxassign.add_argument('-v', **cls.args_log_verbosity)
+        parser_vtam_taxassign.add_argument('--blast_db', action='store',
+                                     help="REQUIRED: Blast DB directory (Full or custom one) with nt files",
+                                     required=True,
+                                     type=lambda x: ArgParserChecker.check_blast_db_argument(x))
+        parser_vtam_taxassign.add_argument('--taxonomy', dest='taxonomy', action='store',
+                                     help="""REQUIRED: SQLITE DB with taxonomy information.
+
+        This database is create with the command: vtam taxonomy. For instance
+
+        vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
+                                     required=True,
+                                     type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+                                                                  error_message="Verify the '--taxonomy' argument"))
+        parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigget the good command
+
+        ################################################################################################################
+        #
         # create the parser for the "optimize" command
         #
         ################################################################################################################
 
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
-        # parser_vtam_optimize.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-        #                                   required=True, type=lambda x: PathManager.check_file_exists_and_is_nonempty(x,
-        #                                                   error_message="Verify the '--fastainfo' argument"))
         parser_vtam_optimize\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=lambda x: ArgParserChecker
