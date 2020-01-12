@@ -1,0 +1,15 @@
+rule TaxAssignUpdate:
+    tool: vtam.wrapper.TaxAssignUpdate
+    input:
+        table:
+            Variant: vtam.models.Variant
+        file:
+            taxonomy: {{taxonomy}}
+    output:
+        table:
+            TaxAssign: vtam.models.TaxAssign
+    params:
+        ltg_rule_threshold: {{ltg_rule_threshold}}
+        include_prop: {{include_prop}}
+        min_number_of_taxa: {{min_number_of_taxa}}
+        blast_db: {{blast_db}}
