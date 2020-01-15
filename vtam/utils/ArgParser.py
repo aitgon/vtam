@@ -39,7 +39,6 @@ class ArgParserChecker():
         """Checks if directory exists and is not empty
 
         :param error_message: Optional message to help debug the problem
-        :param is_abspath: If True, returns abspath
         :return: void
         """
         try:
@@ -50,7 +49,6 @@ class ArgParserChecker():
         return path
 
     @staticmethod
-    # def check_blast_db_argument(blast_db, is_abspath=False):
     def check_blast_db_argument(blast_db):
         """Verifies --blast_db argument. Must be exactly two arguments.
 
@@ -60,9 +58,7 @@ class ArgParserChecker():
         :param abspath: If True, returns abspath
         :return: void
         """
-        # if not 'blast_db_dir' in OptionManager.instance(): # First argument of blast_db, which is the blast db dir
-        # if is_abspath:
-        #     blast_db = os.path.abspath(blast_db)
+
         ArgParserChecker.check_dir_exists_and_is_nonempty(blast_db,
                                              error_message='Verify the existance and non-emptyness of the directory in '
                                                            'the first argument to the --blast_db argument')
@@ -100,7 +96,6 @@ class ArgParser:
     def get_arg_parser(cls):
         """
 
-        :param is_abspath: If True, return absolute paths
         :return:
         """
         # create the top-level parser
@@ -137,8 +132,6 @@ class ArgParser:
                                        required=True,
                                        type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
                                                                     error_message="Verify the '--fastqinfo' argument"))
-        # parser_vtam_merge.add_argument('--fastainfo', action='store', help="TSV file with FASTA sample information",
-        #                                required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
         parser_vtam_merge\
             .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
                           required=True)
@@ -146,8 +139,7 @@ class ArgParser:
                                        type=lambda x:
                                        ArgParserChecker.check_dir_exists_and_is_nonempty(x,
                                                                     error_message="Verify the '--fastqdir' argument"))
-        parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True,
-                                       type=lambda x: os.path.abspath(x) if is_abspath else x)
+        parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
         parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
 
         parser_vtam_merge.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
@@ -246,8 +238,7 @@ class ArgParser:
         ################################################################################################################
 
         parser_vtam_pool_markers = subparsers.add_parser('pool_markers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
-        parser_vtam_pool_markers.add_argument('--db', action='store', required=True,
-                                 type=lambda x: os.path.abspath(x) if is_abspath else x, help="SQLITE file with DB")
+        parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
                                      help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
                                         Default: Uses all runs and markers in the DB
@@ -257,7 +248,7 @@ class ArgParser:
                                         prerun	ZFZR""",
                                      required=False, type=ArgParserChecker.check_parser_vtam_pool_markers_arg_runmarker)
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
-                                       required=True, type=lambda x: os.path.abspath(x) if is_abspath else x)
+                                       required=True)
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
         parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
                                      help="""REQUIRED: SQLITE DB with taxonomy information.
