@@ -101,7 +101,7 @@ class RunMarkerTSVreader():
         self.asv_df_final = asv_table_runner.run()
 
 
-class PoolMarkerRunner(object):
+class CommandPoolMarkers(object):
     """Class for the Pool Marker wrapper"""
 
     def __init__(self, asv_table_df, run_marker_df=None):
@@ -231,12 +231,11 @@ class PoolMarkerRunner(object):
 
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv, taxonomy_tsv):
-        # asv_table_df = pandas.read_csv(db, sep="\t", header=0)
         run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv=run_marker_tsv, taxonomy_tsv=taxonomy_tsv)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
             run_marker_df = None
-        pool_marker_runner = PoolMarkerRunner(asv_table_df=run_marker_tsv_reader.asv_df_final, run_marker_df=run_marker_df)
+        pool_marker_runner = CommandTaxAssign(asv_table_df=run_marker_tsv_reader.asv_df_final, run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

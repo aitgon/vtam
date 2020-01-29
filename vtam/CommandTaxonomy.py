@@ -13,7 +13,8 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import url_taxonomy_tsv
 from sqlalchemy.exc import OperationalError
 
-class DBtaxonomy(object):
+
+class CommandTaxonomy(object):
 
     def __init__(self, output=None, precomputed=True):
         #

@@ -7,7 +7,7 @@ import urllib.request
 from vtam.utils.constants import public_data_dir
 
 
-class DBblastCOI(object):
+class CommandBlastCOI(object):
 
     def __init__(self, coi_blast_db, map_taxids_tsv=None):
         self.coi_blast_db = coi_blast_db
@@ -107,7 +107,7 @@ class DBblastCOI(object):
     #
     # @classmethod
     # def main(cls):
-    #     parser = DBblastCOI.create_parser()
+    #     parser = CommandBlastCOI.create_parser()
     #     args = parser.parse_args()
-    #     coi_blast_db = DBblastCOI(coi_blast_db=vars(args)['coi_blast_db'])
+    #     coi_blast_db = CommandBlastCOI(coi_blast_db=vars(args)['coi_blast_db'])
     #     coi_blast_db.download()
