@@ -32,7 +32,9 @@ class CommandTaxAssign(object):
         engine = create_engine('sqlite:///{}'.format(db), echo=False)
 
         variants_declarative_table = variant_declarative.__table__
+        variants_declarative_table.create(bind=engine, checkfirst=True)
         tax_assign_declarative_table = tax_assign_declarative.__table__
+        tax_assign_declarative_table.create(bind=engine, checkfirst=True)
 
         if mode == 'reset':
             with engine.connect() as conn:
@@ -58,7 +60,6 @@ class CommandTaxAssign(object):
         #
         ################################################################################################################
 
-        tax_assign_declarative_table.create(bind=engine, checkfirst=True)
         stmt_variant_tax_assign = select([tax_assign_declarative_table.c.variant_id])\
             .where(tax_assign_declarative_table.c.ltg_tax_id.isnot(None))
 
@@ -66,8 +67,6 @@ class CommandTaxAssign(object):
         variant_tax_assign_list = []
         with engine.connect() as conn:
             variant_tax_assign_list = [variant_id[0] for variant_id in conn.execute(stmt_variant_tax_assign).fetchall()]
-
-        variants_declarative_table.create(bind=engine, checkfirst=True)
 
         stmt_variant = select([variants_declarative_table.c.id, variants_declarative_table.c.sequence]) \
             .where(variants_declarative_table.c.sequence.in_(variant_sequence_list)) \
@@ -109,7 +108,7 @@ class CommandTaxAssign(object):
                                             include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
                                             num_threads=num_threads)
         ltg_df = tax_assign_runner.ltg_df
-        ltg_df['blastdb'] = blastdbname_str
+        ltg_df['blast_db'] = blastdbname_str
 
         ################################################################################################################
         #
