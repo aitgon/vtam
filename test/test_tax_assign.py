@@ -2,7 +2,7 @@
 import pathlib
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.DBtaxonomy import DBtaxonomy
+from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantDFutils import VariantDFutils
 # from vtam.utils.TaxAssignRunner import f01_taxonomy_tsv_to_df
@@ -41,7 +41,7 @@ class TestTaxAssign(TestCase):
         """
         super(TestTaxAssign, cls).setUpClass()
         # create_vtam_data_dir()
-        taxonomydb = DBtaxonomy(precomputed=True)
+        taxonomydb = CommandTaxonomy(precomputed=True)
         taxonomy_tsv_path = taxonomydb.get_path()
         #
         # cls.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
