@@ -14,7 +14,6 @@ from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
-from vtam.models.TaxAssign import TaxAssign
 from vtam.models.Variant import Variant
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.Logger import Logger
