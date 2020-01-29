@@ -172,28 +172,6 @@ rule ReadCountAverageOverReplicates:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
 
 
-rule TaxAssign:
-    tool: vtam.wrapper.TaxAssign
-    input:
-        table:
-            Marker: vtam.models.Marker
-            Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
-            Variant: vtam.models.Variant
-            FilterCodonStop: vtam.models.FilterCodonStop
-        file:
-            fastainfo: {{fastainfo}}
-            taxonomy: {{taxonomy}}
-    output:
-        table:
-            TaxAssign: vtam.models.TaxAssign
-    params:
-        ltg_rule_threshold: {{ltg_rule_threshold}}
-        include_prop: {{include_prop}}
-        min_number_of_taxa: {{min_number_of_taxa}}
-        blast_db: {{blast_db}}
-
-
 rule MakeAsvTable:
     tool: vtam.wrapper.MakeAsvTable
     input:
@@ -204,10 +182,8 @@ rule MakeAsvTable:
             Variant: vtam.models.Variant
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
-            TaxAssign: vtam.models.TaxAssign
         file:
             fastainfo: {{fastainfo}}
-            taxonomy: {{taxonomy}}
     output:
         file:
             ASVTable: {{asvtable}}{% endblock %}
