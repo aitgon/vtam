@@ -112,7 +112,7 @@ class TaxAssignRunner(object):
             "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
         blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
         # getting the taxonomy_db to df
-        # taxonomy_tsv_path = input_file_taxonomy
+        # taxonomy_tsv_path = taxonomy_tsv
         #
         Logger.instance().debug(
             "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
