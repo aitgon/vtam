@@ -14,7 +14,7 @@ from vtam.utils.constants import rank_hierarchy,identity_list
 class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
-    def __init__(self, variant_df, taxonomy_df, blast_db_dir, ltg_rule_threshold, include_prop, min_number_of_taxa,
+    def __init__(self, variant_df, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
                  num_threads):
 
         self.variant_df = variant_df
@@ -56,7 +56,7 @@ class TaxAssignRunner(object):
         # get blast db dir and filename prefix from NHR file
         os.environ['BLASTDB'] = self.blast_db_dir
 
-        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db='nt', evalue=1e-5,
+        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_name, evalue=1e-5,
                                              outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
                                              qcov_hsp_perc=80, num_threads=self.num_threads, out=blast_output_tsv)
         Logger.instance().debug(
