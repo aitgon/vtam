@@ -10,7 +10,6 @@ class MakeAsvTable(ToolWrapper):
 
     # Input file
     __input_file_fastainfo = "fastainfo"
-    __input_file_taxonomy = "taxonomy"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -26,7 +25,6 @@ class MakeAsvTable(ToolWrapper):
     def specify_input_file(self):
         return[
             MakeAsvTable.__input_file_fastainfo,
-            MakeAsvTable.__input_file_taxonomy,
         ]
 
     def specify_input_table(self):
@@ -37,7 +35,6 @@ class MakeAsvTable(ToolWrapper):
             MakeAsvTable.__input_table_variant,
             MakeAsvTable.__input_table_filter_chimera_borderline,
             MakeAsvTable.__input_table_filter_codon_stop,
-            MakeAsvTable.__input_table_tax_assign,
         ]
 
     def specify_output_file(self):
@@ -63,7 +60,6 @@ class MakeAsvTable(ToolWrapper):
         #
         # Input file output
         fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_fastainfo)
-        input_file_taxonomy = self.input_file(MakeAsvTable.__input_file_taxonomy)
         #
         # Input table models
         marker_model = self.input_table(MakeAsvTable.__input_table_marker)
@@ -72,7 +68,6 @@ class MakeAsvTable(ToolWrapper):
         filter_chimera_borderline_model = self.input_table(MakeAsvTable.__input_table_filter_chimera_borderline)
         filter_codon_stop_model = self.input_table(MakeAsvTable.__input_table_filter_codon_stop)
         variant_model = self.input_table(MakeAsvTable.__input_table_variant)
-        tax_assign_model = self.input_table(MakeAsvTable.__input_table_tax_assign)
         # Output table models
         asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
 
@@ -105,7 +100,7 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
 
         asv_table_runner = AsvTableRunner(engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
-                                          variant_to_chimera_borderline_df, tax_assign_model, taxonomy_tsv=input_file_taxonomy)
+                                          variant_to_chimera_borderline_df)
         asv_df_final = asv_table_runner.run()
 
         asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)
