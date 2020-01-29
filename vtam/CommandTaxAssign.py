@@ -1,5 +1,7 @@
 import inspect
 import os
+import sqlalchemy
+
 import pandas
 import pathlib
 
@@ -47,12 +49,15 @@ class CommandTaxAssign(object):
         ################################################################################################################
 
         variants_df = pandas.read_csv(variants_tsv, sep="\t", header=0)
-        variant_sequence_list = variants_df.ix[:,-1].tolist()  # last column
+        variant_sequence_list = variants_df.ix[:, -1].tolist()  # get variant sequences as list
 
-        Logger.instance().debug(
-            "file: {}; line: {}; Get variants and sequences that passed the filters".format(__file__,
-                                                                                            inspect.currentframe().f_lineno,
-                                                                                            'TaxAssign'))
+        # Add variant to DB if not already there
+        for variant_sequence in variant_sequence_list:
+            with engine.connect() as conn:
+                row_variant = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
+                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()
+                if row_variant is None:  # variant_sequence IS NOT in the database, so INSERT it
+                    conn.execute(variants_declarative_table.insert().values(sequence=variant_sequence))
 
         ################################################################################################################
         #
@@ -108,15 +113,18 @@ class CommandTaxAssign(object):
                                             include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
                                             num_threads=num_threads)
         ltg_df = tax_assign_runner.ltg_df
-        ltg_df['blast_db'] = blastdbname_str
 
-        ################################################################################################################
-        #
-        # 6. Insert data
-        #
-        ################################################################################################################
+        if not (ltg_df is None):
 
-        Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
-                                                                                                           inspect.currentframe().f_lineno))
-        with engine.connect() as conn:
-            conn.execute(tax_assign_declarative_table.insert(), ltg_df.to_dict('records'))
+            ltg_df['blast_db'] = blastdbname_str
+
+            ############################################################################################################
+            #
+            # 6. Insert data
+            #
+            ############################################################################################################
+
+            Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
+                                                                                       inspect.currentframe().f_lineno))
+            with engine.connect() as conn:
+                conn.execute(tax_assign_declarative_table.insert(), ltg_df.to_dict('records'))
