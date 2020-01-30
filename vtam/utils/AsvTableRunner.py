@@ -155,8 +155,14 @@ class AsvTableRunner(object):
         asv_df3 = asv_df3.merge(self.variant_df, left_on='variant_id', right_index=True)
 
         # Column order
-        asv_df3 = asv_df3[['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
-                           'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'blast_db', 'ltg_rank', 'chimera_borderline', 'sequence']]
+        if not (self.taxonomy_tsv is None):
+            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
+                               'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'blast_db', 'ltg_rank',
+                               'chimera_borderline', 'sequence']
+        else:
+            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'chimera_borderline', 'sequence']
+
+        asv_df3 = asv_df3[asv_df3_columns]
 
         ################################################################################################################
         #

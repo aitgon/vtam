@@ -16,7 +16,7 @@ class TestWorpmarsRunnerMerge(TestCase):
         args_str = 'merge --fastqinfo {} --fastqdir {} --fastainfo foo --fastadir foo'.format(
             os.path.relpath(__file__, PathManager.get_package_path()),
             os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path()))
-        parser = ArgParser.get_arg_parser(is_abspath=False)
+        parser = ArgParser.get_arg_parser()
         args = parser.parse_args(args_str.split())
 
         #####################
@@ -84,7 +84,7 @@ class TestWorpmarsRunnerMerge(TestCase):
             os.path.relpath(__file__, PathManager.get_package_path()),
             os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path()),
             params_yml_path)
-        parser = ArgParser.get_arg_parser(is_abspath=False)
+        parser = ArgParser.get_arg_parser()
         args = parser.parse_args(args_str.split())
         option_dic = vars(args) # Dictionnary with options
         #####################

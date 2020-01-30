@@ -14,7 +14,7 @@ class WopmarsRunner(Singleton):
     def __init__(self, command, parameters):
         """
 
-        :param command: takes one of three values: merge, asv or optimize
+        :param command: takes one of three values: merge, filter or optimize
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
         self.command = command
@@ -61,20 +61,16 @@ class WopmarsRunner(Singleton):
                 wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
             else:
                 wopfile_path = os.path.join(self.tempdir, 'wopfile_merge.yml')
-        elif self.command in ['asv', 'optimize', 'taxassign']:
+        elif self.command in ['filter', 'optimize']:
             # Add output to sortreads file
-            if self.command == 'asv':
+            if self.command == 'filter':
                 self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
                 self.parameters['update_taxassign'] = 0
                 self.parameters['asvtable'] = os.path.join(self.parameters['outdir'], "asvtable.tsv")
                 self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
-                template = jinja2_env.get_template('wopfile_asv.yml')
+                template = jinja2_env.get_template('wopfile_filter.yml')
                 # Create wopfile
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_asv.yml')
-            # Todo: Test
-            elif self.command == 'taxassign':
-                self.parameters['update_taxassign'] = 1
-                template = jinja2_env.get_template('wopfile_taxassign.yml')
+                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_filter.yml')
                 # Create wopfile
             elif self.command == 'optimize':
                 self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
@@ -133,7 +129,7 @@ class WopmarsRunner(Singleton):
         if self.parameters['dryrun']:
             wopmars_command += " -n"
 
-        if self.parameters['forceall'] or self.command == 'taxassign':
+        if self.parameters['forceall']:
             wopmars_command += " -F"
 
         if self.parameters['log_verbosity'] > 0: # -v then pass this verbosity to wopmars

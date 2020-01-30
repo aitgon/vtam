@@ -15,4 +15,5 @@ class TaxAssign(Base):
     identity = Column(Integer, nullable=True)
     ltg_rank = Column(Integer, nullable=True)
     ltg_tax_id = Column(Integer, nullable=True)
+    ltg_tax_name = Column(String(200), nullable=True)
     blast_db = Column(String(50), nullable=True)
