@@ -296,7 +296,9 @@ class TaxAssignRunner(object):
                             lineage_dic['variant_id'] = variant_id
                             lineage_dic['identity'] = identity
                             lineage_dic['ltg_tax_id'] = ltg_tax_id
+                            lineage_dic['ltg_tax_name'] = self.taxonomy_df.loc[self.taxonomy_df['tax_id'] == ltg_tax_id, 'name_txt'].iloc[0]
                             lineage_dic['ltg_rank'] = ltg_rank
+
                             # dictionnary to list
                             list_variant_id_to_ltg.append(lineage_dic)
                             break  # Do not continue lower identities
