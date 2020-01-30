@@ -55,7 +55,8 @@ identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
 FilterLFNreference_records = [
     {'id': 2, 'name': 'lfn_per_variant'},
-    {'id': 3, 'name': 'lfn_per_variant_replicate'},
+    {'id': 3, 'name': 'lfn_per_varian'
+                      't_replicate'},
     {'id': 4, 'name': 'lfn_per_variant_specific'},
     {'id': 5, 'name': 'lfn_per_variant_replicate_specific'},
     {'id': 6, 'name': 'lfn_biosample_replicate'},
