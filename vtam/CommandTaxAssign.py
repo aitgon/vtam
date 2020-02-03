@@ -114,7 +114,7 @@ class CommandTaxAssign(object):
                                             num_threads=num_threads)
         ltg_df = tax_assign_runner.ltg_df
 
-        if not (ltg_df is None):
+        if not (ltg_df is None) and ltg_df.shape[0] > 0:
 
             ltg_df['blast_db'] = blastdbname_str
 
