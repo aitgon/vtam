@@ -120,32 +120,34 @@ class CommandTaxAssign(object):
         #
         ################################################################################################################
 
-        if not (ltg_df is None) and ltg_df.shape[0] > 0:
+        # if not (ltg_df is None) and ltg_df.shape[0] > 0:
 
-            ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
+        # ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
+        #
+        # ltg_df['blast_db'] = blastdbname_str
 
-            ltg_df['blast_db'] = blastdbname_str
+        ############################################################################################################
+        #
+        # 6. Insert or update data
+        #
+        ############################################################################################################
 
-            ############################################################################################################
-            #
-            # 6. Insert or update data
-            #
-            ############################################################################################################
+        Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
+                                                                                   inspect.currentframe().f_lineno))
 
-            Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
-                                                                                       inspect.currentframe().f_lineno))
+        # Add ltg columns to variant_df
+        # TODO go on
+        if not ('ltg_tax_id' in variant_df.columns):
+            pass
 
-            for ltg_row in ltg_df.itertuples():
-                variant_id = ltg_row.variant_id
-                with engine.connect() as conn:
-                    select_row = conn.execute(sqlalchemy.select([tax_assign_declarative_table.c.variant_id])
-                                              .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
-                    if select_row is None:  # variant_id IS NOT in the database, so INSERT it
-                        # conn.execute(tax_assign_declarative_table.insert(), ltg_df.to_dict('records'))
-                        conn.execute(tax_assign_declarative_table.insert(), dict(ltg_row._asdict()))
-                    else:  # variant_sequence IS in the database, so update row
-                        tax_assign_declarative_table.update()\
-                            .where(tax_assign_declarative_table.c.variant_id == variant_id).values()
-
-            # with engine.connect() as conn:
-            #     conn.execute(tax_assign_declarative_table.insert(), ltg_df.to_dict('records'))
+        for ltg_row in ltg_df.itertuples():
+            variant_id = ltg_row.variant_id
+            with engine.connect() as conn:
+                select_row = conn.execute(sqlalchemy.select()
+                                          .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
+                if select_row is None:  # variant_id IS NOT in the database, so INSERT it
+                    conn.execute(tax_assign_declarative_table.insert(), dict(ltg_row._asdict()))
+                else:  # variant_sequence IS in the database, so update row
+                    tax_assign_declarative_table.update()\
+                        .where(tax_assign_declarative_table.c.variant_id == variant_id).values()
+                import pdb; pdb.set_trace()
