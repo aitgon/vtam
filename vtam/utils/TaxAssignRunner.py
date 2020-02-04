@@ -302,7 +302,7 @@ class TaxAssignRunner(object):
                             # dictionnary to list
                             list_variant_id_to_ltg.append(lineage_dic)
                             break  # Do not continue lower identities
-        ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
+        ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg, columns=['variant_id', 'identity', 'ltg_tax_id', 'ltg_tax_name', 'ltg_rank'])
         return ltg_df
 
 

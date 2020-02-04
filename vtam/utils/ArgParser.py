@@ -218,6 +218,9 @@ class ArgParser:
             .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences in the last column.",
                           required=True, type=lambda x: ArgParserChecker
                           .check_file_exists_and_is_nonempty(x, error_message="Verify the '--variants' argument"))
+        parser_vtam_taxassign\
+            .add_argument('--variant_taxa', action='store', help="REQUIRED: TSV file where the taxon assignation has beeen added.",
+                          required=True)
         parser_vtam_taxassign.add_argument('--mode', dest='mode', default="unassigned", action='store', required=False,
                                            choices=['unassigned', 'reset'],
                                  help="The default 'unassigned' mode will only assign 'unassigned' variants."
