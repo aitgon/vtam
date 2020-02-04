@@ -113,6 +113,7 @@ class VTAM(object):
         elif vars(self.args)['command'] == 'taxassign':
             db = OptionManager.instance()['db']
             variants_tsv = OptionManager.instance()['variants']
+            variant_taxa_tsv = OptionManager.instance()['variant_taxa']
             mode = OptionManager.instance()['mode']
             taxonomy_tsv = OptionManager.instance()['taxonomy']
             blasdb_dir_path = OptionManager.instance()['blastdbdir']
@@ -121,7 +122,7 @@ class VTAM(object):
             include_prop = OptionManager.instance()['include_prop']
             min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
             num_threads = OptionManager.instance()['threads']
-            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, taxonomy_tsv=taxonomy_tsv,
+            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, variant_taxa_tsv=variant_taxa_tsv, taxonomy_tsv=taxonomy_tsv,
                                   blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
                                   ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
                                   min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
