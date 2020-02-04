@@ -19,7 +19,7 @@ class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
+    def main(cls, db, mode, variants_tsv, variant_taxa_tsv, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
              min_number_of_taxa, num_threads):
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
@@ -48,8 +48,8 @@ class CommandTaxAssign(object):
         #
         ################################################################################################################
 
-        variants_df = pandas.read_csv(variants_tsv, sep="\t", header=0)
-        variant_sequence_list = variants_df.ix[:, -1].tolist()  # get variant sequences as list
+        variant_input_df = pandas.read_csv(variants_tsv, sep="\t", header=0)
+        variant_sequence_list = variant_input_df.ix[:, -1].tolist()  # get variant sequences as list
 
         # Add variant to DB if not already there
         for variant_sequence in variant_sequence_list:
@@ -122,32 +122,60 @@ class CommandTaxAssign(object):
 
         # if not (ltg_df is None) and ltg_df.shape[0] > 0:
 
-        # ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
-        #
-        # ltg_df['blast_db'] = blastdbname_str
+        ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
+
+        ltg_df['blast_db'] = blastdbname_str
 
         ############################################################################################################
         #
-        # 6. Insert or update data
+        # Insert or update data into DB
         #
         ############################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
                                                                                    inspect.currentframe().f_lineno))
 
-        # Add ltg columns to variant_df
-        # TODO go on
-        if not ('ltg_tax_id' in variant_df.columns):
-            pass
-
         for ltg_row in ltg_df.itertuples():
             variant_id = ltg_row.variant_id
             with engine.connect() as conn:
-                select_row = conn.execute(sqlalchemy.select()
+                select_row = conn.execute(sqlalchemy.select([tax_assign_declarative])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
                     conn.execute(tax_assign_declarative_table.insert(), dict(ltg_row._asdict()))
                 else:  # variant_sequence IS in the database, so update row
                     tax_assign_declarative_table.update()\
                         .where(tax_assign_declarative_table.c.variant_id == variant_id).values()
-                import pdb; pdb.set_trace()
+
+        ############################################################################################################
+        #
+        # Update data of variant input file
+        #
+        ############################################################################################################
+
+        variant_output_df = variant_input_df.copy()
+        # Add ltg columns to variant_df if it do not exist
+        for ltg_df_col in ['ltg_tax_id', 'ltg_tax_name', 'ltg_rank', 'identity', 'blast_db']:
+            if not (ltg_df_col in variant_output_df.columns):
+                variant_output_df[ltg_df_col] = None
+        # Move sequence column to end
+        variant_df_columns = variant_output_df.columns.tolist()
+        variant_df_columns.append(variant_df_columns.pop(variant_df_columns.index('sequence')))
+        variant_output_df = variant_output_df[variant_df_columns]
+
+        for variant_row in variant_output_df.itertuples():
+            variant_id = variant_row.variant_id
+            with engine.connect() as conn:
+                select_row = conn.execute(sqlalchemy.select([tax_assign_declarative.identity,
+                                                             tax_assign_declarative.ltg_rank,
+                                                             tax_assign_declarative.ltg_tax_id,
+                                                             tax_assign_declarative.ltg_tax_name,
+                                                             tax_assign_declarative.blast_db,
+                                                             ])
+                                          .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
+            tax_assign_dict = dict(zip(['ltg_tax_id', 'ltg_tax_name', 'ltg_rank', 'identity', 'blast_db'],
+                                        select_row))
+            for k in tax_assign_dict:
+                variant_output_df.loc[variant_output_df.variant_id == variant_id, k] = tax_assign_dict[k]
+
+        variant_output_df.to_csv(variant_taxa_tsv, sep='\t', index=False, header=True)
+
