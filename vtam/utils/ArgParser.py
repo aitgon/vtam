@@ -2,6 +2,8 @@ import argparse
 import multiprocessing
 import os
 
+import pandas
+
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
@@ -11,13 +13,22 @@ class ArgParserChecker():
     """Methods to check arguments"""
 
     @staticmethod
-    def check_parser_vtam_pool_markers_arg_runmarker(runmarker_tsv):
-        # Check header and separator
-        with open(runmarker_tsv, 'r') as fin:
-            header_fields = fin.readline().strip().split('\t')
-        if not set(header_fields) == {'run_name', 'marker_name'}:
-            raise Logger.instance().error(VTAMexception("Verify the '--runmarker' argument"))
-        return runmarker_tsv
+    def check_parser_vtam_pool_markers_arg_runmarker(run_marker_path, error_message=None):
+        """Checks if file exists and is not empty
+
+        :param error_message: Optional message to help debug the problem
+        :return: void
+        """
+        try:
+            assert os.stat(run_marker_path).st_size > 0
+            run_marker_df = pandas.read_csv(run_marker_path, sep="\t", header=0)
+            assert ('marker_name' in run_marker_df.columns and 'run_name' in run_marker_df.columns)
+            assert run_marker_df.shape[0] > 0
+        except AssertionError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        except FileNotFoundError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        return run_marker_path
 
     @staticmethod
     def check_file_exists_and_is_nonempty(path, error_message=None):
@@ -33,6 +44,24 @@ class ArgParserChecker():
         except FileNotFoundError as err:
             raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
         return path
+
+    # @staticmethod
+    # def check_poolmarkers_arg(run_marker_path, error_message=None):
+    #     """Checks if file exists and is not empty
+    #
+    #     :param error_message: Optional message to help debug the problem
+    #     :return: void
+    #     """
+    #     try:
+    #         assert os.stat(run_marker_path).st_size > 0
+    #         run_marker_df = pandas.read_csv(run_marker_path, sep="\t", header=0)
+    #         assert ('marker_name' in run_marker_df.columns and 'run_name' in run_marker_df.columns)
+    #         assert run_marker_df.shape[0] > 0
+    #     except AssertionError as err:
+    #         raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+    #     except FileNotFoundError as err:
+    #         raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+    #     return run_marker_path
 
     @staticmethod
     def check_dir_exists_and_is_nonempty(path, error_message=None):
@@ -277,12 +306,18 @@ class ArgParser:
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
                                      help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
-                                        Default: Uses all runs and markers in the DB
                                         Example:
                                         run_name	marker_name
                                         prerun	MFZR
                                         prerun	ZFZR""",
-                                     required=False, type=ArgParserChecker.check_parser_vtam_pool_markers_arg_runmarker)
+                                     required=True, type=lambda x: ArgParserChecker.check_parser_vtam_pool_markers_arg_runmarker(x,
+                                      error_message="""Verify the '--pooledmarkers' argument: 
+                                      It is an input TSV file with two columns and headers 'run_name' and 'marker_name'.
+                                        Default: Uses all runs and markers in the DB
+                                        Example:
+                                        run_name	marker_name
+                                        prerun	MFZR
+                                        prerun	ZFZR"""))
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
         parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
