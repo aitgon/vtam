@@ -124,13 +124,15 @@ class AsvTableRunner(object):
 
                     try:
                         variant_id, identity, ltg_rank, ltg_tax_id, blast_db = conn.execute(stmt_ltg_tax_assign).first()
-                        tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank, 'ltg_tax_id': ltg_tax_id, 'blast_db': blast_db})
+                        tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank,
+                                                'ltg_tax_id': ltg_tax_id, 'blast_db': blast_db})
                     except TypeError: # no result
                         pass
             ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
             #
             ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_df,
-                                                                      left_on='ltg_tax_id', right_on='tax_id', how="left").set_index('variant_id')
+                                                                      left_on='ltg_tax_id', right_on='tax_id',
+                                                                      how="left").set_index('variant_id')
             ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
             ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
 

@@ -165,10 +165,10 @@ class CommandTaxAssign(object):
         for variant_row in variant_output_df.itertuples():
             variant_id = variant_row.variant_id
             with engine.connect() as conn:
-                select_row = conn.execute(sqlalchemy.select([tax_assign_declarative.identity,
-                                                             tax_assign_declarative.ltg_rank,
-                                                             tax_assign_declarative.ltg_tax_id,
+                select_row = conn.execute(sqlalchemy.select([tax_assign_declarative.ltg_tax_id,
                                                              tax_assign_declarative.ltg_tax_name,
+                                                             tax_assign_declarative.ltg_rank,
+                                                             tax_assign_declarative.identity,
                                                              tax_assign_declarative.blast_db,
                                                              ])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
