@@ -7,7 +7,7 @@ import urllib.request
 from vtam.utils.constants import public_data_dir
 
 
-class DBblastCOI(object):
+class CommandBlastCOI(object):
 
     def __init__(self, coi_blast_db, map_taxids_tsv=None):
         self.coi_blast_db = coi_blast_db
@@ -38,7 +38,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'nt.nhr'
+        basename = 'coi_blast_db.nhr'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -48,7 +48,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'nt.nin'
+        basename = 'coi_blast_db.nin'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -58,7 +58,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'nt.nog'
+        basename = 'coi_blast_db.nog'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -68,7 +68,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'nt.nsd'
+        basename = 'coi_blast_db.nsd'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -78,7 +78,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = 'nt.nsi'
+        basename = 'coi_blast_db.nsi'
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -88,7 +88,7 @@ class DBblastCOI(object):
         #
         ####################################################################
 
-        basename = "nt.nsq"
+        basename = "coi_blast_db.nsq"
         coi_db_url = os.path.join(public_data_dir, basename)
         coi_db_path = os.path.join(self.coi_blast_db, basename)
         if not os.path.isfile(os.path.join(coi_db_path)):
@@ -97,17 +97,3 @@ class DBblastCOI(object):
         ####################################################################
         #
         ####################################################################
-
-    # @staticmethod
-    # def create_parser():
-    #     parser = argparse.ArgumentParser()
-    #     parser.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
-    #                         required=True)
-    #     return parser
-    #
-    # @classmethod
-    # def main(cls):
-    #     parser = DBblastCOI.create_parser()
-    #     args = parser.parse_args()
-    #     coi_blast_db = DBblastCOI(coi_blast_db=vars(args)['coi_blast_db'])
-    #     coi_blast_db.download()

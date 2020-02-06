@@ -14,7 +14,7 @@ from vtam.utils.constants import rank_hierarchy,identity_list
 class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
-    def __init__(self, variant_df, taxonomy_df, blast_db_dir, ltg_rule_threshold, include_prop, min_number_of_taxa,
+    def __init__(self, variant_df, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
                  num_threads):
 
         self.variant_df = variant_df
@@ -56,7 +56,7 @@ class TaxAssignRunner(object):
         # get blast db dir and filename prefix from NHR file
         os.environ['BLASTDB'] = self.blast_db_dir
 
-        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db='nt', evalue=1e-5,
+        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_name, evalue=1e-5,
                                              outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
                                              qcov_hsp_perc=80, num_threads=self.num_threads, out=blast_output_tsv)
         Logger.instance().debug(
@@ -83,70 +83,72 @@ class TaxAssignRunner(object):
         blast_output_df = (
             pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
                           axis=1))
+        self.ltg_df = None  # Init it
+        if blast_output_df.shape[0] > 0:  # If blast output exists
         # Select first tax_id
-        blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
-        # rename first tax_id
-        blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
-        # Convert columns back to int
-        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('float')
-        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('int')
-        # Blast output extract
-        """   variant_id  target_id  identity        evalue  coverage  target_tax_id
-0           2  MF7836761    99.429  1.620000e-86       100        1469487
-1           2  MF7836761    99.429  1.620000e-86       100         189839
-2           2  KY2618191    98.857  7.520000e-85       100         189839
-3           2  MF7834791    98.857  7.520000e-85       100         189839
-4           2  KU9559321    98.857  7.520000e-85       100         189839
-"""
+            blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
+            # rename first tax_id
+            blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
+            # Convert columns back to int
+            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('float')
+            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('int')
+            # Blast output extract
+            """   variant_id  target_id  identity        evalue  coverage  target_tax_id
+    0           2  MF7836761    99.429  1.620000e-86       100        1469487
+    1           2  MF7836761    99.429  1.620000e-86       100         189839
+    2           2  KY2618191    98.857  7.520000e-85       100         189839
+    3           2  MF7834791    98.857  7.520000e-85       100         189839
+    4           2  KU9559321    98.857  7.520000e-85       100         189839
+    """
 
-        ##########################################################
-        #
-        # Read target_tax_id
-        # Compute lineages for each unique target_tax_id
-        # Create a DF with these columns: tax_id and its lineage in wide format
-        # Merge to the blast result
-        #
-        ##########################################################
+            ##########################################################
+            #
+            # Read target_tax_id
+            # Compute lineages for each unique target_tax_id
+            # Create a DF with these columns: tax_id and its lineage in wide format
+            # Merge to the blast result
+            #
+            ##########################################################
 
-        Logger.instance().debug(
-            "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
-        blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
-        # getting the taxonomy_db to df
-        # taxonomy_tsv_path = input_file_taxonomy
-        #
-        Logger.instance().debug(
-            "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
-                __file__, inspect.currentframe().f_lineno))
-        lineage_list = []
-        for target_tax_id in blast_output_df.target_tax_id.unique().tolist():
-            lineage_list.append(self.f04_1_tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
-        tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
-        #
-        Logger.instance().debug(
-            "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__,
-                                                                                                 inspect.currentframe().f_lineno))
-        # Merge local blast output with tax_id_to_lineage_df
-        variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
-                                                               right_on='tax_id')
-        variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
-        # variantid_identity_lineage_tsv = os.path.join(self.this_temp_dir, 'variantid_identity_lineage.tsv')
-        # variantid_identity_lineage_df.to_csv(variantid_identity_lineage_tsv, sep="\t", header=True)
+            Logger.instance().debug(
+                "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
+            blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
+            # getting the taxonomy_db to df
+            # taxonomy_tsv_path = taxonomy_tsv
+            #
+            Logger.instance().debug(
+                "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
+                    __file__, inspect.currentframe().f_lineno))
+            lineage_list = []
+            for target_tax_id in blast_output_df.target_tax_id.unique().tolist():
+                lineage_list.append(self.f04_1_tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
+            tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
+            #
+            Logger.instance().debug(
+                "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__,
+                                                                                                     inspect.currentframe().f_lineno))
+            # Merge local blast output with tax_id_to_lineage_df
+            variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
+                                                                   right_on='tax_id')
+            variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
+            # variantid_identity_lineage_tsv = os.path.join(self.this_temp_dir, 'variantid_identity_lineage.tsv')
+            # variantid_identity_lineage_df.to_csv(variantid_identity_lineage_tsv, sep="\t", header=True)
 
-        ##########################################################
-        #
-        #  6 test_f05_select_ltg_identity
-        #
-        ##########################################################
+            ##########################################################
+            #
+            #  6 test_f05_select_ltg_identity
+            #
+            ##########################################################
 
-        Logger.instance().debug(
-            "file: {}; line: {}; Main loop over variant and identity to"
-            "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
-            "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
-        #
-        # f07_blast_result_to_ltg_tax_id(tax_lineage_df,ltg_rule_threshold=97, include_prop=90, min_number_of_taxa=3):
-        # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
-        #
-        self.ltg_df = self.f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df)
+            Logger.instance().debug(
+                "file: {}; line: {}; Main loop over variant and identity to"
+                "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
+                "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
+            #
+            # f07_blast_result_to_ltg_tax_id(tax_lineage_df,ltg_rule_threshold=97, include_prop=90, min_number_of_taxa=3):
+            # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
+            #
+            self.ltg_df = self.f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df)
 
     def f04_1_tax_id_to_taxonomy_lineage(self, tax_id):
         """
@@ -294,11 +296,13 @@ class TaxAssignRunner(object):
                             lineage_dic['variant_id'] = variant_id
                             lineage_dic['identity'] = identity
                             lineage_dic['ltg_tax_id'] = ltg_tax_id
+                            lineage_dic['ltg_tax_name'] = self.taxonomy_df.loc[self.taxonomy_df['tax_id'] == ltg_tax_id, 'name_txt'].iloc[0]
                             lineage_dic['ltg_rank'] = ltg_rank
+
                             # dictionnary to list
                             list_variant_id_to_ltg.append(lineage_dic)
                             break  # Do not continue lower identities
-        ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
+        ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg, columns=['variant_id', 'identity', 'ltg_tax_id', 'ltg_tax_name', 'ltg_rank'])
         return ltg_df
 
 
@@ -386,39 +390,6 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                         break  # Do not continue lower identities
     ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
     return ltg_df
-
-
-def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
-    """
-    Takes tax_id and taxonomy_db.tsv DB and create a dictionary with the taxonomy lineage
-
-    Args:
-        tax_id (Integer): Identifier of taxon
-        taxonomy_db_df (pandas.DataFrame: DataFrame with taxonomy information
-
-
-    Returns:
-        Dictionnary: with taxonomy information for given tax_id, {'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
-                         'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
-                         'superkingdom': 2759}
-
-    """
-    lineage_dic = {}
-    lineage_dic['tax_id'] = tax_id
-    while tax_id != 1:
-        # try to use taxonomy_df.tax_id
-        tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.tax_id == tax_id,]
-        # row empty, try to use old_tax_id
-        if tax_id_row.shape[0] == 0:
-            tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.old_tax_id == tax_id,]
-        rank = tax_id_row['rank'].values[0]
-        parent_tax_id = tax_id_row['parent_tax_id'].values[0]
-        lineage_dic[rank] = tax_id
-        if give_tax_name: # return tax_name instead of tax_d
-            tax_name = tax_id_row['name_txt'].values[0]
-            lineage_dic[rank] = tax_name
-        tax_id = parent_tax_id
-    return lineage_dic
 
 def f06_select_ltg(tax_lineage_df, include_prop):
     """
