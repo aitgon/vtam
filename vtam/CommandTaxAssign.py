@@ -12,6 +12,7 @@ from vtam.models.Variant import Variant as variant_declarative
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.TaxAssignRunner import TaxAssignRunner
+from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantDFutils import VariantDFutils
 
 
@@ -172,10 +173,31 @@ class CommandTaxAssign(object):
                                                              tax_assign_declarative.blast_db,
                                                              ])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
+
             tax_assign_dict = dict(zip(['ltg_tax_id', 'ltg_tax_name', 'ltg_rank', 'identity', 'blast_db'],
                                         select_row))
             for k in tax_assign_dict:
                 variant_output_df.loc[variant_output_df.variant_id == variant_id, k] = tax_assign_dict[k]
+
+        ################################################################################################################
+        #
+        # Create lineage df given taxonomy_df
+        # Returns: lineage_df for each tax_id
+        #
+        ################################################################################################################
+
+        tax_id_list = variant_output_df.ltg_tax_id.unique().tolist() # unique list of tax ids
+        tax_lineage = TaxLineage(taxonomic_tsv_path=taxonomy_tsv)
+        tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
+
+        # Merge
+        tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})
+        variant_output_df = variant_output_df.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left')
+        
+        # Move sequence column to end
+        variant_df_columns = variant_output_df.columns.tolist()
+        variant_df_columns.append(variant_df_columns.pop(variant_df_columns.index('sequence')))
+        variant_output_df = variant_output_df[variant_df_columns]
 
         variant_output_df.to_csv(variant_taxa_tsv, sep='\t', index=False, header=True)
 
