@@ -228,7 +228,7 @@ class CommandPoolMarkers(object):
         pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
         pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='centroid_variant_id', right_on='variant_id')
-        pooled_marker_df.rename({'variant_id_x': 'variant_id', 'sequence': 'centroid_variant_sequence'}, axis=1, inplace=True)
+        pooled_marker_df.rename({'variant_id_x': 'variant_id'}, axis=1, inplace=True)
         pooled_marker_df.drop(labels = 'variant_id_y', axis=1, inplace=True)
         return pooled_marker_df
 
