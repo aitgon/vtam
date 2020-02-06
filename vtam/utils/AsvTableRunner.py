@@ -5,7 +5,7 @@ import sqlalchemy
 
 from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.utils.constants import rank_hierarchy_asv_table
+# from vtam.utils.constants import rank_hierarchy_asv_table
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 
@@ -150,10 +150,10 @@ class AsvTableRunner(object):
             tax_lineage = TaxLineage(taxonomic_tsv_path=self.taxonomy_tsv)
             tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
 
-            lineage_list_df_columns_sorted = list(
-                filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
-            lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
-            tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
+            # lineage_list_df_columns_sorted = list(
+            #     filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
+            # lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
+            # tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
 
             asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
             asv_df3 = asv_df3.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)

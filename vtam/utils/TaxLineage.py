@@ -1,5 +1,7 @@
 import pandas
 
+from vtam.utils.constants import rank_hierarchy_asv_table
+
 
 class TaxLineage(object):
     """This class construct a TaxLineage for a given tax_id and based on the taxonomic_tsv file"""
@@ -29,6 +31,8 @@ class TaxLineage(object):
         try:
             tax_id = int(tax_id)
         except ValueError:
+            return None
+        except TypeError:
             return None
 
         tax_lineage_dic = {}
@@ -80,9 +84,15 @@ class TaxLineage(object):
             if not (tax_lineage_dic is None):
                 taxa_lineage_list.append(tax_lineage_dic)
 
-        lineage_df = pandas.DataFrame(data=taxa_lineage_list)
+        tax_lineage_df = pandas.DataFrame(data=taxa_lineage_list)
         # lineage_list_df_columns_sorted = list(
         #     filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
         # lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
         # lineage_df = lineage_df[lineage_list_df_columns_sorted]
-        return lineage_df
+
+        lineage_list_df_columns_sorted = list(
+            filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
+        lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
+        tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
+
+        return tax_lineage_df
