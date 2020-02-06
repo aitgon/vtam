@@ -13,6 +13,23 @@ class ArgParserChecker():
     """Methods to check arguments"""
 
     @staticmethod
+    def check_parser_vtam_taxassign_variants(variant_tsv_path, error_message=None):
+        """Check if the vtam taxassign --variants argument is a TSV file with a header and sequence column name in the last column
+
+        :param error_message: Optional message to help debug the problem
+        :return: void
+        """
+        try:
+            assert os.stat(variant_tsv_path).st_size > 0
+            variant_df = pandas.read_csv(variant_tsv_path, sep="\t", header=0)
+            assert (variant_df.columns[-1] == 'sequence')
+        except AssertionError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        except FileNotFoundError as err:
+            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        return variant_tsv_path
+
+    @staticmethod
     def check_parser_vtam_pool_markers_arg_runmarker(run_marker_path, error_message=None):
         """Checks if file exists and is not empty
 
@@ -244,9 +261,10 @@ class ArgParser:
         parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
 
         parser_vtam_taxassign\
-            .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences in the last column.",
+            .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
                           required=True, type=lambda x: ArgParserChecker
-                          .check_file_exists_and_is_nonempty(x, error_message="Verify the '--variants' argument"))
+                          .check_parser_vtam_taxassign_variants(x,
+                                        error_message="""The --variants TSV file requires a header with a 'sequence' label and the sequences in the last column"""))
         parser_vtam_taxassign\
             .add_argument('--variant_taxa', action='store', help="REQUIRED: TSV file where the taxon assignation has beeen added.",
                           required=True)
