@@ -28,7 +28,7 @@ class RunMarkerTSVreader():
     """Prepares different DFs: engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
                                           variant_to_chimera_borderline_df based on run_marker_tsv and db"""
 
-    def __init__(self, db, run_marker_tsv, taxonomy_tsv):
+    def __init__(self, db, run_marker_tsv):
         self.__db = db
         #
         run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
@@ -96,7 +96,7 @@ class RunMarkerTSVreader():
         asv_table_runner = AsvTableRunner(engine=engine, variant_read_count_df=variant_read_count_df, variant_df=variant_df,
                                           run_df=run_df, marker_df=marker_df, biosample_df=biosample_df,
                                           variant_to_chimera_borderline_df=variant_to_chimera_borderline_df,
-                                          taxonomy_tsv=taxonomy_tsv)
+                                          taxonomy_tsv=None)
         self.asv_df_final = asv_table_runner.run()
 
 
@@ -108,9 +108,7 @@ class CommandPoolMarkers(object):
         try:
             assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
                                                          'read_count']
-            assert asv_table_df.columns.tolist()[-13:] == ['phylum', 'class', 'order', 'family', 'genus', 'species',
-                                                           'ltg_tax_id', 'ltg_tax_name', 'identity', 'blast_db',
-                                                           'ltg_rank', 'chimera_borderline', 'sequence']
+            assert asv_table_df.columns.tolist()[-2:] == ['chimera_borderline', 'sequence']
         except:
             Logger.instance().error(VTAMexception("The ASV table structure is wrong. It is expected to start with these columns:"
                                                   "'variant_id', 'marker_name', 'run_name', 'sequence_length', 'read_count'"
@@ -119,7 +117,7 @@ class CommandPoolMarkers(object):
                                                   "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
             sys.exit(1)
 
-        self.biosample_names = asv_table_df.columns.tolist()[5:-13]
+        self.biosample_names = asv_table_df.columns.tolist()[5:-2]
 
         if run_marker_df is None:  # Default: pool all marker
             self.asv_table_df = asv_table_df
@@ -208,10 +206,12 @@ class CommandPoolMarkers(object):
         self.cluster_df.sort_values(by=self.cluster_df.columns.tolist(), inplace=True)
         #
         # Information to keep about each centroid variant
+        # centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
+        #                              ['centroid_variant_id', 'phylum',
+        #                               'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name',
+        #                               'blast_db', 'ltg_rank']]
         centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
-                                     ['centroid_variant_id', 'phylum',
-                                      'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name',
-                                      'blast_db', 'ltg_rank']]
+                                     ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
         #
         # Centroid to aggregated variants and biosamples
@@ -227,11 +227,14 @@ class CommandPoolMarkers(object):
         pooled_marker_df = self.cluster_df[['centroid_variant_id', 'variant_id', 'run_name', 'marker_name'] + self.biosample_names]
         pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
+        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='centroid_variant_id', right_on='variant_id')
+        pooled_marker_df.rename({'variant_id_x': 'variant_id', 'sequence': 'centroid_variant_sequence'}, axis=1, inplace=True)
+        pooled_marker_df.drop(labels = 'variant_id_y', axis=1, inplace=True)
         return pooled_marker_df
 
     @classmethod
-    def main(cls, db, pooled_marker_tsv, run_marker_tsv, taxonomy_tsv):
-        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv=run_marker_tsv, taxonomy_tsv=taxonomy_tsv)
+    def main(cls, db, pooled_marker_tsv, run_marker_tsv):
+        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv=run_marker_tsv)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
