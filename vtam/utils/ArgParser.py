@@ -320,15 +320,15 @@ class ArgParser:
                                         prerun	ZFZR"""))
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
-        parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
-                                     help="""REQUIRED: SQLITE DB with taxonomy information.
-
-        This database is create with the command: vtam taxonomy. For instance
-
-        vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
-                                     required=True,
-                                     type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
-                                                                  error_message="Verify the '--taxonomy' argument"))
+        # parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
+        #                              help="""REQUIRED: SQLITE DB with taxonomy information.
+        #
+        # This database is create with the command: vtam taxonomy. For instance
+        #
+        # vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
+        #                              required=True,
+        #                              type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+        #                                                           error_message="Verify the '--taxonomy' argument"))
 
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
 
