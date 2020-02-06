@@ -3,25 +3,17 @@ import math
 import pandas
 import sqlalchemy
 
-from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.utils.constants import rank_hierarchy_asv_table
+# from vtam.utils.constants import rank_hierarchy_asv_table
+from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 
 class AsvTableRunner(object):
 
 
     def __init__(self, engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df, variant_to_chimera_borderline_df,
-                 tax_assign_model, taxonomy_tsv):
-
-        # self.engine = engine
-        # self.fasta_info_tsv = fasta_info_tsv
-        # self.run_model = run_model
-        # self.marker_model = marker_model
-        # self.biosample_model = biosample_model
-        # self.filter_chimera_borderline_model = filter_chimera_borderline_model
-        # self.filter_codon_stop_model = filter_codon_stop_model
-        # self.variant_model = variant_model
+                 taxonomy_tsv=None):
 
         self.engine = engine
         self.variant_read_count_df = variant_read_count_df
@@ -30,8 +22,8 @@ class AsvTableRunner(object):
         self.marker_df = marker_df
         self.biosample_df = biosample_df
         self.variant_to_chimera_borderline_df = variant_to_chimera_borderline_df
-        self.tax_assign_model = tax_assign_model
-        self.input_file_taxonomy = taxonomy_tsv
+        # self.tax_assign_model = tax_assign_model
+        self.taxonomy_tsv = taxonomy_tsv
 
     def run(self):
 
@@ -92,69 +84,93 @@ class AsvTableRunner(object):
         # variant_to_chimera_borderline_df = self.get_chimera_borderline_df()
         asv_df3 = asv_df3.merge(self.variant_to_chimera_borderline_df, on=['run_id', 'marker_id', 'variant_id'])
 
-        #####
+        ################################################################################################################
         #
-        # taxonomy_db to df
+        # Asv_df3: If self.taxonomy_tsv, then there is taxonomic assignation
         #
-        #####
-        taxonomy_tsv_path = self.input_file_taxonomy
-        taxonomy_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
-                                         dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
-        # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        ################################################################################################################
 
-        #####
-        #
-        # ltg_tax_assign
-        #
-        #####
+        if not (self.taxonomy_tsv is None):
 
-        # Select to DataFrame
-        tax_assign_list = []
-        tax_assign_model_table = self.tax_assign_model.__table__
-        with self.engine.connect() as conn:
-            for df_row in self.variant_df.itertuples():
-                variant_id = df_row.Index
-                stmt_ltg_tax_assign = sqlalchemy.select([tax_assign_model_table.c.variant_id,
-                                                         tax_assign_model_table.c.identity,
-                                                         tax_assign_model_table.c.ltg_rank,
-                                                         tax_assign_model_table.c.ltg_tax_id])\
-                    .where(tax_assign_model_table.c.variant_id == variant_id)
+            #####
+            #
+            # taxonomy_db to df
+            #
+            #####from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
 
-                try:
-                    variant_id, identity, ltg_rank, ltg_tax_id = conn.execute(stmt_ltg_tax_assign).first()
-                    tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank, 'ltg_tax_id': ltg_tax_id})
-                except TypeError: # no result
-                    pass
-        ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
-        #
-        ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_df,
-                                                                  left_on='ltg_tax_id', right_on='tax_id', how="left").set_index('variant_id')
-        ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
-        ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
+            taxonomy_df = pandas.read_csv(self.taxonomy_tsv, sep="\t", header=0,
+                                             dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+            # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
 
-        #
-        # Merge ltg tax assign results
-        asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-        list_lineage = []
-        for tax_id in asv_df['ltg_tax_id'].unique().tolist():
-            if not math.isnan(tax_id):
-                dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_df, give_tax_name=True)
-                list_lineage.append(dic_lineage)
-        lineage_df = pandas.DataFrame(data=list_lineage)
-        lineage_list_df_columns_sorted = list(
-            filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
-        lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
-        lineage_df = lineage_df[lineage_list_df_columns_sorted]
-        asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-        asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
-        asv_df3.drop('tax_id', axis=1, inplace=True)
+            #####
+            #
+            # ltg_tax_assign
+            #
+            #####
+
+            # Select to DataFrame
+            tax_assign_list = []
+            # tax_assign_model_table = self.tax_assign_model.__table__
+            tax_assign_model_table = tax_assign_declarative.__table__
+            with self.engine.connect() as conn:
+                for df_row in self.variant_df.itertuples():
+                    variant_id = df_row.Index
+                    stmt_ltg_tax_assign = sqlalchemy.select([tax_assign_model_table.c.variant_id,
+                                                             tax_assign_model_table.c.identity,
+                                                             tax_assign_model_table.c.ltg_rank,
+                                                             tax_assign_model_table.c.ltg_tax_id,
+                                                             tax_assign_model_table.c.blast_db])\
+                        .where(tax_assign_model_table.c.variant_id == variant_id)
+
+                    try:
+                        variant_id, identity, ltg_rank, ltg_tax_id, blast_db = conn.execute(stmt_ltg_tax_assign).first()
+                        tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank,
+                                                'ltg_tax_id': ltg_tax_id, 'blast_db': blast_db})
+                    except TypeError: # no result
+                        pass
+            ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
+            #
+            ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_df,
+                                                                      left_on='ltg_tax_id', right_on='tax_id',
+                                                                      how="left").set_index('variant_id')
+            ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
+            ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
+
+            # Merge ltg tax assign results
+            asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
+
+            ############################################################################################################
+            #
+            # Create lineage df given taxonomy_df
+            # Returns: lineage_df for each tax_id
+            #
+            ############################################################################################################
+
+            tax_id_list = asv_df['ltg_tax_id'].unique().tolist() # unique list of tax ids
+            tax_lineage = TaxLineage(taxonomic_tsv_path=self.taxonomy_tsv)
+            tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
+
+            # lineage_list_df_columns_sorted = list(
+            #     filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
+            # lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
+            # tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
+
+            asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
+            asv_df3 = asv_df3.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
+            asv_df3.drop('tax_id', axis=1, inplace=True)
 
         # Add sequence
         asv_df3 = asv_df3.merge(self.variant_df, left_on='variant_id', right_index=True)
 
         # Column order
-        asv_df3 = asv_df3[['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
-                           'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence']]
+        if not (self.taxonomy_tsv is None):
+            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
+                               'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'blast_db', 'ltg_rank',
+                               'chimera_borderline', 'sequence']
+        else:
+            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'chimera_borderline', 'sequence']
+
+        asv_df3 = asv_df3[asv_df3_columns]
 
         ################################################################################################################
         #

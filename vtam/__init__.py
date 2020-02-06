@@ -4,14 +4,13 @@ import os
 import subprocess
 import sys
 
-from sqlalchemy.orm import sessionmaker
-
 from vtam.utils.ArgParser import ArgParser
-from vtam.utils.DBblastCOI import DBblastCOI
-from vtam.utils.DBtaxonomy import DBtaxonomy
+from vtam.CommandBlastCOI import CommandBlastCOI
+from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
-from vtam.utils.PoolMarkerRunner import PoolMarkerRunner
+from vtam.CommandPoolMarkers import CommandPoolMarkers
+from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
 
@@ -22,7 +21,7 @@ class VTAM(object):
         These are the VTAM commands:
 
    merge      Merge paired-end reads
-   asv        Run VTAM from sorting reads to biosamples/replicates till making ASV table
+   filter     Run VTAM filters to create an ASV table with the variant sequences as last column
    optimize   Find optimal parameters for filtering
    pool_markers   Pool overlapping markers from the ASV table into one
    taxonomy   Create the taxonomy TSV file used to create lineages 
@@ -66,7 +65,7 @@ class VTAM(object):
         #
         #################################################################
 
-        if vars(self.args)['command'] in ['asv', 'optimize', 'taxassign']:
+        if vars(self.args)['command'] in ['asv', 'optimize']:
             from sqlalchemy import create_engine
             from sqlalchemy import Table, Column, Integer, String, MetaData
             from vtam.utils.constants import FilterLFNreference_records
@@ -86,11 +85,11 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommands: wopfile-dependent, merge, asv, optimize, taxassign
+        # Subcommands: wopfile-dependent, merge, filter, optimize
         #
         ###############################################################
 
-        if vars(self.args)['command'] in ['merge', 'asv', 'optimize', 'taxassign']:
+        if vars(self.args)['command'] in ['merge', 'filter', 'optimize']:
 
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
@@ -107,6 +106,29 @@ class VTAM(object):
 
         ###############################################################
         #
+        # Subcommand: taxassign
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'taxassign':
+            db = OptionManager.instance()['db']
+            variants_tsv = OptionManager.instance()['variants']
+            variant_taxa_tsv = OptionManager.instance()['variant_taxa']
+            mode = OptionManager.instance()['mode']
+            taxonomy_tsv = OptionManager.instance()['taxonomy']
+            blasdb_dir_path = OptionManager.instance()['blastdbdir']
+            blastdbname_str = OptionManager.instance()['blastdbname']
+            ltg_rule_threshold = OptionManager.instance()['ltg_rule_threshold']
+            include_prop = OptionManager.instance()['include_prop']
+            min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
+            num_threads = OptionManager.instance()['threads']
+            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, variant_taxa_tsv=variant_taxa_tsv, taxonomy_tsv=taxonomy_tsv,
+                                  blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
+                                  ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
+                                  min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
+
+        ###############################################################
+        #
         # Subcommand: pool_markers
         #
         ###############################################################
@@ -115,9 +137,10 @@ class VTAM(object):
             db = OptionManager.instance()['db']
             run_marker_tsv = OptionManager.instance()['runmarker']
             pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
-            taxonomy_tsv = OptionManager.instance()['taxonomy']
-            PoolMarkerRunner.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
-                                  run_marker_tsv=run_marker_tsv)
+            # taxonomy_tsv = OptionManager.instance()['taxonomy']
+            # CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
+            #                         run_marker_tsv=run_marker_tsv)
+            CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, run_marker_tsv=run_marker_tsv)
 
         ###############################################################
         #
@@ -128,7 +151,7 @@ class VTAM(object):
         elif vars(self.args)['command'] == 'taxonomy':
             output = OptionManager.instance()['output']
             precomputed = OptionManager.instance()['precomputed']
-            taxonomydb = DBtaxonomy(output=output, precomputed=precomputed, )
+            taxonomydb = CommandTaxonomy(output=output, precomputed=precomputed, )
             if precomputed:
                 taxonomydb.download_taxonomy_tsv()
             else:
@@ -142,7 +165,7 @@ class VTAM(object):
 
         elif vars(self.args)['command'] == 'coi_blast_db':
             coi_blast_db = OptionManager.instance()['coi_blast_db']
-            coi_blast_db = DBblastCOI(coi_blast_db=coi_blast_db)
+            coi_blast_db = CommandBlastCOI(coi_blast_db=coi_blast_db)
             coi_blast_db.download()
 
         ###############################################################
