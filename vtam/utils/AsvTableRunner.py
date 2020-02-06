@@ -3,7 +3,7 @@ import math
 import pandas
 import sqlalchemy
 
-from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.constants import rank_hierarchy_asv_table
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
@@ -96,9 +96,9 @@ class AsvTableRunner(object):
             #
             # taxonomy_db to df
             #
-            #####
-            taxonomy_tsv_path = self.taxonomy_tsv
-            taxonomy_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
+            #####from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+
+            taxonomy_df = pandas.read_csv(self.taxonomy_tsv, sep="\t", header=0,
                                              dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
             # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
 
@@ -138,7 +138,6 @@ class AsvTableRunner(object):
 
             # Merge ltg tax assign results
             asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-            list_lineage = []
 
             ############################################################################################################
             #
@@ -147,18 +146,17 @@ class AsvTableRunner(object):
             #
             ############################################################################################################
 
-            for tax_id in asv_df['ltg_tax_id'].unique().tolist():
-                if not math.isnan(tax_id):
-                    dic_lineage = f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_df, give_tax_name=True)
-                    list_lineage.append(dic_lineage)
-            lineage_df = pandas.DataFrame(data=list_lineage)
+            tax_id_list = asv_df['ltg_tax_id'].unique().tolist() # unique list of tax ids
+            tax_lineage = TaxLineage(taxonomic_tsv_path=self.taxonomy_tsv)
+            tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
+
             lineage_list_df_columns_sorted = list(
-                filter(lambda x: x in lineage_df.columns.tolist(), rank_hierarchy_asv_table))
+                filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
             lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
-            lineage_df = lineage_df[lineage_list_df_columns_sorted]
+            tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
 
             asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-            asv_df3 = asv_df3.merge(lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
+            asv_df3 = asv_df3.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
             asv_df3.drop('tax_id', axis=1, inplace=True)
 
         # Add sequence

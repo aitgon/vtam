@@ -391,39 +391,6 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
     ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
     return ltg_df
 
-
-def f04_1_tax_id_to_taxonomy_lineage(tax_id, taxonomy_db_df, give_tax_name=False):
-    """
-    Takes tax_id and taxonomy_db.tsv DB and create a dictionary with the taxonomy lineage
-
-    Args:
-        tax_id (Integer): Identifier of taxon
-        taxonomy_db_df (pandas.DataFrame: DataFrame with taxonomy information
-
-
-    Returns:
-        Dictionnary: with taxonomy information for given tax_id, {'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
-                         'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
-                         'superkingdom': 2759}
-
-    """
-    lineage_dic = {}
-    lineage_dic['tax_id'] = tax_id
-    while tax_id != 1:
-        # try to use taxonomy_df.tax_id
-        tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.tax_id == tax_id,]
-        # row empty, try to use old_tax_id
-        if tax_id_row.shape[0] == 0:
-            tax_id_row = taxonomy_db_df.loc[taxonomy_db_df.old_tax_id == tax_id,]
-        rank = tax_id_row['rank'].values[0]
-        parent_tax_id = tax_id_row['parent_tax_id'].values[0]
-        lineage_dic[rank] = tax_id
-        if give_tax_name: # return tax_name instead of tax_d
-            tax_name = tax_id_row['name_txt'].values[0]
-            lineage_dic[rank] = tax_name
-        tax_id = parent_tax_id
-    return lineage_dic
-
 def f06_select_ltg(tax_lineage_df, include_prop):
     """
     Given tax_lineage_df, selects the Ltg
