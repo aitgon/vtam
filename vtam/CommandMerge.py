@@ -72,8 +72,7 @@ class VSearchMergeRunner(object):
         # Add double dash '--' to all parameters to create vsearch parameters
         vsearch_parameters = {}
         for par in self.parameters:
-            vsearch_parameters['--'.format(par)] = self.parameters['par']
-
+            vsearch_parameters['--{}'.format(par)] = self.parameters[par]
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
@@ -82,7 +81,7 @@ class CommandMerge(object):
     """Class for the Merge command"""
 
     @classmethod
-    def main(cls, fastqinfo, fastqdir, fastainfo, fastadir, params=None):
+    def main(cls, fastqinfo, fastqdir, fastainfo, fastadir, params=None, num_threads=multiprocessing.cpu_count()):
         #
         # Go
         # Opening the file to get all the lines stocked in the list csv_content
@@ -123,7 +122,7 @@ class CommandMerge(object):
         for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
 
             vsearch_merge_runner = VSearchMergeRunner(fastq_fw_abspath, fastq_rv_abspath, fasta_abspath,
-                                                      params_yml=params)
+                                                      params_yml=params, threads=num_threads)
             vsearch_merge_runner.load_parameters()
             vsearch_merge_runner.run()
 

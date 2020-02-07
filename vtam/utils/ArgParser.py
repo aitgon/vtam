@@ -183,30 +183,6 @@ class ArgParser:
 
         ################################################################################################################
         #
-        # create the parser for the "merge" command
-        #
-        ################################################################################################################
-
-        # parser_vtam_merge = subparsers.add_parser('merge', add_help=True, parents=[parser_vtam])
-        # parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
-        #                                required=True,
-        #                                type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
-        #                                                             error_message="Verify the '--fastqinfo' argument"))
-        # parser_vtam_merge\
-        #     .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
-        #                   required=True)
-        # parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
-        #                                type=lambda x:
-        #                                ArgParserChecker.check_dir_exists_and_is_nonempty(x,
-        #                                                             error_message="Verify the '--fastqdir' argument"))
-        # parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
-        # parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
-        #
-        # parser_vtam_merge.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-        #                              required=False)
-
-        ################################################################################################################
-        #
         # create the parser for the "filter" command
         #
         ################################################################################################################
@@ -259,6 +235,8 @@ class ArgParser:
         ################################################################################################################
 
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_merge.add_argument('--log', **cls.args_log_file)
+        parser_vtam_merge.add_argument('-v', **cls.args_log_verbosity)
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
                                        required=True,
                                        type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
@@ -271,9 +249,13 @@ class ArgParser:
                                        ArgParserChecker.check_dir_exists_and_is_nonempty(x,
                                                                     error_message="Verify the '--fastqdir' argument"))
         parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
+        parser_vtam_merge.add_argument('--params', action='store', default=None, help="YML file with parameter values for the Merge subcommand",
+                                 required=False)
+        parser_vtam_merge.add_argument('--threads', action='store',
+                                     help="Number of threads",
+                                     required=False,
+                                     default=multiprocessing.cpu_count())
         parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
-
-        parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigger the good command
 
         ################################################################################################################
         #
