@@ -19,5 +19,5 @@ install_deps:
 	conda install -c bioconda blast=2.9.0 -y
 
 install_vtam:
-	${CONDABIN}/pip install . --upgrade
+	${CONDABIN}/pip install -e . --upgrade
 
