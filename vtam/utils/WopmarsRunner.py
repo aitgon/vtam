@@ -14,7 +14,7 @@ class WopmarsRunner(Singleton):
     def __init__(self, command, parameters):
         """
 
-        :param command: takes one of three values: merge, filter or optimize
+        :param command: takes one of two values: filter or optimize
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
         self.command = command
@@ -55,13 +55,7 @@ class WopmarsRunner(Singleton):
         template_dir = os.path.join(os.path.dirname(__file__), '../../data')
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
         template = None
-        if self.command == 'merge':
-            template = jinja2_env.get_template('wopfile_merge.yml')
-            if not self.parameters['outdir'] is None:
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_merge.yml')
-            else:
-                wopfile_path = os.path.join(self.tempdir, 'wopfile_merge.yml')
-        elif self.command in ['filter', 'optimize']:
+        if self.command in ['filter', 'optimize']:
             # Add output to sortreads file
             if self.command == 'filter':
                 self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")

@@ -4,6 +4,9 @@ import os
 import subprocess
 import sys
 
+import multiprocessing
+
+from vtam.CommandMerge import CommandMerge
 from vtam.utils.ArgParser import ArgParser
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandTaxonomy import CommandTaxonomy
@@ -85,11 +88,11 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommands: wopfile-dependent, merge, filter, optimize
+        # Subcommands: wopfile-dependent, filter, optimize
         #
         ###############################################################
 
-        if vars(self.args)['command'] in ['merge', 'filter', 'optimize']:
+        if vars(self.args)['command'] in ['filter', 'optimize']:
 
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
@@ -103,6 +106,21 @@ class VTAM(object):
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
             sys.exit(run_result.returncode)
+
+        ###############################################################
+        #
+        # Subcommand: merge
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'merge':
+            fastqinfo = OptionManager.instance()['fastqinfo']
+            fastqdir = OptionManager.instance()['fastqdir']
+            fastainfo = OptionManager.instance()['fastainfo']
+            fastadir = OptionManager.instance()['fastadir']
+            num_threads = OptionManager.instance()['threads']
+            CommandMerge.main(fastqinfo=fastqinfo, fastqdir=fastqdir, fastainfo=fastainfo, fastadir=fastadir,
+                              params=None, num_threads=num_threads)
 
         ###############################################################
         #
