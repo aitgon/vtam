@@ -9,7 +9,6 @@ from vtam.utils.VSearch import VSearch
 
 from vtam import VTAMexception
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
 
 
 class Merge(ToolWrapper):
