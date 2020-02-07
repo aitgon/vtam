@@ -85,11 +85,11 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommands: wopfile-dependent, merge, filter, optimize
+        # Subcommands: wopfile-dependent, filter, optimize
         #
         ###############################################################
 
-        if vars(self.args)['command'] in ['merge', 'filter', 'optimize']:
+        if vars(self.args)['command'] in ['filter', 'optimize']:
 
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
@@ -103,6 +103,29 @@ class VTAM(object):
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
             sys.exit(run_result.returncode)
+
+        ###############################################################
+        #
+        # Subcommand: merge
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'merge':
+            db = OptionManager.instance()['db']
+            variants_tsv = OptionManager.instance()['variants']
+            variant_taxa_tsv = OptionManager.instance()['variant_taxa']
+            mode = OptionManager.instance()['mode']
+            taxonomy_tsv = OptionManager.instance()['taxonomy']
+            blasdb_dir_path = OptionManager.instance()['blastdbdir']
+            blastdbname_str = OptionManager.instance()['blastdbname']
+            ltg_rule_threshold = OptionManager.instance()['ltg_rule_threshold']
+            include_prop = OptionManager.instance()['include_prop']
+            min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
+            num_threads = OptionManager.instance()['threads']
+            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, variant_taxa_tsv=variant_taxa_tsv, taxonomy_tsv=taxonomy_tsv,
+                                  blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
+                                  ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
+                                  min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
 
         ###############################################################
         #

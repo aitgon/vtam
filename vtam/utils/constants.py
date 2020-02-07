@@ -5,14 +5,15 @@
 ##########################################################
 
 parameters_numerical = {
-    'fastq_ascii': 33,
-    'fastq_maxee': 1,
-    'fastq_maxmergelen': 500,
-    'fastq_maxns': 0,
-    'fastq_minlen': 50,
-    'fastq_minmergelen': 100,
-    'fastq_minovlen': 50,
-    'fastq_truncqual': 10,
+    # Default parameters for Merge are in the CommandMerge file
+    # 'fastq_ascii': 33,
+    # 'fastq_maxee': 1,
+    # 'fastq_maxmergelen': 500,
+    # 'fastq_maxns': 0,
+    # 'fastq_minlen': 50,
+    # 'fastq_minmergelen': 100,
+    # 'fastq_minovlen': 50,
+    # 'fastq_truncqual': 10,
     'genetic_table_number': 5,
     'ltg_rule_threshold': 97,
     'include_prop': 90,
