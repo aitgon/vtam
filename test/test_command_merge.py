@@ -28,8 +28,11 @@ class TestCommandMerge(TestCase):
 
         vsearch_merge_runner = VSearchMergeRunner('fastq_fw_abspath', 'fastq_rv_abspath', 'fasta_abspath',
                                                   params_yml=params_yml.name)
+
         vsearch_merge_runner.load_parameters()
         self.assertTrue(vsearch_merge_runner.parameters['fastq_ascii'], 10)
+
+        vsearch_merge_runner.run()
 
     def test_wrong_params(self):
 

@@ -3,3 +3,4 @@ wopmars-*
 __pycache__
 vtam.egg-info
 output
+taxonomy.tsv
