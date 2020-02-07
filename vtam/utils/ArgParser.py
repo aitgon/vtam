@@ -187,23 +187,23 @@ class ArgParser:
         #
         ################################################################################################################
 
-        parser_vtam_merge = subparsers.add_parser('merge', add_help=True, parents=[parser_vtam])
-        parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
-                                       required=True,
-                                       type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
-                                                                    error_message="Verify the '--fastqinfo' argument"))
-        parser_vtam_merge\
-            .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
-                          required=True)
-        parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
-                                       type=lambda x:
-                                       ArgParserChecker.check_dir_exists_and_is_nonempty(x,
-                                                                    error_message="Verify the '--fastqdir' argument"))
-        parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
-        parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
-
-        parser_vtam_merge.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-                                     required=False)
+        # parser_vtam_merge = subparsers.add_parser('merge', add_help=True, parents=[parser_vtam])
+        # parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
+        #                                required=True,
+        #                                type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+        #                                                             error_message="Verify the '--fastqinfo' argument"))
+        # parser_vtam_merge\
+        #     .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
+        #                   required=True)
+        # parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
+        #                                type=lambda x:
+        #                                ArgParserChecker.check_dir_exists_and_is_nonempty(x,
+        #                                                             error_message="Verify the '--fastqdir' argument"))
+        # parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
+        # parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
+        #
+        # parser_vtam_merge.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
+        #                              required=False)
 
         ################################################################################################################
         #
@@ -251,6 +251,29 @@ class ArgParser:
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
                                           required=True)
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigget the good command
+
+        ################################################################################################################
+        #
+        # create the parser for the "merge" command
+        #
+        ################################################################################################################
+
+        parser_vtam_merge = subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
+                                       required=True,
+                                       type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
+                                                                    error_message="Verify the '--fastqinfo' argument"))
+        parser_vtam_merge\
+            .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
+                          required=True)
+        parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
+                                       type=lambda x:
+                                       ArgParserChecker.check_dir_exists_and_is_nonempty(x,
+                                                                    error_message="Verify the '--fastqdir' argument"))
+        parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
+        parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigget the good command
+
+        parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigger the good command
 
         ################################################################################################################
         #
@@ -338,15 +361,6 @@ class ArgParser:
                                         prerun	ZFZR"""))
         parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
-        # parser_vtam_pool_markers.add_argument('--taxonomy', dest='taxonomy', action='store',
-        #                              help="""REQUIRED: SQLITE DB with taxonomy information.
-        #
-        # This database is create with the command: vtam taxonomy. For instance
-        #
-        # vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
-        #                              required=True,
-        #                              type=lambda x: ArgParserChecker.check_file_exists_and_is_nonempty(x,
-        #                                                           error_message="Verify the '--taxonomy' argument"))
 
         parser_vtam_pool_markers.set_defaults(command='pool_markers')  # This attribute will trigger the good command
 
