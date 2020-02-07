@@ -7,13 +7,20 @@
 Create a conda environment with vsearch and blast
 
 ~~~
-conda create --name vtam python=3.7
+conda create --name vtam python=3.7 -y
 ~~~
 
 Activate conda
 
 ~~~
 conda activate vtam
+~~~
+
+## Fetch and pull latest commit of VTAM
+
+~~~
+git fetch origin master
+git pull origin master
 ~~~
 
 ## Install dependencies and VTAM
