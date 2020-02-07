@@ -2,7 +2,8 @@ import subprocess
 
 from vtam.utils.Logger import Logger
 
-class VSearch():
+
+class VSearch(object):
 
     def __init__(self, parameters):
         """Creates a vsearch object based on the parameters
@@ -12,11 +13,13 @@ class VSearch():
         """
         self.parameters = parameters
 
-    def run(self):
-        """Run the vsearch
+    def create_command(self):
+
+        """Create the vsearch command that will be run
 
         :return: void
         """
+
         command = 'vsearch'
         for param in self.parameters:
             if not self.parameters[param] is None:
@@ -24,6 +27,17 @@ class VSearch():
             else:
                 command += ' {}'.format(param)
         Logger.instance().info(command)
+
+        return command
+
+    def run(self):
+
+        """Run the vsearch
+
+        :return: void
+        """
+
+        command = self.create_command()
         run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
         Logger.instance().info(run_result.stdout)
 
