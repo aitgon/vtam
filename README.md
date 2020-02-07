@@ -1,4 +1,36 @@
-# Documentation
+% VTAM - 
+
+# Installation
+
+## Build environment setup with Conda
+
+Create a conda environment with vsearch and blast
+
+~~~
+conda create --name vtam python=3.7
+~~~
+
+Activate conda
+
+~~~
+conda activate vtam
+~~~
+
+## Install dependencies and VTAM
+
+List of dependencies
+
+- vsearch=2.7.0
+- blast=2.9.0
+- wopmars=0.0.8 ( https://github.com/aitgon/wopmars )
+
+These dependencies and VTAM can be installed automatically using within the Conda environment:
+
+~~~
+make
+~~~
+
+# Documentation (TODO)
 
 Python docstrings use the google style.
 
@@ -9,34 +41,4 @@ cd doc
 sphinx-apidoc -o . ../vtam
 make html
 ~~~
-
-# Installation
-
-Create a conda environment with vsearch and blast
-
-~~~
-conda deactivate
-conda create --name vtam python=3.7
-~~~
-
-Activate it
-
-~~~
-conda activate vtam
-conda install -c bioconda vsearch=2.7.0
-conda install -c bioconda blast=2.9.0
-~~~
-
-Download and install wopmars
-
-~~~
-wget https://github.com/aitgon/wopmars/archive/0.0.8.tar.gz
-taz zxvf 0.0.8.tar.gz
-pip install wopmars-0.0.8/.
-~~~
-
-~~~
-pip install .
-~~~
-
 
