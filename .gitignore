@@ -4,3 +4,9 @@ __pycache__
 vtam.egg-info
 output
 taxonomy.tsv
+doc/_build/
+doc/modules_bak.rst
+doc/vtam.models.rst
+doc/vtam.rst
+doc/vtam.utils.rst
+doc/vtam.wrapper.rst
