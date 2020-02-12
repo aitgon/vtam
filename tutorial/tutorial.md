@@ -46,16 +46,16 @@ You can download these FASTQ files from the Dryad website [doi:10.5061/dryad.f40
 Create a *fastq* directory:
 
 ~~~
-mkdir -p fastqdir
+mkdir -p fastq
 ~~~
 
 Copy the FASTQ file inside and verify the directory:
 
 ~~~
-$ ls fastqdir
-MFZR1_S4_L001_R1_001.fastq  MFZR2_S5_L001_R2_001.fastq  ZFZR1_S1_L001_R1_001.fastq  ZFZR2_S2_L001_R2_001.fastq
-MFZR1_S4_L001_R2_001.fastq  MFZR3_S6_L001_R1_001.fastq  ZFZR1_S1_L001_R2_001.fastq  ZFZR3_S3_L001_R1_001.fastq
-MFZR2_S5_L001_R1_001.fastq  MFZR3_S6_L001_R2_001.fastq  ZFZR2_S2_L001_R1_001.fastq  ZFZR3_S3_L001_R2_001.fastq
+$ ls fastq/*.fastq
+fastq/MFZR1_S4_L001_R1_001.fastq  fastq/MFZR2_S5_L001_R2_001.fastq  fastq/ZFZR1_S1_L001_R1_001.fastq  fastq/ZFZR2_S2_L001_R2_001.fastq
+fastq/MFZR1_S4_L001_R2_001.fastq  fastq/MFZR3_S6_L001_R1_001.fastq  fastq/ZFZR1_S1_L001_R2_001.fastq  fastq/ZFZR3_S3_L001_R1_001.fastq
+fastq/MFZR2_S5_L001_R1_001.fastq  fastq/MFZR3_S6_L001_R2_001.fastq  fastq/ZFZR2_S2_L001_R1_001.fastq  fastq/ZFZR3_S3_L001_R2_001.fastq
 ~~~
 
 ## Define FASTQ file sample information
@@ -76,37 +76,39 @@ These columns are needed
 - Fastq_rv
 
 
-The first two lines of my *fastqinfo.tsv* look like this:
+There is an example in the "tutorial" folder with these first lines
 
 ~~~
-Tag_fwd	Primer_fwd	Tag_rev	Primer_rev	Marker	 Biosample	Replicate	Run	Fastq_fwd	Fastq_rev
-cgatcgtcatcacg	TCCACTAATCACAARGATATTGGTAC	cgcgatctgtagag	WACTAATCAATTWCCAAATCCTCC	MFZR	14Mon01	repl2	prerun	MFZR2_S5_L001_R1_001.fastq	MFZR2_S5_L001_R2_001.fastq
+$ head -n3 fastqinfo.tsv 
+TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 Biosample	Replicate	Run	Fastq_fw	Fastq_rv
+tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos1_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq
+tgatcgatgatcag	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos2_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq
 ~~~
 
 ## Run the VTAM merge command
 
-In addition to */path/to/my/fastqdir* and *fastqinfo.tsv*, we need
+In addition to *fastq* and *fastqinfo.tsv*, we need
 
 - Output WopMars DB file
 - Output TSV file with FASTA file sample information
 - Output directory to write the merged FASTA files
 
 ~~~
-mkdir -p out/fastadir
-vtam merge --fastqinfo fastqinfo.tsv --fastqdir /path/to/my/fastqdir --fastainfo out/fastainfo.tsv --fastadir out/fastadir --log out/vtam.log -v
+mkdir -p out/fasta
+vtam merge --fastqinfo fastqinfo.tsv --fastqdir fastq --fastainfo out/fastainfo.tsv --fastadir out/fasta --log out/vtam.log -v
 ~~~
 
 
 Open the *fastainfo.tsv* file and verify its content. A new column should be written with the names of the merged FASTA files.
 
-Verify also the content of the *out/fastadir* with the merged FASTA files.
+Verify also the content of the *out/fasta* with the merged FASTA files.
 
 # Demultiplex the reads, filter variants and create the ASV tables
 
 There is a single command *filter* to demultiplex the reads, filter variants and create the ASV tables. This command takes quite long but its progress can be seen in the log file.
 
 ~~~
-vtam filter --fastainfo out/fastainfo.tsv --fastadir out/fastadir --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam filter --fastainfo out/fastainfo.tsv --fastadir out/fasta --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
 
 The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
@@ -156,7 +158,7 @@ vtam taxassign --variants out/pooled_markers.tsv --variant_taxa out/pooled_marke
 To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
 
 ~~~
-vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fastadir --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fasta --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
 
 
