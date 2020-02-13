@@ -2,7 +2,7 @@ import inspect
 
 import pandas
 import sqlalchemy
-from sqlalchemy import select
+from sqlalchemy import select, bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
@@ -121,7 +121,7 @@ class VariantReadCount(ToolWrapper):
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # add this sample_instance ###########
                 sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
-                                             'replicate' : replicate})
+                                             'replicate': replicate})
 
         ################################################################################################################
         #
@@ -131,7 +131,12 @@ class VariantReadCount(ToolWrapper):
 
         Logger.instance().debug("file: {}; line: {}; Remove marker/run/biosample/replicate".format(__file__, inspect.currentframe().f_lineno))
         with engine.connect() as conn:
-            conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
+            stmt = variant_read_count_model.__table__.delete()
+            stmt = stmt.where(variant_read_count_model.__table__.c.run_id == bindparam('run_id'))
+            stmt = stmt.where(variant_read_count_model.__table__.c.marker_id == bindparam('marker_id'))
+            stmt = stmt.where(variant_read_count_model.__table__.c.biosample_id == bindparam('biosample_id'))
+            stmt = stmt.where(variant_read_count_model.__table__.c.replicate == bindparam('replicate'))
+            conn.execute(stmt, sample_instance_list)
 
         ##########################################################
         #
