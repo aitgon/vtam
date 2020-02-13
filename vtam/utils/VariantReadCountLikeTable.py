@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, bindparam
 from vtam import Logger, VTAMexception
 
 import pandas
@@ -17,8 +17,15 @@ class VariantReadCountLikeTable(object):
     def delete_from_db(self, sample_record_list):
         """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate"""
 
+        # with self.engine.connect() as conn:
+        #     conn.execute(self.variant_read_count_like_model.__table__.delete(), sample_record_list)
         with self.engine.connect() as conn:
-            conn.execute(self.variant_read_count_like_model.__table__.delete(), sample_record_list)
+            stmt = self.variant_read_count_like_model.__table__.delete()
+            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == bindparam('run_id'))
+            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.marker_id == bindparam('marker_id'))
+            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == bindparam('biosample_id'))
+            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == bindparam('replicate'))
+            conn.execute(stmt, sample_record_list)
 
     def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
         """Get variant_read_count df from input filter models
