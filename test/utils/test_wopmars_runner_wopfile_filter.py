@@ -38,7 +38,7 @@ class TestWorpmarsRunnerFilter(TestCase):
     def test_wopmars_runner_filter(self):
         #
         args_str = 'filter --fastainfo {foofile} --fastadir {foodir} --outdir {outdir}'.format(**self.foopaths)
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
         #####################
@@ -305,7 +305,7 @@ rule MakeAsvTable:
 
         args_str = 'filter --fastainfo {foofile} --fastadir {foodir} --outdir {outdir}' \
                    ' --threshold_specific {foofile}'.format(**self.foopaths)
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
         #####################
@@ -352,7 +352,7 @@ rule MakeAsvTable:
         this_foopaths['params_yml'] = params_yml_path
 
         args_str = 'filter --fastainfo {foofile} --fastadir {foodir} --outdir {outdir} --threshold_specific {foofile} --params {params_yml}'.format(**this_foopaths)
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
         #####################
@@ -397,7 +397,7 @@ rule MakeAsvTable:
 
         args_str = 'filter --fastainfo {foofile} --fastadir {foodir} --outdir {outdir} --threshold_specific {foofile} ' \
                    '--params {params_yml}'.format(**this_foopaths)
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
         #####################

@@ -42,7 +42,7 @@ class VTAM(object):
 
         self.sys_argv = sys_argv
         # AG do not use abspath for the moment. Maybe later it can be used as option
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         self.args = parser.parse_args(sys_argv)
 
         ################################################################################################################
