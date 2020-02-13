@@ -62,6 +62,31 @@ class ArgParserChecker():
             raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
         return path
 
+    @staticmethod
+    def check_parser_filter_arg_sample_select(parser, arg):
+        """Checks if file exists and is not empty
+
+        :param path: Path to the sampleselect TSV file
+        :param error_message: Optional message to help debug the problem
+        :return: void
+        """
+        if not os.path.exists(arg):
+            parser.error("The file %s does not exist!" % arg)
+        else:
+            return open(arg, 'r')  # return an open file handle
+
+
+        # try:
+        #     sample_selection_df = pandas.read_csv(path, sep="\t", header=0)
+        #     sample_selection_df.columns = map(str.lower, sample_selection_df.columns)  # column column names to lower
+        #     assert 'run' in sample_selection_df.columns and 'marker' in sample_selection_df.columns
+        #     assert sample_selection_df.shape[0] > 0
+        # except AssertionError as err:
+        #     raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        # except FileNotFoundError as err:
+        #     raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
+        # return path
+
     # @staticmethod
     # def check_poolmarkers_arg(run_marker_path, error_message=None):
     #     """Checks if file exists and is not empty
@@ -192,6 +217,17 @@ class ArgParser:
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=lambda x: ArgParserChecker
                           .check_file_exists_and_is_nonempty(x, error_message="Verify the '--fastainfo' argument"))
+        parser_vtam_filter\
+            .add_argument('--sampleselect', action='store',
+                                     help="""REQUIRED: TSV file with sample selection and at least the two columns Run
+                                     and Marker.
+                                     Additionally, the columns Biosample and Replicate can be given
+                                        Example:
+                                        Run	Marker
+                                        prerun	MFZR
+                                        prerun	ZFZR""",
+                          required=True, type=lambda x: ArgParserChecker
+                          .check_parser_filter_arg_sample_select(parser_vtam_filter, x))
         parser_vtam_filter.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                      required=True,
                                      type=lambda x:
