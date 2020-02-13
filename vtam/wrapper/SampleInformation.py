@@ -1,6 +1,7 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 import os
 
+
 class SampleInformation(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "vtam.wrapper.SampleInformation"
