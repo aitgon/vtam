@@ -153,6 +153,8 @@ class ArgParser:
     args_log_verbosity = {'dest': 'log_verbosity', 'action': 'count', 'default': 0, 'required': False,
                           'help': "Set verbosity level, eg. None (Error level) -v (Info level)."}
 
+    parser_vtam_main = None
+
     @classmethod
     def get_main_arg_parser(cls):
         """
@@ -160,26 +162,28 @@ class ArgParser:
         :return:
         """
         # create the top-level parser
-        parser_vtam = argparse.ArgumentParser(add_help=False)
-        parser_vtam.add_argument('--db', **cls.args_db)
-        parser_vtam.add_argument('--log', **cls.args_log_file)
-        parser_vtam.add_argument('--threads', action='store',
+        cls.parser_vtam_main = argparse.ArgumentParser(add_help=False)
+        cls.parser_vtam_main.add_argument('--params', action='store', default=None, help="YML file with parameter values",
+                                 required=False, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+        cls.parser_vtam_main.add_argument('--log', **cls.args_log_file)
+        cls.parser_vtam_main.add_argument('--threads', action='store',
                                      help="Number of threads",
                                      required=False,
                                      default=multiprocessing.cpu_count())
-        parser_vtam.add_argument('-v', **cls.args_log_verbosity)
-        parser_vtam.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
-                                 help="Only display what would have been done.")
-        parser_vtam.add_argument('-F', '--forceall', dest='forceall', action='store_true',
-                                 help="Force argument of WopMars", required=False)
-        parser_vtam.add_argument('--params', action='store', default=None, help="YML file with parameter values",
-                                 required=False, type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        parser_vtam.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
-                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
-                                 required=False)
-        parser_vtam.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
-                                 help="Execute the workflow from the given RULE.", required=False)
-        subparsers = parser_vtam.add_subparsers()
+        cls.parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
+        cls.subparsers = cls.parser_vtam_main.add_subparsers()
+
+        # parser_vtam_wopmars = subparsers.add_parser('filter', add_help=True)
+        # parser_vtam_wopmars.add_argument('--db', **cls.args_db)
+        # parser_vtam_wopmars.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
+        #                          help="Only display what would have been done.")
+        # parser_vtam_wopmars.add_argument('-F', '--forceall', dest='forceall', action='store_true',
+        #                          help="Force argument of WopMars", required=False)
+        # parser_vtam_wopmars.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
+        #                          help="Execute the workflow to the given target RULE: SampleInformation, ...",
+        #                          required=False)
+        # parser_vtam_wopmars.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
+        #                          help="Execute the workflow from the given RULE.", required=False)
 
         ################################################################################################################
         #
@@ -187,7 +191,15 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_merge(subparsers)
+        cls.create_merge()
+
+        ################################################################################################################
+        #
+        # create the parser for the "sortreads" command
+        #
+        ################################################################################################################
+
+        cls.create_sortreads()
 
         ################################################################################################################
         #
@@ -195,7 +207,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_filter(subparsers, parser_vtam)
+        cls.create_filter()
 
         ################################################################################################################
         #
@@ -203,7 +215,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_optimize(subparsers, parser_vtam)
+        cls.create_optimize()
 
         ################################################################################################################
         #
@@ -211,7 +223,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_taxassign(subparsers)
+        cls.create_taxassign()
 
         ################################################################################################################
         #
@@ -219,7 +231,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_taxassign(subparsers)
+        cls.create_taxassign()
 
         ################################################################################################################
         #
@@ -227,7 +239,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_taxonomy(subparsers)
+        cls.create_taxonomy()
 
         ################################################################################################################
         #
@@ -235,14 +247,15 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_parser_coiblastdb(subparsers)
+        cls.create_coiblastdb()
 
-        return parser_vtam
+        return cls.parser_vtam_main
 
     @classmethod
-    def create_parser_merge(cls, subparsers):
+    def create_merge(cls):
 
-        parser_vtam_merge = subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_merge = cls.subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[cls.parent_parser])
         parser_vtam_merge.add_argument('--log', **cls.args_log_file)
         parser_vtam_merge.add_argument('-v', **cls.args_log_verbosity)
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
@@ -263,9 +276,26 @@ class ArgParser:
         parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_filter(cls, subparsers, parser_vtam):
+    def create_sortreads(cls, subparsers, parent_parser):
 
-        parser_vtam_filter = subparsers.add_parser('filter', add_help=True, parents=[parser_vtam])
+        parser_vtam_sortreads = subparsers.add_parser('sortreads', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[parent_parser])
+        parser_vtam_sortreads\
+            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
+                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+        parser_vtam_sortreads.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
+                                        required=True,
+                                        type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+        parser_vtam_sortreads.add_argument('--outdir', action='store',
+                                   help="REQUIRED: Output directory for trimmed and demultiplexed files", default="out",
+                                     required=True)
+        parser_vtam_sortreads.set_defaults(command='sortreads')  # This attribute will trigger the good command
+
+    @classmethod
+    def create_filter(cls, subparsers, parent_parser):
+
+        parser_vtam_filter = subparsers.add_parser('filter', add_help=True, parents=[parent_parser])
+
         parser_vtam_filter\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
@@ -288,10 +318,28 @@ class ArgParser:
                                  help="TSV file with variant (col1: variant; col2: threshold) or variant-replicate "
                                   "(col1: variant; col2: replicate; col3: threshold)specific thresholds. Header expected.",
                                  type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        parser_vtam_filter.set_defaults(command='filter')  # This attribute will trigget the good command
+
+        ################################################################################################################
+        #
+        # Wopmars args
+        #
+        ################################################################################################################
+
+        parser_vtam_filter.add_argument('--db', **cls.args_db)
+        parser_vtam_filter.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
+                                 help="Only display what would have been done.")
+        parser_vtam_filter.add_argument('-F', '--forceall', dest='forceall', action='store_true',
+                                 help="Force argument of WopMars", required=False)
+        parser_vtam_filter.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
+                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
+                                 required=False)
+        parser_vtam_filter.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
+                                 help="Execute the workflow from the given RULE.", required=False)
+
+        parser_vtam_filter.set_defaults(command='filter')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_optimize(cls, subparsers, parser_vtam):
+    def create_optimize(cls, subparsers, parser_vtam):
 
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
         parser_vtam_optimize\
@@ -304,10 +352,28 @@ class ArgParser:
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
                                           required=True)
-        parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigget the good command
+
+        ################################################################################################################
+        #
+        # Wopmars args
+        #
+        ################################################################################################################
+
+        parser_vtam_optimize.add_argument('--db', **cls.args_db)
+        parser_vtam_optimize.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
+                                 help="Only display what would have been done.")
+        parser_vtam_optimize.add_argument('-F', '--forceall', dest='forceall', action='store_true',
+                                 help="Force argument of WopMars", required=False)
+        parser_vtam_optimize.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
+                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
+                                 required=False)
+        parser_vtam_optimize.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
+                                 help="Execute the workflow from the given RULE.", required=False)
+
+        parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_taxassign(cls, subparsers):
+    def create_taxassign(cls, subparsers):
 
         parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
 
@@ -363,7 +429,7 @@ class ArgParser:
         parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_poolmarkers(cls, subparsers):
+    def create_poolmarkers(cls, subparsers):
 
         parser_vtam_pool_markers = subparsers.add_parser('poolmarkers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
@@ -387,7 +453,7 @@ class ArgParser:
         parser_vtam_pool_markers.set_defaults(command='poolmarkers')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_taxonomy(cls, subparsers):
+    def create_taxonomy(cls, subparsers):
 
         parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True)
         parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
@@ -398,7 +464,7 @@ class ArgParser:
         parser_vtam_taxonomy.set_defaults(command='taxonomy')  # This attribute will trigger the good command
 
     @classmethod
-    def create_parser_coiblastdb(cls, subparsers):
+    def create_coiblastdb(cls, subparsers):
 
         parser_vtam_coi_blast_db = subparsers.add_parser('coi_blast_db', add_help=True)
         parser_vtam_coi_blast_db.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",

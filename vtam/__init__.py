@@ -7,6 +7,7 @@ import sys
 import multiprocessing
 
 from vtam.CommandMerge import CommandMerge
+from vtam.CommandSortReads import CommandSortReads
 from vtam.utils.ArgParser import ArgParser
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandTaxonomy import CommandTaxonomy
@@ -24,6 +25,7 @@ class VTAM(object):
         These are the VTAM commands:
 
    merge      Merge paired-end reads
+   sortreads  Trim and demultiplex reads
    filter     Run VTAM filters to create an ASV table with the variant sequences as last column
    optimize   Find optimal parameters for filtering
    pool_markers   Pool overlapping markers from the ASV table into one
@@ -121,6 +123,19 @@ class VTAM(object):
             num_threads = OptionManager.instance()['threads']
             CommandMerge.main(fastqinfo=fastqinfo, fastqdir=fastqdir, fastainfo=fastainfo, fastadir=fastadir,
                               params=None, num_threads=num_threads)
+
+        ###############################################################
+        #
+        # Subcommand: sortreads
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'sortreads':
+            fastadir = OptionManager.instance()['fastadir']
+            fastainfo = OptionManager.instance()['fastainfo']
+            outdir = OptionManager.instance()['outdir']
+            num_threads = OptionManager.instance()['threads']
+            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=None, num_threads=num_threads, outdir=outdir)
 
         ###############################################################
         #
