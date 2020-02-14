@@ -9,29 +9,7 @@
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
             Fasta: vtam.models.Fasta
-            PrimerPair: vtam.models.PrimerPair
-            TagPair: vtam.models.TagPair
             SampleInformation: vtam.models.SampleInformation
-
-
-rule SortReads:
-    tool: vtam.wrapper.SortReads
-    input:
-        table:
-            Fasta: vtam.models.Fasta
-            SampleInformation: vtam.models.SampleInformation
-            Run: vtam.models.Run
-            Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
-        file:
-            fastainfo: {{fastainfo}}
-    output:
-        file:
-            sortreads: {{sortreads}}
-    params:
-        min_id: {{min_id}}
-        minseqlength: {{minseqlength}}
-        overhang: {{overhang}}
 
 
 rule VariantReadCount:
