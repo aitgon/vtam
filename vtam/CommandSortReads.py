@@ -1,26 +1,17 @@
 import os
 
 import multiprocessing
-import sqlalchemy
-
-import pandas
 import pathlib
 
+import pandas
 import sys
 import yaml
-from sqlalchemy import create_engine, select
 
 from vtam.utils.SortReadsRunner import SortReadsRunner
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 
-from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
-from vtam.models.Variant import Variant as variant_declarative
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignRunner import TaxAssignRunner
-from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantDFutils import VariantDFutils
 
 class VSearchMergeRunner(object):
 
@@ -92,38 +83,22 @@ class CommandSortReads(object):
             overhang = params['overhang']
 
         fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
-        trimmed_fasta_df = fastainfo_df.copy()
-        trimmed_fasta_df = trimmed_fasta_df[['Run', 'Marker', 'Biosample', 'Replicate', 'Fasta']]
-        trimmed_fasta_df['FastaTrimmed'] = None
 
-        for i,row in enumerate(trimmed_fasta_df.itertuples()):
-            trimmed_fasta_df.loc[i] = (row.Fasta).replace('.fasta', '_%03d.fasta' % i)
+        pathlib.Path(outdir).mkdir(exist_ok=True)
 
-        tag_fwd_sequence_list = fastainfo_df.TagFwd.tolist()
-        tag_rev_sequence_list = fastainfo_df.TagRev.tolist()
-        primer_fwd_sequence_list = fastainfo_df.PrimerFwd.tolist()
-        primer_rev_sequence_list = fastainfo_df.PrimerRev.tolist()
+        for fasta_filename in fastainfo_df.Fasta.unique().tolist():
 
-        for row in fastainfo_df.itertuples():
-
-            fasta_path = os.path.join(fastadir, row.Fasta)
-            sort_reads_tsv = os.path.join(outdir, row.Fasta + ".tsv")
+            fasta_path = os.path.join(fastadir, fasta_filename)
+            fasta_info_df_i = fastainfo_df.loc[fastainfo_df.Fasta == fasta_filename]
 
             alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength, 'overhang': overhang}
 
             # Create SortReadsRunner
-            sort_reads_runner = SortReadsRunner(fasta_information_df=fastainfo_df,
+            sort_reads_runner = SortReadsRunner(fasta_information_df=fasta_info_df_i,
                                                 fasta_path=fasta_path,
-                                                tag_fwd_sequence_list=tag_fwd_sequence_list,
-                                                tag_rev_sequence_list=tag_rev_sequence_list,
-                                                primer_fwd_sequence_list=primer_fwd_sequence_list,
-                                                primer_rev_sequence_list=primer_rev_sequence_list,
-                                                alignement_parameters=alignement_parameters,
-                                                trimmed_fasta_df=trimmed_fasta_df)
+                                                alignement_parameters=alignement_parameters, outdir=outdir, num_threads=num_threads)
 
             sort_reads_runner.run()
-            import pdb; pdb.set_trace()
-            # sort_reads_tsv_list.append(sort_reads_tsv_i)
 
         #
         # Go
@@ -163,10 +138,10 @@ class CommandSortReads(object):
         #
         #########################################
 
-        for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
-
-            vsearch_merge_runner = VSearchMergeRunner(fastq_fw_abspath, fastq_rv_abspath, fasta_abspath,
-                                                      params_yml=params, threads=num_threads)
-            vsearch_merge_runner.load_parameters()
-            vsearch_merge_runner.run()
+        # for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
+        #
+        #     vsearch_merge_runner = VSearchMergeRunner(fastq_fw_abspath, fastq_rv_abspath, fasta_abspath,
+        #                                               params_yml=params, threads=num_threads)
+        #     vsearch_merge_runner.load_parameters()
+        #     vsearch_merge_runner.run()
 
