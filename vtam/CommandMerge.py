@@ -1,26 +1,13 @@
-import inspect
-import os
-
 import multiprocessing
-import sqlalchemy
-
-import pandas
+import os
 import pathlib
-
 import sys
 import yaml
-from sqlalchemy import create_engine, select
 
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
-
-from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
-from vtam.models.Variant import Variant as variant_declarative
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignRunner import TaxAssignRunner
-from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantDFutils import VariantDFutils
+
 
 class VSearchMergeRunner(object):
 
