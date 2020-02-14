@@ -162,16 +162,16 @@ class ArgParser:
         :return:
         """
         # create the top-level parser
-        cls.parser_vtam_main = argparse.ArgumentParser(add_help=False)
-        cls.parser_vtam_main.add_argument('--params', action='store', default=None, help="YML file with parameter values",
+        parser_vtam_main = argparse.ArgumentParser(add_help=False)
+        parser_vtam_main.add_argument('--params', action='store', default=None, help="YML file with parameter values",
                                  required=False, type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        cls.parser_vtam_main.add_argument('--log', **cls.args_log_file)
-        cls.parser_vtam_main.add_argument('--threads', action='store',
+        parser_vtam_main.add_argument('--log', **cls.args_log_file)
+        parser_vtam_main.add_argument('--threads', action='store',
                                      help="Number of threads",
                                      required=False,
                                      default=multiprocessing.cpu_count())
-        cls.parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
-        cls.subparsers = cls.parser_vtam_main.add_subparsers()
+        parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
+        subparsers = parser_vtam_main.add_subparsers()
 
         # parser_vtam_wopmars = subparsers.add_parser('filter', add_help=True)
         # parser_vtam_wopmars.add_argument('--db', **cls.args_db)
@@ -191,7 +191,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_merge()
+        cls.create_merge(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -199,7 +199,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_sortreads()
+        cls.create_sortreads(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -207,7 +207,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_filter()
+        cls.create_filter(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -215,15 +215,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_optimize()
-
-        ################################################################################################################
-        #
-        # create the parser for the "taxassign" command
-        #
-        ################################################################################################################
-
-        cls.create_taxassign()
+        cls.create_optimize(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -231,7 +223,15 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxassign()
+        cls.create_poolmarkers(subparsers=subparsers)
+
+        ################################################################################################################
+        #
+        # create the parser for the "taxassign" command
+        #
+        ################################################################################################################
+
+        cls.create_taxassign(subparsers=subparsers)
 
         ################################################################################################################
         #
@@ -239,7 +239,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxonomy()
+        cls.create_taxonomy(subparsers=subparsers)
 
         ################################################################################################################
         #
@@ -247,17 +247,15 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_coiblastdb()
+        cls.create_coiblastdb(subparsers=subparsers)
 
-        return cls.parser_vtam_main
+        return parser_vtam_main
 
     @classmethod
-    def create_merge(cls):
+    def create_merge(cls, subparsers, parent_parser):
 
-        parser_vtam_merge = cls.subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
-                                                  parents=[cls.parent_parser])
-        parser_vtam_merge.add_argument('--log', **cls.args_log_file)
-        parser_vtam_merge.add_argument('-v', **cls.args_log_verbosity)
+        parser_vtam_merge = subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[parent_parser])
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
                                        required=True,
                                        type=ArgParserChecker.check_file_exists_and_is_nonempty)
@@ -267,12 +265,6 @@ class ArgParser:
         parser_vtam_merge.add_argument('--fastqdir', action='store', help="Directory with FASTQ files", required=True,
                                        type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_merge.add_argument('--fastadir', action='store', help="Directory with FASTA files", required=True)
-        parser_vtam_merge.add_argument('--params', action='store', default=None, help="YML file with parameter values for the Merge subcommand",
-                                 required=False)
-        parser_vtam_merge.add_argument('--threads', action='store',
-                                     help="Number of threads",
-                                     required=False,
-                                     default=multiprocessing.cpu_count())
         parser_vtam_merge.set_defaults(command='merge')  # This attribute will trigger the good command
 
     @classmethod
@@ -339,9 +331,9 @@ class ArgParser:
         parser_vtam_filter.set_defaults(command='filter')  # This attribute will trigger the good command
 
     @classmethod
-    def create_optimize(cls, subparsers, parser_vtam):
+    def create_optimize(cls, subparsers, parent_parser):
 
-        parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parser_vtam])
+        parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parent_parser])
         parser_vtam_optimize\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
@@ -371,6 +363,30 @@ class ArgParser:
                                  help="Execute the workflow from the given RULE.", required=False)
 
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
+
+    @classmethod
+    def create_poolmarkers(cls, subparsers):
+
+        parser_vtam_pool_markers = subparsers.add_parser('poolmarkers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
+        parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
+                                     help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
+                                        Example:
+                                        run_name	marker_name
+                                        prerun	MFZR
+                                        prerun	ZFZR""",
+                                     required=True, type=lambda x: ArgParserChecker.check_parser_poolmarkers_arg_runmarker(x,
+                                                                                                                           error_message="""Verify the '--pooledmarkers' argument: 
+                                      It is an input TSV file with two columns and headers 'run_name' and 'marker_name'.
+                                        Default: Uses all runs and markers in the DB
+                                        Example:
+                                        run_name	marker_name
+                                        prerun	MFZR
+                                        prerun	ZFZR"""))
+        parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
+                                       required=True)
+
+        parser_vtam_pool_markers.set_defaults(command='poolmarkers')  # This attribute will trigger the good command
 
     @classmethod
     def create_taxassign(cls, subparsers):
@@ -427,30 +443,6 @@ class ArgParser:
                                                 "only if selected hits contain at least --min_number_of_taxa different taxa")
 
         parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigger the good command
-
-    @classmethod
-    def create_poolmarkers(cls, subparsers):
-
-        parser_vtam_pool_markers = subparsers.add_parser('poolmarkers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
-        parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
-        parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
-                                     help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
-                                        Example:
-                                        run_name	marker_name
-                                        prerun	MFZR
-                                        prerun	ZFZR""",
-                                     required=True, type=lambda x: ArgParserChecker.check_parser_poolmarkers_arg_runmarker(x,
-                                                                                                                           error_message="""Verify the '--pooledmarkers' argument: 
-                                      It is an input TSV file with two columns and headers 'run_name' and 'marker_name'.
-                                        Default: Uses all runs and markers in the DB
-                                        Example:
-                                        run_name	marker_name
-                                        prerun	MFZR
-                                        prerun	ZFZR"""))
-        parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
-                                       required=True)
-
-        parser_vtam_pool_markers.set_defaults(command='poolmarkers')  # This attribute will trigger the good command
 
     @classmethod
     def create_taxonomy(cls, subparsers):
