@@ -148,7 +148,7 @@ class ArgParserChecker(object):
 class ArgParser:
 
     args_db = {'dest': 'db', 'action': 'store', 'default': 'db.sqlite', 'required': False,
-               'help': "Database in SQLITE format", 'type': ArgParserChecker.check_file_exists_and_is_nonempty}
+               'help': "Database in SQLITE format"}
     args_log_file = {'dest': 'log_file', 'action': 'store', 'help': "Write log to file.", 'required': False}
     args_log_verbosity = {'dest': 'log_verbosity', 'action': 'count', 'default': 0, 'required': False,
                           'help': "Set verbosity level, eg. None (Error level) -v (Info level)."}
@@ -291,19 +291,19 @@ class ArgParser:
         parser_vtam_filter\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        parser_vtam_filter\
-            .add_argument('--sampleselect', action='store',
-                          help="""REQUIRED: TSV file with sample selection and at least the two columns Run
-                                     and Marker.
-                                     Additionally, the columns Biosample and Replicate can be given
-                                        Example:
-                                        Run	Marker
-                                        prerun	MFZR
-                                        prerun	ZFZR""",
-                          required=True, type=ArgParserChecker.check_parser_filter_arg_sampleselect)
         parser_vtam_filter.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+        # parser_vtam_filter\
+        #     .add_argument('--sampleselect', action='store',
+        #                   help="""REQUIRED: TSV file with sample selection and at least the two columns Run
+        #                              and Marker.
+        #                              Additionally, the columns Biosample and Replicate can be given
+        #                                 Example:
+        #                                 Run	Marker
+        #                                 prerun	MFZR
+        #                                 prerun	ZFZR""",
+        #                   required=True, type=ArgParserChecker.check_parser_filter_arg_sampleselect)
         parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
                                      required=True)
         parser_vtam_filter.add_argument('--threshold_specific', default=None, action='store', required=False,
