@@ -10,6 +10,7 @@ import sys
 import yaml
 from sqlalchemy import create_engine, select
 
+from vtam.utils.SortReadsRunner import SortReadsRunner
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 
@@ -82,7 +83,47 @@ class CommandSortReads(object):
     @classmethod
     def main(cls, fastainfo, fastadir, outdir, params=None, num_threads=multiprocessing.cpu_count()):
 
-        import pdb; pdb.set_trace()
+        min_id = 0.8
+        minseqlength = 32
+        overhang = 0
+        if not (params is None):
+            min_id = params['min_id']
+            minseqlength = params['minseqlength']
+            overhang = params['overhang']
+
+        fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
+        trimmed_fasta_df = fastainfo_df.copy()
+        trimmed_fasta_df = trimmed_fasta_df[['Run', 'Marker', 'Biosample', 'Replicate', 'Fasta']]
+        trimmed_fasta_df['FastaTrimmed'] = None
+
+        for i,row in enumerate(trimmed_fasta_df.itertuples()):
+            trimmed_fasta_df.loc[i] = (row.Fasta).replace('.fasta', '_%03d.fasta' % i)
+
+        tag_fwd_sequence_list = fastainfo_df.TagFwd.tolist()
+        tag_rev_sequence_list = fastainfo_df.TagRev.tolist()
+        primer_fwd_sequence_list = fastainfo_df.PrimerFwd.tolist()
+        primer_rev_sequence_list = fastainfo_df.PrimerRev.tolist()
+
+        for row in fastainfo_df.itertuples():
+
+            fasta_path = os.path.join(fastadir, row.Fasta)
+            sort_reads_tsv = os.path.join(outdir, row.Fasta + ".tsv")
+
+            alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength, 'overhang': overhang}
+
+            # Create SortReadsRunner
+            sort_reads_runner = SortReadsRunner(fasta_information_df=fastainfo_df,
+                                                fasta_path=fasta_path,
+                                                tag_fwd_sequence_list=tag_fwd_sequence_list,
+                                                tag_rev_sequence_list=tag_rev_sequence_list,
+                                                primer_fwd_sequence_list=primer_fwd_sequence_list,
+                                                primer_rev_sequence_list=primer_rev_sequence_list,
+                                                alignement_parameters=alignement_parameters,
+                                                trimmed_fasta_df=trimmed_fasta_df)
+
+            sort_reads_runner.run()
+            import pdb; pdb.set_trace()
+            # sort_reads_tsv_list.append(sort_reads_tsv_i)
 
         #
         # Go
@@ -121,6 +162,7 @@ class CommandSortReads(object):
         # Loop of fastq pairs and run vsearch
         #
         #########################################
+
         for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
 
             vsearch_merge_runner = VSearchMergeRunner(fastq_fw_abspath, fastq_rv_abspath, fasta_abspath,
