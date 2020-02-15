@@ -24,7 +24,8 @@ class VariantReadCountLikeTable(object):
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == bindparam('run_id'))
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.marker_id == bindparam('marker_id'))
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == bindparam('biosample_id'))
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == bindparam('replicate'))
+            if 'replicate' in [col.key for col in self.variant_read_count_like_model.__table__.columns]:
+                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
 
     def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
