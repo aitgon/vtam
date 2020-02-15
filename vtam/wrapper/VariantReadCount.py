@@ -1,7 +1,9 @@
 import inspect
+import os
 
 import pandas
 import sqlalchemy
+from Bio import SeqIO
 from sqlalchemy import select, bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -55,6 +57,7 @@ class VariantReadCount(ToolWrapper):
         :return:
         """
         return {
+            "fasta_dir": "str",
         }
 
     def run(self):
@@ -80,6 +83,8 @@ class VariantReadCount(ToolWrapper):
         # Output table
         variant_model = self.output_table(VariantReadCount.__output_table_variant)
         variant_read_count_model = self.output_table(VariantReadCount.__output_table_variant_read_count)
+        # Options
+        fasta_dir = self.option("fasta_dir")
 
         ################################################################################################################
         #
@@ -99,28 +104,26 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0,\
-            names=['tag_forward', 'primer_forward', 'tag_reverse', 'primer_reverse', 'marker_name', 'biosample_name',\
-            'replicate', 'run_name', 'fastq_fwd', 'fastq_rev', 'fasta_path'])
-        sample_instance_list = []
+        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0)
+        sample_instance_list  = []
         for row in fastainfo_df.itertuples():
             Logger.instance().debug(row)
-            marker_name = row.marker_name
-            run_name = row.run_name
-            biosample_name = row.biosample_name
-            replicate = row.replicate
+            marker_name = row.Marker
+            run_name = row.Run
+            biosample_name = row.Biosample
+            replicate = row.Replicate
             with engine.connect() as conn:
                 # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name==run_name)
+                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name==marker_name)
+                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name==biosample_name)
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # add this sample_instance ###########
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id':biosample_id,
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
                                              'replicate': replicate})
 
         ################################################################################################################
@@ -145,9 +148,47 @@ class VariantReadCount(ToolWrapper):
         ##########################################################
 
         Logger.instance().debug("file: {}; line: {}; Read tsv file with sorted reads".format(__file__, inspect.currentframe().f_lineno))
-        read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t',
-                             header=0,)
-        read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
+
+        variant_read_count_df = pandas.DataFrame()
+
+        for row in fastainfo_df.itertuples():
+            Logger.instance().debug(row)
+            marker_name = row.Marker
+            run_name = row.Run
+            biosample_name = row.Biosample
+            replicate = row.Replicate
+            fasta_filename = row.Fasta
+
+            with engine.connect() as conn:
+                # get run_id ###########
+                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
+                run_id = conn.execute(stmt_select_run_id).first()[0]
+                # get marker_id ###########
+                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
+                marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                # get biosample_id ###########
+                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
+                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+
+                fasta_path = os.path.join(fasta_dir, fasta_filename)
+
+                for record in SeqIO.parse(fasta_path, "fasta"):  # Loop over each read
+                    read_sequence = str(record.seq.lower())
+                    # # if read_sequence in variant_read_count_df.index:
+                    #     import pdb; pdb.set_trace
+                        # variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
+                        #                                                              read_sequence, 'read_count'] + 1
+                    # else:
+                    read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
+                                                      'marker_id': [marker_id],
+                                                      'biosample_id': [biosample_id], 'replicate': [replicate],
+                                                      'read_count': [1]})
+                    variant_read_count_df = variant_read_count_df.append(read_count_df_row)
+
+        # import pdb; pdb.set_trace()
+
+        # read_annotation_df = pandas.read_csv(sort_reads_tsv, sep='\t', header=0,)
+        # read_annotation_df.drop(['fasta_id', 'read_id'], axis=1, inplace=True) # throw read id and fasta_id
 
         ################################################################################################################
         #
@@ -156,7 +197,8 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = read_annotation_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
+                                                               'read_sequence']).size().reset_index(name='read_count')
         # variant_read_count_df.drop(['variant_sequence'], axis=1, inplace=True)
         variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
 
