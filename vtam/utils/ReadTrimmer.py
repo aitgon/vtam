@@ -149,7 +149,7 @@ class ReadTrimmer(object):
                                 if tag_position_in_match <= self.align_parameters['overhang']:
                                     nb_discarded_reads -= 1  # If passed all filters we remove from discarded read
                                     fout.write(line)
-        Logger.instance().info("Number of discarded reads: {}".format(nb_discarded_reads))
+        Logger.instance().debug("Number of discarded reads: {}".format(nb_discarded_reads))
 
 
     def trim_reads(self):

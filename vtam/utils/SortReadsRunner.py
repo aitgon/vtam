@@ -31,9 +31,9 @@ class SortReadsRunner(object):
 
         self.trimmed_fasta_df = self.fasta_information_df.copy()
         self.trimmed_fasta_df['FastaTrimmed'] = None
-        for i,row in enumerate(self.trimmed_fasta_df.itertuples()):
+        for i, row in enumerate(self.trimmed_fasta_df.itertuples()):
             fasta_trimmed_filename = (row.Fasta).replace('.fasta', '_%03d.fasta' % i)
-            self.trimmed_fasta_df.loc[i, 'FastaTrimmed'] = fasta_trimmed_filename
+            self.trimmed_fasta_df.loc[row.Index, 'FastaTrimmed'] = fasta_trimmed_filename
             fasta_trimmed_path = os.path.join(outdir, fasta_trimmed_filename)
             if os.path.isfile(fasta_trimmed_path):
                 pathlib.Path(fasta_trimmed_path).unlink()
@@ -122,23 +122,24 @@ class SortReadsRunner(object):
                 & (self.trimmed_fasta_df.PrimerFwd == primer_fwd)
                 & (self.trimmed_fasta_df.PrimerRev == primer_rev)
                 & (self.trimmed_fasta_df.Fasta == fasta_file_name), 'FastaTrimmed'].item()
+
             fasta_trimmed_path = os.path.join(self.outdir, fasta_trimmed_filename)
+
             with open(fasta_trimmed_path, 'a') as fout:
                 out_line = ">{}\n{}\n".format(read_id, read_sequence)
                 fout.write(out_line)
 
         ################################################################################################################
         #
-        # Write trimmed fasta index
+        # Return trimmed fasta index
         #
         ################################################################################################################
 
         self.trimmed_fasta_df = self.trimmed_fasta_df[['Run', 'Marker', 'Biosample', 'Replicate', 'FastaTrimmed']]
         self.trimmed_fasta_df.rename({'FastaTrimmed': 'Fasta'}, inplace=True, axis=1)
-        fasta_trimmed_info_tsv = os.path.join(self.outdir, 'fasta_info.tsv')
-        self.trimmed_fasta_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
-        # import pdb; pdb.set_trace()
-
+        # fasta_trimmed_info_tsv = os.path.join(self.outdir, 'fasta_info.tsv')
+        # self.trimmed_fasta_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
+        return self.trimmed_fasta_df
 
     # def annotate_reads(self, reads_trimmed_fasta_path):
     #
