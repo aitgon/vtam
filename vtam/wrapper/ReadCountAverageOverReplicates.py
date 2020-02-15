@@ -205,7 +205,6 @@ def read_count_average_over_replicates(variant_read_count_df):
 
     # sum of read_count over variant_id and biosample_id
     read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    import pdb; pdb.set_trace()
     read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate', axis=1, inplace=True)
     read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(columns={'read_count': 'read_count'})
 

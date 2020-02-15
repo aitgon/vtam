@@ -98,6 +98,19 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
+    def check_fastq_fileinfo_exists_and_is_nonempty(path):
+
+        """Checks if file exists and is not empty
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        # TODO verify fastqinfo header: TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	Fasta
+
+    @staticmethod
     def check_dir_exists_and_is_nonempty(path):
         """Checks if directory exists and is not empty
 

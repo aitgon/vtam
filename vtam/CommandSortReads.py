@@ -86,19 +86,35 @@ class CommandSortReads(object):
 
         pathlib.Path(outdir).mkdir(exist_ok=True)
 
-        for fasta_filename in fastainfo_df.Fasta.unique().tolist():
+        fasta_trimmed_info_df = pandas.DataFrame()
+
+        for fasta_filename in sorted(fastainfo_df.Fasta.unique().tolist()):
+            Logger.instance().debug("Analysing FASTA file: {}".format(fasta_filename))
 
             fasta_path = os.path.join(fastadir, fasta_filename)
             fasta_info_df_i = fastainfo_df.loc[fastainfo_df.Fasta == fasta_filename]
 
             alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength, 'overhang': overhang}
 
+            # trimmed_fasta_info_df = fasta_info_df_i.copy()
+            # trimmed_fasta_info_df['FastaTrimmed'] = None
+            # for i, row in enumerate(trimmed_fasta_info_df.itertuples()):
+            #     fasta_trimmed_filename = (row.Fasta).replace('.fasta', '_%03d.fasta' % i)
+            #     trimmed_fasta_info_df.loc[row.Index, 'FastaTrimmed'] = fasta_trimmed_filename
+            #     fasta_trimmed_path = os.path.join(outdir, fasta_trimmed_filename)
+            #     if os.path.isfile(fasta_trimmed_path):
+            #         pathlib.Path(fasta_trimmed_path).unlink()
+
             # Create SortReadsRunner
             sort_reads_runner = SortReadsRunner(fasta_information_df=fasta_info_df_i,
                                                 fasta_path=fasta_path,
                                                 alignement_parameters=alignement_parameters, outdir=outdir, num_threads=num_threads)
 
-            sort_reads_runner.run()
+            fasta_trimmed_info_df_i = sort_reads_runner.run()
+            fasta_trimmed_info_df = fasta_trimmed_info_df.append(fasta_trimmed_info_df_i)
+
+        fasta_trimmed_info_tsv = os.path.join(outdir, 'fasta_info.tsv')
+        fasta_trimmed_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
 
         #
         # Go
