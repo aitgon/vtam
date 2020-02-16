@@ -112,18 +112,21 @@ class SortReadsRunner(object):
             primer_rev = record.id.split(';')[4].split('=')[1]
             read_sequence = record.seq
             fasta_file_name = os.path.basename( self.fasta_path)
-            fasta_trimmed_filename = self.trimmed_fasta_df.loc[
-                (self.trimmed_fasta_df.TagFwd == tag_fwd)
-                & (self.trimmed_fasta_df.TagRev == tag_rev)
+            fasta_trimmed_result = self.trimmed_fasta_df.loc[(self.trimmed_fasta_df.TagFwd == tag_fwd) & (self.trimmed_fasta_df.TagRev == tag_rev)
                 & (self.trimmed_fasta_df.PrimerFwd == primer_fwd)
                 & (self.trimmed_fasta_df.PrimerRev == primer_rev)
-                & (self.trimmed_fasta_df.Fasta == fasta_file_name), 'FastaTrimmed'].item()
+                & (self.trimmed_fasta_df.Fasta == fasta_file_name), 'FastaTrimmed']
+            if fasta_trimmed_result.shape[0] > 0:
+                fasta_trimmed_filename = fasta_trimmed_result.item()
+                # fasta_trimmed_filename = self.trimmed_fasta_df.loc[(self.trimmed_fasta_df.TagFwd == tag_fwd) & (self.trimmed_fasta_df.TagRev == tag_rev)
+                #     & (self.trimmed_fasta_df.PrimerFwd == primer_fwd)
+                #     & (self.trimmed_fasta_df.PrimerRev == primer_rev)
+                #     & (self.trimmed_fasta_df.Fasta == fasta_file_name), 'FastaTrimmed'].item()
+                fasta_trimmed_path = os.path.join(self.outdir, fasta_trimmed_filename)
 
-            fasta_trimmed_path = os.path.join(self.outdir, fasta_trimmed_filename)
-
-            with open(fasta_trimmed_path, 'a') as fout:
-                out_line = ">{}\n{}\n".format(read_id, read_sequence)
-                fout.write(out_line)
+                with open(fasta_trimmed_path, 'a') as fout:
+                    out_line = ">{}\n{}\n".format(read_id, read_sequence)
+                    fout.write(out_line)
 
         ################################################################################################################
         #
