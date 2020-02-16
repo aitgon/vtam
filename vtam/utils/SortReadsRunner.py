@@ -35,7 +35,8 @@ class SortReadsRunner(object):
             self.trimmed_fasta_df.loc[row.Index, 'FastaTrimmed'] = fasta_trimmed_filename
             fasta_trimmed_path = os.path.join(outdir, fasta_trimmed_filename)
             if os.path.isfile(fasta_trimmed_path):
-                pathlib.Path(fasta_trimmed_path).unlink()
+                pathlib.Path(fasta_trimmed_path).unlink()  # if exists, remove file
+            pathlib.Path(fasta_trimmed_path).touch()  # touches empty file
 
         self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.this_tempdir).mkdir(exist_ok=True)
