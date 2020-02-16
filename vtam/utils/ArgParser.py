@@ -1,11 +1,9 @@
 import argparse
 import multiprocessing
 import os
-
 import pandas
 
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
 from vtam.utils.VTAMexception import VTAMexception
 
 
@@ -98,17 +96,24 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
-    def check_fastq_fileinfo_exists_and_is_nonempty(path):
+    def check_fastqinfo(path):
 
-        """Checks if file exists and is not empty
+        """Checks if fastqinfo exists, is not empty
 
-        :param path: Valid non-empty file path
+        :param path: Valid non-empty TSV fastqinfo path
         :return: void
 
         """
 
         path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-        # TODO verify fastqinfo header: TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	Fasta
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev', 'fasta',
+         'primerfwd', 'biosample', 'tagfwd', 'marker'}
+        df.column = map(str.lower, df.columns)
+        if set(df.columns.tolist()) > header_lower:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
+        else:
+            return path
 
     @staticmethod
     def check_dir_exists_and_is_nonempty(path):
@@ -271,7 +276,7 @@ class ArgParser:
                                                   parents=[parent_parser])
         parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
                                        required=True,
-                                       type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                                       type=ArgParserChecker.check_fastqinfo)
         parser_vtam_merge\
             .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
                           required=True)
@@ -302,21 +307,11 @@ class ArgParser:
         parser_vtam_filter = subparsers.add_parser('filter', add_help=True, parents=[parent_parser])
 
         parser_vtam_filter\
-            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
+            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
         parser_vtam_filter.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        # parser_vtam_filter\
-        #     .add_argument('--sampleselect', action='store',
-        #                   help="""REQUIRED: TSV file with sample selection and at least the two columns Run
-        #                              and Marker.
-        #                              Additionally, the columns Biosample and Replicate can be given
-        #                                 Example:
-        #                                 Run	Marker
-        #                                 prerun	MFZR
-        #                                 prerun	ZFZR""",
-        #                   required=True, type=ArgParserChecker.check_parser_filter_arg_sampleselect)
         parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
                                      required=True)
         parser_vtam_filter.add_argument('--threshold_specific', default=None, action='store', required=False,
@@ -382,21 +377,11 @@ class ArgParser:
 
         parser_vtam_pool_markers = subparsers.add_parser('poolmarkers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
+        from vtam.utils.SelectionRunMarker import SelectionRunMarker
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
-                                     help="""Input TSV file with two columns and headers 'run_name' and 'marker_name'.
-                                        Example:
-                                        run_name	marker_name
-                                        prerun	MFZR
-                                        prerun	ZFZR""",
-                                     required=True, type=lambda x: ArgParserChecker.check_parser_poolmarkers_arg_runmarker(x,
-                                                                                                                           error_message="""Verify the '--pooledmarkers' argument: 
-                                      It is an input TSV file with two columns and headers 'run_name' and 'marker_name'.
-                                        Default: Uses all runs and markers in the DB
-                                        Example:
-                                        run_name	marker_name
-                                        prerun	MFZR
-                                        prerun	ZFZR"""))
-        parser_vtam_pool_markers.add_argument('--pooledmarkers', action='store', help="REQUIRED: Output TSV file with pooled markers",
+                                     help=SelectionRunMarker.help(),
+                                     required=True, type=lambda x: SelectionRunMarker(x).check_argument())
+        parser_vtam_pool_markers.add_argument('--output', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
 
         parser_vtam_pool_markers.set_defaults(command='poolmarkers')  # This attribute will trigger the good command

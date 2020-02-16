@@ -16,7 +16,6 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            sortreads: {{sortreads}}
             fastainfo: {{fastainfo}}
         table:
             Run: vtam.models.Run

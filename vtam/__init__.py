@@ -162,14 +162,14 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommand: pool_markers
+        # Subcommand: poolmarkers
         #
         ###############################################################
 
-        elif vars(self.args)['command'] == 'pool_markers':
+        elif vars(self.args)['command'] == 'poolmarkers':
             db = OptionManager.instance()['db']
             run_marker_tsv = OptionManager.instance()['runmarker']
-            pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
+            pooled_marker_tsv = OptionManager.instance()['output']
             # taxonomy_tsv = OptionManager.instance()['taxonomy']
             # CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
             #                         run_marker_tsv=run_marker_tsv)

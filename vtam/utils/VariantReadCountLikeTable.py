@@ -15,16 +15,17 @@ class VariantReadCountLikeTable(object):
         self.variant_read_count_like_model = variant_read_count_like_model
 
     def delete_from_db(self, sample_record_list):
-        """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id, marker_id, biosample_id, replicate"""
+        """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id,
+         marker_id, biosample_id, replicate"""
 
-        # with self.engine.connect() as conn:
-        #     conn.execute(self.variant_read_count_like_model.__table__.delete(), sample_record_list)
+        sample_column_list = pandas.DataFrame(sample_record_list).columns.tolist()
         with self.engine.connect() as conn:
             stmt = self.variant_read_count_like_model.__table__.delete()
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == bindparam('run_id'))
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.marker_id == bindparam('marker_id'))
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == bindparam('biosample_id'))
-            if 'replicate' in [col.key for col in self.variant_read_count_like_model.__table__.columns]:
+            if 'biosample_id' in sample_column_list:
+                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == bindparam('biosample_id'))
+            if 'replicate' in sample_column_list and 'replicate' in [col.key for col in self.variant_read_count_like_model.__table__.columns]:
                 stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
 
