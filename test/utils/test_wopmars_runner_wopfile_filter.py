@@ -69,36 +69,13 @@ class TestWorpmarsRunnerFilter(TestCase):
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
             Fasta: vtam.models.Fasta
-            PrimerPair: vtam.models.PrimerPair
-            TagPair: vtam.models.TagPair
             SampleInformation: vtam.models.SampleInformation
-
-
-rule SortReads:
-    tool: vtam.wrapper.SortReads
-    input:
-        table:
-            Fasta: vtam.models.Fasta
-            SampleInformation: vtam.models.SampleInformation
-            Run: vtam.models.Run
-            Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
-        file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
-    output:
-        file:
-            sortreads: test/output/sortreads.tsv
-    params:
-        min_id: 0.8
-        minseqlength: 32
-        overhang: 0
 
 
 rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
         table:
             Run: vtam.models.Run
@@ -108,6 +85,8 @@ rule VariantReadCount:
         table:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
+    params:
+        fasta_dir: test/utils
 
 
 rule FilterLFN:
@@ -331,10 +310,10 @@ rule MakeAsvTable:
         self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['input']['file']['threshold_specific']
                         == self.foopaths['foofile'])
 
-        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-                        == self.minseqlength_value_32)
-        self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-                        == self.minseqlength_value_40)
+        # self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
+        #                 == self.minseqlength_value_32)
+        # self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
+        #                 == self.minseqlength_value_40)
 
     def test_wopmars_runner_asv_with_minseqlength_value_40(self):
 
@@ -375,10 +354,10 @@ rule MakeAsvTable:
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
-        self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-                        == self.minseqlength_value_32)
-        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-                        == self.minseqlength_value_40)
+        # self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
+        #                 == self.minseqlength_value_32)
+        # self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
+        #                 == self.minseqlength_value_40)
 
     def test_wopmars_runner_asv_with_lfn_variant_replicate(self):
 
