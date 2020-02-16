@@ -174,18 +174,21 @@ class VariantReadCount(ToolWrapper):
 
                 fasta_path = os.path.join(fasta_dir, fasta_filename)
 
-                for record in SeqIO.parse(fasta_path, "fasta"):  # Loop over each read
-                    read_sequence = str(record.seq.lower())
-                    # # if read_sequence in variant_read_count_df.index:
-                    #     import pdb; pdb.set_trace
-                        # variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
-                        #                                                              read_sequence, 'read_count'] + 1
-                    # else:
-                    read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
-                                                      'marker_id': [marker_id],
-                                                      'biosample_id': [biosample_id], 'replicate': [replicate],
-                                                      'read_count': [1]})
-                    variant_read_count_df = variant_read_count_df.append(read_count_df_row)
+                if os.path.exists(fasta_path):
+                    for record in SeqIO.parse(fasta_path, "fasta"):  # Loop over each read
+                        read_sequence = str(record.seq.lower())
+                        # # if read_sequence in variant_read_count_df.index:
+                        #     import pdb; pdb.set_trace
+                            # variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
+                            #                                                              read_sequence, 'read_count'] + 1
+                        # else:
+                        read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
+                                                          'marker_id': [marker_id],
+                                                          'biosample_id': [biosample_id], 'replicate': [replicate],
+                                                          'read_count': [1]})
+                        variant_read_count_df = variant_read_count_df.append(read_count_df_row)
+                else:
+                    Logger.instance().warning('This fasta file {} doest not exists'.format(fasta_path))
 
         ################################################################################################################
         #
