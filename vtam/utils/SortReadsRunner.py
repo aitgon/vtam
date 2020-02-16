@@ -17,18 +17,17 @@ class SortReadsRunner(object):
         self.alignement_parameters = alignement_parameters
         self.outdir = outdir
 
-        self.fasta_information_df = fasta_information_df
+        self.fasta_information_df = fasta_information_df.copy()
 
-        fasta_information_df.TagFwd = fasta_information_df.TagFwd.str.lower()
-        fasta_information_df.TagRev = fasta_information_df.TagRev.str.lower()
-        fasta_information_df.PrimerFwd = fasta_information_df.PrimerFwd.str.lower()
-        fasta_information_df.PrimerRev = fasta_information_df.PrimerRev.str.lower()
+        self.fasta_information_df.TagFwd = fasta_information_df.TagFwd.str.lower()
+        self.fasta_information_df.TagRev = fasta_information_df.TagRev.str.lower()
+        self.fasta_information_df.PrimerFwd = fasta_information_df.PrimerFwd.str.lower()
+        self.fasta_information_df.PrimerRev = fasta_information_df.PrimerRev.str.lower()
 
         self.tag_fwd_sequence_list = self.fasta_information_df.TagFwd.tolist()
         self.tag_rev_sequence_list = self.fasta_information_df.TagRev.tolist()
         self.primer_fwd_sequence_list = self.fasta_information_df.PrimerFwd.tolist()
         self.primer_rev_sequence_list = self.fasta_information_df.PrimerRev.tolist()
-
         self.trimmed_fasta_df = self.fasta_information_df.copy()
         self.trimmed_fasta_df['FastaTrimmed'] = None
         for i, row in enumerate(self.trimmed_fasta_df.itertuples()):
@@ -45,14 +44,11 @@ class SortReadsRunner(object):
 
     def run(self):
 
-        #######################################################################
+        ################################################################################################################
         #
         # Trim forward
         #
-        #######################################################################
-
-        # tag_fwd_sequence_list = self.fasta_information_df.tag_fwd_sequence.tolist()
-        # primer_fwd_sequence_list = self.fasta_information_df.primer_fwd_sequence.tolist()
+        ################################################################################################################
 
         this_tempdir_fwd = os.path.join(self.this_tempdir, 'fwd')
         pathlib.Path(this_tempdir_fwd).mkdir(exist_ok=True)

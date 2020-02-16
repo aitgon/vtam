@@ -96,15 +96,6 @@ class CommandSortReads(object):
 
             alignement_parameters = {'min_id': min_id, 'minseqlength': minseqlength, 'overhang': overhang}
 
-            # trimmed_fasta_info_df = fasta_info_df_i.copy()
-            # trimmed_fasta_info_df['FastaTrimmed'] = None
-            # for i, row in enumerate(trimmed_fasta_info_df.itertuples()):
-            #     fasta_trimmed_filename = (row.Fasta).replace('.fasta', '_%03d.fasta' % i)
-            #     trimmed_fasta_info_df.loc[row.Index, 'FastaTrimmed'] = fasta_trimmed_filename
-            #     fasta_trimmed_path = os.path.join(outdir, fasta_trimmed_filename)
-            #     if os.path.isfile(fasta_trimmed_path):
-            #         pathlib.Path(fasta_trimmed_path).unlink()
-
             # Create SortReadsRunner
             sort_reads_runner = SortReadsRunner(fasta_information_df=fasta_info_df_i,
                                                 fasta_path=fasta_path,

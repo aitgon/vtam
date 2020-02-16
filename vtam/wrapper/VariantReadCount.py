@@ -20,7 +20,7 @@ class VariantReadCount(ToolWrapper):
     }
     # Input
     # Input file
-    __input_file_sort_reads = 'sortreads'
+    # __input_file_sort_reads = 'sortreads'
     __input_file_fastainfo = "fastainfo"
     # Input table
     __input_table_run = "Run"
@@ -41,7 +41,7 @@ class VariantReadCount(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            VariantReadCount.__input_file_sort_reads,
+            # VariantReadCount.__input_file_sort_reads,
             VariantReadCount.__input_file_fastainfo,
         ]
 
@@ -71,7 +71,7 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         # Input file
-        sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
+        # sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
         input_file_fastainfo = self.input_file(VariantReadCount.__input_file_fastainfo)
         #
         # Input table models
@@ -240,15 +240,6 @@ class VariantReadCount(ToolWrapper):
                     variant_id = insert_row.inserted_primary_key[0]
                 else: # variant_sequence IS in the database
                     variant_id = select_row[0]
-            # try:
-            #     stmt_ins_var = variant_model.__table__.insert().values(sequence=variant_sequence)
-            #     with engine.connect() as conn:
-            #         stmt_result_var = conn.execute(stmt_ins_var)
-            #     variant_id = stmt_result_var.inserted_primary_key[0]
-            # except sqlalchemy.exc.IntegrityError:
-            #     stmt_select_var = select([variant_model.__table__.c.id]).where(variant_model.__table__.c.sequence == variant_sequence)
-            #     with engine.connect() as conn:
-            #         variant_id = conn.execute(stmt_select_var).first()[0]
             variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
                 'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
             sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
