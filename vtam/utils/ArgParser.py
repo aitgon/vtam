@@ -397,7 +397,7 @@ class ArgParser:
                           .check_parser_taxassign_arg_variants(x,
                                                                error_message="""The --variants TSV file requires a header with a 'sequence' label and the sequences in the last column"""))
         parser_vtam_taxassign\
-            .add_argument('--variant_taxa', action='store', help="REQUIRED: TSV file where the taxon assignation has beeen added.",
+            .add_argument('--output', action='store', help="REQUIRED: TSV file where the taxon assignation has beeen added.",
                           required=True)
         parser_vtam_taxassign.add_argument('--mode', dest='mode', default="unassigned", action='store', required=False,
                                            choices=['unassigned', 'reset'],
