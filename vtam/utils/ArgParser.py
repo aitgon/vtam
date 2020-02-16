@@ -347,7 +347,7 @@ class ArgParser:
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                           required=True,
-                                          type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                                          type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
