@@ -98,14 +98,21 @@ mkdir -p out/fasta
 vtam merge --fastqinfo fastqinfo.tsv --fastqdir fastq --fastainfo out/fastainfo.tsv --fastadir out/fasta --log out/vtam.log -v
 ~~~
 
-
 Open the *fastainfo.tsv* file and verify its content. A new column should be written with the names of the merged FASTA files.
 
 Verify also the content of the *out/fasta* with the merged FASTA files.
 
-# Demultiplex the reads, filter variants and create the ASV tables
+# Demultiplex and trim the reads
 
-There is a single command *filter* to demultiplex the reads, filter variants and create the ASV tables. This command takes quite long but its progress can be seen in the log file.
+There is a single command *sortreads* to trim and demultiplex the reads. This command takes quite long but its progress can be seen in the log file.
+
+~~~
+vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/fasta_trimmed --log out/vtam.log -vv
+~~~
+
+# Filter variants and create the ASV tables
+
+This command filter variants and create the ASV tables. 
 
 ~~~
 vtam filter --fastainfo out/fastainfo.tsv --fastadir out/fasta --db out/db.sqlite --outdir out --log out/vtam.log -v
@@ -129,7 +136,7 @@ Then the *pool_markers* subcommand can be used:
 
 
 ~~~
-vtam pool_markers --db ${DB} --runmarker pool_run_marker.tsv --pooledmarkers out/pooled_markers.tsv
+vtam pool_markers --db ${DB} --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
 ~~~
 
 # Taxon Assignation
@@ -150,7 +157,7 @@ The input file is a TSV file, where the last column are the sequence of the vari
 The command to carry out the taxon assignation is:
 
 ~~~
-vtam taxassign --variants out/pooled_markers.tsv --variant_taxa out/pooled_markers_taxa.tsv --db out/db.sqlite --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log
+vtam taxassign --variants out/pooled_markers.tsv --output out/pooled_markers_taxa.tsv --db out/db.sqlite --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log
 ~~~
 
 # Parameter Optimization
@@ -160,5 +167,4 @@ To help the user select the parameters, VTAM has an *optimize* subcommand that w
 ~~~
 vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fasta --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
-
 
