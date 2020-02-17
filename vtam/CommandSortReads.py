@@ -88,7 +88,14 @@ class CommandSortReads(object):
 
         fasta_trimmed_info_df = pandas.DataFrame()
 
+        ################################################################################################################
+        #
+        # Loop over fasta files to sort reads per fasta
+        #
+        ################################################################################################################
+
         for fasta_filename in sorted(fastainfo_df.Fasta.unique().tolist()):
+
             Logger.instance().debug("Analysing FASTA file: {}".format(fasta_filename))
 
             fasta_path = os.path.join(fastadir, fasta_filename)
@@ -101,54 +108,22 @@ class CommandSortReads(object):
                                                 fasta_path=fasta_path,
                                                 alignement_parameters=alignement_parameters, outdir=outdir, num_threads=num_threads)
 
-            fasta_trimmed_info_df_i = sort_reads_runner.run()
+            fasta_trimmed_info_df_i, sorted_read_dic = sort_reads_runner.run()
             fasta_trimmed_info_df = fasta_trimmed_info_df.append(fasta_trimmed_info_df_i)
+
+            ################################################################################################################
+            #
+            # Write to trimmed fasta
+            #
+            ################################################################################################################
+
+            for sorted_read_filename in sorted_read_dic:
+
+                sorted_read_list = sorted_read_dic[sorted_read_filename]
+                sorted_read_path = os.path.join(outdir, sorted_read_filename)
+                with open(sorted_read_path, "w") as fout:
+                    fout.write("\n".join(sorted_read_list))
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'fasta_info.tsv')
         fasta_trimmed_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
-
-        #
-        # Go
-        # # Opening the file to get all the lines stocked in the list csv_content
-        # fastq_and_fasta_list = [] # unique pairs of fastq files with the corresponding fasta_path file
-        # with open(fastqinfo, 'r') as csv_file:
-        #     with open(fastainfo, 'w') as fastainfo_fout:
-        #         next(csv_file) # skip header of fastqinfo
-        #         fastainfo_header = "TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 " \
-        #                            "Biosample	Replicate	Run	Fastq_fw	Fastq_rv	Fasta\n"
-        #         fastainfo_fout.write(fastainfo_header) # write header of fastainfo
-        #         for line in csv_file:
-        #             sample_info = line.strip().split("\t")
-        #             fastq_fw_abspath = os.path.join(fastqdir, sample_info[8])
-        #             fastq_rv_abspath = os.path.join(fastqdir, sample_info[9])
-        #             try:
-        #                 pathlib.Path(fastq_fw_abspath).resolve(strict=True)
-        #             except FileNotFoundError:
-        #                 Logger.instance().error(VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_fw_abspath)))
-        #                 sys.exit(1)
-        #             try:
-        #                 pathlib.Path(fastq_rv_abspath).resolve(strict=True)
-        #             except FileNotFoundError:
-        #                 Logger.instance().error(VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
-        #                 sys.exit(1)
-        #             fasta_merged_basename = '.'.join(os.path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
-        #             pathlib.Path(fastadir).mkdir(exist_ok=True)
-        #             fastainfo_line = line.strip() + '\t' + fasta_merged_basename + '\n'
-        #             fastainfo_fout.write(fastainfo_line) # write fastainfo line
-        #             fasta_abspath = os.path.join(fastadir, fasta_merged_basename)
-        #             if not (fastq_fw_abspath, fastq_rv_abspath, fasta_abspath) in fastq_and_fasta_list:
-        #                 fastq_and_fasta_list.append((fastq_fw_abspath, fastq_rv_abspath, fasta_abspath))
-
-        #########################################
-        #
-        # Loop of fastq pairs and run vsearch
-        #
-        #########################################
-
-        # for fastq_fw_abspath, fastq_rv_abspath, fasta_abspath in fastq_and_fasta_list:
-        #
-        #     vsearch_merge_runner = VSearchMergeRunner(fastq_fw_abspath, fastq_rv_abspath, fasta_abspath,
-        #                                               params_yml=params, threads=num_threads)
-        #     vsearch_merge_runner.load_parameters()
-        #     vsearch_merge_runner.run()
 

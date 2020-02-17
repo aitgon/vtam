@@ -250,3 +250,53 @@ class FastaInformationTSV(SampleInformationUtils):
         sample_information_id_df = pandas.DataFrame.from_records(data=fasta_info_instance_list).drop_duplicates(inplace=False)
 
         return sample_information_id_df
+
+
+    def get_ids_df(self, include_tag_primer_fasta=False):
+
+        """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
+        and replicate entries (See return)
+
+        :param tag_primer_fasta_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
+        :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate': 1}, {'run_id': 1, ...
+        """
+
+        fasta_info_ids_df = pandas.DataFrame()
+        fasta_info_ids_df['run_id'] = None
+        fasta_info_ids_df['marker_id'] = None
+        fasta_info_ids_df['biosample_id'] = None
+
+        # fasta_info_instance_list = []
+
+        with self.__engine.connect() as conn:
+            for k, row in self.fasta_information_df.iterrows():
+                marker_name = row.Marker
+                run_name = row.Run
+                biosample_name = row.Biosample
+                replicate = int(row.Replicate)
+                # get run_id ###########
+                stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
+                run_id = conn.execute(stmt_select_run_id).first()[0]
+                # get marker_id ###########
+                stmt_select_marker_id = sqlalchemy.select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
+                marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                # get biosample_id ###########
+                stmt_select_biosample_id = sqlalchemy.select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
+                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                new_row_dic = dict(row)
+                new_row_dic['run_id'] = run_id
+                new_row_dic['marker_id'] = marker_id
+                new_row_dic['biosample_id'] = biosample_id
+                new_row_dic['replicate'] = replicate
+                del new_row_dic["Run"]
+                del new_row_dic["Marker"]
+                del new_row_dic["Biosample"]
+                del new_row_dic["Replicate"]
+
+                fasta_info_ids_df = fasta_info_ids_df.append(pandas.DataFrame(new_row_dic, index=[0]), sort=False)
+                # fasta_information_obj = {'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'replicate': replicate}
+                # add this sample_instance ###########
+                # fasta_info_instance_list.append(fasta_information_obj)
+
+        # sample_information_id_df = pandas.DataFrame.from_records(data=fasta_info_instance_list).drop_duplicates(inplace=False)
+        return fasta_info_ids_df
