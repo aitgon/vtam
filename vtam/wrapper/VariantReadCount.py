@@ -8,6 +8,7 @@ from sqlalchemy import select, bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
@@ -147,53 +148,45 @@ class VariantReadCount(ToolWrapper):
         #
         ##########################################################
 
+        fasta_info_obj = FastaInformationTSV(input_file_fastainfo, engine=engine)
+        fasta_info_ids_df = fasta_info_obj.get_ids_df()
+
         Logger.instance().debug("file: {}; line: {}; Read demultiplexed FASTA files".format(__file__, inspect.currentframe().f_lineno))
 
         variant_read_count_df = pandas.DataFrame()
 
-        for row in fastainfo_df.itertuples():
-            marker_name = row.Marker
-            run_name = row.Run
-            biosample_name = row.Biosample
-            replicate = row.Replicate
+        for row in fasta_info_ids_df.itertuples():
+            run_id = row.run_id
+            marker_id = row.marker_id
+            biosample_id = row.biosample_id
+            replicate = row.replicate
             fasta_filename = row.Fasta
 
             Logger.instance().debug(
                 "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, fasta_filename))
 
-            with engine.connect() as conn:
-                # get run_id ###########
-                stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
-                # get marker_id ###########
-                stmt_select_marker_id = select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+            sorted_read_path = os.path.join(fasta_dir, fasta_filename)
 
-                sorted_read_path = os.path.join(fasta_dir, fasta_filename)
+            if os.path.exists(sorted_read_path):
 
-                if os.path.exists(sorted_read_path):
+                with open(sorted_read_path, "r") as fin:
+                    sorted_read_list = [x.lower() for x in fin.read().split("\n")]
 
-                    with open(sorted_read_path, "r") as fin:
-                        sorted_read_list = [x.lower() for x in fin.read().split("\n")]
+                variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
+                                                                   'marker_id': [marker_id] * len(sorted_read_list),
+                                                                   'biosample_id': [biosample_id] * len(
+                                                                       sorted_read_list),
+                                                                   'replicate': [replicate] * len(sorted_read_list),
+                                                                   'read_sequence': sorted_read_list,
+                                                                   'read_count': [1] * len(sorted_read_list)})
+                #  Compute read count
+                variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
+                    ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).sum().reset_index()
 
-                    variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id]*len(sorted_read_list),
-                                                          'marker_id': [marker_id]*len(sorted_read_list),
-                                                          'biosample_id': [biosample_id]*len(sorted_read_list),
-                                                                'replicate': [replicate]*len(sorted_read_list),
-                                                                       'read_sequence': sorted_read_list,
-                                                          'read_count': [1]*len(sorted_read_list)})
-                    # Compute read count
-                    variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
-                        ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).sum().reset_index()
+                variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
-                    variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
-
-                else:
-                    Logger.instance().warning('This fasta file {} doest not exists'.format(sorted_read_path))
-
+            else:
+                Logger.instance().warning('This fasta file {} doest not exists'.format(sorted_read_path))
 
         ################################################################################################################
         #
@@ -201,7 +194,6 @@ class VariantReadCount(ToolWrapper):
         #
         ################################################################################################################
 
-        # import pdb; pdb.set_trace()
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
         # variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
         #                                                        'read_sequence']).size().reset_index(name='read_count')
