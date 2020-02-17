@@ -172,23 +172,41 @@ class VariantReadCount(ToolWrapper):
                 stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
 
-                fasta_path = os.path.join(fasta_dir, fasta_filename)
+                sorted_read_path = os.path.join(fasta_dir, fasta_filename)
 
-                if os.path.exists(fasta_path):
-                    for record in SeqIO.parse(fasta_path, "fasta"):  # Loop over each read
-                        read_sequence = str(record.seq.lower())
-                        # # if read_sequence in variant_read_count_df.index:
-                        #     import pdb; pdb.set_trace
-                            # variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
-                            #                                                              read_sequence, 'read_count'] + 1
-                        # else:
-                        read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
-                                                          'marker_id': [marker_id],
-                                                          'biosample_id': [biosample_id], 'replicate': [replicate],
-                                                          'read_count': [1]})
-                        variant_read_count_df = variant_read_count_df.append(read_count_df_row)
+                if os.path.exists(sorted_read_path):
+
+                    with open(sorted_read_path, "r") as fin:
+                        sorted_read_list = fin.read().split("\n")
+
+                    variant_read_count_df_sorted_i = pandas.DataFrame({'read_sequence': sorted_read_list,
+                                                                       'run_id': [run_id]*len(sorted_read_list),
+                                                          'marker_id': [marker_id]*len(sorted_read_list),
+                                                          'biosample_id': [biosample_id]*len(sorted_read_list),
+                                                                'replicate': [replicate]*len(sorted_read_list),
+                                                          'read_count': [1]*len(sorted_read_list)})
+                    # Compute read count
+                    variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
+                        ['read_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
+
+                    # import pdb; pdb.set_trace()
+
+                    variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
+
+                    # for record in SeqIO.parse(sorted_read_path, "fasta"):  # Loop over each read
+                    #     read_sequence = str(record.seq.lower())
+                    #     if read_sequence in variant_read_count_df.index:
+                    #         variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
+                    #                                                                      read_sequence, 'read_count'] + 1
+                    #     else:
+                    #         read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
+                    #                                       'marker_id': [marker_id],
+                    #                                       'biosample_id': [biosample_id], 'replicate': [replicate],
+                    #                                       'read_count': [1]})
+                    #     variant_read_count_df = variant_read_count_df.append(read_count_df_row)
                 else:
-                    Logger.instance().warning('This fasta file {} doest not exists'.format(fasta_path))
+                    Logger.instance().warning('This fasta file {} doest not exists'.format(sorted_read_path))
+
 
         ################################################################################################################
         #
