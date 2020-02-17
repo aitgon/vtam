@@ -7,6 +7,7 @@ import sys
 import multiprocessing
 
 from vtam.CommandMerge import CommandMerge
+from vtam.CommandSortReads import CommandSortReads
 from vtam.utils.ArgParser import ArgParser
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandTaxonomy import CommandTaxonomy
@@ -24,6 +25,7 @@ class VTAM(object):
         These are the VTAM commands:
 
    merge      Merge paired-end reads
+   sortreads  Trim and demultiplex reads
    filter     Run VTAM filters to create an ASV table with the variant sequences as last column
    optimize   Find optimal parameters for filtering
    pool_markers   Pool overlapping markers from the ASV table into one
@@ -42,7 +44,7 @@ class VTAM(object):
 
         self.sys_argv = sys_argv
         # AG do not use abspath for the moment. Maybe later it can be used as option
-        parser = ArgParser.get_arg_parser()
+        parser = ArgParser.get_main_arg_parser()
         self.args = parser.parse_args(sys_argv)
 
         ################################################################################################################
@@ -124,6 +126,19 @@ class VTAM(object):
 
         ###############################################################
         #
+        # Subcommand: sortreads
+        #
+        ###############################################################
+
+        elif vars(self.args)['command'] == 'sortreads':
+            fastadir = OptionManager.instance()['fastadir']
+            fastainfo = OptionManager.instance()['fastainfo']
+            outdir = OptionManager.instance()['outdir']
+            num_threads = OptionManager.instance()['threads']
+            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=None, num_threads=num_threads, outdir=outdir)
+
+        ###############################################################
+        #
         # Subcommand: taxassign
         #
         ###############################################################
@@ -131,7 +146,7 @@ class VTAM(object):
         elif vars(self.args)['command'] == 'taxassign':
             db = OptionManager.instance()['db']
             variants_tsv = OptionManager.instance()['variants']
-            variant_taxa_tsv = OptionManager.instance()['variant_taxa']
+            output = OptionManager.instance()['output']
             mode = OptionManager.instance()['mode']
             taxonomy_tsv = OptionManager.instance()['taxonomy']
             blasdb_dir_path = OptionManager.instance()['blastdbdir']
@@ -140,21 +155,21 @@ class VTAM(object):
             include_prop = OptionManager.instance()['include_prop']
             min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
             num_threads = OptionManager.instance()['threads']
-            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, variant_taxa_tsv=variant_taxa_tsv, taxonomy_tsv=taxonomy_tsv,
+            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output, taxonomy_tsv=taxonomy_tsv,
                                   blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
                                   ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
                                   min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
 
         ###############################################################
         #
-        # Subcommand: pool_markers
+        # Subcommand: poolmarkers
         #
         ###############################################################
 
-        elif vars(self.args)['command'] == 'pool_markers':
+        elif vars(self.args)['command'] == 'poolmarkers':
             db = OptionManager.instance()['db']
             run_marker_tsv = OptionManager.instance()['runmarker']
-            pooled_marker_tsv = OptionManager.instance()['pooledmarkers']
+            pooled_marker_tsv = OptionManager.instance()['output']
             # taxonomy_tsv = OptionManager.instance()['taxonomy']
             # CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
             #                         run_marker_tsv=run_marker_tsv)

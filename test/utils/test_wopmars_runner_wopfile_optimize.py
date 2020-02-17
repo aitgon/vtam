@@ -22,10 +22,10 @@ class TestWorpmarsRunnerOptimize(TestCase):
 
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --fastainfo {foofile} --fastadir {outdir} --variant_known {foofile} --outdir {outdir}'\
+        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {outdir}'\
             .format(**self.foopaths)
-        parser = ArgParser.get_arg_parser()
-        # import pdb; pdb.set_trace()
+        parser = ArgParser.get_main_arg_parser()
+
         args = parser.parse_args(args_str.split())
 
         #####################
@@ -57,36 +57,13 @@ class TestWorpmarsRunnerOptimize(TestCase):
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
             Fasta: vtam.models.Fasta
-            PrimerPair: vtam.models.PrimerPair
-            TagPair: vtam.models.TagPair
             SampleInformation: vtam.models.SampleInformation
-
-
-rule SortReads:
-    tool: vtam.wrapper.SortReads
-    input:
-        table:
-            Fasta: vtam.models.Fasta
-            SampleInformation: vtam.models.SampleInformation
-            Run: vtam.models.Run
-            Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
-        file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
-    output:
-        file:
-            sortreads: test/output/sortreads.tsv
-    params:
-        min_id: 0.8
-        minseqlength: 32
-        overhang: 0
 
 
 rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            sortreads: test/output/sortreads.tsv
             fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
         table:
             Run: vtam.models.Run
@@ -96,6 +73,8 @@ rule VariantReadCount:
         table:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
+    params:
+        fasta_dir: test/utils
 
 
 rule OptimizeLFNbiosampleReplicate:

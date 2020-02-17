@@ -20,7 +20,7 @@ class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, variant_taxa_tsv, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
+    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
              min_number_of_taxa, num_threads):
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
@@ -85,19 +85,19 @@ class CommandTaxAssign(object):
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
                 variant_list.append({'id': row.id, 'sequence': row.sequence})
-        variant_df = pandas.DataFrame.from_records(variant_list, index='id')
+        variant_tax_assign_df = pandas.DataFrame.from_records(variant_list, index='id')
 
-        ################################################################################################################
+        # ################################################################################################################
+        # #
+        # # 2 Create FASTA file with Variants
+        # #
+        # ################################################################################################################
         #
-        # 2 Create FASTA file with Variants
-        #
-        ################################################################################################################
-
-        Logger.instance().debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
-        variant_fasta = os.path.join(this_temp_dir, 'variant.fasta')
-        variant_df_utils = VariantDFutils(variant_df)
-        variant_df_utils.to_fasta(variant_fasta)
+        # Logger.instance().debug(
+        #     "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
+        # variant_fasta = os.path.join(this_temp_dir, 'variant.fasta')
+        # variant_df_utils = VariantDFutils(variant_tax_assign_df)
+        # variant_df_utils.to_fasta(variant_fasta)
 
         ################################################################################################################
         #
@@ -108,12 +108,22 @@ class CommandTaxAssign(object):
         taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
                                       dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
 
-        tax_assign_runner = TaxAssignRunner(variant_df=variant_df, taxonomy_df=taxonomy_df,
+        sequence_list = variant_tax_assign_df.sequence.tolist()
+        tax_assign_runner = TaxAssignRunner(sequence_list=sequence_list, taxonomy_df=taxonomy_df,
                                             blast_db_dir=blasdb_dir_path, blast_db_name=blastdbname_str,
                                             ltg_rule_threshold=ltg_rule_threshold,
                                             include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
                                             num_threads=num_threads)
         ltg_df = tax_assign_runner.ltg_df
+
+        ######################################################
+        # Uncomment to debug because blast is slow
+        # pandas.to_pickle(ltg_df, "ltg_df.pkl")
+        # ltg_df = pandas.read_pickle("ltg_df.pkl")
+        # import pdb; pdb.set_trace()
+        ######################################################
+
+        ltg_df.rename({'variant_id': 'variant_sequence'}, inplace=True, axis=1)
 
         ################################################################################################################
         #
@@ -123,7 +133,8 @@ class CommandTaxAssign(object):
 
         # if not (ltg_df is None) and ltg_df.shape[0] > 0:
 
-        ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
+        # ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
+        ltg_df = variant_tax_assign_df.merge(ltg_df, left_on='sequence', right_on='variant_sequence', how='outer')
 
         ltg_df['blast_db'] = blastdbname_str
 
@@ -137,12 +148,18 @@ class CommandTaxAssign(object):
                                                                                    inspect.currentframe().f_lineno))
 
         for ltg_row in ltg_df.itertuples():
-            variant_id = ltg_row.variant_id
+            variant_sequence = ltg_row.sequence
+            # variant_id = ltg_row.variant_id
+            # import pdb; pdb.set_trace()
             with engine.connect() as conn:
+                variant_id = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
+                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()[0]
                 select_row = conn.execute(sqlalchemy.select([tax_assign_declarative])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
-                    conn.execute(tax_assign_declarative_table.insert(), dict(ltg_row._asdict()))
+                    ltg_row_dic = ltg_row._asdict()
+                    ltg_row_dic['variant_id'] = variant_id
+                    conn.execute(tax_assign_declarative_table.insert(), dict(ltg_row_dic))
                 else:  # variant_sequence IS in the database, so update row
                     tax_assign_declarative_table.update()\
                         .where(tax_assign_declarative_table.c.variant_id == variant_id).values()
@@ -164,8 +181,11 @@ class CommandTaxAssign(object):
         variant_output_df = variant_output_df[variant_df_columns]
 
         for variant_row in variant_output_df.itertuples():
-            variant_id = variant_row.variant_id
+            # variant_id = variant_row.variant_id
+            variant_sequence = variant_row.sequence
             with engine.connect() as conn:
+                variant_id = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
+                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()[0]
                 select_row = conn.execute(sqlalchemy.select([tax_assign_declarative.ltg_tax_id,
                                                              tax_assign_declarative.ltg_tax_name,
                                                              tax_assign_declarative.ltg_rank,
@@ -173,11 +193,10 @@ class CommandTaxAssign(object):
                                                              tax_assign_declarative.blast_db,
                                                              ])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
-
             tax_assign_dict = dict(zip(['ltg_tax_id', 'ltg_tax_name', 'ltg_rank', 'identity', 'blast_db'],
                                         select_row))
             for k in tax_assign_dict:
-                variant_output_df.loc[variant_output_df.variant_id == variant_id, k] = tax_assign_dict[k]
+                variant_output_df.loc[variant_output_df.sequence == variant_sequence, k] = tax_assign_dict[k]
 
         ################################################################################################################
         #
@@ -199,5 +218,5 @@ class CommandTaxAssign(object):
         variant_df_columns.append(variant_df_columns.pop(variant_df_columns.index('sequence')))
         variant_output_df = variant_output_df[variant_df_columns]
 
-        variant_output_df.to_csv(variant_taxa_tsv, sep='\t', index=False, header=True)
+        variant_output_df.to_csv(output, sep='\t', index=False, header=True)
 
