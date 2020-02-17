@@ -177,33 +177,20 @@ class VariantReadCount(ToolWrapper):
                 if os.path.exists(sorted_read_path):
 
                     with open(sorted_read_path, "r") as fin:
-                        sorted_read_list = fin.read().split("\n")
+                        sorted_read_list = [x.lower() for x in fin.read().split("\n")]
 
-                    variant_read_count_df_sorted_i = pandas.DataFrame({'read_sequence': sorted_read_list,
-                                                                       'run_id': [run_id]*len(sorted_read_list),
+                    variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id]*len(sorted_read_list),
                                                           'marker_id': [marker_id]*len(sorted_read_list),
                                                           'biosample_id': [biosample_id]*len(sorted_read_list),
                                                                 'replicate': [replicate]*len(sorted_read_list),
+                                                                       'read_sequence': sorted_read_list,
                                                           'read_count': [1]*len(sorted_read_list)})
                     # Compute read count
                     variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
-                        ['read_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
-
-                    # import pdb; pdb.set_trace()
+                        ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).sum().reset_index()
 
                     variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
-                    # for record in SeqIO.parse(sorted_read_path, "fasta"):  # Loop over each read
-                    #     read_sequence = str(record.seq.lower())
-                    #     if read_sequence in variant_read_count_df.index:
-                    #         variant_read_count_df.loc[read_sequence, 'read_count'] = variant_read_count_df.loc[
-                    #                                                                      read_sequence, 'read_count'] + 1
-                    #     else:
-                    #         read_count_df_row = pandas.DataFrame({'read_sequence': [read_sequence], 'run_id': [run_id],
-                    #                                       'marker_id': [marker_id],
-                    #                                       'biosample_id': [biosample_id], 'replicate': [replicate],
-                    #                                       'read_count': [1]})
-                    #     variant_read_count_df = variant_read_count_df.append(read_count_df_row)
                 else:
                     Logger.instance().warning('This fasta file {} doest not exists'.format(sorted_read_path))
 
@@ -214,9 +201,12 @@ class VariantReadCount(ToolWrapper):
         #
         ################################################################################################################
 
+        # import pdb; pdb.set_trace()
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
-                                                               'read_sequence']).size().reset_index(name='read_count')
+        # variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
+        #                                                        'read_sequence']).size().reset_index(name='read_count')
+        variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence'])\
+            .sum().reset_index()
         variant_read_count_df.rename(columns={'read_sequence': 'variant_id'}, inplace=True)
         variant_read_count_df.sort_values(by=variant_read_count_df.columns.tolist())
 
