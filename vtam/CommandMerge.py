@@ -1,26 +1,13 @@
-import inspect
-import os
-
 import multiprocessing
-import sqlalchemy
-
-import pandas
+import os
 import pathlib
-
 import sys
 import yaml
-from sqlalchemy import create_engine, select
 
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
-
-from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
-from vtam.models.Variant import Variant as variant_declarative
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignRunner import TaxAssignRunner
-from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantDFutils import VariantDFutils
+
 
 class VSearchMergeRunner(object):
 
@@ -89,9 +76,8 @@ class CommandMerge(object):
         with open(fastqinfo, 'r') as csv_file:
             with open(fastainfo, 'w') as fastainfo_fout:
                 next(csv_file) # skip header of fastqinfo
-                fastainfo_header = "TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 " \
-                                   "Biosample	Replicate	Run	Fastq_fw	Fastq_rv	Fasta\n"
-                fastainfo_fout.write(fastainfo_header) # write header of fastainfo
+                fastainfo_header = "TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	Fasta\n"
+                fastainfo_fout.write(fastainfo_header)  # write header of fastainfo
                 for line in csv_file:
                     sample_info = line.strip().split("\t")
                     fastq_fw_abspath = os.path.join(fastqdir, sample_info[8])

@@ -125,8 +125,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model,
-                                     biosample_model)
+        variant_known = VariantKnown(variant_known_tsv, fasta_info_tsv, engine)
         keep_run_marker_biosample_variant_df = variant_known.get_keep_run_marker_biosample_variant_df(
             variant_tolerate=False)
 
@@ -136,8 +135,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv, engine=engine, run_model=run_model,
-                                             marker_model=marker_model, biosample_model=biosample_model)
+        fasta_info_tsv = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv, engine=engine)
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(variant_read_count_model)
 
         ################################################################################################

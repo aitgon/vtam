@@ -14,10 +14,10 @@ from vtam.utils.constants import rank_hierarchy,identity_list
 class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
-    def __init__(self, variant_df, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
+    def __init__(self, sequence_list, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
                  num_threads):
 
-        self.variant_df = variant_df
+        # self.variant_df = variant_df
         self.taxonomy_df = taxonomy_df
         self.blast_db_dir = blast_db_dir
         self.this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
@@ -36,8 +36,11 @@ class TaxAssignRunner(object):
         Logger.instance().debug(
             "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno))
         variant_fasta = os.path.join(self.this_temp_dir, 'variant.fasta')
-        variant_df_utils = VariantDFutils(variant_df)
-        variant_df_utils.to_fasta(variant_fasta)
+        # variant_df_utils = VariantDFutils(variant_df)
+        # variant_df_utils.to_fasta(variant_fasta)
+        with open(variant_fasta, 'w') as fout:
+            for seq in sequence_list:
+                fout.write(">{}\n{}\n".format(seq, seq))
 
         ##########################################################
         #

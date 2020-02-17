@@ -5,7 +5,7 @@
 ##########################################################
 
 parameters_numerical = {
-    # Default parameters for Merge are in the CommandMerge file
+    # Default parameters for Merge are in the CommandSortReads file
     # 'fastq_ascii': 33,
     # 'fastq_maxee': 1,
     # 'fastq_maxmergelen': 500,
