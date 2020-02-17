@@ -9,10 +9,15 @@ from sqlalchemy import select
 from vtam import Logger, VTAMexception
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 
+from vtam.models.Run import Run as run_model
+from vtam.models.Marker import Marker as marker_model
+from vtam.models.Biosample import Biosample as biosample_model
+from vtam.models.Variant import Variant as variant_model
+
 
 class VariantKnown(object):
 
-    def __init__(self, variant_known_tsv, fasta_info_tsv, engine, variant_model, run_model, marker_model, biosample_model):
+    def __init__(self, variant_known_tsv, fasta_info_tsv, engine):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
@@ -20,22 +25,33 @@ class VariantKnown(object):
         """
         self.variant_known_tsv = variant_known_tsv
         self.engine = engine
-        self.variant_model = variant_model
-        self.run_model = run_model
-        self.marker_model = marker_model
-        self.biosample_model = biosample_model
+        # self.variant_model = variant_model
+        # self.run_model = run_model
+        # self.marker_model = marker_model
+        # self.biosample_model = biosample_model
         self.fasta_info_tsv = fasta_info_tsv
 
         ################################################################################################################
         #
-        # Create a DF
+        # Create a DF and rename columns
         #
         ################################################################################################################
 
         self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
-                                              names=['marker_name', 'run_name', 'biosample_name', 'biosample_type',
-                                                     'variant_id', 'action', 'variant_sequence'], index_col=False,
+                                              names=['Marker', 'Run', 'Biosample', 'BiosampleType',
+                                                     'VariantId', 'Action', 'Sequence'], index_col=False,
                                                 usecols=list(range(7)))
+        # Change column names to lower
+        self.variant_known_df.columns = map(str.lower, self.variant_known_df.columns)
+        # Rename columns
+        self.variant_known_df.rename({'marker': 'marker_name',
+                                      'run': 'run_name',
+                                      'biosample': 'biosample_name',
+                                      'biosampletype': 'biosample_type',
+                                      'variantid': 'variant_id',
+                                      'sequence': 'variant_sequence'}, inplace=True, axis=1)
+        # Sequence to lower case
+        self.variant_known_df['variant_sequence'] = self.variant_known_df.variant_sequence.str.lower()
 
         # columns: run_id, marker_id, biosample_id, replicate, variant_id, biosample_type, action, variant_sequence
         self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
@@ -69,13 +85,13 @@ class VariantKnown(object):
             biosample_name = row.biosample_name
             with self.engine.connect() as conn:
                 # get run_id ###########
-                stmt_select_run_id = sqlalchemy.select([self.run_model.__table__.c.id]).where(self.run_model.__table__.c.name==run_name)
+                stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = sqlalchemy.select([self.marker_model.__table__.c.id]).where(self.marker_model.__table__.c.name==marker_name)
+                stmt_select_marker_id = sqlalchemy.select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = sqlalchemy.select([self.biosample_model.__table__.c.id]).where(self.biosample_model.__table__.c.name==biosample_name)
+                stmt_select_biosample_id = sqlalchemy.select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
                 biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
                 # get replicate ###########
                 # add this sample_instance ###########
@@ -118,8 +134,8 @@ class VariantKnown(object):
                 # Implicit 'delete' variants in 'negative' biosamples do not have sequence
                 if not (user_variant_sequence is None):
 
-                    stmt_select = select([self.variant_model.__table__.c.id, self.variant_model.__table__.c.sequence])\
-                        .where(self.variant_model.__table__.c.sequence == user_variant_sequence)
+                    stmt_select = select([variant_model.__table__.c.id, variant_model.__table__.c.sequence])\
+                        .where(variant_model.__table__.c.sequence == user_variant_sequence)
 
                     known_variant_in_db = conn.execute(stmt_select).first()
 
@@ -159,8 +175,7 @@ class VariantKnown(object):
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.fasta_info_tsv, run_model=self.run_model,
-                                             marker_model=self.marker_model, biosample_model=self.biosample_model)
+        fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.fasta_info_tsv)
         sample_information_df = fasta_info_tsv.sample_information_df
 
         ################################################################################################################

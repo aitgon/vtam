@@ -1,3 +1,4 @@
+import multiprocessing
 import os
 import pathlib
 import re
@@ -12,7 +13,8 @@ class ReadTrimmer(object):
     """Sort reads according to informations in sample_information file
     """
 
-    def __init__(self, reads_fasta_path, tag_sequence_list, primer_sequence_list, align_parameters, tempdir):
+    def __init__(self, reads_fasta_path, tag_sequence_list, primer_sequence_list, align_parameters, tempdir,
+                 num_threads=multiprocessing.cpu_count()):
         """
         Inits this class
 
@@ -49,6 +51,9 @@ class ReadTrimmer(object):
 
         # Fasta file with trimmed reads that were trimmed in 5'
         self.reads_trimmed_fasta_path = None
+
+        self.num_threads = num_threads
+
 
 
     def write_tag_primer_fasta(self):
@@ -93,7 +98,7 @@ class ReadTrimmer(object):
                               '--minseqlength': self.align_parameters["minseqlength"],
                               '--userfields': "query+target+tl+qilo+qihi+tilo+tihi+qrow",
                               '--userout': self.alignements_tsv_path,
-                              '--threads': int(os.getenv('VTAM_THREADS')),
+                              '--threads': self.num_threads,
                               }
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
@@ -144,7 +149,7 @@ class ReadTrimmer(object):
                                 if tag_position_in_match <= self.align_parameters['overhang']:
                                     nb_discarded_reads -= 1  # If passed all filters we remove from discarded read
                                     fout.write(line)
-        Logger.instance().info("Number of discarded reads: {}".format(nb_discarded_reads))
+        Logger.instance().debug("Number of discarded reads: {}".format(nb_discarded_reads))
 
 
     def trim_reads(self):

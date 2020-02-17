@@ -97,8 +97,7 @@ class FilterLFN(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv, run_model=run_model,
-                                             marker_model=marker_model, biosample_model=biosample_model)
+        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
         ##########################################################
         #

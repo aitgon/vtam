@@ -5,6 +5,9 @@ import sys
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
 
+from vtam.models.Run import Run as run_model
+from vtam.models.Marker import Marker as marker_model
+from vtam.models.Biosample import Biosample as biosample_model
 
 class SampleInformationUtils(object):
     """Takes an object as in the SampleInformation model and carries out several computations on and the DB"""
@@ -200,20 +203,16 @@ class SampleInformationUtils(object):
 class FastaInformationTSV(SampleInformationUtils):
     """Reads fasta information TSV file to a sample_information_id object"""
 
-    def __init__(self, fasta_info_tsv, engine, run_model, marker_model, biosample_model, include_tag_primer_fasta=False):
+    def __init__(self, fasta_info_tsv, engine, include_tag_primer_fasta=False):
         """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
         #
-        self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0,
-                                                    names=['tag_fwd_sequence', 'primer_fwd_sequence',
-                                                           'tag_rev_sequence', 'primer_rev_sequence', 'marker_name',
-                                                           'biosample_name', 'replicate', 'run_name', 'fastq_fwd',
-                                                           'fastq_rev', 'fasta_file_name'])
+        self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0)
         self.__engine = engine
-        sample_information_id_df = self.__get_sample_information_df(run_model, marker_model, biosample_model, include_tag_primer_fasta=include_tag_primer_fasta)
+        sample_information_id_df = self.__get_sample_information_df(include_tag_primer_fasta=include_tag_primer_fasta)
         super().__init__(engine, sample_information_id_df)
 
 
-    def __get_sample_information_df(self, run_model, marker_model, biosample_model, include_tag_primer_fasta=False):
+    def __get_sample_information_df(self, include_tag_primer_fasta=False):
         """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate entries (See return)
 
@@ -223,11 +222,11 @@ class FastaInformationTSV(SampleInformationUtils):
         fasta_info_instance_list = []
 
         for row in self.fasta_information_df.itertuples():
-            marker_name = row.marker_name
-            run_name = row.run_name
-            biosample_name = row.biosample_name
+            marker_name = row.Marker
+            run_name = row.Run
+            biosample_name = row.Biosample
             # replicate_name = row.replicate_name
-            replicate = row.replicate
+            replicate = row.Replicate
             with self.__engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
