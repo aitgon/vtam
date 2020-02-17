@@ -21,8 +21,7 @@ class VariantReadCountDF(object):
         # This is the only order allowed of variant_read_count_df columns
         self.column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']
         try:
-            assert variant_read_count_df.columns.tolist() == \
-                   ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']
+            assert set(variant_read_count_df.columns.tolist()) >= set(self.column_list)
         except:
             Logger.instance().error(VTAMexception("This DataFrame is not composed of columns: 'run_id', 'marker_id', "
                                                   "'biosample_id', 'replicate', 'variant_id', 'read_count'. The workflow will exit"))

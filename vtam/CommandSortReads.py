@@ -88,6 +88,12 @@ class CommandSortReads(object):
 
         fasta_trimmed_info_df = pandas.DataFrame()
 
+        ################################################################################################################
+        #
+        # Loop over fasta files to sort reads per fasta
+        #
+        ################################################################################################################
+
         for fasta_filename in sorted(fastainfo_df.Fasta.unique().tolist()):
 
             Logger.instance().debug("Analysing FASTA file: {}".format(fasta_filename))
