@@ -1,4 +1,4 @@
-{% from 'macros.txt' import rule_optimize_lfn_readcount_and_lfn_variant_replicate %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.yml' import rule_optimize_lfn_readcount_and_lfn_variant_replicate %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_optimize %}rule OptimizeLFNbiosampleReplicate:
     tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
     input:
