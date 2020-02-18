@@ -54,7 +54,7 @@ class TestPoolMarkers(TestCase):
     def test_cluster_sequences_with_vsearch(self):
         ####################################################################
         #
-        # test run_vsearch_to_cluster_sequences
+        # tests run_vsearch_to_cluster_sequences
         #
         ####################################################################
         vsearch_output_centroid_fasta_content_bak = """>836;size=11588
@@ -77,7 +77,7 @@ ATACCTATTATAATT
 
         ####################################################################
         #
-        # test get_vsearch_clusters_to_df
+        # tests get_vsearch_clusters_to_df
         #
         ####################################################################
 
@@ -94,7 +94,7 @@ ATACCTATTATAATT
 
         ####################################################################
         #
-        # test get_pooled_marker_df
+        # tests get_pooled_marker_df
         #
         ####################################################################
         pooled_marker_bak_str = """centroid_variant_id	variant_id	run_name	marker_name	sample1	sample2	sample3	sequence

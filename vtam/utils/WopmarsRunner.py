@@ -52,7 +52,7 @@ class WopmarsRunner(Singleton):
         # Create Wopfile content
         #
         #####################
-        template_dir = os.path.join(os.path.dirname(__file__), '../../data')
+        template_dir = os.path.join(os.path.dirname(__file__), '../data')
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
         template = None
         if self.command in ['filter', 'optimize']:

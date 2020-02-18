@@ -15,12 +15,13 @@ setup(
     name='vtam',
     version='0.0.1',
     license='MIT',
-    author='Thomas Dechatre, Aitor Gonzalez',
+    author='Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz',
     author_email='aitor.gonzalez@univ-amu.fr',
-    url='http://www.aitorgonzalezlab.org',
-    long_description="readme.md",
+    url='https://tagc.univ-amu.fr/en/users/gonzalez-aitor',
+    long_description="README.rst",
     packages=find_packages(),
-    include_package_data=True,
+    package_dir={'vtam': 'vtam'},
+    package_data={'vtam': ["tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*", "tests/output/*"]},  # Add tests
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
     entry_points={
