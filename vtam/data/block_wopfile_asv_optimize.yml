@@ -1,4 +1,4 @@
-{% from 'macros.txt' import param_log %}rule SampleInformation:
+{% from 'macros.yml' import param_log %}rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:

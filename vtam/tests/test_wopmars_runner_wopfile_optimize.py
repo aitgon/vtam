@@ -43,14 +43,14 @@ class TestWorpmarsRunnerOptimize(TestCase):
         #
         ###############################################################
         wopmars_runner = WopmarsRunner(command='optimize', parameters=OptionManager.instance())
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"),
+        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
         wopfile_content_bak = """rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         table:
             Run: vtam.models.Run
@@ -64,7 +64,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -74,7 +74,7 @@ rule VariantReadCount:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
     params:
-        fasta_dir: test/utils
+        fasta_dir: vtam/tests
 
 
 rule OptimizeLFNbiosampleReplicate:
@@ -87,11 +87,11 @@ rule OptimizeLFNbiosampleReplicate:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
-            variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_lfn_biosample_replicate: test/output/optimize_lfn_biosample_replicate.tsv
+            optimize_lfn_biosample_replicate: vtam/tests/output/optimize_lfn_biosample_replicate.tsv
 
 
 rule OptimizePCRerror:
@@ -104,11 +104,11 @@ rule OptimizePCRerror:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
-            variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_pcr_error: test/output/optimize_pcr_error.tsv
+            optimize_pcr_error: vtam/tests/output/optimize_pcr_error.tsv
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -121,12 +121,12 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_optimize.py
-            variant_known: test/utils/test_wopmars_runner_wopfile_optimize.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
-            optimize_lfn_read_count_and_lfn_variant: test/output/optimize_lfn_read_count_and_lfn_variant.tsv
-            optimize_lfn_variant_specific: test/output/optimize_lfn_variant_specific.tsv
+            optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
+            optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
     params:
         is_optimize_lfn_variant_replicate: 0
         lfn_variant_or_variant_replicate_threshold: 0.001

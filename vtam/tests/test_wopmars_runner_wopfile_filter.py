@@ -62,7 +62,7 @@ class TestWorpmarsRunnerFilter(TestCase):
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             Run: vtam.models.Run
@@ -76,7 +76,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -86,7 +86,7 @@ rule VariantReadCount:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
     params:
-        fasta_dir: test/utils
+        fasta_dir: vtam/tests
 
 
 rule FilterLFN:
@@ -98,7 +98,7 @@ rule FilterLFN:
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
@@ -117,7 +117,7 @@ rule FilterMinReplicateNumber:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterLFN
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
@@ -135,7 +135,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterPCRerror: vtam.models.FilterPCRerror
@@ -153,7 +153,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterChimera: vtam.models.FilterChimera
@@ -169,7 +169,7 @@ rule FilterMinReplicateNumber2:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterChimera
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
@@ -186,7 +186,7 @@ rule FilterRenkonen:
             Biosample: vtam.models.Biosample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
@@ -203,7 +203,7 @@ rule FilterMinReplicateNumber3:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
@@ -221,7 +221,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
@@ -239,7 +239,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
@@ -257,7 +257,7 @@ rule ReadCountAverageOverReplicates:
             Biosample: vtam.models.Biosample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -274,10 +274,10 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            fastainfo: test/utils/test_wopmars_runner_wopfile_filter.py
+            fastainfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
     output:
         file:
-            ASVTable: test/output/asvtable.tsv"""
+            ASVTable: vtam/tests/output/asvtable.tsv"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
 
     def test_wopmars_runner_asv_with_threshold_specific(self):
@@ -303,7 +303,7 @@ rule MakeAsvTable:
         ###############################################################
 
         wopmars_runner = WopmarsRunner(command='filter', parameters=OptionManager.instance())
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"),
+        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
@@ -350,7 +350,7 @@ rule MakeAsvTable:
         ###############################################################
 
         wopmars_runner = WopmarsRunner(command='filter', parameters=OptionManager.instance())
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"),
+        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
@@ -395,7 +395,7 @@ rule MakeAsvTable:
         ###############################################################
 
         wopmars_runner = WopmarsRunner(command='filter', parameters=OptionManager.instance())
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "test/output/wopfile"),
+        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
