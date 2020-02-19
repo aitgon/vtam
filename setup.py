@@ -21,11 +21,11 @@ setup(
     long_description="README.rst",
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
-    package_data={'vtam': ["tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*", "tests/output/*"]},  # Add tests
+    package_data={'vtam': ["tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*", "tests/output/*"]},
+    data_files = [],
     description="Metabarcoding wrappers and models for WopMars",
     install_requires=install_requires,
     entry_points={
         'console_scripts': ['vtam=vtam:main',]
     },
     )
-
