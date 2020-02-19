@@ -4,7 +4,7 @@ VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 Installation
 ------------
 
-See the 'tutorial/tutorial.md'
+See the 'doc/tutorial.md'
 
 Documentation
 --------------
