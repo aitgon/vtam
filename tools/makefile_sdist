@@ -1,0 +1,4 @@
+all:
+	python setup.py sdist
+	cp dist/* ${HOME}/Dropbox/vtam/dist
+
