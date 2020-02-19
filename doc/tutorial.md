@@ -19,7 +19,12 @@ conda activate vtam
 
 ## Install VTAM and its dependencies
 
-Download latest release of VTAM
+Download latest release of VTAM: https://www.dropbox.com/sh/g1mshtlet0ymyud/AAA4BNPGpJlewTvJ172B3TFHa?dl=0
+
+~~~
+tar zxvf vtam-0.0.1.tar.gz
+cd vtam-0.0.1
+~~~
 
 _TODO_
 
@@ -29,7 +34,7 @@ VTAM depends on these List of dependencies:
 * blast=2.9.0
 * wopmars=0.0.8 ( https://github.com/aitgon/wopmars )
 
-These dependencies and VTAM can be installed automatically using within the Conda environment:
+These dependencies and VTAM can be installed automatically using within the Conda environment with this command:
 
 ~~~
 make
