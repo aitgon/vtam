@@ -120,7 +120,7 @@ vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/f
 This command filter variants and create the ASV tables. 
 
 ~~~
-vtam filter --fastainfo out/fastainfo.tsv --fastadir out/fasta --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam filter --fastainfo out/fasta_trimmed/fastainfo.tsv --fastadir out//fasta_trimmed --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
 
 The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
