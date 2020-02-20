@@ -73,21 +73,17 @@ CTGTAGATCGACA"""
         sort_reads_runner = SortReadsRunner(fasta_path=fasta_path, alignement_parameters=alignement_parameters,
                                                 fasta_information_df=fasta_information_df, outdir=outdir)
 
-        sort_reads_runner.run()
+        trimmed_fasta_df, sorted_reads_dic = sort_reads_runner.run()
 
-        fasta_info_str_bak = """Run	Marker	Biosample	Replicate	Fasta
-1	1	2	2	reads_000.fasta
-1	1	5	2	reads_001.fasta
-"""
+        trimmed_fasta_str_bak = """   Run  Marker  Biosample  Replicate          Fasta
+0    1       1          2          2  reads_000.txt
+1    1       1          5          2  reads_001.txt"""
 
-        with open(os.path.join(outdir, 'fasta_info.tsv')) as fin:
-            fasta_info_str = fin.read()
-        assert fasta_info_str_bak == fasta_info_str
+        sorted_reads_dic_bak = {'reads_001.txt': [
+            'CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT',
+            'CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT'],
+         'reads_000.txt': [
+             'CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT']}
 
-        fasta_str_bak = """>M00842:118:000000000-ABGKE:1:1101:18229:3444
-CCTTTATTTTATTTTCGGTATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT
-"""
-
-        with open(os.path.join(outdir, 'reads_000.fasta')) as fin:
-            fasta_str = fin.read()
-        assert fasta_str_bak == fasta_str
+        assert trimmed_fasta_df.to_string() == trimmed_fasta_str_bak
+        assert sorted_reads_dic == sorted_reads_dic_bak
