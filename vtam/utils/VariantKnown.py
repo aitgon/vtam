@@ -9,10 +9,10 @@ from sqlalchemy import select
 from vtam import Logger, VTAMexception
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 
-from vtam.models.Run import Run as run_model
-from vtam.models.Marker import Marker as marker_model
-from vtam.models.Biosample import Biosample as biosample_model
-from vtam.models.Variant import Variant as variant_model
+from vtam.models.Run import Run as RunModel
+from vtam.models.Marker import Marker as MarkerModel
+from vtam.models.Biosample import Biosample as BiosampleModel
+from vtam.models.Variant import Variant as VariantModel
 
 
 class VariantKnown(object):
@@ -25,10 +25,6 @@ class VariantKnown(object):
         """
         self.variant_known_tsv = variant_known_tsv
         self.engine = engine
-        # self.variant_model = variant_model
-        # self.run_model = run_model
-        # self.marker_model = marker_model
-        # self.biosample_model = biosample_model
         self.fasta_info_tsv = fasta_info_tsv
 
         ################################################################################################################
@@ -84,15 +80,39 @@ class VariantKnown(object):
             run_name = row.run_name
             biosample_name = row.biosample_name
             with self.engine.connect() as conn:
+                #
                 # get run_id ###########
-                stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
+                #
+                stmt_select_run_id = sqlalchemy.select([RunModel.__table__.c.id]).where(RunModel.__table__.c.name == run_name)
+                run_id_row = conn.execute(stmt_select_run_id).first()
+                if run_id_row is None:
+                    Logger.instance().error(VTAMexception("Run {} not found in the DB. The program will exit. "
+                                                          "Please verify the variant_known TSV file.".format(run_name)))
+                    sys.exit(1)
+                else:
+                    run_id = run_id_row[0]
+                #
                 # get marker_id ###########
-                stmt_select_marker_id = sqlalchemy.select([marker_model.__table__.c.id]).where(marker_model.__table__.c.name == marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
+                #
+                stmt_select_marker_id = sqlalchemy.select([MarkerModel.__table__.c.id]).where(MarkerModel.__table__.c.name == marker_name)
+                marker_id_row = conn.execute(stmt_select_marker_id).first()
+                if marker_id_row is None:
+                    Logger.instance().error(VTAMexception("Marker {} not found in the DB. The program will exit. "
+                                                          "Please verify the variant_known TSV file.".format(marker_name)))
+                    sys.exit(1)
+                else:
+                    marker_id = marker_id_row[0]
+                #
                 # get biosample_id ###########
-                stmt_select_biosample_id = sqlalchemy.select([biosample_model.__table__.c.id]).where(biosample_model.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                #
+                stmt_select_biosample_id = sqlalchemy.select([BiosampleModel.__table__.c.id]).where(BiosampleModel.__table__.c.name == biosample_name)
+                biosample_id_first = conn.execute(stmt_select_biosample_id).first()
+                if biosample_id_first is None:
+                    Logger.instance().error(VTAMexception("Biosample {} not found in the DB. The program will exit. "
+                                                          "Please verify the variant_known TSV file.".format(biosample_name)))
+                    sys.exit(1)
+                else:
+                    biosample_id = biosample_id_first[0]
                 # get replicate ###########
                 # add this sample_instance ###########
                 instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'variant_id': row.variant_id,
@@ -134,8 +154,8 @@ class VariantKnown(object):
                 # Implicit 'delete' variants in 'negative' biosamples do not have sequence
                 if not (user_variant_sequence is None):
 
-                    stmt_select = select([variant_model.__table__.c.id, variant_model.__table__.c.sequence])\
-                        .where(variant_model.__table__.c.sequence == user_variant_sequence)
+                    stmt_select = select([VariantModel.__table__.c.id, VariantModel.__table__.c.sequence])\
+                        .where(VariantModel.__table__.c.sequence == user_variant_sequence)
 
                     known_variant_in_db = conn.execute(stmt_select).first()
 
