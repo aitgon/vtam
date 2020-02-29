@@ -15,7 +15,7 @@ class FilterRenkonen(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -26,7 +26,7 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_input_file(self):
         return [
-            FilterRenkonen.__input_file_fastainfo,
+            FilterRenkonen.__input_file_readinfo,
 
         ]
 
@@ -59,7 +59,7 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_readinfo)
         #
         # Input table models
         marker_model = self.input_table(FilterRenkonen.__input_table_marker)
@@ -76,7 +76,7 @@ class FilterRenkonen(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 

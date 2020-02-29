@@ -13,7 +13,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
@@ -26,7 +26,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizeLFNbiosampleReplicate.__input_file_fastainfo,
+            OptimizeLFNbiosampleReplicate.__input_file_readinfo,
             OptimizeLFNbiosampleReplicate.__input_file_variant_known,
         ]
 
@@ -60,7 +60,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         # Input file output
         variant_known_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_variant_known)
-        fasta_info_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_readinfo)
         #
         # Input table models
         run_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_run)
