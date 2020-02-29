@@ -19,7 +19,7 @@ class OptimizePCRerror(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     __input_file_variant_known = "variant_known"
     # Input table
     __input_table_run = "Run"
@@ -35,7 +35,7 @@ class OptimizePCRerror(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            OptimizePCRerror.__input_file_fastainfo,
+            OptimizePCRerror.__input_file_readinfo,
             OptimizePCRerror.__input_file_variant_known,
         ]
 
@@ -73,7 +73,7 @@ class OptimizePCRerror(ToolWrapper):
 
         # Input file paths
         variant_known_tsv = self.input_file(OptimizePCRerror.__input_file_variant_known)
-        fasta_info_tsv = self.input_file(OptimizePCRerror.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(OptimizePCRerror.__input_file_readinfo)
         #
         # Input models
         run_model = self.input_table(OptimizePCRerror.__input_table_run)

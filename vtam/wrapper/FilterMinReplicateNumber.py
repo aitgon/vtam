@@ -18,7 +18,7 @@ class FilterMinReplicateNumber(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -30,7 +30,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterMinReplicateNumber.__input_file_fastainfo,
+            FilterMinReplicateNumber.__input_file_readinfo,
 
         ]
 
@@ -64,7 +64,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
         #
         # Input files
-        fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_readinfo)
         #
         # Input tables
         run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
@@ -81,7 +81,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 

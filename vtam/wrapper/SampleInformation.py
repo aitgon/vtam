@@ -7,7 +7,7 @@ class SampleInformation(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "vtam.wrapper.SampleInformation"
     }
-    __input_file_csv = "fastainfo"
+    __input_file_csv = "readinfo"
     #
     __output_table_biosample = "Biosample"
     __output_table_fasta = "Fasta"

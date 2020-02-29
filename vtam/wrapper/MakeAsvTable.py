@@ -9,7 +9,7 @@ class MakeAsvTable(ToolWrapper):
         "polymorphic_identity": "vtam.wrapper.MakeAsvTable"}
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -24,7 +24,7 @@ class MakeAsvTable(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            MakeAsvTable.__input_file_fastainfo,
+            MakeAsvTable.__input_file_readinfo,
         ]
 
     def specify_input_table(self):
@@ -59,7 +59,7 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_readinfo)
         #
         # Input table models
         marker_model = self.input_table(MakeAsvTable.__input_table_marker)
@@ -73,7 +73,7 @@ class MakeAsvTable(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # Compute variant_read_count_df and other dfs for the asv_table_runner
         #
         ##########################################################
