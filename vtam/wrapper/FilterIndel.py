@@ -13,7 +13,7 @@ class FilterIndel(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -25,7 +25,7 @@ class FilterIndel(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterIndel.__input_file_fastainfo,
+            FilterIndel.__input_file_readinfo,
 
         ]
 
@@ -59,7 +59,7 @@ class FilterIndel(ToolWrapper):
         ##########################################################
         #
         # Input file output
-        fasta_info_tsv = self.input_file(FilterIndel.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterIndel.__input_file_readinfo)
         #
         # Input table models
         marker_model = self.input_table(FilterIndel.__input_table_marker)
@@ -76,7 +76,7 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 

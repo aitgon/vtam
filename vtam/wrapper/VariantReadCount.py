@@ -22,7 +22,7 @@ class VariantReadCount(ToolWrapper):
     # Input
     # Input file
     # __input_file_sort_reads = 'sortreads'
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -43,7 +43,7 @@ class VariantReadCount(ToolWrapper):
     def specify_input_file(self):
         return[
             # VariantReadCount.__input_file_sort_reads,
-            VariantReadCount.__input_file_fastainfo,
+            VariantReadCount.__input_file_readinfo,
         ]
 
     def specify_output_table(self):
@@ -58,7 +58,7 @@ class VariantReadCount(ToolWrapper):
         :return:
         """
         return {
-            "fasta_dir": "str",
+            "read_dir": "str",
         }
 
     def run(self):
@@ -73,7 +73,7 @@ class VariantReadCount(ToolWrapper):
 
         # Input file
         # sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
-        input_file_fastainfo = self.input_file(VariantReadCount.__input_file_fastainfo)
+        input_file_readinfo = self.input_file(VariantReadCount.__input_file_readinfo)
         #
         # Input table models
         run_model = self.input_table(VariantReadCount.__input_table_run)
@@ -85,11 +85,11 @@ class VariantReadCount(ToolWrapper):
         variant_model = self.output_table(VariantReadCount.__output_table_variant)
         variant_read_count_model = self.output_table(VariantReadCount.__output_table_variant_read_count)
         # Options
-        fasta_dir = self.option("fasta_dir")
+        read_dir = self.option("read_dir")
 
         ################################################################################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
@@ -105,9 +105,9 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
-        fastainfo_df = pandas.read_csv(input_file_fastainfo, sep="\t", header=0)
+        readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
         sample_instance_list  = []
-        for row in fastainfo_df.itertuples():
+        for row in readinfo_df.itertuples():
             Logger.instance().debug(row)
             marker_name = row.Marker
             run_name = row.Run
@@ -148,7 +148,7 @@ class VariantReadCount(ToolWrapper):
         #
         ##########################################################
 
-        fasta_info_obj = FastaInformationTSV(input_file_fastainfo, engine=engine)
+        fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
         fasta_info_ids_df = fasta_info_obj.get_ids_df()
 
         Logger.instance().debug("file: {}; line: {}; Read demultiplexed FASTA files".format(__file__, inspect.currentframe().f_lineno))
@@ -165,7 +165,7 @@ class VariantReadCount(ToolWrapper):
             Logger.instance().debug(
                 "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, fasta_filename))
 
-            sorted_read_path = os.path.join(fasta_dir, fasta_filename)
+            sorted_read_path = os.path.join(read_dir, fasta_filename)
 
             if os.path.exists(sorted_read_path):
 

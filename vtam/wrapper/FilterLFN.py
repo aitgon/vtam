@@ -16,7 +16,7 @@ class FilterLFN(ToolWrapper):
     }
 
     # Input file
-    __input_file_fastainfo = "fastainfo"
+    __input_file_readinfo = "readinfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -27,7 +27,7 @@ class FilterLFN(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterLFN.__input_file_fastainfo,
+            FilterLFN.__input_file_readinfo,
         ]
 
     def specify_input_table(self):
@@ -62,7 +62,7 @@ class FilterLFN(ToolWrapper):
         ##########################################################
 
         # Input file output
-        fasta_info_tsv = self.input_file(FilterLFN.__input_file_fastainfo)
+        fasta_info_tsv = self.input_file(FilterLFN.__input_file_readinfo)
         # Add FilterLFNthresholdspecific
         # input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
         #
@@ -83,7 +83,7 @@ class FilterLFN(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         # 4. Apply filters
@@ -93,7 +93,7 @@ class FilterLFN(ToolWrapper):
 
         ##########################################################
         #
-        # 1. Read fastainfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
         ##########################################################
 
