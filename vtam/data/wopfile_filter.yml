@@ -8,7 +8,7 @@
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: {{fastainfo}}{{ input_file_threshold_specific(threshold_specific) }}
+            readinfo: {{readinfo}}{{ input_file_threshold_specific(threshold_specific) }}
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
@@ -26,7 +26,7 @@ rule FilterMinReplicateNumber:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterLFN
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
@@ -44,7 +44,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterPCRerror: vtam.models.FilterPCRerror
@@ -62,7 +62,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterChimera: vtam.models.FilterChimera
@@ -78,7 +78,7 @@ rule FilterMinReplicateNumber2:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterChimera
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
@@ -95,7 +95,7 @@ rule FilterRenkonen:
             Biosample: vtam.models.Biosample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
@@ -112,7 +112,7 @@ rule FilterMinReplicateNumber3:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
@@ -130,7 +130,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
@@ -148,7 +148,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
@@ -166,7 +166,7 @@ rule ReadCountAverageOverReplicates:
             Biosample: vtam.models.Biosample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -183,7 +183,7 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         file:
             ASVTable: {{asvtable}}{% endblock %}
