@@ -22,7 +22,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
 
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --fastainfo {foofile} --fastadir {foodir} --variant_known {foofile} --outdir {outdir}'\
+        args_str = 'optimize --readinfo {foofile} --readdir {foodir} --variant_known {foofile} --outdir {outdir}'\
             .format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
 
@@ -50,7 +50,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            readinfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         table:
             Run: vtam.models.Run
@@ -64,7 +64,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            readinfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -74,7 +74,7 @@ rule VariantReadCount:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
     params:
-        fasta_dir: vtam/tests
+        read_dir: vtam/tests
 
 
 rule OptimizeLFNbiosampleReplicate:
@@ -87,7 +87,7 @@ rule OptimizeLFNbiosampleReplicate:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            readinfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
             variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
@@ -104,7 +104,7 @@ rule OptimizePCRerror:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            readinfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
             variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:
@@ -121,7 +121,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            fastainfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
+            readinfo: vtam/tests/test_wopmars_runner_wopfile_optimize.py
             variant_known: vtam/tests/test_wopmars_runner_wopfile_optimize.py
     output:
         file:

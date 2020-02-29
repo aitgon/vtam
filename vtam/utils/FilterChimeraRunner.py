@@ -4,7 +4,6 @@ import pathlib
 from Bio import SeqIO
 
 from vtam.utils.Logger import Logger
-from vtam.utils.PathManager import PathManager
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.utils.VSearch import VSearch

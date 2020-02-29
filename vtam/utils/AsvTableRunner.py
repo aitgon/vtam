@@ -1,11 +1,8 @@
-import math
-
 import pandas
 import sqlalchemy
 
 from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-# from vtam.utils.constants import rank_hierarchy_asv_table
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 

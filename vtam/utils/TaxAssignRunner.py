@@ -7,7 +7,6 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.constants import rank_hierarchy,identity_list
 
 

@@ -307,9 +307,9 @@ class ArgParser:
         parser_vtam_filter = subparsers.add_parser('filter', add_help=True, parents=[parent_parser])
 
         parser_vtam_filter\
-            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
+            .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        parser_vtam_filter.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
+        parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
@@ -343,9 +343,9 @@ class ArgParser:
 
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parent_parser])
         parser_vtam_optimize\
-            .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA sample information",
+            .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
                           required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
-        parser_vtam_optimize.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
+        parser_vtam_optimize.add_argument('--readdir', action='store', help="REQUIRED: Directory with sorted read files",
                                           required=True,
                                           type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
