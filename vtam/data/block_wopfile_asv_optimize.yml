@@ -2,7 +2,7 @@
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
     output:
         table:
             Run: vtam.models.Run
@@ -16,7 +16,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            fastainfo: {{fastainfo}}
+            readinfo: {{readinfo}}
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -26,7 +26,7 @@ rule VariantReadCount:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
     params:
-        fasta_dir: {{fastadir}}
+        read_dir: {{readdir}}
 
 
 {% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

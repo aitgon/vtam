@@ -21,7 +21,6 @@ from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
-import inspect
 import pandas
 
 
