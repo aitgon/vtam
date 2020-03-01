@@ -1,4 +1,5 @@
 all:
+	rm -rf dist
 	python setup.py sdist
-	cp dist/* ${HOME}/Dropbox/vtam/dist
+	cp dist/*.tar.gz ${HOME}/Dropbox/vtam/dist
 
