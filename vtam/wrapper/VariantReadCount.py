@@ -186,7 +186,7 @@ class VariantReadCount(ToolWrapper):
                 variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
             else:
-                Logger.instance().warning('This fasta file {} doest not exists'.format(sorted_read_path))
+                Logger.instance().warning('This file {} doest not exists'.format(sorted_read_path))
 
         ################################################################################################################
         #
