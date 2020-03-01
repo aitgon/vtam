@@ -1,17 +1,15 @@
-import os
-
 import multiprocessing
-import pathlib
-
+import os
 import pandas
+import pathlib
 import sys
 import yaml
 
+from vtam.utils.Logger import Logger
 from vtam.utils.SortReadsRunner import SortReadsRunner
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 
-from vtam.utils.Logger import Logger
 
 class VSearchMergeRunner(object):
 
@@ -86,7 +84,7 @@ class CommandSortReads(object):
 
         pathlib.Path(outdir).mkdir(exist_ok=True)
 
-        fasta_trimmed_info_df = pandas.DataFrame()
+        sorted_read_info_df = pandas.DataFrame()
 
         ################################################################################################################
         #
@@ -109,7 +107,7 @@ class CommandSortReads(object):
                                                 alignement_parameters=alignement_parameters, outdir=outdir, num_threads=num_threads)
 
             fasta_trimmed_info_df_i, sorted_read_dic = sort_reads_runner.run()
-            fasta_trimmed_info_df = fasta_trimmed_info_df.append(fasta_trimmed_info_df_i)
+            sorted_read_info_df = sorted_read_info_df.append(fasta_trimmed_info_df_i)
 
             ################################################################################################################
             #
@@ -124,6 +122,6 @@ class CommandSortReads(object):
                 with open(sorted_read_path, "w") as fout:
                     fout.write("\n".join(sorted_read_list))
 
-        fasta_trimmed_info_tsv = os.path.join(outdir, 'fasta_info.tsv')
-        fasta_trimmed_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
+        fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
+        sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
 
