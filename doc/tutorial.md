@@ -120,7 +120,7 @@ vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/s
 This command filter variants and create the ASV tables. 
 
 ~~~
-vtam filter --readinfo out/sorted/fastainfo.tsv --readdir out/sorted --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam filter --readinfo out/sorted/readinfo.tsv --readdir out/sorted --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
 
 The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
@@ -170,6 +170,6 @@ vtam taxassign --variants out/pooled_markers.tsv --output out/pooled_markers_tax
 To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
 
 ~~~
-vtam optimize --readinfo out/fastainfo.tsv --readdir out/sorted --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam optimize --readinfo out/readinfo.tsv --readdir out/sorted --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
 ~~~
 
