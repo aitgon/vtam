@@ -90,7 +90,7 @@ tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC
 tgatcgatgatcag	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos2_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq
 ~~~
 
-## Run the VTAM merge command
+## Merge FASTQ files
 
 In addition to *fastq* and *fastqinfo.tsv*, we need
 
@@ -107,27 +107,44 @@ Open the *fastainfo.tsv* file and verify its content. A new column should be wri
 
 Verify also the content of the *out/fasta* with the merged FASTA files.
 
-# Demultiplex and trim the reads
+# Sort (Demultiplex and trim) the reads
 
 There is a single command *sortreads* to trim and demultiplex the reads. This command takes quite long but its progress can be seen in the log file.
 
 ~~~
-vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/sorted --log out/vtam.log -vv
+vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/sorted --log out/vtam.log
 ~~~
 
-# Filter variants and create the ASV tables
+# Filter variants and create the ASV table
 
-This command filter variants and create the ASV tables. 
+This command filters variants and create the ASV table. 
 
 ~~~
-vtam filter --readinfo out/sorted/readinfo.tsv --readdir out/sorted --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam filter --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --outdir out --log out/vtam.log -v
 ~~~
 
 The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
 
-# Pool Markers
+# Asign variants of ASV table to taxa
 
-When variants were amplified with different markers, these variants can be pooled around a variant centroid with the following commands.
+The 'taxassign' command assigns variant sequences in the last column of a TSV file to taxa. The 'taxassign' command need a blast DB and the taxonomy information. Precomputed versions of the blast DB for the COI marker and the taxonomy information can be generated with these commands:
+
+~~~
+vtam taxonomy -o out/taxonomy.tsv --precomputed
+vtam coi_blast_db --coi_blast_db out/coi_blast_db
+~~~
+
+The input file of the 'taxassign' command is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
+
+The command to carry out the taxon assignation with the *asvtable.tsv* is:
+
+~~~
+vtam taxassign --db out/db.sqlite --variants out/asvtable.tsv --output out/asvtable_taxa.tsv --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log -v
+~~~
+
+# Pool markers
+
+When variants were amplified with different markers, these variants can be pooled around a centroid variant.
 
 An input TSV file must be given with the run and marker combinations that must be pooled. Eg, this is the *pool_run_marker.tsv* file:
 
@@ -139,30 +156,8 @@ prerun	ZFZR
 
 Then the *pool_markers* subcommand can be used:
 
-
 ~~~
-vtam pool_markers --db ${DB} --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
-~~~
-
-# Taxon Assignation
-
-There is the 'taxassign' subcommand that can assign taxa. 
-
-To assign variants to taxa, we need the COI blast DB and the taxonomy information.
-
-Precomputed versions of these files can be downloaded in the following way:
-
-~~~
-vtam taxonomy -o out/taxonomy.tsv --precomputed
-vtam coi_blast_db --coi_blast_db out/coi_blast_db
-~~~
-
-The input file is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
-
-The command to carry out the taxon assignation is:
-
-~~~
-vtam taxassign --variants out/pooled_markers.tsv --output out/pooled_markers_taxa.tsv --db out/db.sqlite --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log
+vtam poolmarkers --db out/db.sqlite --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
 ~~~
 
 # Parameter Optimization
@@ -170,6 +165,6 @@ vtam taxassign --variants out/pooled_markers.tsv --output out/pooled_markers_tax
 To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
 
 ~~~
-vtam optimize --readinfo out/readinfo.tsv --readdir out/sorted --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
+vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out --log out/vtam.log -v
 ~~~
 
