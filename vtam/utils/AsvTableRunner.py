@@ -179,5 +179,6 @@ class AsvTableRunner(object):
         asv_df_final = asv_df_final.merge(asv_df3, on=['variant_id', 'marker_id', 'run_id'])
         asv_df_final.drop('marker_id', axis=1, inplace=True)
         asv_df_final.drop('run_id', axis=1, inplace=True)
+        asv_df_final.rename({'run_name': 'run', 'marker_name': 'marker'}, axis=1, inplace=True)
 
         return asv_df_final
