@@ -96,7 +96,28 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
-    def check_format_readinfo_tsv(path):
+    def check_variant_known_tsv(path):
+
+        """Check variant_known_tsv format
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        header_lower = {'marker', 'run', 'biosample', 'biosampletype', 'variantid', 'action', 'sequence'}
+        variant_known_df = pandas.read_csv(path, sep="\t", header=0)
+        variant_known_df.columns = variant_known_df.columns.str.lower()
+        if not set(variant_known_df.columns) >= header_lower:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        else:
+            return path  # return the path
+
+    @staticmethod
+    def check_readinfo_tsv(path):
 
         """Check read_info_tsv format
 
@@ -108,8 +129,10 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        header_lower = {'run', 'marker', 'biosample', 'replicate', 'fasta'}
         readinfo_df = pandas.read_csv(path, sep="\t", header=0)
-        if not set(readinfo_df.columns) >= {'Run', 'Marker', 'Biosample', 'Replicate' ,'Fasta'}:
+        readinfo_df.columns = readinfo_df.columns.str.lower()
+        if not set(readinfo_df.columns) >= header_lower:
             raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
         else:
             return path  # return the path
@@ -129,7 +152,7 @@ class ArgParserChecker(object):
         header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev', 'fasta',
          'primerfwd', 'biosample', 'tagfwd', 'marker'}
         df.column = map(str.lower, df.columns)
-        if set(df.columns.tolist()) > header_lower:
+        if set(df.columns.tolist()) >= header_lower:
             raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
         else:
             return path
@@ -282,7 +305,7 @@ class ArgParser:
 
         parser_vtam_filter\
             .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
-                          required=True, type=ArgParserChecker.check_format_readinfo_tsv)
+                          required=True, type=ArgParserChecker.check_readinfo_tsv)
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
@@ -318,14 +341,14 @@ class ArgParser:
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parent_parser])
         parser_vtam_optimize\
             .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
-                          required=True, type=ArgParserChecker.check_format_readinfo_tsv)
+                          required=True, type=ArgParserChecker.check_readinfo_tsv)
         parser_vtam_optimize.add_argument('--readdir', action='store', help="REQUIRED: Directory with sorted read files",
                                           required=True,
                                           type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
-                                          required=True)
+                                          required=True, type=ArgParserChecker.check_variant_known_tsv)
 
         ################################################################################################################
         #
