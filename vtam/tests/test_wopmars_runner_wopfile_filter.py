@@ -1,15 +1,11 @@
-import inspect
+from unittest import TestCase
+from vtam.utils.ArgParser import ArgParser
+from vtam.utils.OptionManager import OptionManager
+from vtam.utils.PathManager import PathManager
+from vtam.utils.WopmarsRunner import WopmarsRunner
 import os
 import pathlib
-from unittest import TestCase
-
 import yaml
-
-from vtam.utils.ArgParser import ArgParser
-
-from vtam.utils.OptionManager import OptionManager
-from vtam.utils.WopmarsRunner import WopmarsRunner
-from vtam.utils.PathManager import PathManager
 
 
 class TestWorpmarsRunnerFilter(TestCase):
@@ -20,10 +16,12 @@ class TestWorpmarsRunnerFilter(TestCase):
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(),
+        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(),
                                                                              'output'), PathManager.get_package_path())
-        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(), 'test_files', 'blastdb'),
+        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
                                               PathManager.get_package_path())
+        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "readinfo.tsv"), PathManager.get_package_path())
         cls.foopaths = foopaths
 
         cls.minseqlength_value_32 = 32
@@ -37,7 +35,7 @@ class TestWorpmarsRunnerFilter(TestCase):
 
     def test_wopmars_runner_filter(self):
         #
-        args_str = 'filter --readinfo {foofile} --readdir {foodir} --outdir {outdir}'.format(**self.foopaths)
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir}'.format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
@@ -62,7 +60,7 @@ class TestWorpmarsRunnerFilter(TestCase):
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -76,7 +74,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -98,7 +96,7 @@ rule FilterLFN:
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
@@ -117,7 +115,7 @@ rule FilterMinReplicateNumber:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterLFN
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
@@ -135,7 +133,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterPCRerror: vtam.models.FilterPCRerror
@@ -153,7 +151,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterChimera: vtam.models.FilterChimera
@@ -169,7 +167,7 @@ rule FilterMinReplicateNumber2:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterChimera
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
@@ -186,7 +184,7 @@ rule FilterRenkonen:
             Biosample: vtam.models.Biosample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
@@ -203,7 +201,7 @@ rule FilterMinReplicateNumber3:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
@@ -221,7 +219,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
@@ -239,7 +237,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
@@ -257,7 +255,7 @@ rule ReadCountAverageOverReplicates:
             Biosample: vtam.models.Biosample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -274,7 +272,7 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: vtam/tests/test_wopmars_runner_wopfile_filter.py
+            readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         file:
             ASVTable: vtam/tests/output/asvtable.tsv"""
@@ -282,7 +280,7 @@ rule MakeAsvTable:
 
     def test_wopmars_runner_asv_with_threshold_specific(self):
 
-        args_str = 'filter --readinfo {foofile} --readdir {foodir} --outdir {outdir}' \
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir}' \
                    ' --threshold_specific {foofile}'.format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
@@ -310,55 +308,6 @@ rule MakeAsvTable:
         self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['input']['file']['threshold_specific']
                         == self.foopaths['foofile'])
 
-        # self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-        #                 == self.minseqlength_value_32)
-        # self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-        #                 == self.minseqlength_value_40)
-
-    def test_wopmars_runner_asv_with_minseqlength_value_40(self):
-
-        #####################
-        #
-        # Params yml
-        #
-        #####################
-
-        params_yml_str = "minseqlength: {}".format(self.minseqlength_value_40)
-        params_yml_path = os.path.join(self.tempdir, "params.yml")
-        with open(params_yml_path, "w") as fout:
-            fout.write(params_yml_str)
-        this_foopaths = self.foopaths.copy()
-        this_foopaths['params_yml'] = params_yml_path
-
-        args_str = 'filter --readinfo {foofile} --readdir {foodir} --outdir {outdir} --threshold_specific {foofile} --params {params_yml}'.format(**this_foopaths)
-        parser = ArgParser.get_main_arg_parser()
-        args = parser.parse_args(args_str.split())
-
-        #####################
-        #
-        # Add argparser attributes to optionmanager
-        #
-        #####################
-
-        option_dic = vars(args)  # Dictionnary with options
-        OptionManager.instance().add_options(option_dic)  # Add options to OptionManager
-
-        ###############################################################
-        #
-        # Test wopfile
-        #
-        ###############################################################
-
-        wopmars_runner = WopmarsRunner(command='filter', parameters=OptionManager.instance())
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
-                                    PathManager.get_package_path())
-        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
-
-        # self.assertFalse(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-        #                 == self.minseqlength_value_32)
-        # self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule SortReads']['params']['minseqlength']
-        #                 == self.minseqlength_value_40)
-
     def test_wopmars_runner_asv_with_lfn_variant_replicate(self):
 
         #####################
@@ -374,7 +323,7 @@ rule MakeAsvTable:
         this_foopaths = self.foopaths.copy()
         this_foopaths['params_yml'] = params_yml_path
 
-        args_str = 'filter --readinfo {foofile} --readdir {foodir} --outdir {outdir} --threshold_specific {foofile} ' \
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir} --threshold_specific {foofile} ' \
                    '--params {params_yml}'.format(**this_foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
