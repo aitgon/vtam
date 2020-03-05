@@ -43,21 +43,46 @@ class ArgParserChecker(object):
         return fvalue
 
     @staticmethod
-    def check_parser_taxassign_arg_variants(variant_tsv_path, error_message=None):
-        """Check if the vtam taxassign --variants argument is a TSV file with a header and sequence column name in the last column
+    def check_taxassign_variants(path):
 
-        :param error_message: Optional message to help debug the problem
+        """Check variants format
+
+        :param path: Valid non-empty file path
         :return: void
+
         """
-        try:
-            assert os.stat(variant_tsv_path).st_size > 0
-            variant_df = pandas.read_csv(variant_tsv_path, sep="\t", header=0)
-            assert (variant_df.columns[-1] == 'sequence')
-        except AssertionError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        except FileNotFoundError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        return variant_tsv_path
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        header_lower = {'sequence'}
+        variant_df = pandas.read_csv(path, sep="\t", header=0)
+        variant_df.columns = variant_df.columns.str.lower()
+        if not set(variant_df.columns) >= header_lower:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        else:
+            return path  # return the path
+
+    @staticmethod
+    def check_taxassign_taxonomy(path):
+
+        """Check taxonomy format
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        header_lower = {'tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'}
+        variant_df = pandas.read_csv(path, sep="\t", header=0)
+        variant_df.columns = variant_df.columns.str.lower()
+        if not set(variant_df.columns) >= header_lower:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        else:
+            return path  # return the path
 
     @staticmethod
     def check_parser_poolmarkers_arg_runmarker(path, error_message=None):
@@ -391,8 +416,7 @@ class ArgParser:
         parser_vtam_taxassign\
             .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
                           required=True, type=lambda x: ArgParserChecker
-                          .check_parser_taxassign_arg_variants(x,
-                                                               error_message="""The --variants TSV file requires a header with a 'sequence' label and the sequences in the last column"""))
+                          .check_taxassign_variants(x))
         parser_vtam_taxassign\
             .add_argument('--output', action='store', help="REQUIRED: TSV file where the taxon assignation has beeen added.",
                           required=True)
@@ -422,7 +446,7 @@ class ArgParser:
 
         vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
                                            required=True,
-                                           type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                                           type=ArgParserChecker.check_taxassign_taxonomy)
         parser_vtam_taxassign.add_argument('--ltg_rule_threshold', default=97, type=ArgParserChecker.check_real_between_0_and_100,
                                            required=False,
                                            help="Identity threshold to use either 'include_prop' parameter "
