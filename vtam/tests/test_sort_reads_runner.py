@@ -39,7 +39,7 @@ CTGTAGATCGACA"""
 
         fasta_file_name = 'reads.fasta'
         fasta_path = os.path.join(this_tempdir, fasta_file_name)
-        outdir = os.path.join(PathManager.get_module_test_path(), 'output')
+        outdir = os.path.join(PathManager.get_test_path(), 'output')
         pathlib.Path(outdir).mkdir(exist_ok=True)
 
         with open(fasta_path, 'w') as fout:

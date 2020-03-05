@@ -12,10 +12,10 @@ from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 class TestOptimizeF7(TestCase):
 
     def setUp(self):
-        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
-        self.variant_read_count_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
+        self.__testdir_path = os.path.join(PathManager.get_test_path())
+        self.variant_read_count_path = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_read_count.tsv")
-        self.variants_optimize_path = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files",
+        self.variants_optimize_path = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files",
                                                   "optimize_f7", "variant_known.tsv")
         self.this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.this_temp_dir).mkdir(exist_ok=True)

@@ -1,4 +1,5 @@
 import os
+import shutil
 from unittest import TestCase
 from vtam.utils.ArgParser import ArgParser
 
@@ -14,12 +15,11 @@ class TestWorpmarsRunnerOptimize(TestCase):
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(),
+        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(),
                                                                              'output'), PathManager.get_package_path())
-        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_module_test_path(), 'test_files', 'blastdb'),
+        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
                                               PathManager.get_package_path())
         self.foopaths = foopaths
-
 
     def test_wopmars_runner_optimize(self):
         args_str = 'optimize --readinfo {foofile} --readdir {foodir} --variant_known {foofile} --outdir {outdir}'\
@@ -134,3 +134,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
         lfn_read_count_threshold: 10
         min_replicate_number: 2"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
+
+    def tearDown(self):
+        shutil.rmtree(self.foopaths['outdir'], ignore_errors=True)
