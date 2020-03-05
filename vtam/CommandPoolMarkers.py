@@ -43,20 +43,20 @@ class RunMarkerTSVreader():
 
         conn = engine.connect()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Create SampleInformationUtils object
         #
-        ##########################################################
+        ################################################################################################################
 
         sample_record_list = []
         for row in run_marker_df.itertuples():
             # Get run_id
-            run_row = conn.execute(sqlalchemy.select([run_declarative.id]).where(run_declarative.name == row.run_name)).first()
+            run_row = conn.execute(sqlalchemy.select([run_declarative.id]).where(run_declarative.name == row.run)).first()
             if not (run_row is None):
                 run_id = run_row[0]
                 # Get marker_id
-                marker_row = conn.execute(sqlalchemy.select([marker_declarative.id]).where(marker_declarative.name == row.marker_name)).first()
+                marker_row = conn.execute(sqlalchemy.select([marker_declarative.id]).where(marker_declarative.name == row.marker)).first()
                 if not (marker_row is None):
                     marker_id = marker_row[0]
                     # Get sample_information entries for this run and marker
@@ -73,13 +73,13 @@ class RunMarkerTSVreader():
         conn.close()
 
         sample_information_df = pandas.DataFrame.from_records(data=sample_record_list)
-        sample_information_utils = SampleInformationUtils(engine=engine, sample_information_df = sample_information_df)
+        sample_information_utils = SampleInformationUtils(engine=engine, sample_information_df=sample_information_df)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Compute all df required for ASV table
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = sample_information_utils.get_variant_read_count_df(FilterCodonStop)
 
@@ -106,12 +106,12 @@ class CommandPoolMarkers(object):
     def __init__(self, asv_table_df, run_marker_df=None):
 
         try:
-            assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker_name', 'run_name', 'sequence_length',
+            assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker', 'run', 'sequence_length',
                                                          'read_count']
             assert asv_table_df.columns.tolist()[-2:] == ['chimera_borderline', 'sequence']
         except:
             Logger.instance().error(VTAMexception("The ASV table structure is wrong. It is expected to start with these columns:"
-                                                  "'variant_id', 'marker_name', 'run_name', 'sequence_length', 'read_count'"
+                                                  "'variant_id', 'marker', 'run', 'sequence_length', 'read_count'"
                                                   " followed by biosample names and ending with"
                                                   "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
                                                   "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
@@ -122,7 +122,7 @@ class CommandPoolMarkers(object):
         if run_marker_df is None:  # Default: pool all marker
             self.asv_table_df = asv_table_df
         else:  # if run_marker_df: pool only markers in this df
-            self.asv_table_df = asv_table_df.merge(run_marker_df, on=['marker_name', 'run_name'])
+            self.asv_table_df = asv_table_df.merge(run_marker_df, on=['run', 'marker'])
 
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.tmp_dir).mkdir(exist_ok=True)
@@ -206,10 +206,6 @@ class CommandPoolMarkers(object):
         self.cluster_df.sort_values(by=self.cluster_df.columns.tolist(), inplace=True)
         #
         # Information to keep about each centroid variant
-        # centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
-        #                              ['centroid_variant_id', 'phylum',
-        #                               'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', 'ltg_tax_name',
-        #                               'blast_db', 'ltg_rank']]
         centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
                                      ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
@@ -220,14 +216,15 @@ class CommandPoolMarkers(object):
         # Drop some columns
         are_reads = lambda x: int(sum(x)>0)
         agg_dic = {}
-        for k in ['variant_id', 'run_name', 'marker_name']:
+        for k in ['variant_id', 'run', 'marker']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
         for k in self.biosample_names:
             agg_dic[k] = are_reads
-        pooled_marker_df = self.cluster_df[['centroid_variant_id', 'variant_id', 'run_name', 'marker_name'] + self.biosample_names]
+        pooled_marker_df = self.cluster_df[['centroid_variant_id', 'variant_id', 'run', 'marker'] + self.biosample_names]
         pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
-        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='centroid_variant_id', right_on='variant_id')
+        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']],
+                                                        left_on='centroid_variant_id', right_on='variant_id')
         pooled_marker_df.rename({'variant_id_x': 'variant_id'}, axis=1, inplace=True)
         pooled_marker_df.drop(labels = 'variant_id_y', axis=1, inplace=True)
         return pooled_marker_df
