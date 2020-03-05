@@ -163,6 +163,27 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
+    def check_poolmarker_runmarker_tsv(path):
+
+        """Check runmarker_tsv format
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        header_lower = {'run', 'marker'}
+        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
+        readinfo_df.columns = readinfo_df.columns.str.lower()
+        if not set(readinfo_df.columns) >= header_lower:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        else:
+            return path  # return the path
+
+    @staticmethod
     def check_fastqinfo(path):
 
         """Checks if fastqinfo exists, is not empty
