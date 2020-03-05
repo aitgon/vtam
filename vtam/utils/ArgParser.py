@@ -177,18 +177,6 @@ class ArgParser:
         parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
         subparsers = parser_vtam_main.add_subparsers()
 
-        # parser_vtam_wopmars = subparsers.add_parser('filter', add_help=True)
-        # parser_vtam_wopmars.add_argument('--db', **cls.args_db)
-        # parser_vtam_wopmars.add_argument('--dry-run', '-n', dest='dryrun', action='store_true', required=False,
-        #                          help="Only display what would have been done.")
-        # parser_vtam_wopmars.add_argument('-F', '--forceall', dest='forceall', action='store_true',
-        #                          help="Force argument of WopMars", required=False)
-        # parser_vtam_wopmars.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
-        #                          help="Execute the workflow to the given target RULE: SampleInformation, ...",
-        #                          required=False)
-        # parser_vtam_wopmars.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
-        #                          help="Execute the workflow from the given RULE.", required=False)
-
         ################################################################################################################
         #
         # create the parser for the "merge" command
@@ -330,7 +318,7 @@ class ArgParser:
         parser_vtam_optimize = subparsers.add_parser('optimize', add_help=True,  parents=[parent_parser])
         parser_vtam_optimize\
             .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
-                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                          required=True, type=ArgParserChecker.check_format_readinfo_tsv)
         parser_vtam_optimize.add_argument('--readdir', action='store', help="REQUIRED: Directory with sorted read files",
                                           required=True,
                                           type=ArgParserChecker.check_dir_exists_and_is_nonempty)
