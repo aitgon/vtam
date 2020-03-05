@@ -23,6 +23,10 @@ class TestArgParser(TestCase):
                                                                 "readinfo.tsv"), PathManager.get_package_path())
         foopaths['variant_known_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "variant_known.tsv"), PathManager.get_package_path())
+        foopaths['asvtable_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "asvtable.tsv"), PathManager.get_package_path())
+        foopaths['taxonomy_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "taxonomy.tsv"), PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
         foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(),
                                                                              'output'), PathManager.get_package_path())
@@ -89,6 +93,23 @@ class TestArgParser(TestCase):
 
         args = "optimize --variant_known {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
+    def test_arg_parser_taxassign(self):
+
+        # Ok
+        args = "taxassign --variants {asvtable_tsv} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
+               "--taxonomy  {taxonomy_tsv}".format(**self.foopaths).split()
+        self.assertTrue(self.parser.parse_args(args), 0)
+
+        ################################################################################################################
+        #
+        # raises SystemExit
+        #
+        ################################################################################################################
+
+        args = ["taxassign"]
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
