@@ -72,25 +72,25 @@ class TestArgParser(TestCase):
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        # ################################################################################################################
-        # #
-        # # raises SystemExit
-        # #
-        # ################################################################################################################
+        ################################################################################################################
         #
-        # args = ["optimize"]
-        # with self.assertRaises(SystemExit):
-        #     self.parser.parse_args(args)
+        # raises SystemExit
         #
-        # args = "optimize --variant_known {filedoesnotexist} --readinfo {readinfo_tsv} --readdir {foodir} " \
-        #        "--outdir {foodir}".format(**self.foopaths).split()
-        # with self.assertRaises(SystemExit):
-        #     self.parser.parse_args(args)
-        #
-        # args = "optimize --variant_known {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
-        #        "--outdir {foodir}".format(**self.foopaths).split()
-        # with self.assertRaises(SystemExit):
-        #     self.parser.parse_args(args)
+        ################################################################################################################
+
+        args = ["optimize"]
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
+        args = "optimize --variant_known {filedoesnotexist} --readinfo {readinfo_tsv} --readdir {foodir} " \
+               "--outdir {foodir}".format(**self.foopaths).split()
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
+        args = "optimize --variant_known {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
+               "--outdir {foodir}".format(**self.foopaths).split()
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
 
     def tearDown(self):
         shutil.rmtree(self.foopaths['outdir'], ignore_errors=True)
