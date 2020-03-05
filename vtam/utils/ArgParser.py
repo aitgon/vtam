@@ -96,6 +96,25 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
+    def check_format_readinfo_tsv(path):
+
+        """Check read_info_tsv format
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
+        if not set(readinfo_df.columns) >= {'Run', 'Marker', 'Biosample', 'Replicate' ,'Fasta'}:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        else:
+            return path  # return the path
+
+    @staticmethod
     def check_fastqinfo(path):
 
         """Checks if fastqinfo exists, is not empty
@@ -128,39 +147,6 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The directory {} is empty!".format(path))
         else:
             return path
-
-    # @staticmethod
-    # def check_blast_db_argument(blast_db):
-    #     """Verifies --blast_db argument. Must be exactly two arguments.
-    #
-    #     - First argument: REQUIRED. Blast DB directory
-    #
-    #     :param error_message: Optional message to help debug the problem
-    #     :param abspath: If True, returns abspath
-    #     :return: void
-    #     """
-    #
-    #     ArgParserChecker.check_dir_exists_and_is_nonempty(blast_db)
-    #     OptionManager.instance()['blast_db'] = blast_db
-    #
-    #     one_file_exists = {'nhr': 0, 'nin': 0, 'nog': 0, 'nsd': 0, 'nsi': 0, 'nsq': 0}
-    #     for fname in os.listdir(OptionManager.instance()['blast_db']):
-    #         if fname.endswith('.nhr'):
-    #             one_file_exists['nhr'] = 1
-    #         elif fname.endswith('.nin'):
-    #             one_file_exists['nin'] = 1
-    #         elif fname.endswith('.nog'):
-    #             one_file_exists['nog'] = 1
-    #         elif fname.endswith('.nsd'):
-    #             one_file_exists['nsd'] = 1
-    #         elif fname.endswith('.nsi'):
-    #             one_file_exists['nsi'] = 1
-    #         elif fname.endswith('.nsq'):
-    #             one_file_exists['nsq'] = 1
-    #     if not sum(one_file_exists.values()) == 6:
-    #         raise Logger.instance().error(VTAMexception("Verify the Blast DB directory for files with 'nt' file name"
-    #                                                 " and 'nhr', 'nin', 'nog', 'nsd', 'nsi' and 'nsq' file types."))
-    #     return blast_db
 
 
 class ArgParser:
@@ -308,7 +294,7 @@ class ArgParser:
 
         parser_vtam_filter\
             .add_argument('--readinfo', action='store', help="REQUIRED: TSV file with information of sorted read files",
-                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                          required=True, type=ArgParserChecker.check_format_readinfo_tsv)
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)

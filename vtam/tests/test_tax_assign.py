@@ -27,11 +27,11 @@ class TestTaxAssign(TestCase):
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
-        self.__testdir_path = os.path.join(PathManager.get_module_test_path())
-        self.lblast_output_var3_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
-        self.lblast_output_var7_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
-        self.lblast_output_var9_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
-        self.tax_lineage_variant13_tsv = os.path.join(PathManager.get_module_test_path(), self.__testdir_path, "test_files","tax_lineage_variant13.tsv")
+        self.__testdir_path = os.path.join(PathManager.get_test_path())
+        self.lblast_output_var3_tsv = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files", "lblast_output_var3.tsv")
+        self.lblast_output_var7_tsv = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files", "lblast_output_var7.tsv")
+        self.lblast_output_var9_tsv = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files", "lblast_output_var9.tsv")
+        self.tax_lineage_variant13_tsv = os.path.join(PathManager.get_test_path(), self.__testdir_path, "test_files", "tax_lineage_variant13.tsv")
 
     @classmethod
     def setUpClass(cls):

@@ -36,7 +36,7 @@ class PathManager(Singleton):
         return package_path
 
     @staticmethod
-    def get_module_test_path():
+    def get_test_path():
         """
         Find the tests output of the project
 
