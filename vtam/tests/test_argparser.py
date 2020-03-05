@@ -25,6 +25,8 @@ class TestArgParser(TestCase):
                                                                 "variant_known.tsv"), PathManager.get_package_path())
         foopaths['asvtable_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "asvtable.tsv"), PathManager.get_package_path())
+        foopaths['runmarker_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "pool_run_marker.tsv"), PathManager.get_package_path())
         foopaths['taxonomy_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "taxonomy.tsv"), PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
@@ -110,6 +112,22 @@ class TestArgParser(TestCase):
         ################################################################################################################
 
         args = ["taxassign"]
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
+    def test_arg_parser_poolmarkers(self):
+
+        # Ok
+        args = "poolmarkers --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(**self.foopaths).split()
+        self.assertTrue(self.parser.parse_args(args), 0)
+
+        ################################################################################################################
+        #
+        # raises SystemExit
+        #
+        ################################################################################################################
+
+        args = ["poolmarkers"]
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
