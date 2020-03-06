@@ -17,13 +17,14 @@ from vtam.models.Variant import Variant as VariantModel
 
 class VariantKnown(object):
 
-    def __init__(self, variant_known_tsv, fasta_info_tsv, engine):
+    def __init__(self, variant_known_df, fasta_info_tsv, engine):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
         :param variant_known_tsv: TSV file with known variants
         """
-        self.variant_known_tsv = variant_known_tsv
+        # self.variant_known_tsv = variant_known_tsv
+        self.variant_known_df = variant_known_df
         self.engine = engine
         self.fasta_info_tsv = fasta_info_tsv
 
@@ -33,10 +34,10 @@ class VariantKnown(object):
         #
         ################################################################################################################
 
-        self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
-                                              names=['Marker', 'Run', 'Biosample', 'BiosampleType',
-                                                     'VariantId', 'Action', 'Sequence'], index_col=False,
-                                                usecols=list(range(7)))
+        # self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
+        #                                       names=['Marker', 'Run', 'Biosample', 'BiosampleType',
+        #                                              'VariantId', 'Action', 'Sequence'], index_col=False,
+        #                                         usecols=list(range(7)))
         # Change column names to lower
         self.variant_known_df.columns = map(str.lower, self.variant_known_df.columns)
         # Rename columns
@@ -227,9 +228,9 @@ class VariantKnown(object):
         # Get portion of variant_known_tsv with either keep or keep+variant_tolerate
         if variant_tolerate:  # get also variant_tolerate variant
             run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[
-                (self.variant_known_df.action.isin(['keep', 'variant_tolerate']))]
+                ((self.variant_known_df.action.isin(['keep', 'variant_tolerate']))).values]
         else:  # do only get keep variants
-            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[self.variant_known_df.action == 'keep']
+            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[(self.variant_known_df.action == 'keep').values]
         # run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df.merge(self.variant_known_ids_df,
         #                                         on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
         # Select run_id, marker_id, biosample_id and variant_id
@@ -253,7 +254,7 @@ class VariantKnown(object):
         ##########################################################
         # Get mock biosamples
         run_marker_biosample_mock_df = self.variant_known_ids_df.loc[
-            self.variant_known_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
+            (self.variant_known_df.biosample_type == 'mock').values, ['run_id', 'marker_id', 'biosample_id']]
         # Get variant_read_count_mock
         variant_read_count_mock = run_marker_biosample_mock_df.merge(variant_read_count_df,
                                                                      on=['run_id', 'marker_id', 'biosample_id'])
@@ -272,7 +273,7 @@ class VariantKnown(object):
         #
         ##########################################################
         # Get negative biosamples
-        variant_delete_negative_df = self.variant_known_ids_df.loc[self.variant_known_df.biosample_type == 'negative',
+        variant_delete_negative_df = self.variant_known_ids_df.loc[(self.variant_known_df.biosample_type == 'negative').values,
                                                           ['run_id', 'marker_id', 'biosample_id']]
         # Inner merge of variants and negative biosamples
         variant_delete_negative_df = variant_delete_negative_df.merge(variant_read_count_df, on=['run_id', 'marker_id',
@@ -287,7 +288,7 @@ class VariantKnown(object):
         #
         ##########################################################
         # Get run_id, marker_id, biosample_id, variant_id that are explicitely marked as delete
-        variant_delete_real_df = self.variant_known_ids_df.loc[self.variant_known_df.action == 'delete']
+        variant_delete_real_df = self.variant_known_ids_df.loc[(self.variant_known_df.action == 'delete').values]
         # Remove delete variant that are not explicite, ie in negative biosamples
         variant_delete_real_df = variant_delete_real_df[~variant_delete_real_df.variant_id.isnull()]
         #  Throw replicate and read count

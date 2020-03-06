@@ -1,4 +1,6 @@
+import os
 import pathlib
+import sys
 
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
@@ -7,9 +9,6 @@ from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
-
-import os
-import sys
 
 
 class FilterChimera(ToolWrapper):
