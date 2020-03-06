@@ -457,7 +457,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             final_out_lfn_variant_or_variant_replicate_specific_threshold_df = pandas.concat(
                 [final_out_lfn_variant_or_variant_replicate_specific_threshold_df, lfn_variant_or_variant_replicate_specific_threshold_df], axis=0)
 
-
         ################################################################################################################
         #
         # Add sequence
@@ -470,10 +469,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             for variant_id in final_out_lfn_variant_or_variant_replicate_specific_threshold_df.variant_id.unique():
                 variant_id = int(variant_id)
                 variant_sequence_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id)).first()
-                import pdb; pdb.set_trace()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
-                    final_out_lfn_variant_or_variant_replicate_specific_threshold_df[(final_out_lfn_variant_or_variant_replicate_specific_threshold_df.variant_id == variant_id).values, 'sequence'] = variant_sequence
+                    final_out_lfn_variant_or_variant_replicate_specific_threshold_df.loc[(final_out_lfn_variant_or_variant_replicate_specific_threshold_df.variant_id == variant_id).values, 'sequence'] = variant_sequence
 
         ################################################################################################################
         #
