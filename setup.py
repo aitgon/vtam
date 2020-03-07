@@ -8,7 +8,7 @@ install_requires = [
     'biopython>=1.14.2',
     'pandas==0.23.3',
     'termcolor>=1.1.0',
-    'wopmars>y=0.0.5',
+    'wopmars>=0.0.9',
 ]
 
 setup(
