@@ -15,7 +15,7 @@ class TestSortReadsRunner(TestCase):
 
         #######################################################################
         #
-        # Fasta path
+        # SortedReadFile path
         #
         #######################################################################
 
@@ -57,7 +57,7 @@ CTGTAGATCGACA"""
                 'PrimerFwd': ['TCCACTAATCACAARGATATTGGTAC', 'TCCACTAATCACAARGATATTGGTAC'],
                 'TagRev': ['tgtcgatctacagc', 'tgtcgatctacagc'],
                 'PrimerRev': ['WACTAATCAATTWCCAAATCCTCC', 'WACTAATCAATTWCCAAATCCTCC'],
-                'Fasta': [fasta_file_name, fasta_file_name],
+                'SortedReadFile': [fasta_file_name, fasta_file_name],
              }
         )
 
@@ -75,7 +75,7 @@ CTGTAGATCGACA"""
 
         trimmed_fasta_df, sorted_reads_dic = sort_reads_runner.run()
 
-        trimmed_fasta_str_bak = """   Run  Marker  Biosample  Replicate          Fasta
+        trimmed_fasta_str_bak = """   Run  Marker  Biosample  Replicate          SortedReadFile
 0    1       1          2          2  reads_000.txt
 1    1       1          5          2  reads_001.txt"""
 

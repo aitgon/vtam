@@ -36,8 +36,8 @@ class ReadTrimmer(object):
         self.reads_fasta_path = reads_fasta_path
         self.align_parameters = align_parameters
 
-        self.tag_sequence_list = [x.lower() for x in tag_sequence_list] # LOWER
-        self.primer_sequence_list = [x.upper() for x in primer_sequence_list] # UPPER
+        self.tag_sequence_list = [x.lower() for x in tag_sequence_list] # LOWER
+        self.primer_sequence_list = [x.upper() for x in primer_sequence_list] # UPPER
 
         self.tempdir = tempdir
         pathlib.Path(tempdir).mkdir(exist_ok=True)
@@ -49,7 +49,7 @@ class ReadTrimmer(object):
         # TSV file that was filered for high alignements
         self.alignements_with_high_quality_tsv_path = None
 
-        # Fasta file with trimmed reads that were trimmed in 5'
+        # SortedReadFile file with trimmed reads that were trimmed in 5'
         self.reads_trimmed_fasta_path = None
 
         self.num_threads = num_threads

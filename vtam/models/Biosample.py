@@ -1,6 +1,5 @@
 from wopmars.Base import Base
-
-from sqlalchemy import Column, String, Integer, Boolean, select
+from sqlalchemy import Column, String, Integer
 
 
 class Biosample(Base):
@@ -8,5 +7,3 @@ class Biosample(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
-    # positive_control = Column(Boolean, default=False, nullable=True)
-    # negative_control = Column(Boolean, default=False, nullable=True)

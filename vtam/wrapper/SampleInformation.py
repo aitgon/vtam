@@ -1,5 +1,4 @@
 from wopmars.models.ToolWrapper import ToolWrapper
-import os
 import pandas
 
 
@@ -10,7 +9,7 @@ class SampleInformation(ToolWrapper):
     __input_file_csv = "readinfo"
     #
     __output_table_biosample = "Biosample"
-    __output_table_fasta = "Fasta"
+    __output_table_sorted_read_file = "SortedReadFile"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
     __output_table_run = "Run"
@@ -23,7 +22,7 @@ class SampleInformation(ToolWrapper):
     def specify_output_table(self):
         return [
             SampleInformation.__output_table_biosample,
-            SampleInformation.__output_table_fasta,
+            SampleInformation.__output_table_sorted_read_file,
             SampleInformation.__output_table_marker,
             SampleInformation.__output_table_run,
             SampleInformation.__output_table_sample_information,
@@ -38,8 +37,6 @@ class SampleInformation(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        fasta_dir = str(os.getenv('VTAM_FASTA_DIR'))
-
         ##########################################################
         #
         # Wrapper inputs, outputs and parameters
@@ -51,19 +48,19 @@ class SampleInformation(ToolWrapper):
         #
         # Models
         biosample_model = self.output_table(SampleInformation.__output_table_biosample)
-        fasta_model = self.output_table(SampleInformation.__output_table_fasta)
+        fasta_model = self.output_table(SampleInformation.__output_table_sorted_read_file)
         marker_model = self.output_table(SampleInformation.__output_table_marker)
         run_model = self.output_table(SampleInformation.__output_table_run)
         sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
 
-        fasta_info_df = pandas.read_csv(csv_path, sep="\t", header=0)
+        sorted_read_info_df = pandas.read_csv(csv_path, sep="\t", header=0)
 
-        for row in fasta_info_df.itertuples():
+        for row in sorted_read_info_df.itertuples():
             run_name = row.Run
             marker_name = row.Marker
             biosample_name = row.Biosample
             replicate = row.Replicate
-            fasta_filename = row.Fasta
+            sorted_read_file = row.SortedReadFile
             #
             # Insert run
             run_obj = {'name': run_name}
@@ -81,14 +78,13 @@ class SampleInformation(ToolWrapper):
             biosample_id = biosample_instance.id
             #
             # Insert file output
-            is_trimmed = False # Default
-            fasta_obj = {'name': fasta_filename, 'run_id': run_id}
+            fasta_obj = {'name': sorted_read_file, 'run_id': run_id}
             fasta_instance = SampleInformation.get_or_create(session, fasta_model, **fasta_obj)
             fasta_id = fasta_instance.id
 
             # Insert sample_information
             sample_information_obj = {'biosample_id': biosample_id, 'replicate': replicate, 'run_id': run_id}
-            sample_information_obj['fasta_id'] = fasta_id
+            sample_information_obj['sortedreadfile_id'] = fasta_id
             sample_information_obj['marker_id'] = marker_id
             SampleInformation.get_or_create(session, sampleinformation_model, **sample_information_obj)
 
