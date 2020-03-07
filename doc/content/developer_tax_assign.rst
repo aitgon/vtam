@@ -4,8 +4,8 @@ Developer - TaxAssign
 Input
 ----------------------------------
 
-- variant_sequence_fasta: Fasta file with 1 variant at a time.
-- database_fasta: Fasta file with all reference sequence to be aligned on the variant sequence.
+- variant_sequence_fasta: SortedReadFile file with 1 variant at a time.
+- database_fasta: SortedReadFile file with all reference sequence to be aligned on the variant sequence.
 - tax assign parameters: TSV table file  with four columns
 
     * ltg_rule_threshold

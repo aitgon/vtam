@@ -19,7 +19,7 @@ class SampleInformationUtils(object):
         self.sample_record_list = list(self.sample_information_df.T.to_dict().values())
 
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
-        """Based on the Fasta samples and the variant_read_count_model, returns the variant_read_count_df
+        """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_df
 
         :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
         :param filter_id:
@@ -69,7 +69,7 @@ class SampleInformationUtils(object):
         return variant_read_count_df
 
     def get_full_table_df(self, model):
-        """Based on the Fasta samples returns all the columns of the table as df
+        """Based on the SortedReadFile samples returns all the columns of the table as df
 
         :param model: SQLalchemy models
         :return: DataFrame with all columns and rows of fasta info
@@ -107,7 +107,7 @@ class SampleInformationUtils(object):
         return table_df
 
     def get_variant_df(self, variant_read_count_like_model, variant_model, filter_id=None):
-        """Based on the Fasta information TSV and variant_model, returns the variant_df
+        """Based on the SortedReadFile information TSV and variant_model, returns the variant_df
 
         :return: DataFrame with columns: index, sequence
         """
@@ -167,7 +167,7 @@ class SampleInformationUtils(object):
         return marker_df
 
     def get_run_df(self, run_model):
-        """Based on the Fasta information TSV and run_model, returns the run_df
+        """Based on the SortedReadFile information TSV and run_model, returns the run_df
 
         :return: DataFrame with columns: index, name
         """
@@ -184,7 +184,7 @@ class SampleInformationUtils(object):
         return run_df
 
     def get_variant_to_chimera_borderline_df(self, filter_chimera_borderline_model):
-        """Based on the Fasta information TSV and run_model, returns the run_df
+        """Based on the SortedReadFile information TSV and run_model, returns the run_df
 
         :return: DataFrame with columns: index, name
         """
@@ -213,7 +213,7 @@ class FastaInformationTSV(SampleInformationUtils):
 
 
     def __get_sample_information_df(self, include_tag_primer_fasta=False):
-        """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
+        """Based on the SortedReadFile information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate entries (See return)
 
         :param tag_primer_fasta_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name
@@ -254,7 +254,7 @@ class FastaInformationTSV(SampleInformationUtils):
 
     def get_ids_df(self, include_tag_primer_fasta=False):
 
-        """Based on the Fasta information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
+        """Based on the SortedReadFile information TSV, returns a list of dictionnaries with run_id, marker_id, biosample_id
         and replicate entries (See return)
 
         :param tag_primer_fasta_information: Boolean. Default=False. If True, will also return tag and primer sequences and fasta file name

@@ -1,7 +1,6 @@
-from sqlalchemy import UniqueConstraint
 from wopmars.Base import Base
-
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer
+from sqlalchemy.orm import validates
 
 
 class Variant(Base):
@@ -9,3 +8,7 @@ class Variant(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     sequence = Column(String(250), unique=True, nullable=False)
+
+    @validates('sequence')
+    def convert_upper(self, key, value):
+        return value.upper()

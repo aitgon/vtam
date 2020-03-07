@@ -76,7 +76,7 @@ class CommandMerge(object):
         with open(fastqinfo, 'r') as csv_file:
             with open(fastainfo, 'w') as fastainfo_fout:
                 next(csv_file) # skip header of fastqinfo
-                fastainfo_header = "TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	Fasta\n"
+                fastainfo_header = "TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	SortedReadFile\n"
                 fastainfo_fout.write(fastainfo_header)  # write header of fastainfo
                 for line in csv_file:
                     sample_info = line.strip().split("\t")

@@ -66,7 +66,7 @@ class TestWorpmarsRunnerFilter(TestCase):
             Run: vtam.models.Run
             Marker: vtam.models.Marker
             Biosample: vtam.models.Biosample
-            Fasta: vtam.models.Fasta
+            SortedReadFile: vtam.models.SortedReadFile
             SampleInformation: vtam.models.SampleInformation
 
 

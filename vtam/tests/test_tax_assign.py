@@ -59,7 +59,7 @@ class TestTaxAssign(TestCase):
 
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Create Fasta from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
+            "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')

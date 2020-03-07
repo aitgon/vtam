@@ -1,7 +1,5 @@
-from sqlalchemy import UniqueConstraint, Boolean
 from wopmars.Base import Base
-
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import UniqueConstraint, Boolean, Column, Integer, ForeignKey
 
 
 class FilterRenkonen(Base):
