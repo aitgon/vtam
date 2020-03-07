@@ -29,11 +29,12 @@ class SortReadsRunner(object):
         self.tag_rev_sequence_list = self.fasta_information_df.TagRev.tolist()
         self.primer_fwd_sequence_list = self.fasta_information_df.PrimerFwd.tolist()
         self.primer_rev_sequence_list = self.fasta_information_df.PrimerRev.tolist()
-        self.trimmed_fasta_df = self.fasta_information_df.copy()
-        self.trimmed_fasta_df['FastaTrimmed'] = None
-        for i, row in enumerate(self.trimmed_fasta_df.itertuples()):
+        self.sorted_read_file_df = self.fasta_information_df.copy()
+        self.sorted_read_file_df['SortedReadFile'] = None
+
+        for i, row in enumerate(self.sorted_read_file_df.itertuples()):
             fasta_trimmed_filename = (row.Fasta).replace('.fasta', '_%03d.txt' % i)
-            self.trimmed_fasta_df.loc[row.Index, 'FastaTrimmed'] = fasta_trimmed_filename
+            self.sorted_read_file_df.loc[row.Index, 'SortedReadFile'] = fasta_trimmed_filename
 
         self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.this_tempdir).mkdir(exist_ok=True)
@@ -57,21 +58,21 @@ class SortReadsRunner(object):
                                             align_parameters=self.alignement_parameters, tempdir=this_tempdir_fwd)
         reads_trimmer_fwd.trim_reads()
 
-        #######################################################################
+        ################################################################################################################
         #
         # Reverse-complement fasta_path read with trimmed 5 prime
         #
-        #######################################################################
+        ################################################################################################################
 
         reads_reversed_5prime_trimmed_fasta_path = os.path.join(this_tempdir_fwd, "reads_5prime_trimmed_reversed.fasta")
         ReadTrimmer.fasta_file_to_reverse_complement(reads_trimmer_fwd.reads_trimmed_fasta_path,
                                                      reads_reversed_5prime_trimmed_fasta_path)
 
-        #######################################################################
+        ################################################################################################################
         #
         # Trim reverse
         #
-        #######################################################################
+        ################################################################################################################
 
         # tag_rev_sequence_list = self.fasta_information_df.tag_rev_sequence.tolist()
         # primer_rev_sequence_list = self.fasta_information_df.primer_rev_sequence.tolist()
@@ -86,11 +87,11 @@ class SortReadsRunner(object):
                                         num_threads=self.num_threads)
         reads_trimmer_rev.trim_reads()
 
-        #######################################################################
+        ################################################################################################################
         #
         # Reverse-complement fasta_path read with trimmed 5 and 3 primes
         #
-        #######################################################################
+        ################################################################################################################
 
         reads_trimmed_fasta_path = os.path.join(this_tempdir_rev, "reads_trimmed.fasta")
         ReadTrimmer.fasta_file_to_reverse_complement(reads_trimmer_rev.reads_trimmed_fasta_path,
@@ -109,23 +110,26 @@ class SortReadsRunner(object):
         sorted_reads_dic = {}
 
         for record in SeqIO.parse(reads_trimmed_fasta_path, "fasta"):  # Loop over each read
+
             read_id = record.id.split(';')[0]
-            tag_fwd = record.id.split(';')[1].split('=')[1]
-            primer_fwd = record.id.split(';')[2].split('=')[1]
-            tag_rev = record.id.split(';')[3].split('=')[1]
-            primer_rev = record.id.split(';')[4].split('=')[1]
-            read_sequence = record.seq
+            tag_fwd = record.id.split(';')[1].split('=')[1].upper()
+            primer_fwd = record.id.split(';')[2].split('=')[1].upper()
+            tag_rev = record.id.split(';')[3].split('=')[1].upper()
+            primer_rev = record.id.split(';')[4].split('=')[1].upper()
+            read_sequence = record.seq.upper()
             fasta_file_name = os.path.basename( self.fasta_path)
-            fasta_trimmed_result = self.trimmed_fasta_df.loc[(self.trimmed_fasta_df.TagFwd == tag_fwd) & (self.trimmed_fasta_df.TagRev == tag_rev)
-                & (self.trimmed_fasta_df.PrimerFwd == primer_fwd)
-                & (self.trimmed_fasta_df.PrimerRev == primer_rev)
-                & (self.trimmed_fasta_df.Fasta == fasta_file_name), 'FastaTrimmed']
-            if fasta_trimmed_result.shape[0] > 0:
-                fasta_trimmed_filename = fasta_trimmed_result.item()
-                if fasta_trimmed_filename in sorted_reads_dic:
-                    sorted_reads_dic[fasta_trimmed_filename].append("{}".format(read_sequence))
+            sorted_read_file = self.sorted_read_file_df.loc[(self.sorted_read_file_df.TagFwd == tag_fwd)
+                                                & (self.sorted_read_file_df.TagRev == tag_rev)
+                                                & (self.sorted_read_file_df.PrimerFwd == primer_fwd)
+                                                & (self.sorted_read_file_df.PrimerRev == primer_rev)
+                                                & (self.sorted_read_file_df.Fasta == fasta_file_name), 'SortedReadFile']
+
+            if sorted_read_file.shape[0] > 0:
+                sorted_read_filename = sorted_read_file.item()
+                if sorted_read_filename in sorted_reads_dic:
+                    sorted_reads_dic[sorted_read_filename].append("{}".format(read_sequence))
                 else:
-                    sorted_reads_dic[fasta_trimmed_filename] = ["{}".format(read_sequence)]
+                    sorted_reads_dic[sorted_read_filename] = ["{}".format(read_sequence)]
 
                 # fasta_trimmed_path = os.path.join(self.outdir, fasta_trimmed_filename)
                 #
@@ -139,8 +143,8 @@ class SortReadsRunner(object):
         #
         ################################################################################################################
 
-        self.trimmed_fasta_df = self.trimmed_fasta_df[['Run', 'Marker', 'Biosample', 'Replicate', 'FastaTrimmed']]
-        self.trimmed_fasta_df.rename({'FastaTrimmed': 'SortedReadFile'}, inplace=True, axis=1)
+        self.sorted_read_file_df = self.sorted_read_file_df[['Run', 'Marker', 'Biosample', 'Replicate', 'SortedReadFile']]
+        # self.sorted_read_file_df.rename({'FastaTrimmed': 'SortedReadFile'}, inplace=True, axis=1)
         # fasta_trimmed_info_tsv = os.path.join(self.outdir, 'fasta_info.tsv')
-        # self.trimmed_fasta_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
-        return self.trimmed_fasta_df , sorted_reads_dic
+        # self.sorted_read_file_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
+        return self.sorted_read_file_df, sorted_reads_dic
