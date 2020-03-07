@@ -106,8 +106,8 @@ class CommandSortReads(object):
                                                 fasta_path=fasta_path,
                                                 alignement_parameters=alignement_parameters, outdir=outdir, num_threads=num_threads)
 
-            fasta_trimmed_info_df_i, sorted_read_dic = sort_reads_runner.run()
-            sorted_read_info_df = sorted_read_info_df.append(fasta_trimmed_info_df_i)
+            sorted_read_info_df_i, sorted_read_dic = sort_reads_runner.run()
+            sorted_read_info_df = sorted_read_info_df.append(sorted_read_info_df_i)
 
             ################################################################################################################
             #
@@ -124,4 +124,3 @@ class CommandSortReads(object):
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
         sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
-
