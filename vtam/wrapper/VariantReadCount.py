@@ -160,17 +160,17 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            fasta_filename = row.Fasta
+            sorted_read_file = row.SortedReadFile
 
             Logger.instance().debug(
-                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, fasta_filename))
+                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, sorted_read_file))
 
-            sorted_read_path = os.path.join(read_dir, fasta_filename)
+            sorted_read_path = os.path.join(read_dir, sorted_read_file)
 
             if os.path.exists(sorted_read_path):
 
                 with open(sorted_read_path, "r") as fin:
-                    sorted_read_list = [x.lower() for x in fin.read().split("\n")]
+                    sorted_read_list = [x.upper() for x in fin.read().split("\n")]
 
                 variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
                                                                    'marker_id': [marker_id] * len(sorted_read_list),

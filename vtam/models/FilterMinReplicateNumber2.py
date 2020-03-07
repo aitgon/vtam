@@ -6,7 +6,7 @@ from sqlalchemy import UniqueConstraint, Boolean, Column, Integer, ForeignKey
 class FilterMinReplicateNumber2(Base):
     __tablename__ = __qualname__
     __table_args__ = (
-        UniqueConstraint('marker_id','run_id', 'variant_id', 'biosample_id', 'replicate'),
+        UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)

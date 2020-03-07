@@ -20,10 +20,10 @@ class SortReadsRunner(object):
 
         self.fasta_information_df = fasta_information_df.copy()
 
-        self.fasta_information_df.TagFwd = fasta_information_df.TagFwd.str.lower()
-        self.fasta_information_df.TagRev = fasta_information_df.TagRev.str.lower()
-        self.fasta_information_df.PrimerFwd = fasta_information_df.PrimerFwd.str.lower()
-        self.fasta_information_df.PrimerRev = fasta_information_df.PrimerRev.str.lower()
+        self.fasta_information_df.TagFwd = fasta_information_df.TagFwd.str.upper()
+        self.fasta_information_df.TagRev = fasta_information_df.TagRev.str.upper()
+        self.fasta_information_df.PrimerFwd = fasta_information_df.PrimerFwd.str.upper()
+        self.fasta_information_df.PrimerRev = fasta_information_df.PrimerRev.str.upper()
 
         self.tag_fwd_sequence_list = self.fasta_information_df.TagFwd.tolist()
         self.tag_rev_sequence_list = self.fasta_information_df.TagRev.tolist()
@@ -140,7 +140,7 @@ class SortReadsRunner(object):
         ################################################################################################################
 
         self.trimmed_fasta_df = self.trimmed_fasta_df[['Run', 'Marker', 'Biosample', 'Replicate', 'FastaTrimmed']]
-        self.trimmed_fasta_df.rename({'FastaTrimmed': 'Fasta'}, inplace=True, axis=1)
+        self.trimmed_fasta_df.rename({'FastaTrimmed': 'SortedReadFile'}, inplace=True, axis=1)
         # fasta_trimmed_info_tsv = os.path.join(self.outdir, 'fasta_info.tsv')
         # self.trimmed_fasta_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
         return self.trimmed_fasta_df , sorted_reads_dic

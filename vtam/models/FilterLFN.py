@@ -1,5 +1,4 @@
 from wopmars.Base import Base
-
 from sqlalchemy import UniqueConstraint, Boolean, Column, Integer, ForeignKey
 
 

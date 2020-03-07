@@ -74,7 +74,7 @@ class Merge(ToolWrapper):
             with open(fastainfo, 'w') as fastainfo_fout:
                 next(csv_file) # skip header of fastqinfo
                 fastainfo_header = "TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 " \
-                                   "Biosample	Replicate	Run	Fastq_fw	Fastq_rv	Fasta\n"
+                                   "Biosample	Replicate	Run	Fastq_fw	Fastq_rv	SortedReadFile\n"
                 fastainfo_fout.write(fastainfo_header) # write header of fastainfo
                 for line in csv_file:
                     sample_info = line.strip().split("\t")

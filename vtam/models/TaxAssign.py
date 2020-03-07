@@ -1,7 +1,5 @@
 from wopmars.Base import Base
-
-from sqlalchemy import Column, Integer, ForeignKey, String
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Column, Integer, ForeignKey, String, UniqueConstraint
 
 
 class TaxAssign(Base):

@@ -47,8 +47,8 @@ class VariantKnown(object):
                                       'biosampletype': 'biosample_type',
                                       'variantid': 'variant_id',
                                       'sequence': 'variant_sequence'}, inplace=True, axis=1)
-        # Sequence to lower case
-        self.variant_known_df['variant_sequence'] = self.variant_known_df.variant_sequence.str.lower()
+        # Sequence to upper case
+        self.variant_known_df['variant_sequence'] = self.variant_known_df.variant_sequence.str.upper()
 
         # columns: run_id, marker_id, biosample_id, replicate, variant_id, biosample_type, action, variant_sequence
         self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
