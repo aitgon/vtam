@@ -8,11 +8,11 @@ help:
 	@echo "Usage: make"
 
 install_wopmars:
-	wget https://github.com/aitgon/wopmars/archive/0.0.8.tar.gz -O wopmars-0.0.8.tar.gz
-	tar zxvf wopmars-0.0.8.tar.gz
-	${CONDABIN}/pip install wopmars-0.0.8/. --upgrade
-	rm -f wopmars-0.0.8.tar.gz
-	rm -rf wopmars-0.0.8
+	wget https://github.com/aitgon/wopmars/archive/0.0.9.tar.gz -O wopmars-0.0.9.tar.gz
+	tar zxvf wopmars-0.0.9.tar.gz
+	${CONDABIN}/pip install wopmars-0.0.9/. --upgrade
+	rm -f wopmars-0.0.9.tar.gz
+	rm -rf wopmars-0.0.9
 
 install_deps:
 	conda install -c bioconda vsearch=2.7.0 -y
