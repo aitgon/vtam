@@ -241,7 +241,8 @@ class OptimizePCRerror(ToolWrapper):
         #
         ##########################################################
 
-        final_pcr_error_df.sort_values(by=['N_ij_unexpected_to_expected_ratio', 'variant_id_expected', 'variant_id_unexpected'],
-                                       ascending=[False, True, True], inplace=True)
+        # lines should be ordered: by run, marker,
+        final_pcr_error_df.sort_values(by=['run', 'marker', 'N_ij_unexpected_to_expected_ratio', 'variant_id_expected', 'variant_id_unexpected'],
+                                       ascending=[True, True, False, True, True], inplace=True)
         final_pcr_error_df.to_csv(output_file_optimize_pcr_error, header=True, sep='\t', float_format='%.10f', index=False)
 

@@ -207,7 +207,8 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         # 7. Write TSV file
         #
         ##########################################################
-
-        final_optimize_output_df.sort_values(by=['lfn_biosample_replicate: N_ijk/N_jk', 'run', 'marker', 'biosample', 'replicate'],
-                                       ascending=[True, True, True, True, True], inplace=True)
+        # lines should be ordered : run, marker, round_down,
+        final_optimize_output_df.sort_values(by=['run', 'marker', 'round_down', 'lfn_biosample_replicate: N_ijk/N_jk',
+                                                 'biosample', 'replicate'],
+                                       ascending=[True, True, True, True, True, True], inplace=True)
         final_optimize_output_df.to_csv(output_file_optimize_lfn, header=True, sep='\t', float_format='%.8f', index=False)
