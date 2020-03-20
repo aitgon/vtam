@@ -212,6 +212,7 @@ class CommandTaxAssign(object):
         # Merge
         tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})
         variant_output_df = variant_output_df.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left')
+        variant_output_df.drop('tax_id', axis=1, inplace=True)
         
         # Move sequence column to end
         variant_df_columns = variant_output_df.columns.tolist()
