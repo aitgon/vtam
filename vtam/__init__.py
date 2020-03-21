@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 
+import sqlalchemy
+
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandSortReads import CommandSortReads
 from vtam.utils.ArgParser import ArgParser
@@ -62,13 +64,20 @@ class VTAM(object):
         if 'fastadir' in vars(self.args):
             os.environ['VTAM_FASTA_DIR'] = vars(self.args)['fastadir']
 
-        #################################################################
+        ###############################################################
         #
-        # Create FilterLFNreference table
+        # Subcommands: wopfile-dependent, filter, optimize
         #
-        #################################################################
+        ###############################################################
 
-        if vars(self.args)['command'] in ['asv', 'optimize']:
+        if vars(self.args)['command'] in ['filter', 'optimize']:
+
+            #################################################################
+            #
+            # Create FilterLFNreference table and fill it
+            #
+            #################################################################
+
             from sqlalchemy import create_engine
             from sqlalchemy import Table, Column, Integer, String, MetaData
             from vtam.utils.constants import FilterLFNreference_records
@@ -80,19 +89,14 @@ class VTAM(object):
                 Column('filter_name', String),
             )
             meta.create_all(engine)
+
             with engine.connect() as conn:
-                try:
-                    conn.execute(filter_lfn_reference.insert(), FilterLFNreference_records)
-                except:
-                    pass
-
-        ###############################################################
-        #
-        # Subcommands: wopfile-dependent, filter, optimize
-        #
-        ###############################################################
-
-        if vars(self.args)['command'] in ['filter', 'optimize']:
+                for filter_rec in FilterLFNreference_records:
+                    filter_name = filter_rec['filter_name']
+                    select_row = conn.execute(sqlalchemy.select([filter_lfn_reference.c.filter_id])
+                                              .where(filter_lfn_reference.c.filter_name == filter_name)).first()
+                    if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
+                        conn.execute(filter_lfn_reference.insert().values(**filter_rec))
 
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()

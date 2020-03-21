@@ -55,12 +55,12 @@ identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 ##########################################################
 
 FilterLFNreference_records = [
-    {'id': 2, 'name': 'lfn_per_variant'},
-    {'id': 3, 'name': 'lfn_per_varian'
+    {'filter_id': 2, 'filter_name': 'lfn_per_variant'},
+    {'filter_id': 3, 'filter_name': 'lfn_per_varian'
                       't_replicate'},
-    {'id': 4, 'name': 'lfn_per_variant_specific'},
-    {'id': 5, 'name': 'lfn_per_variant_replicate_specific'},
-    {'id': 6, 'name': 'lfn_biosample_replicate'},
-    {'id': 7, 'name': 'lfn_read_count'},
-    {'id': 8, 'name': 'lfn_did_not_passed_all'},
+    {'filter_id': 4, 'filter_name': 'lfn_per_variant_specific'},
+    {'filter_id': 5, 'filter_name': 'lfn_per_variant_replicate_specific'},
+    {'filter_id': 6, 'filter_name': 'lfn_biosample_replicate'},
+    {'filter_id': 7, 'filter_name': 'lfn_read_count'},
+    {'filter_id': 8, 'filter_name': 'lfn_did_not_passed_all'},
 ]
