@@ -104,7 +104,6 @@ class SortReadsRunner(object):
         ################################################################################################################
 
         Logger.instance().debug("Sorting reads")
-        # import pdb; pdb.set_trace()
 
         # Dictionnary with key: filename and value: list of reads
         sorted_reads_dic = {}

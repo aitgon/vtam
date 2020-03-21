@@ -20,14 +20,23 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'vtam'
-copyright = 'Since 2018, Thomas Dechatre, Aitor Gonzalez, Emese Meglecz'
-author = 'Thomas Dechatre, Aitor Gonzalez, Emese Meglecz'
+copyright = 'Since 2018, Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz'
+author = 'Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz'
 
-# The short X.Y version
-version = '0.0'
-# The full version, including alpha/beta/rc tags
-release = '0.0.1'
+## The short X.Y version
+#version = '0.0'
+## The full version, including alpha/beta/rc tags
+#release = '0.0.1'
+def get_version():
+    """Return package version from setup.cfg."""
+    config = RawConfigParser()
+    config.read(os.path.join('..', 'setup.cfg'))
+    return config.get('metadata', 'version')
 
+# The short X.Y version.
+version = '.'.join(get_version().split('.')[0:2])
+# The full version, including alpha/beta/rc tags.
+release = str(get_version())
 
 # -- General configuration ---------------------------------------------------
 
@@ -136,7 +145,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'vtam.tex', 'vtam Documentation',
-     'Thomas Dechatre, Aitor Gonzalez, Emese Meglecz', 'manual'),
+     'Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz', 'manual'),
 ]
 
 
