@@ -4,8 +4,6 @@ import os
 import subprocess
 import sys
 
-import multiprocessing
-
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandSortReads import CommandSortReads
 from vtam.utils.ArgParser import ArgParser
@@ -13,7 +11,7 @@ from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.OptionManager import OptionManager
-from vtam.CommandPoolMarkers import CommandPoolMarkers
+from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
@@ -162,18 +160,18 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Subcommand: poolmarkers
+        # Subcommand: pool
         #
         ###############################################################
 
-        elif vars(self.args)['command'] == 'poolmarkers':
+        elif vars(self.args)['command'] == 'pool':
             db = OptionManager.instance()['db']
             run_marker_tsv = OptionManager.instance()['runmarker']
             pooled_marker_tsv = OptionManager.instance()['output']
             # taxonomy_tsv = OptionManager.instance()['taxonomy']
-            # CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
+            # CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
             #                         run_marker_tsv=run_marker_tsv)
-            CommandPoolMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, run_marker_tsv=run_marker_tsv)
+            CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, run_marker_tsv=run_marker_tsv)
 
         ###############################################################
         #

@@ -85,7 +85,7 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
-    def check_parser_poolmarkers_arg_runmarker(path, error_message=None):
+    def check_parser_pool_arg_runmarker(path, error_message=None):
 
         """Checks if file exists and is not empty
 
@@ -163,7 +163,7 @@ class ArgParserChecker(object):
             return path  # return the path
 
     @staticmethod
-    def check_poolmarker_runmarker_tsv(path):
+    def check_pool_runmarker_tsv(path):
 
         """Check runmarker_tsv format
 
@@ -280,11 +280,11 @@ class ArgParser:
 
         ################################################################################################################
         #
-        # create the parser for the "poolmarkers" command
+        # create the parser for the "pool" command
         #
         ################################################################################################################
 
-        cls.create_poolmarkers(subparsers=subparsers)
+        cls.create_pool(subparsers=subparsers)
 
         ################################################################################################################
         #
@@ -416,9 +416,9 @@ class ArgParser:
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
     @classmethod
-    def create_poolmarkers(cls, subparsers):
+    def create_pool(cls, subparsers):
 
-        parser_vtam_pool_markers = subparsers.add_parser('poolmarkers', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         from vtam.utils.SelectionRunMarker import SelectionRunMarker
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
@@ -427,7 +427,7 @@ class ArgParser:
         parser_vtam_pool_markers.add_argument('--output', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
 
-        parser_vtam_pool_markers.set_defaults(command='poolmarkers')  # This attribute will trigger the good command
+        parser_vtam_pool_markers.set_defaults(command='pool')  # This attribute will trigger the good command
 
     @classmethod
     def create_taxassign(cls, subparsers):
