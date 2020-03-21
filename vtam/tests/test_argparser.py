@@ -115,10 +115,10 @@ class TestArgParser(TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-    def test_arg_parser_poolmarkers(self):
+    def test_arg_parser_pool_runmarker(self):
 
         # Ok
-        args = "poolmarkers --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(**self.foopaths).split()
+        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
         ################################################################################################################
@@ -127,7 +127,7 @@ class TestArgParser(TestCase):
         #
         ################################################################################################################
 
-        args = ["poolmarkers"]
+        args = ["pool"]
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 

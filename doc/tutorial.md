@@ -157,7 +157,7 @@ prerun	ZFZR
 Then the *pool_markers* subcommand can be used:
 
 ~~~
-vtam poolmarkers --db out/db.sqlite --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
+vtam pool --db out/db.sqlite --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
 ~~~
 
 # Parameter Optimization
