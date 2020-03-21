@@ -28,7 +28,7 @@ class VTAM(object):
    sortreads  Trim and demultiplex reads
    filter     Run VTAM filters to create an ASV table with the variant sequences as last column
    optimize   Find optimal parameters for filtering
-   pool_markers   Pool overlapping markers from the ASV table into one
+   pool   Pool overlapping markers from the ASV table into one
    taxonomy   Create the taxonomy TSV file used to create lineages 
    coi_db   Download precomputed COI Blast database 
 

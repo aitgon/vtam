@@ -63,8 +63,8 @@ class SampleInformationUtils(object):
         try:
             assert variant_read_count_df.shape[0] > 0
         except AssertionError:
-            Logger.instance().warning(VTAMexception("No variants available for this Filter: {}. "
-                                                    "The analysis will stop here.".format(self.__class__.__name__)))
+            Logger.instance().warning(VTAMexception("No variants available after the Codon Stop filter. "
+                                                    "The pipeline will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
         return variant_read_count_df
 
