@@ -102,10 +102,10 @@ prerun	MFZR	Tpos2_prerun	1	MFZR1_S4_L001_R1_001_merged_001.txt
 
 # Filter variants and create the ASV table
 
-This command filters variants and create the ASV table. 
+This command filters variants and creates the ASV table. 
 
 ~~~
-vtam filter --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --outdir out --log out/vtam.log -v
+vtam filter --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --outdir out
 ~~~
 
 The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. 
