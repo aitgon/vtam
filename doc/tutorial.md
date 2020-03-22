@@ -82,7 +82,7 @@ tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC
 tgatcgatgatcag	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos2_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq	MFZR1_S4_L001_R1_001_merged.fasta
 ~~~
 
-# Demultiplex, sort and trim the reads
+# Demultiplex, trim and sort the reads
 
 There is a single command *sortreads* to trim and demultiplex the reads.
 This command takes quite long.
@@ -135,7 +135,7 @@ The command to carry out the taxon assignation with the *asvtable.tsv* is:
 vtam taxassign --db out/db.sqlite --variants out/asvtable.tsv --output out/asvtable_taxa.tsv --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log -v
 ~~~
 
-# Pool markers
+# Pool run and markers
 
 When variants were amplified with different markers, these variants can be pooled around a centroid variant.
 
@@ -153,11 +153,35 @@ Then the *pool_markers* subcommand can be used:
 vtam pool --db out/db.sqlite --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
 ~~~
 
-# Parameter Optimization
+# Compute filter parameters of mock and negative biosamples to select the best parameters
 
-To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
+To help the user select the parameters, VTAM has an *optimize* command that will compute different values based on positive and negative variants present in the mock, negative and real biosamples.
+
+The TSV file for the known variants of the ZFZR marker look like this:
 
 ~~~
-vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out --log out/vtam.log -v
+Marker	Run	Biosample	BiosampleType	VariantId	Action	Sequence	Note
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		tolerate	TATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	GGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		tolerate	TATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	GGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	TnegPai1_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegPai2_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegTag_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegPCR_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegExt1_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegExt2_prerun	negative		delete		dummy info
 ~~~
 
+There is a *variant_known.tsv* file in the *doc* directory of the VTAM package.
+Then the *optimize* command is run like this:
+
+~~~
+vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out
+~~~
