@@ -1,0 +1,32 @@
+{% from 'macros.yml' import param_log %}rule SampleInformation:
+    tool: vtam.wrapper.SampleInformation
+    input:
+        file:
+            readinfo: {{readinfo}}
+    output:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+            SortedReadFile: vtam.models.SortedReadFile
+            SampleInformation: vtam.models.SampleInformation
+
+
+rule VariantReadCount:
+    tool: vtam.wrapper.VariantReadCount
+    input:
+        file:
+            readinfo: {{readinfo}}
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Biosample: vtam.models.Biosample
+    output:
+        table:
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+    params:
+        read_dir: {{readdir}}
+
+
+{% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

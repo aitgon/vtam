@@ -1,1 +1,4 @@
-include data/Wopfile.yml
+exclude _build
+include Makefile
+recursive-include doc *.md Makefile *.tsv
+include doc/*.tsv
