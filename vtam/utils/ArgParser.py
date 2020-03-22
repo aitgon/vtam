@@ -56,12 +56,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'sequence'}
-        variant_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_df.columns = variant_df.columns.str.lower()
-        if not set(variant_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_taxassign_taxonomy(path):
@@ -77,12 +77,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'}
-        variant_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_df.columns = variant_df.columns.str.lower()
-        if not set(variant_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_parser_pool_arg_runmarker(path, error_message=None):
@@ -134,12 +134,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'marker', 'run', 'biosample', 'biosampletype', 'variantid', 'action', 'sequence'}
-        variant_known_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_known_df.columns = variant_known_df.columns.str.lower()
-        if not set(variant_known_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
-        else:
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path  # return the path
+        else:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_readinfo_tsv(path):
@@ -155,12 +155,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedreadfile'}
-        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
-        readinfo_df.columns = readinfo_df.columns.str.lower()
-        if not set(readinfo_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_pool_runmarker_tsv(path):
@@ -176,12 +176,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'run', 'marker'}
-        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
-        readinfo_df.columns = readinfo_df.columns.str.lower()
-        if not set(readinfo_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_fastqinfo(path):
@@ -195,13 +195,13 @@ class ArgParserChecker(object):
 
         path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
         df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev', 'fasta',
+        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
          'primerfwd', 'biosample', 'tagfwd', 'marker'}
-        df.column = map(str.lower, df.columns)
-        if set(df.columns.tolist()) >= header_lower:
-            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
-        else:
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
 
     @staticmethod
     def check_dir_exists_and_is_nonempty(path):
