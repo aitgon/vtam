@@ -106,7 +106,11 @@ class FilterRenkonen(ToolWrapper):
         #
         ##########################################################
 
-        filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail)
+        if variant_read_count_df.replicate.unique().shape[0] > 1: # if more than one replicate
+            filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail)
+        else: # Just one replicate
+            filter_output_df = variant_read_count_df.copy()
+            filter_output_df['filter_delete'] = False
 
 
         ##########################################################
