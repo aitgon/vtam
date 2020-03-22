@@ -24,13 +24,14 @@ class VTAM(object):
 
         These are the VTAM commands:
 
-   merge      Merge paired-end reads
-   sortreads  Trim and demultiplex reads
-   filter     Run VTAM filters to create an ASV table with the variant sequences as last column
-   optimize   Find optimal parameters for filtering
-   pool   Pool overlapping markers from the ASV table into one
-   taxonomy   Create the taxonomy TSV file used to create lineages 
-   coi_db   Download precomputed COI Blast database 
+   merge      Merges paired-end reads
+   sortreads  Trims, demultiplex and and sorts reads
+   filter     Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table
+   taxassign     Assigns amplicon sequence variants to taxa
+   optimize   Finds optimal parameters for filtering
+   pool   Pools overlapping markers from the ASV table into one
+   taxonomy   Creates the taxonomy TSV file required for tax assignation 
+   coi_db   Downloads a precomputed COI Blast database 
 
 """
 
