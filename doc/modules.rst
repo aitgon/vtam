@@ -1,7 +1,7 @@
-wopmetabarcoding
-================
+vtam
+====
 
 .. toctree::
    :maxdepth: 4
 
-   wopmetabarcoding
+   vtam

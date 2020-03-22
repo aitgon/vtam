@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-=========================================
-Welcome to metabarcoding's documentation!
-=========================================
+=============================================================================================
+Welcome to Validation and Taxonomic Assignation of Metabarcoding Data (VTAM)'s documentation!
+=============================================================================================
 
 Table of Contents
 =================
