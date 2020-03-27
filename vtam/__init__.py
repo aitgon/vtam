@@ -32,7 +32,6 @@ class VTAM(object):
    pool   Pools overlapping markers from the ASV table into one
    taxonomy   Creates the taxonomy TSV file required for tax assignation 
    coi_db   Downloads a precomputed COI Blast database 
-
 """
 
     def __init__(self, sys_argv):
