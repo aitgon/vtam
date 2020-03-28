@@ -83,5 +83,5 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
 2       1          1             1          1           3          50          False
 3       1          1             1          1           4         350          False
 4       1          1             1          1           5          50          False"""
-        
+
         self.assertTrue(filter_output_df_bak_str == filter_borderline_output_df.to_string())
