@@ -14,7 +14,7 @@ class FilterRenkonenRunner(object):
         """
         self.variant_read_count_df = variant_read_count_df
 
-    def get_filter_output_df(self, upper_renkonen_tail):
+    def get_filter_output_df(self, renkonen_distance_quantile):
 
         filter_out_df = self.variant_read_count_df.copy()
         filter_out_df['filter_delete'] = False
@@ -26,8 +26,11 @@ class FilterRenkonenRunner(object):
 
         renkonen_distance_df = self.get_renkonen_distance_df_for_all_biosample_replicates()
 
+        renkonen_distance_threshold = renkonen_distance_df.renkonen_distance.quantile(
+            renkonen_distance_quantile, interpolation='lower')
+
         renkonen_distance_df[
-            'above_upper_renkonen_tail'] = renkonen_distance_df.renkonen_distance > upper_renkonen_tail
+            'above_renkonen_distance_quantile'] = renkonen_distance_df.renkonen_distance > renkonen_distance_threshold
         for run_marker_biosample_replicate_row_i, run_marker_biosample_replicate_row in \
                 self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id', 'replicate']].drop_duplicates().iterrows():
             run_id = run_marker_biosample_replicate_row.run_id
@@ -46,10 +49,10 @@ class FilterRenkonenRunner(object):
                 (nb_of_replicates_df.run_id == run_id) & (nb_of_replicates_df.marker_id == marker_id) & (
                             nb_of_replicates_df.biosample_id == biosample_id), 'nb_replicates'].values)
 
-            delete_replicate = run_marker_biosample_replicate_renkonen_df.above_upper_renkonen_tail.sum() > (nb_replicates - 1) / 2
-            filter_out_df.loc[(filter_out_df.run_id == run_id) & (filter_out_df.marker_id == marker_id) & (
-                            filter_out_df.biosample_id == biosample_id) & (filter_out_df.replicate == replicate), 'filter_delete'] = delete_replicate
-
+            delete_replicate = run_marker_biosample_replicate_renkonen_df.above_renkonen_distance_quantile.sum() > (nb_replicates - 1) / 2
+            filter_out_df.loc[(filter_out_df.run_id == run_id) & (filter_out_df.marker_id == marker_id) &
+                              (filter_out_df.biosample_id == biosample_id) &
+                              (filter_out_df.replicate == replicate), 'filter_delete'] = delete_replicate
         return filter_out_df
 
     def get_renkonen_distance_for_one_replicate_pair(self, run_marker_biosample_df, replicate_left, replicate_right):
@@ -59,17 +62,23 @@ class FilterRenkonenRunner(object):
         :type
         """
 
-        replicate_pair_df = run_marker_biosample_df.loc[(run_marker_biosample_df.replicate == replicate_left) | (
+        replicate_pair_vertical_df = run_marker_biosample_df.loc[(run_marker_biosample_df.replicate == replicate_left) | (
                 run_marker_biosample_df.replicate == replicate_right)]
 
-        N_j_k_df = replicate_pair_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_count']]\
+        N_j_k_df = replicate_pair_vertical_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_count']]\
             .groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
-        replicate_pair_df = replicate_pair_df.merge(N_j_k_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
+        replicate_pair_vertical_df = replicate_pair_vertical_df.merge(N_j_k_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
                                                     right_on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
-        replicate_pair_df.rename({'read_count_x': 'N_i_j_k', 'read_count_y': 'N_j_k'}, axis=1, inplace=True)
-        replicate_pair_df['N_i_j_k/N_j_k'] = replicate_pair_df['N_i_j_k'] / replicate_pair_df['N_j_k']
-        replicate_pair_df = replicate_pair_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).min()
-        renkonen_distance = 1 - replicate_pair_df['N_i_j_k/N_j_k'].sum()
+        replicate_pair_vertical_df.rename({'read_count_x': 'N_i_j_k', 'read_count_y': 'N_j_k'}, axis=1, inplace=True)
+        replicate_pair_vertical_df['N_i_j_k/N_j_k'] = replicate_pair_vertical_df['N_i_j_k'] / replicate_pair_vertical_df['N_j_k']
+        replicate_left_df = replicate_pair_vertical_df.loc[replicate_pair_vertical_df.replicate == replicate_left]
+        replicate_right_df = replicate_pair_vertical_df.loc[replicate_pair_vertical_df.replicate == replicate_right]
+        replicate_pair_horizontal_df = replicate_left_df.merge(replicate_right_df, on=['run_id', 'marker_id', 'biosample_id', 'variant_id'],
+                                how='outer')
+        replicate_pair_horizontal_df.fillna(0, inplace=True)
+        replicate_pair_horizontal_df['min'] = replicate_pair_horizontal_df.apply(
+            lambda x: min(x['N_i_j_k/N_j_k_x'], x['N_i_j_k/N_j_k_y']), axis=1)
+        renkonen_distance = 1 - replicate_pair_horizontal_df['min'].sum()
 
         return renkonen_distance
 
