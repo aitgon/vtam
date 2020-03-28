@@ -145,7 +145,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             ################################################################################################################
             #
-            # Get variant read count variant_read_count_df
+            # Get variant read count variant_read_count_input_df
             #
             ################################################################################################################
 
@@ -288,7 +288,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             # Write TSV file
             #
             ##########################################################
-            # From list of dics to variant_read_count_df
+            # From list of dics to variant_read_count_input_df
             out_lfn_variant_or_variant_replicate_df = pandas.DataFrame(out_lfn_variant_list)
             # List of columns in order
             column_names = ['occurence_nb_keep', 'occurence_nb_delete', 'lfn_read_count_threshold', 'lfn_variant_or_variant_replicate_threshold']

@@ -108,7 +108,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
             ################################################################################################################
             #
-            # Get variant read count variant_read_count_df
+            # Get variant read count variant_read_count_input_df
             #
             ################################################################################################################
             fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)

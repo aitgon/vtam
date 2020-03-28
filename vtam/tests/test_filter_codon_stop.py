@@ -47,7 +47,7 @@ class TestFilterChimera(TestCase):
         """
         # Input
         # self.variant_df
-        # self.variant_read_count_df
+        # self.variant_read_count_input_df
         # transl_table=1
         #
 

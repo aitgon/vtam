@@ -14,7 +14,45 @@ class FilterRenkonenRunner(object):
         """
         self.variant_read_count_df = variant_read_count_df
 
-    def get_renkonen_distance(self, run_marker_biosample_df, replicate_left, replicate_right):
+    def get_filter_output_df(self, upper_renkonen_tail):
+
+        filter_out_df = self.variant_read_count_df.copy()
+        filter_out_df['filter_delete'] = False
+
+        nb_of_replicates_df = self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id', 'replicate']]\
+            .drop_duplicates().groupby(
+            ['run_id', 'marker_id', 'biosample_id']).count().reset_index()
+        nb_of_replicates_df.rename({'replicate': 'nb_replicates'}, axis=1, inplace=True)
+
+        renkonen_distance_df = self.get_renkonen_distance_df_for_all_biosample_replicates()
+
+        renkonen_distance_df[
+            'above_upper_renkonen_tail'] = renkonen_distance_df.renkonen_distance > upper_renkonen_tail
+        for run_marker_biosample_replicate_row_i, run_marker_biosample_replicate_row in \
+                self.variant_read_count_df[['run_id', 'marker_id', 'biosample_id', 'replicate']].drop_duplicates().iterrows():
+            run_id = run_marker_biosample_replicate_row.run_id
+            marker_id = run_marker_biosample_replicate_row.marker_id
+            biosample_id = run_marker_biosample_replicate_row.biosample_id
+            replicate = run_marker_biosample_replicate_row.replicate
+
+            run_marker_biosample_replicate_renkonen_df = renkonen_distance_df.loc[
+                (renkonen_distance_df.run_id == run_id) &
+                (renkonen_distance_df.marker_id == marker_id) &
+                (renkonen_distance_df.biosample_id == biosample_id) &
+                ((renkonen_distance_df.replicate_left == replicate) | (renkonen_distance_df.replicate_right == replicate))
+            ]
+
+            nb_replicates = int(nb_of_replicates_df.loc[
+                (nb_of_replicates_df.run_id == run_id) & (nb_of_replicates_df.marker_id == marker_id) & (
+                            nb_of_replicates_df.biosample_id == biosample_id), 'nb_replicates'].values)
+
+            delete_replicate = run_marker_biosample_replicate_renkonen_df.above_upper_renkonen_tail.sum() > (nb_replicates - 1) / 2
+            filter_out_df.loc[(filter_out_df.run_id == run_id) & (filter_out_df.marker_id == marker_id) & (
+                            filter_out_df.biosample_id == biosample_id) & (filter_out_df.replicate == replicate), 'filter_delete'] = delete_replicate
+
+        return filter_out_df
+
+    def get_renkonen_distance_for_one_replicate_pair(self, run_marker_biosample_df, replicate_left, replicate_right):
 
         """ Given run, marker, biosample and left and right replicates computes renkonen distance
 
@@ -34,7 +72,7 @@ class FilterRenkonenRunner(object):
 
         return renkonen_distance
 
-    def get_renkonen_distance_df(self):
+    def get_renkonen_distance_df_for_all_biosample_replicates(self):
 
         renkonen_distance_df = pandas.DataFrame()
 
@@ -51,9 +89,9 @@ class FilterRenkonenRunner(object):
 
             for replicate_left, replicate_right in replicate_pairs:
 
-                renkonen_distance = self.get_renkonen_distance(run_marker_biosample_df,
-                                                                                          replicate_left=replicate_left,
-                                                                                          replicate_right=replicate_right)
+                renkonen_distance = self.get_renkonen_distance_for_one_replicate_pair(run_marker_biosample_df,
+                                                                                      replicate_left=replicate_left,
+                                                                                      replicate_right=replicate_right)
 
                 renkonen_distance_df = pandas.concat([renkonen_distance_df, pandas.DataFrame({'run_id': run_id, 'marker_id': marker_id,
                                                                   'biosample_id': biosample_id,
