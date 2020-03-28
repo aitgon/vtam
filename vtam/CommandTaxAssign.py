@@ -200,7 +200,7 @@ class CommandTaxAssign(object):
 
         ################################################################################################################
         #
-        # Create lineage df given taxonomy_df
+        # Create lineage variant_read_count_df given taxonomy_df
         # Returns: lineage_df for each tax_id
         #
         ################################################################################################################

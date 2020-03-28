@@ -91,7 +91,7 @@ class AsvTableRunner(object):
 
             #####
             #
-            # taxonomy_db to df
+            # taxonomy_db to variant_read_count_df
             #
             #####from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
 
@@ -138,7 +138,7 @@ class AsvTableRunner(object):
 
             ############################################################################################################
             #
-            # Create lineage df given taxonomy_df
+            # Create lineage variant_read_count_df given taxonomy_df
             # Returns: lineage_df for each tax_id
             #
             ############################################################################################################

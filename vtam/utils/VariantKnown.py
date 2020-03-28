@@ -124,7 +124,7 @@ class VariantKnown(object):
     def get_variant_known_df(self):
         """
 
-        :return: variant_known in df format
+        :return: variant_known in variant_read_count_df format
         """
         return self.variant_known_df
 
@@ -201,7 +201,7 @@ class VariantKnown(object):
 
         ################################################################################################################
         #
-        # Takes fasta_info and intersects with known variants to create a variant known df of this experiment
+        # Takes fasta_info and intersects with known variants to create a variant known variant_read_count_df of this experiment
         #
         ################################################################################################################
 
@@ -223,7 +223,7 @@ class VariantKnown(object):
 
 
         :param: variant_tolerate: Boolean: Default False. include "variant_tolerate" variants or not?
-        :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
+        :return: pandas variant_read_count_df with columns: run_id, marker_id, biosample_id, variant_id
         """
         # Get portion of variant_known_tsv with either keep or keep+variant_tolerate
         if variant_tolerate:  # get also variant_tolerate variant
@@ -244,7 +244,7 @@ class VariantKnown(object):
     def get_delete_run_marker_biosample_variant_df(self, variant_read_count_df):
         """Returns the 'delete' variants together with run_id, marker_id, biosample_id, variant_id
 
-        :return: pandas df with columns: run_id, marker_id, biosample_id, variant_id
+        :return: pandas variant_read_count_df with columns: run_id, marker_id, biosample_id, variant_id
         """
 
         ##########################################################

@@ -204,7 +204,7 @@ def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
     # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
     #
-    # group by on variant read count df  and aggregate by replicate to get all the replicate by biosample_id
+    # group by on variant read count variant_read_count_df  and aggregate by replicate to get all the replicate by biosample_id
     df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate').apply(
         lambda x: list(set(x))).reset_index()
     df2['threshold_distance_number'] = df2['replicate'].apply(lambda x: (len(x) - 1) / 2)

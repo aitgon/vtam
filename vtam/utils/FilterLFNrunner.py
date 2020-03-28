@@ -36,7 +36,7 @@ class FilterLFNrunner:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         #
         ################################
-        #  Output df with deleted variants
+        #  Output variant_read_count_df with deleted variants
         ################################
         self.variant_read_count_filter_delete_df = pandas.DataFrame(data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
                                                                           'replicate': [],
@@ -115,7 +115,7 @@ class FilterLFNrunner:
         filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count',
                    'filter_id', 'filter_delete']]
         #
-        # Prepare output df and concatenate vertically output df to self.variant_read_count_filter_delete_df
+        # Prepare output variant_read_count_df and concatenate vertically output variant_read_count_df to self.variant_read_count_filter_delete_df
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False, axis=0)
 
@@ -170,8 +170,8 @@ class FilterLFNrunner:
         filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
                    'filter_id', 'filter_delete']]
         #
-        # Concatenate vertically output df
-        #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+        # Concatenate vertically output variant_read_count_df
+        #  Prepare output variant_read_count_df and concatenate to self.variant_read_count_filter_delete_df
 
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False)
