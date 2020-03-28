@@ -62,8 +62,9 @@ class FilterRenkonenRunner(object):
         replicate_pair_df = run_marker_biosample_df.loc[(run_marker_biosample_df.replicate == replicate_left) | (
                 run_marker_biosample_df.replicate == replicate_right)]
 
-        N_j_k = replicate_pair_df.groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
-        replicate_pair_df = replicate_pair_df.merge(N_j_k, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
+        N_j_k_df = replicate_pair_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_count']]\
+            .groupby(by=['run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
+        replicate_pair_df = replicate_pair_df.merge(N_j_k_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
                                                     right_on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
         replicate_pair_df.rename({'read_count_x': 'N_i_j_k', 'read_count_y': 'N_j_k'}, axis=1, inplace=True)
         replicate_pair_df['N_i_j_k/N_j_k'] = replicate_pair_df['N_i_j_k'] / replicate_pair_df['N_j_k']
