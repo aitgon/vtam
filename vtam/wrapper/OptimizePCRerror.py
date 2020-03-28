@@ -168,7 +168,7 @@ class OptimizePCRerror(ToolWrapper):
 
                 ##########################################################
                 #
-                # Run vsearch and get alignement df
+                # Run vsearch and get alignement variant_read_count_df
                 #
                 ##########################################################
 

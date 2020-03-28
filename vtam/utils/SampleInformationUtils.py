@@ -69,7 +69,7 @@ class SampleInformationUtils(object):
         return variant_read_count_df
 
     def get_full_table_df(self, model):
-        """Based on the SortedReadFile samples returns all the columns of the table as df
+        """Based on the SortedReadFile samples returns all the columns of the table as variant_read_count_df
 
         :param model: SQLalchemy models
         :return: DataFrame with all columns and rows of fasta info
