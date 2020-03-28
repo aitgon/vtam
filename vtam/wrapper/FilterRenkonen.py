@@ -93,7 +93,7 @@ class FilterRenkonen(ToolWrapper):
 
         ##########################################################
         #
-        # variant_read_count_df
+        # variant_read_count_input_df
         #
         ##########################################################
 
@@ -204,7 +204,7 @@ def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
     # dfout['filter_id'] = 12
     dfout['filter_delete'] = False
     #
-    # group by on variant read count variant_read_count_df  and aggregate by replicate to get all the replicate by biosample_id
+    # group by on variant read count variant_read_count_input_df  and aggregate by replicate to get all the replicate by biosample_id
     df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate').apply(
         lambda x: list(set(x))).reset_index()
     df2['threshold_distance_number'] = df2['replicate'].apply(lambda x: (len(x) - 1) / 2)
@@ -260,8 +260,8 @@ def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
         #if  distance_number > threshold_distance_number do not pass the renkonen filter
         # df5['filter_delete'] = False
         dfout.loc[dfout.distance_number > dfout.threshold_distance_number, 'filter_delete'] = True
-        #merge resulted data frame df5 with the variant_read_count_df
-        # dfout = variant_read_count_df.merge(df5)
+        #merge resulted data frame df5 with the variant_read_count_input_df
+        # dfout = variant_read_count_input_df.merge(df5)
         dfout.drop(['distance_number', 'threshold_distance_number'], axis=1, inplace=True)
     #
     return dfout

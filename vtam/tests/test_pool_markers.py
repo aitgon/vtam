@@ -29,7 +29,7 @@ class TestPoolMarkers(TestCase):
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         # Define fasta_path path
         fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
-        # Create variant variant_read_count_df
+        # Create variant variant_read_count_input_df
         variant_df = asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from asv_table_df
