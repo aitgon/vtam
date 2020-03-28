@@ -25,7 +25,7 @@ from vtam.utils.VTAMexception import VTAMexception
 
 
 class RunMarkerTSVreader():
-    """Prepares different DFs: engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
+    """Prepares different DFs: engine, variant_read_count_input_df, variant_df, run_df, marker_df, biosample_df,
                                           variant_to_chimera_borderline_df based on run_marker_tsv and db"""
 
     def __init__(self, db, run_marker_tsv):
@@ -77,7 +77,7 @@ class RunMarkerTSVreader():
 
         ################################################################################################################
         #
-        # Compute all variant_read_count_df required for ASV table
+        # Compute all variant_read_count_input_df required for ASV table
         #
         ################################################################################################################
 
@@ -121,7 +121,7 @@ class CommandPoolRunMarkers(object):
 
         if run_marker_df is None:  # Default: pool all marker
             self.asv_table_df = asv_table_df
-        else:  # if run_marker_df: pool only markers in this variant_read_count_df
+        else:  # if run_marker_df: pool only markers in this variant_read_count_input_df
             self.asv_table_df = asv_table_df.merge(run_marker_df, on=['run', 'marker'])
 
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
@@ -134,7 +134,7 @@ class CommandPoolRunMarkers(object):
     def run_vsearch_to_cluster_sequences(self):
         # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
-        # Create variant variant_read_count_df
+        # Create variant variant_read_count_input_df
         variant_df = self.asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         variant_df.set_index('id', inplace=True)

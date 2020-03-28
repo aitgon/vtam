@@ -106,7 +106,7 @@ class FilterPCRerror(ToolWrapper):
 
         ##########################################################
         #
-        # variant_read_count_df
+        # variant_read_count_input_df
         #
         ##########################################################
 
@@ -139,7 +139,7 @@ class FilterPCRerror(ToolWrapper):
 
             ##########################################################
             #
-            # Run vsearch and get alignement variant_read_count_df
+            # Run vsearch and get alignement variant_read_count_input_df
             #
             ##########################################################
 
