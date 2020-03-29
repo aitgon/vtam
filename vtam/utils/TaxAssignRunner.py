@@ -133,8 +133,6 @@ class TaxAssignRunner(object):
             variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
                                                                    right_on='tax_id')
             variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
-            # variantid_identity_lineage_tsv = os.path.join(self.this_temp_dir, 'variantid_identity_lineage.tsv')
-            # variantid_identity_lineage_df.to_csv(variantid_identity_lineage_tsv, sep="\t", header=True)
 
             ##########################################################
             #
