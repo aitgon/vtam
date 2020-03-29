@@ -74,7 +74,7 @@ class MakeAsvTable(ToolWrapper):
         ##########################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # Compute variant_read_count_df and other dfs for the asv_table_runner
+        # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
         ##########################################################
 

@@ -19,7 +19,7 @@ class SampleInformationUtils(object):
         self.sample_record_list = list(self.sample_information_df.T.to_dict().values())
 
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
-        """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_df
+        """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
 
         :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
         :param filter_id:
@@ -69,7 +69,7 @@ class SampleInformationUtils(object):
         return variant_read_count_df
 
     def get_full_table_df(self, model):
-        """Based on the SortedReadFile samples returns all the columns of the table as df
+        """Based on the SortedReadFile samples returns all the columns of the table as variant_read_count_input_df
 
         :param model: SQLalchemy models
         :return: DataFrame with all columns and rows of fasta info
