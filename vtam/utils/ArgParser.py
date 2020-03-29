@@ -22,7 +22,7 @@ class ArgParserChecker(object):
         path = cls.check_file_exists_and_is_nonempty(path)
 
         df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = map(str.lower, df.columns) # df columns to lower
+        df.columns = map(str.lower, df.columns) # variant_read_count_input_df columns to lower
         if not 'run' in df.columns and not 'marker' in df.columns:
             raise argparse.ArgumentTypeError("The TSV file {} does not contain columns with 'Run' and 'Marker' columns!".format(path))
         else:

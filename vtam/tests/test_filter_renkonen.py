@@ -1,68 +1,79 @@
-import pathlib
+import itertools
+import os
 from unittest import TestCase
 
-from vtam.utils.PathManager import PathManager
-import os
 import pandas
-from vtam.wrapper.FilterRenkonen import f12_filter_delete_renkonen
 
-from vtam.wrapper.FilterRenkonen import renkonen_distance
+from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
+from vtam.utils.PathManager import PathManager
 
 
 class TestFilterRenkonen(TestCase):
 
     def setUp(self):
-        self.variant_read_count_df = pandas.DataFrame({
-            'run_id': [1] * 6,
-            'marker_id': [1] * 6,
-            'variant_id': [1] * 3 + [2] * 3,
-            'biosample_id': [1] * 6,
-            'replicate': [1, 2, 3] * 2,
-            'read_count': [
-                5180, 5254, 9378, 193, 99, 209
-            ],
-        })
+        test_filter_renkonen_input_tsv_path = os.path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_input.tsv')
+        self.variant_read_count_input_df = pandas.read_csv(test_filter_renkonen_input_tsv_path, sep="\t", header=0)
 
-        self.this_tempdir = os.path.join(PathManager.instance().get_tempdir(), self.__class__.__name__)
-        pathlib.Path(self.this_tempdir).mkdir(exist_ok=True)
+        self.test_filter_renkonen_distance_tsv_path = os.path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_distance.tsv')
+        self.renkonen_distance_quantile = 0.9
 
+        test_filter_renkonen_output_tsv_path = os.path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_output.tsv')
+        self.variant_read_count_output_df = pandas.read_csv(test_filter_renkonen_output_tsv_path, sep="\t", header=0)
 
-    def test_f12_delete_filter_renkonen(self):
-        #
-        Rthr = 0.005
-        filter_output_df = f12_filter_delete_renkonen(self.variant_read_count_df, Rthr)
-        self.assertTrue(filter_output_df.loc[(filter_output_df.run_id == 1)
-                                             & (filter_output_df.marker_id == 1)
-                                             & (filter_output_df.variant_id == 1)
-                                             & (filter_output_df.biosample_id == 1)
-                                             & (filter_output_df.replicate == 1),
-                                             # & (filter_output_df.filter_id == 12),
-                                             'filter_delete'].values[0])
-        #
-        self.assertTrue(not filter_output_df.loc[(filter_output_df.run_id == 1)
-                                             & (filter_output_df.marker_id == 1)
-                                             & (filter_output_df.variant_id == 2)
-                                             & (filter_output_df.biosample_id == 1)
-                                             & (filter_output_df.replicate == 3),
-                                             # & (filter_output_df.filter_id == 12),
-                                             'filter_delete'].values[0])
+        self.filter_renkonen_runner_obj = FilterRenkonenRunner(self.variant_read_count_input_df)
 
-        # import pdb;
-        # pdb.set_trace()
+    # @classmethod
+    # def setUpClass(cls):
+    #     test_filter_renkonen_input_tsv_path = os.path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_input.tsv')
+    #     #
+    #     # cls.variant_read_count_input_df = pandas.read_csv(test_filter_renkonen_input_tsv_path, sep="\t", header=0)
+    #     # cls.filter_renkonen_runner_obj = FilterRenkonenRunner(cls.variant_read_count_input_df)
+    #     # cls.renkonen_distance_df = cls.filter_renkonen_runner_obj.get_renkonen_distance_df_for_all_biosample_replicates()
 
     def test_renkonen_distance(self):
-        # Output
-        # biosample_id 1, replicate 1, replicate 2, renkonen_similarity and distance 0.982573959807409 and 0.017426040192591
-        # biosample_id 1, replicate 1, replicate 3, renkonen_similarity and distance 0.985880012193912 and 0.014119987806088
-        run_id = 1
-        marker_id = 1
-        biosample_id = 1
-        left_replicate = 1
-        right_replicate = 2
-        #
-        distance_left_right = renkonen_distance(self.variant_read_count_df,run_id,marker_id,biosample_id,left_replicate,right_replicate)
-        self.assertAlmostEqual(distance_left_right, 0.017426040192591)
-        right_replicate = 3
-        distance_left_right= renkonen_distance(self.variant_read_count_df,run_id,marker_id,biosample_id,left_replicate,right_replicate)
-        self.assertAlmostEqual(distance_left_right, 0.014119987806088)
 
+        run = 1
+        marker = 1
+        biosample = '14Ben01'
+        replicate_left = '14Ben01-R1'
+        replicate_right = '14Ben01-R2'
+
+        run_marker_biosample_df = self.variant_read_count_input_df.loc[
+            (self.variant_read_count_input_df.run_id == run) & (self.variant_read_count_input_df.marker_id == marker) & (
+                    self.variant_read_count_input_df.biosample_id == biosample)]
+        renkonen_distance = self.filter_renkonen_runner_obj.get_renkonen_distance_for_one_replicate_pair(run_marker_biosample_df,
+                                                             replicate_left=replicate_left, replicate_right=replicate_right)
+
+        self.assertTrue(renkonen_distance, 0.017426040192591086)
+
+    def test_renkonen_distance2(self):
+
+        run = 1
+        marker = 1
+        biosample = '14Mon01'
+        replicate_left = '14Mon01-R1'
+        replicate_right = '14Mon01-R3'
+
+        run_marker_biosample_df = self.variant_read_count_input_df.loc[
+            (self.variant_read_count_input_df.run_id == run) & (self.variant_read_count_input_df.marker_id == marker) & (
+                    self.variant_read_count_input_df.biosample_id == biosample)]
+        renkonen_distance = self.filter_renkonen_runner_obj.get_renkonen_distance_for_one_replicate_pair(run_marker_biosample_df,
+                                                             replicate_left=replicate_left, replicate_right=replicate_right)
+        self.assertTrue(renkonen_distance, 0.375254885809898)
+
+    def test_renkonen_distance_df(self):
+
+        out_bak_df = pandas.read_csv(self.test_filter_renkonen_distance_tsv_path, sep="\t", header=0)
+        renkonen_distance_df = self.filter_renkonen_runner_obj.get_renkonen_distance_df_for_all_biosample_replicates()
+        self.assertTrue(out_bak_df.to_string() == renkonen_distance_df.to_string())
+
+    def test_get_filter_output_df(self):
+
+        filter_out_df = self.filter_renkonen_runner_obj.get_filter_output_df(self.renkonen_distance_quantile)
+
+        filter_out_without_filter_delete_column_df = filter_out_df.loc[
+            ~filter_out_df.filter_delete, ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate',
+                                           'read_count']]
+
+        self.assertTrue(self.variant_read_count_output_df.to_string(index=False)
+                        == filter_out_without_filter_delete_column_df.to_string(index=False))

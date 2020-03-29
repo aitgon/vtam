@@ -1,4 +1,5 @@
 from vtam import Logger
+from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.VTAMexception import VTAMexception
@@ -45,7 +46,7 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_params(self):
         return {
-            "upper_renkonen_tail": "float",
+            "renkonen_distance_quantile": "float",
         }
 
     def run(self):
@@ -69,7 +70,7 @@ class FilterRenkonen(ToolWrapper):
         #
         # Options
         # PoolMarkers parameters
-        upper_renkonen_tail = float(self.option("upper_renkonen_tail"))
+        renkonen_distance_quantile = float(self.option("renkonen_distance_quantile"))
         #
         # Output table models
         output_filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
@@ -93,7 +94,7 @@ class FilterRenkonen(ToolWrapper):
 
         ##########################################################
         #
-        # variant_read_count_df
+        # variant_read_count_input_df
         #
         ##########################################################
 
@@ -107,7 +108,9 @@ class FilterRenkonen(ToolWrapper):
         ##########################################################
 
         if variant_read_count_df.replicate.unique().shape[0] > 1: # if more than one replicate
-            filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail)
+            filter_renkonen_runner_obj = FilterRenkonenRunner(variant_read_count_df)
+            filter_output_df = filter_renkonen_runner_obj.get_filter_output_df(renkonen_distance_quantile)
+            # filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_distance_quantile)
         else: # Just one replicate
             filter_output_df = variant_read_count_df.copy()
             filter_output_df['filter_delete'] = False
@@ -134,136 +137,3 @@ class FilterRenkonen(ToolWrapper):
         except AssertionError:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
-
-
-def renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate, right_replicate):
-    #  Compute sum of read_count per 'run_id', 'marker_id', 'biosample_id', 'replicate'
-    variant_read_proportion_per_replicate_df = variant_read_count_df[
-        ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_count']].groupby(
-        by=['run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
-    variant_read_proportion_per_replicate_df = variant_read_proportion_per_replicate_df.rename(
-        columns={'read_count': 'read_count_sum_per_replicate'})
-
-    # Merge variant read_count with read_count_sum_per_replicate
-    variant_read_proportion_per_replicate_df = variant_read_count_df.merge(variant_read_proportion_per_replicate_df,
-                                                                           left_on=['run_id', 'marker_id',
-                                                                                    'biosample_id', 'replicate'],
-                                                                           right_on=['run_id', 'marker_id',
-                                                                                     'biosample_id', 'replicate'])
-
-    variant_read_proportion_per_replicate_df['variant_read_count_propotion_per_replicate'] \
-        = variant_read_proportion_per_replicate_df.read_count / variant_read_proportion_per_replicate_df.read_count_sum_per_replicate
-    variant_read_proportion_per_replicate_df.drop('read_count', axis=1, inplace=True)
-    variant_read_proportion_per_replicate_df.drop('read_count_sum_per_replicate', axis=1, inplace=True)
-    #
-
-    # Select the read proportion for the biosample_id, left_replicate
-    left_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-        (variant_read_proportion_per_replicate_df.run_id == run_id)
-        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-        & (variant_read_proportion_per_replicate_df.replicate == left_replicate)
-        ]
-
-    # Select the read proportion for the biosample_id, left_replicate
-    right_variant_read_proportion_per_replicate_per_biosample_df = variant_read_proportion_per_replicate_df.loc[
-        (variant_read_proportion_per_replicate_df.run_id == run_id)
-        & (variant_read_proportion_per_replicate_df.marker_id == marker_id)
-        & (variant_read_proportion_per_replicate_df.biosample_id == biosample_id)
-        & (variant_read_proportion_per_replicate_df.replicate == right_replicate)
-        ]
-
-    #  Merge left and right replicate
-    variant_read_proportion_per_replicate_left_right = left_variant_read_proportion_per_replicate_per_biosample_df.merge( \
-        right_variant_read_proportion_per_replicate_per_biosample_df,
-        on=['run_id', 'marker_id', 'variant_id', 'biosample_id'])
-    # rename columns
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'replicate_x': 'replicate_left'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'variant_read_count_propotion_per_replicate_x': 'variant_read_count_propotion_per_replicate_left'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'replicate_y': 'replicate_right'})
-    variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right.rename(
-        columns={'variant_read_count_propotion_per_replicate_y': 'variant_read_count_propotion_per_replicate_right'})
-
-    # variant_read_proportion_per_replicate_left_right = variant_read_proportion_per_replicate_left_right[['variant_id','rp_of_variant_in_replicate1', 'rp_of_variant_in_replicate2']]
-
-    variant_read_proportion_per_replicate_left_right['min_read_proportion'] = \
-    variant_read_proportion_per_replicate_left_right[
-        ['variant_read_count_propotion_per_replicate_left', 'variant_read_count_propotion_per_replicate_right']].apply(
-        lambda row: row.min(), axis=1)
-
-
-    distance_left_right = 1 - sum(variant_read_proportion_per_replicate_left_right['min_read_proportion'])
-    return distance_left_right
-
-
-def f12_filter_delete_renkonen(variant_read_count_df, upper_renkonen_tail):
-    dfout = variant_read_count_df.copy()
-    # dfout['filter_id'] = 12
-    dfout['filter_delete'] = False
-    #
-    # group by on variant read count df  and aggregate by replicate to get all the replicate by biosample_id
-    df2 = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id']).agg('replicate').apply(
-        lambda x: list(set(x))).reset_index()
-    df2['threshold_distance_number'] = df2['replicate'].apply(lambda x: (len(x) - 1) / 2)
-    df2 = df2.loc[df2.threshold_distance_number != 0] # drop if threshold_distance_number == 0
-    if df2.shape[0] == 0: # Only one replicate
-        dfout['filter_delete'] = True
-    else:
-        df2['replicate_pairwise'] = df2.replicate.apply(lambda x: list(itertools.combinations(x, 2)))
-        df2.drop('replicate', axis=1, inplace=True)
-        df3 = pandas.DataFrame(
-            data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'left_replicate': [], 'right_replicate': [],
-                  'renkonen_distance': []}, dtype='int')
-        for row in df2.itertuples():
-            run_id = row.run_id
-            marker_id = row.marker_id
-            biosample_id = row.biosample_id
-            replicate_pairwise = row.replicate_pairwise
-            for left_replicate, right_replicate in replicate_pairwise:
-                df3 = pandas.concat(
-                    [df3, pandas.DataFrame({'run_id': [run_id], 'marker_id': [marker_id], 'biosample_id': [biosample_id],
-                                            'left_replicate': [left_replicate],
-                                            'right_replicate': [right_replicate]})], axis=0, sort=True)
-        # count the renkonen distance by pair of replicate for each biosample_id
-        for row in df3.itertuples():
-            run_id = row.run_id
-            marker_id = row.marker_id
-            biosample_id = row.biosample_id
-            left_replicate = row.left_replicate
-            right_replicate = row.right_replicate
-            d = renkonen_distance(variant_read_count_df, run_id, marker_id, biosample_id, left_replicate,
-                                  right_replicate)
-            df3.loc[(df3.run_id == run_id) & (df3.marker_id == marker_id) & (df3.biosample_id == biosample_id)
-                    & (df3.left_replicate == left_replicate) & (
-                                df3.right_replicate == right_replicate), 'renkonen_distance'] = d
-        # compare the renkonen distance to the upper_renkonen_tail
-        df3['is_distance_gt_rthr'] = df3.renkonen_distance > upper_renkonen_tail
-        # extract from the data frame df3 the combinaison of (replicate_left ,is_distance_gt_rthr) and (replicate_right ,is_distance_gt_rthr)
-        df4 = pandas.DataFrame(
-            data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'replicate': [], 'is_distance_gt_rthr': []},
-            dtype='int')
-        df4 = df4.rename(columns={'replicate': 'left_replicate'})
-        df4 = pandas.concat([df4, df3[['run_id', 'marker_id', 'biosample_id', 'left_replicate', 'is_distance_gt_rthr']]])
-        df4 = df4.rename(columns={'left_replicate': 'right_replicate'})
-        df4 = pandas.concat(
-            [df4, df3[['run_id', 'marker_id', 'biosample_id', 'right_replicate', 'is_distance_gt_rthr']]], axis=0)
-        df4 = df4.rename(columns={'right_replicate': 'replicate'})
-        # group the data frame by 'run_id', 'marker_id', 'biosample_id', 'replicate' to count the sum  distance number for each replicate by biosample
-        # merge with the df2 to get the threshold_distance_number
-        df5 = df4.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate']).sum().reset_index()
-        df5 = df5.rename(columns={'is_distance_gt_rthr': 'distance_number'})
-        dfout = dfout.merge(df2[['run_id', 'marker_id', 'biosample_id', 'threshold_distance_number']])
-        dfout = dfout.merge(df5[['run_id', 'marker_id', 'biosample_id', 'replicate', 'distance_number']])
-        #if  distance_number > threshold_distance_number do not pass the renkonen filter
-        # df5['filter_delete'] = False
-        dfout.loc[dfout.distance_number > dfout.threshold_distance_number, 'filter_delete'] = True
-        #merge resulted data frame df5 with the variant_read_count_df
-        # dfout = variant_read_count_df.merge(df5)
-        dfout.drop(['distance_number', 'threshold_distance_number'], axis=1, inplace=True)
-    #
-    return dfout
-
-

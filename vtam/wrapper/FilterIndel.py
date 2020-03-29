@@ -94,7 +94,7 @@ class FilterIndel(ToolWrapper):
 
         ##########################################################
         #
-        # variant_read_count_df
+        # variant_read_count_input_df
         #
         ##########################################################
 

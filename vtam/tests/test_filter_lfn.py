@@ -55,7 +55,7 @@ class TestSingleton(TestCase):
     def test01_lfn_delete_singleton(self):
         variant_read_count_df_obj = VariantReadCountDF(self.variant_read_count_df)
         passed_lfn_delete_singleton_df = variant_read_count_df_obj.filter_out_singletons()
-        # passed_lfn_delete_singleton_df = f1_lfn_delete_singleton(self.variant_read_count_df)
+        # passed_lfn_delete_singleton_df = f1_lfn_delete_singleton(self.variant_read_count_input_df)
         #
         nb_variant_that_passed_the_filter= passed_lfn_delete_singleton_df.shape[0]
         self.assertTrue(nb_variant_that_passed_the_filter == 126)
