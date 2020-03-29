@@ -34,8 +34,8 @@ class CommandTaxAssign(object):
 
         engine = create_engine('sqlite:///{}'.format(db), echo=False)
 
-        variants_declarative_table = variant_declarative.__table__
-        variants_declarative_table.create(bind=engine, checkfirst=True)
+        variant_declarative_table = variant_declarative.__table__
+        variant_declarative_table.create(bind=engine, checkfirst=True)
         tax_assign_declarative_table = tax_assign_declarative.__table__
         tax_assign_declarative_table.create(bind=engine, checkfirst=True)
 
@@ -55,105 +55,126 @@ class CommandTaxAssign(object):
         # Add variant to DB if not already there
         for variant_sequence in variant_sequence_list:
             with engine.connect() as conn:
-                row_variant = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
-                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()
+                row_variant = conn.execute(sqlalchemy.select([variant_declarative_table.c.id])
+                                          .where(variant_declarative_table.c.sequence == variant_sequence)).first()
                 if row_variant is None:  # variant_sequence IS NOT in the database, so INSERT it
-                    conn.execute(variants_declarative_table.insert().values(sequence=variant_sequence))
+                    conn.execute(variant_declarative_table.insert().values(sequence=variant_sequence))
 
         ################################################################################################################
         #
-        # Select if not already taxassigned
+        # Get already tax-assigned variants with all informations including sequence
         #
         ################################################################################################################
 
-        stmt_variant_tax_assign = select([tax_assign_declarative_table.c.variant_id])\
-            .where(tax_assign_declarative_table.c.ltg_tax_id.isnot(None))
+        stmt_variant_tax_assign = select([
+            tax_assign_declarative_table.c.variant_id,
+            tax_assign_declarative_table.c.identity,
+            tax_assign_declarative_table.c.ltg_rank,
+            tax_assign_declarative_table.c.ltg_tax_id,
+            tax_assign_declarative_table.c.ltg_tax_name,
+            tax_assign_declarative_table.c.blast_db,
+            variant_declarative_table.c.sequence,
+                                          ])\
+            .where(tax_assign_declarative_table.c.ltg_tax_id.isnot(None))\
+            .where(tax_assign_declarative_table.c.variant_id == variant_declarative_table.c.id)\
+            .where(variant_declarative_table.c.sequence.in_(variant_sequence_list))\
+            .distinct()
 
         # These are the variants that are already in taxassign and do not need recalculate
-        variant_tax_assign_list = []
+        ltg_from_db_list = []
         with engine.connect() as conn:
-            variant_tax_assign_list = [variant_id[0] for variant_id in conn.execute(stmt_variant_tax_assign).fetchall()]
+            for row in conn.execute(stmt_variant_tax_assign).fetchall():
+                ltg_from_db_list.append(dict(zip(row.keys(), row.values())))
+        """(Pdb) pandas.DataFrame.from_records(ltg_from_db_list)
+   identity ltg_rank  ltg_tax_id              ltg_tax_name                                           sequence  variant_id
+0       100  species     2028017  Orthocladiinae sp. BAP34  AGCATGATCTGGAATAGTAGGTACTTCCCTTAGTATCTTAATTCGA...         325
+1        99  species     2028029   Rheocricotopus sp. DH90  GGCTTGATCCGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGA...        1203
+2       100  species     1592914            Caenis pusilla  GGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGT...        1443
+3       100  species     2028029   Rheocricotopus sp. DH90  TGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGA...        2298
+4        90   family        7149              Chironomidae  TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGA...        2498
+5       100  species      189839            Baetis rhodani  TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGA...        2610"""
+        ltg_db_df = pandas.DataFrame.from_records(ltg_from_db_list)
+        ltg_db_df = ltg_db_df.reindex(sorted(ltg_db_df.columns), axis=1)  # sort columns
 
-        stmt_variant = select([variants_declarative_table.c.id, variants_declarative_table.c.sequence]) \
-            .where(variants_declarative_table.c.sequence.in_(variant_sequence_list)) \
-            .where(variants_declarative_table.c.id.notin_(variant_tax_assign_list)) \
+        ################################################################################################################
+        #
+        # Get list of variants (id and sequence) that need blast for tax assignation
+        #
+        ################################################################################################################
+
+        stmt_variant = select([variant_declarative_table.c.id, variant_declarative_table.c.sequence]) \
+            .where(variant_declarative_table.c.sequence.in_(variant_sequence_list)) \
+            .where(variant_declarative_table.c.id.notin_(ltg_db_df.variant_id.tolist())) \
             .distinct()\
             .order_by("id")
-
-        # Select to DataFrame the variants that will be tried to be assigned to taxa
-        variant_list = []
+        variant_not_tax_assigned = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
-                variant_list.append({'id': row.id, 'sequence': row.sequence})
-        variant_tax_assign_df = pandas.DataFrame.from_records(variant_list, index='id')
-
-        # ################################################################################################################
-        # #
-        # # 2 Create FASTA file with Variants
-        # #
-        # ################################################################################################################
-        #
-        # Logger.instance().debug(
-        #     "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno))
-        # variant_fasta = os.path.join(this_temp_dir, 'variant.fasta')
-        # variant_df_utils = VariantDFutils(variant_tax_assign_df)
-        # variant_df_utils.to_fasta(variant_fasta)
+                variant_not_tax_assigned.append(dict(zip(row.keys(), row.values())))
 
         ################################################################################################################
         #
-        # Run TaxAssignRunner
+        # Run TaxAssignRunner for variant_not_tax_assigned
         #
         ################################################################################################################
 
-        taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
-                                      dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+        variant_to_blast_df = pandas.DataFrame()
+        ltg_blast_df = pandas.DataFrame()
 
-        sequence_list = variant_tax_assign_df.sequence.tolist()
-        tax_assign_runner = TaxAssignRunner(sequence_list=sequence_list, taxonomy_df=taxonomy_df,
-                                            blast_db_dir=blasdb_dir_path, blast_db_name=blastdbname_str,
-                                            ltg_rule_threshold=ltg_rule_threshold,
-                                            include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
-                                            num_threads=num_threads)
-        ltg_df = tax_assign_runner.ltg_df
+        if len(variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
 
-        ######################################################
-        # Uncomment to debug because blast is slow
-        # pandas.to_pickle(ltg_df, "ltg_df.pkl")
-        # ltg_df = pandas.read_pickle("ltg_df.pkl")
-        # import pdb; pdb.set_trace()
-        ######################################################
+            variant_to_blast_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
 
-        ltg_df.rename({'variant_id': 'variant_sequence'}, inplace=True, axis=1)
+            taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
+                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+
+            sequence_list = variant_to_blast_df.sequence.tolist()
+            tax_assign_runner = TaxAssignRunner(sequence_list=sequence_list, taxonomy_df=taxonomy_df,
+                                                blast_db_dir=blasdb_dir_path, blast_db_name=blastdbname_str,
+                                                ltg_rule_threshold=ltg_rule_threshold,
+                                                include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
+                                                num_threads=num_threads)
+            ltg_blast_df = tax_assign_runner.ltg_df
+
+            ######################################################
+            # Uncomment to debug because blast is slow
+            # pandas.to_pickle(ltg_df, "ltg_df.pkl")
+            # ltg_df = pandas.read_pickle("ltg_df.pkl")
+            # import pdb; pdb.set_trace()
+            ######################################################
+
+            ltg_blast_df.rename({'variant_id': 'sequence'}, inplace=True, axis=1)
+
+            ltg_blast_df = variant_to_blast_df.merge(ltg_blast_df, on='sequence', how='outer')
+
+            ltg_blast_df['blast_db'] = blastdbname_str
+
+            ltg_blast_df = ltg_blast_df.reindex(sorted(ltg_blast_df.columns), axis=1)  # sort columns
 
         ################################################################################################################
         #
+        # Concatenate tax-assigned variants from DB and from Blast
         # Merge variant_df and ltg_df and write to DB
         #
         ################################################################################################################
 
-        # if not (ltg_df is None) and ltg_df.shape[0] > 0:
+        ltg_df = pandas.concat([ltg_db_df[["blast_db", "identity", "ltg_rank", "ltg_tax_id", "ltg_tax_name", "sequence"]],
+                                ltg_blast_df], axis=0)
 
-        # ltg_df = variant_df.merge(ltg_df, left_index=True, right_on='variant_id', how='outer')
-        ltg_df = variant_tax_assign_df.merge(ltg_df, left_on='sequence', right_on='variant_sequence', how='outer')
-
-        ltg_df['blast_db'] = blastdbname_str
-
-        ############################################################################################################
+        ################################################################################################################
         #
-        # Insert or update data into DB
+        # Insert or update variant and taxassign tables
         #
-        ############################################################################################################
+        ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Insert variant_id, ltg_tax_id, ltg_rank to DB".format(__file__,
                                                                                    inspect.currentframe().f_lineno))
 
         for ltg_row in ltg_df.itertuples():
             variant_sequence = ltg_row.sequence
-            # variant_id = ltg_row.variant_id
-            # import pdb; pdb.set_trace()
             with engine.connect() as conn:
-                variant_id = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
-                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()[0]
+                variant_id = conn.execute(sqlalchemy.select([variant_declarative_table.c.id])
+                                          .where(variant_declarative_table.c.sequence == variant_sequence)).first()[0]
                 select_row = conn.execute(sqlalchemy.select([tax_assign_declarative])
                                           .where(tax_assign_declarative_table.c.variant_id == variant_id)).first()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
@@ -164,11 +185,11 @@ class CommandTaxAssign(object):
                     tax_assign_declarative_table.update()\
                         .where(tax_assign_declarative_table.c.variant_id == variant_id).values()
 
-        ############################################################################################################
+        ################################################################################################################
         #
         # Update data of variant input file
         #
-        ############################################################################################################
+        ################################################################################################################
 
         variant_output_df = variant_input_df.copy()
         # Add ltg columns to variant_df if it do not exist
@@ -184,8 +205,8 @@ class CommandTaxAssign(object):
             # variant_id = variant_row.variant_id
             variant_sequence = variant_row.sequence
             with engine.connect() as conn:
-                variant_id = conn.execute(sqlalchemy.select([variants_declarative_table.c.id])
-                                          .where(variants_declarative_table.c.sequence == variant_sequence)).first()[0]
+                variant_id = conn.execute(sqlalchemy.select([variant_declarative_table.c.id])
+                                          .where(variant_declarative_table.c.sequence == variant_sequence)).first()[0]
                 select_row = conn.execute(sqlalchemy.select([tax_assign_declarative.ltg_tax_id,
                                                              tax_assign_declarative.ltg_tax_name,
                                                              tax_assign_declarative.ltg_rank,
@@ -197,10 +218,12 @@ class CommandTaxAssign(object):
                                         select_row))
             for k in tax_assign_dict:
                 variant_output_df.loc[variant_output_df.sequence == variant_sequence, k] = tax_assign_dict[k]
+        variant_output_df = variant_output_df.astype(
+            {'ltg_tax_id': 'object'})  # do not move. required because sometimes tax_id is none
 
         ################################################################################################################
         #
-        # Create lineage df given taxonomy_df
+        # Create lineage variant_read_count_input_df given taxonomy_df
         # Returns: lineage_df for each tax_id
         #
         ################################################################################################################
@@ -210,7 +233,6 @@ class CommandTaxAssign(object):
         tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
 
         # Merge
-        tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})
         variant_output_df = variant_output_df.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left')
         variant_output_df.drop('tax_id', axis=1, inplace=True)
         
@@ -220,4 +242,3 @@ class CommandTaxAssign(object):
         variant_output_df = variant_output_df[variant_df_columns]
 
         variant_output_df.to_csv(output, sep='\t', index=False, header=True)
-

@@ -195,7 +195,7 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        # variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
+        # variant_read_count_input_df = variant_read_count_input_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
         #                                                        'read_sequence']).size().reset_index(name='read_count')
         variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence'])\
             .sum().reset_index()

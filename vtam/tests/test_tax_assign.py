@@ -5,7 +5,7 @@ from vtam.utils.PathManager import PathManager
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.utils.TaxAssignRunner import f06_select_ltg, f07_blast_result_to_ltg_tax_id
+from vtam.utils.TaxAssignRunner import f06_select_ltg
 from unittest import TestCase
 
 import inspect

@@ -73,7 +73,8 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
 1       1          1             1          1           2         700          False
 2       1          1             1          1           3          50           True
 3       1          1             1          1           4         350          False
-4       1          1             1          1           5          50          False"""
+4       1          1             1          1           5          50           True"""
+
         self.assertTrue(filter_output_df_bak_str == filter_output_df.to_string())
 
         filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
@@ -81,5 +82,6 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
 1       1          1             1          1           2         700          False
 2       1          1             1          1           3          50          False
 3       1          1             1          1           4         350          False
-4       1          1             1          1           5          50           True"""
-        self.assertTrue(filter_output_df_bak_str==filter_borderline_output_df.to_string())
+4       1          1             1          1           5          50          False"""
+
+        self.assertTrue(filter_output_df_bak_str == filter_borderline_output_df.to_string())
