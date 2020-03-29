@@ -24,7 +24,7 @@ parameters_numerical = {
     'min_id': 0.8,
     'min_number_of_taxa': 3,
     'min_replicate_number': 2,
-    'minseqlength': 32,
+    'minseqlength': 15,
     'overhang': 0,
     'pcr_error_var_prop': 0.1,
     'skip_filter_codon_stop': 0,
