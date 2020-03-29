@@ -109,7 +109,7 @@ class CommandTaxAssign(object):
             stmt_variant = stmt_variant.where(variant_declarative_table.c.id.notin_(ltg_db_df.variant_id.tolist())) \
 
         stmt_variant = stmt_variant.distinct().order_by("id")
-        
+
         variant_not_tax_assigned = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
@@ -161,8 +161,13 @@ class CommandTaxAssign(object):
         #
         ################################################################################################################
 
-        ltg_df = pandas.concat([ltg_db_df[["blast_db", "identity", "ltg_rank", "ltg_tax_id", "ltg_tax_name", "sequence"]],
-                                ltg_blast_df], axis=0)
+        if ltg_db_df.shape[0] > 0 and ltg_blast_df.shape[0] > 0:
+            ltg_df = pandas.concat([ltg_db_df[["blast_db", "identity", "ltg_rank", "ltg_tax_id", "ltg_tax_name", "sequence"]],
+                                    ltg_blast_df], axis=0)
+        elif ltg_db_df.shape[0] > 0:
+            ltg_df = ltg_db_df.copy()
+        elif ltg_blast_df.shape[0] > 0:
+            ltg_df = ltg_blast_df.copy()
 
         ################################################################################################################
         #
