@@ -103,7 +103,7 @@ class ReadTrimmer(object):
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
-    def keep_alignements_where_tag_is_well_aligned_to_read(self, overhang):
+    def keep_alignements_where_tag_is_well_aligned_to_read(self):
         """
         Function to select lines of vsearch_align_tsv according to these SRS criteria:
         1. first position of target in the alignment (tilo) is 1
@@ -151,7 +151,6 @@ class ReadTrimmer(object):
                                     fout.write(line)
         Logger.instance().debug("Number of discarded reads: {}".format(nb_discarded_reads))
 
-
     def trim_reads(self):
 
         """
@@ -160,7 +159,7 @@ class ReadTrimmer(object):
         :return:
         """
         if self.alignements_with_high_quality_tsv_path is None:
-            self.keep_alignements_where_tag_is_well_aligned_to_read(overhang=self.align_parameters['overhang'])
+            self.keep_alignements_where_tag_is_well_aligned_to_read()
 
         temp_db_sqlite = os.path.join(self.tempdir, "reads.db")
         self.reads_trimmed_fasta_path = os.path.join(self.tempdir, "read_trimmed.fasta")

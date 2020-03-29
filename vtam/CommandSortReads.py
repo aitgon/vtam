@@ -10,6 +10,7 @@ from vtam.utils.SortReadsRunner import SortReadsRunner
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 
+from vtam.utils.constants import parameters_numerical
 
 class VSearchMergeRunner(object):
 
@@ -72,9 +73,10 @@ class CommandSortReads(object):
     @classmethod
     def main(cls, fastainfo, fastadir, outdir, params=None, num_threads=multiprocessing.cpu_count()):
 
-        min_id = 0.8
-        minseqlength = 32
-        overhang = 0
+        min_id = parameters_numerical['min_id']
+        minseqlength = parameters_numerical['minseqlength']
+        overhang = parameters_numerical['overhang']
+
         if not (params is None):
             min_id = params['min_id']
             minseqlength = params['minseqlength']

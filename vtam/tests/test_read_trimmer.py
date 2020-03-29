@@ -102,7 +102,7 @@ M00842:118:000000000-ABGKE:1:1101:15187:2443	tgatcgatgatcagTCCACTAATCACAARGATATT
         #
         #######################################################################
 
-        sort_reads_runner_fwd.keep_alignements_where_tag_is_well_aligned_to_read(overhang=align_parameters['overhang'])
+        sort_reads_runner_fwd.keep_alignements_where_tag_is_well_aligned_to_read()
 
         with open(sort_reads_runner_fwd.alignements_with_high_quality_tsv_path) as fout:
             vsearch_align_high_quality_str = fout.read()
