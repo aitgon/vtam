@@ -104,9 +104,12 @@ class CommandTaxAssign(object):
 
         stmt_variant = select([variant_declarative_table.c.id, variant_declarative_table.c.sequence]) \
             .where(variant_declarative_table.c.sequence.in_(variant_sequence_list)) \
-            .where(variant_declarative_table.c.id.notin_(ltg_db_df.variant_id.tolist())) \
-            .distinct()\
-            .order_by("id")
+
+        if ltg_db_df.shape[0] > 0:
+            stmt_variant = stmt_variant.where(variant_declarative_table.c.id.notin_(ltg_db_df.variant_id.tolist())) \
+
+        stmt_variant = stmt_variant.distinct().order_by("id")
+        
         variant_not_tax_assigned = []
         with engine.connect() as conn:
             for row in conn.execute(stmt_variant).fetchall():
