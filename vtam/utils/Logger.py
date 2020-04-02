@@ -118,29 +118,39 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
+        msg = msg.replace('\\n', '\n')
+        msg = msg.replace('\\t', '\t')
         self.__logger.debug(msg)
 
     def info(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
+        msg = msg.replace('\\n', '\n')
+        msg = msg.replace('\\t', '\t')
         self.__logger.info(msg)
 
     def warning(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'magenta', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
+        msg = msg.replace('\\n', '\n')
+        msg = msg.replace('\\t', '\t')
         self.__logger.warning(msg)
 
     def error(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
+        msg = msg.replace('\\n', '\n')
+        msg = msg.replace('\\t', '\t')
         self.__logger.error(msg)
 
     def critical(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold', 'reverse']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
+        msg = msg.replace('\\n', '\n')
+        msg = msg.replace('\\t', '\t')
         self.__logger.critical(msg)
 
