@@ -37,17 +37,20 @@ class CommandSortReads(object):
         read_min_length = 150
         read_max_length = 200
 
-        for i, fasta_filename in enumerate(sorted(fastainfo_df.fasta.unique().tolist())):
+        # for i, fasta_filename in enumerate(sorted(fastainfo_df.fasta.unique().tolist())):
+        # for i, fasta_info_row in enumerate(fastainfo_df.itertuples()):
+        for i in range(0, fastainfo_df.shape[0]):
+            fasta_info_series = fastainfo_df.iloc[i]
 
-            Logger.instance().debug("Analysing FASTA file: {}".format(fasta_filename))
+            tag_fwd = fasta_info_series.tagfwd
+            tag_rev = fasta_info_series.tagrev
+            primer_fwd = fasta_info_series.primerfwd
+            primer_rev = fasta_info_series.primerrev
+            in_fasta_basename = fasta_info_series.fasta
 
-            fasta_info_df_i = fastainfo_df.loc[fastainfo_df.fasta == fasta_filename]
+            Logger.instance().debug("Analysing FASTA file: {}".format(in_fasta_basename))
 
-            tag_fwd = fasta_info_df_i.tagfwd[0]
-            tag_rev = fasta_info_df_i.tagrev[0]
-            primer_fwd = fasta_info_df_i.primerfwd[0]
-            primer_rev = fasta_info_df_i.primerrev[0]
-            in_fasta_basename = fasta_info_df_i.fasta[0]
+            fasta_info_df_i = fasta_info_series.to_frame().T
             in_raw_fasta_path = os.path.join(fastadir, in_fasta_basename)
 
             ############################################################################################################
@@ -154,7 +157,7 @@ class CommandSortReads(object):
             #
             ############################################################################################################
 
-            out_final_fasta_basename = os.path.basename(in_raw_fasta_path)
+            out_final_fasta_basename = os.path.basename(in_raw_fasta_path).replace('.fasta', '_%03d.fasta' % i)
             out_final_fasta_path = os.path.join(outdir, out_final_fasta_basename)
             shutil.copy(out_fasta_path, out_final_fasta_path)
 
@@ -167,8 +170,9 @@ class CommandSortReads(object):
                         else:
                             fout.write(line)
 
-            fasta_info_df_i.drop(['tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'fastqfwd', 'fastqrev'], axis=1, inplace=True)
+            fasta_info_df_i.drop(['tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'fastqfwd', 'fastqrev', 'fasta'], axis=1, inplace=True)
             fasta_info_df_i['sorted'] = out_final_fasta_basename
+            sorted_read_info_df = pandas.concat([sorted_read_info_df, fasta_info_df_i], axis=0)
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
         sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)

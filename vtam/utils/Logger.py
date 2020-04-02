@@ -118,10 +118,6 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        if isinstance(msg, (bytes, bytearray)):
-            msg = msg.decode()
-        msg = msg.replace('\\n', '\n')
-        msg = msg.replace('\\t', '\t')
         self.__logger.info(msg)
 
     def info(self, msg):

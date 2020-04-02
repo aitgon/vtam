@@ -107,12 +107,14 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
         sample_instance_list  = []
+        readinfo_df.columns = readinfo_df.columns.str.lower()
+
         for row in readinfo_df.itertuples():
             Logger.instance().debug(row)
-            marker_name = row.Marker
-            run_name = row.Run
-            biosample_name = row.Biosample
-            replicate = row.Replicate
+            marker_name = row.marker
+            run_name = row.run
+            biosample_name = row.biosample
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
@@ -151,6 +153,7 @@ class VariantReadCount(ToolWrapper):
         fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
         fasta_info_ids_df = fasta_info_obj.get_ids_df()
 
+
         Logger.instance().debug("file: {}; line: {}; Read demultiplexed FASTA files".format(__file__, inspect.currentframe().f_lineno))
 
         variant_read_count_df = pandas.DataFrame()
@@ -160,7 +163,7 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            sorted_read_file = row.SortedReadFile
+            sorted_read_file = row.sorted
 
             Logger.instance().debug(
                 "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, sorted_read_file))
