@@ -184,6 +184,26 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
+    def check_fastainfo(path):
+
+        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+
+        :param path: Valid non-empty TSV fastainfo path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate', 'fastqfwd', 'fastqrev',
+         'fasta'}
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
+
+    @staticmethod
     def check_fastqinfo(path):
 
         """Checks if fastqinfo exists, is not empty
@@ -335,7 +355,7 @@ class ArgParser:
                                                   parents=[parent_parser])
         parser_vtam_sortreads\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
-                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                          required=True, type=ArgParserChecker.check_fastainfo)
         parser_vtam_sortreads.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
