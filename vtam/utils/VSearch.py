@@ -23,10 +23,10 @@ class VSearch(object):
         command = 'vsearch'
         for param in self.parameters:
             if not self.parameters[param] is None:
-                command += ' {} {}'.format(param, self.parameters[param])
+                command += ' --{} {}'.format(param, self.parameters[param])
             else:
                 command += ' {}'.format(param)
-        Logger.instance().info(command)
+        Logger.instance().debug(command)
 
         return command
 

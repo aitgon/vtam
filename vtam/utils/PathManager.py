@@ -4,6 +4,7 @@ multiple-lined
 """
 
 import os
+import pathlib
 import tempfile
 
 from vtam.utils.Singleton import Singleton
@@ -22,6 +23,7 @@ class PathManager(Singleton):
         """
         if self.tempdir is None:
             self.tempdir = tempfile.mkdtemp()
+        pathlib.Path(self.tempdir).mkdir(parents=True, exist_ok=True)
         return self.tempdir
 
     @staticmethod
