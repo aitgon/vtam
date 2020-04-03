@@ -171,8 +171,7 @@ class VariantReadCount(ToolWrapper):
 
             if os.path.exists(read_fasta_path):
                 with open(read_fasta_path, "r") as fin:
-                    sorted_read_list = [x.upper() for x in fin.read().split("\n") if not x.startswith('>')]
-
+                    sorted_read_list = [x.upper() for x in fin.read().split("\n") if (not x.startswith('>') and x != '')]
                 variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
                                                                    'marker_id': [marker_id] * len(sorted_read_list),
                                                                    'biosample_id': [biosample_id] * len(
