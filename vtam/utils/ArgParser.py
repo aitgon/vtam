@@ -304,7 +304,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_pool(subparsers=subparsers)
+        cls.create_pool(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -436,9 +436,11 @@ class ArgParser:
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
     @classmethod
-    def create_pool(cls, subparsers):
+    def create_pool(cls, subparsers, parent_parser):
 
-        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True,
+                                                         formatter_class=argparse.RawTextHelpFormatter,
+                                                         parents=[parent_parser])
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         from vtam.utils.SelectionRunMarker import SelectionRunMarker
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
