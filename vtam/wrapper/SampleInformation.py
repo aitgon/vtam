@@ -61,7 +61,7 @@ class SampleInformation(ToolWrapper):
             marker_name = row.marker
             biosample_name = row.biosample
             replicate = row.replicate
-            sorted_read_file = row.fastasorted
+            sorted_read_file = row.sortedfasta
             #
             # Insert run
             run_obj = {'name': run_name}
