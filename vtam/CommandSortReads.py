@@ -195,7 +195,7 @@ class CommandSortReads(object):
                             fout.write(line)
 
             fasta_info_df_i = fasta_info_df_i[['run', 'marker', 'biosample', 'replicate']]
-            fasta_info_df_i['fastasorted'] = out_final_fasta_basename
+            fasta_info_df_i['sortedfasta'] = out_final_fasta_basename
             sorted_read_info_df = pandas.concat([sorted_read_info_df, fasta_info_df_i], axis=0)
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
