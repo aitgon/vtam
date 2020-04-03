@@ -153,7 +153,6 @@ class VariantReadCount(ToolWrapper):
         fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
         fasta_info_ids_df = fasta_info_obj.get_ids_df()
 
-
         Logger.instance().debug("file: {}; line: {}; Read demultiplexed FASTA files".format(__file__, inspect.currentframe().f_lineno))
 
         variant_read_count_df = pandas.DataFrame()
@@ -163,17 +162,16 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            sorted_read_file = row.sorted
+            read_fasta = row.sorted
 
             Logger.instance().debug(
-                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, sorted_read_file))
+                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, read_fasta))
 
-            sorted_read_path = os.path.join(read_dir, sorted_read_file)
+            read_fasta_path = os.path.join(read_dir, read_fasta)
 
-            if os.path.exists(sorted_read_path):
-
-                with open(sorted_read_path, "r") as fin:
-                    sorted_read_list = [x.upper() for x in fin.read().split("\n")]
+            if os.path.exists(read_fasta_path):
+                with open(read_fasta_path, "r") as fin:
+                    sorted_read_list = [x.upper() for x in fin.read().split("\n") if not x.startswith('>')]
 
                 variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
                                                                    'marker_id': [marker_id] * len(sorted_read_list),
@@ -189,7 +187,7 @@ class VariantReadCount(ToolWrapper):
                 variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
             else:
-                Logger.instance().warning('This file {} doest not exists'.format(sorted_read_path))
+                Logger.instance().warning('This file {} doest not exists'.format(read_fasta_path))
 
         ################################################################################################################
         #

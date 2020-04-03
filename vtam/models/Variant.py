@@ -1,6 +1,8 @@
-from wopmars.Base import Base
-from sqlalchemy import Column, String, Integer
+from Bio.Seq import Seq
+from Bio.Alphabet import IUPAC
+from sqlalchemy import Column, String, Integer, CheckConstraint
 from sqlalchemy.orm import validates
+from wopmars.Base import Base
 
 
 class Variant(Base):
@@ -10,5 +12,7 @@ class Variant(Base):
     sequence = Column(String(250), unique=True, nullable=False)
 
     @validates('sequence')
-    def convert_upper(self, key, value):
+    def validate_dna(self, key, value):
+        """Validate that this string is a DNA sequence and returns the uppder case"""
+        assert str(Seq(value, IUPAC.unambiguous_dna).alphabet) == 'IUPACUnambiguousDNA()'
         return value.upper()
