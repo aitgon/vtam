@@ -25,7 +25,7 @@ class VSearch(object):
             if not self.parameters[param] is None:
                 command += ' --{} {}'.format(param, self.parameters[param])
             else:
-                command += ' {}'.format(param)
+                command += ' --{}'.format(param)
         Logger.instance().debug(command)
 
         return command
@@ -36,7 +36,6 @@ class VSearch(object):
 
         :return: void
         """
-
         command = self.create_command()
         run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
         Logger.instance().info(run_result.stdout)
