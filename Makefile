@@ -17,6 +17,7 @@ install_wopmars:
 install_deps:
 	conda install -c bioconda vsearch=2.7.0 -y
 	conda install -c bioconda blast=2.9.0 -y
+	python3 -m pip install --user --upgrade cutadapt==2.9
 
 install_vtam:
 	${CONDABIN}/pip install -e . --upgrade
