@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 
 from vtam.utils.Logger import Logger
@@ -37,6 +38,6 @@ class VSearch(object):
         :return: void
         """
         command = self.create_command()
-        run_result = subprocess.run(command.split(), stdout=subprocess.PIPE)
+        run_result = subprocess.run(shlex.split(command), stdout=subprocess.PIPE)
         Logger.instance().info(run_result.stdout)
 
