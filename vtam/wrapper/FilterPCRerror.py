@@ -55,7 +55,6 @@ class FilterPCRerror(ToolWrapper):
     def specify_params(self):
         return {
             "pcr_error_var_prop": "float",
-
         }
 
     def run(self):

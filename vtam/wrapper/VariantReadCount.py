@@ -162,7 +162,7 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            read_fasta = row.sorted
+            read_fasta = row.fastasorted
 
             Logger.instance().debug(
                 "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, read_fasta))

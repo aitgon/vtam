@@ -12,6 +12,7 @@ from Bio.Alphabet import generic_dna
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Logger import Logger
+from vtam.utils.constants import parameters_numerical_default
 
 
 class CommandSortReads(object):
@@ -22,9 +23,21 @@ class CommandSortReads(object):
 
         ################################################################################################################
         #
-        # Loop over fasta files to sort reads per fasta
+        # Parameters
         #
         ################################################################################################################
+
+        cutadapt_error_rate = parameters_numerical_default['cutadapt_error_rate']
+        cutadapt_minimum_length = parameters_numerical_default['cutadapt_minimum_length']
+        cutadapt_maximum_length = parameters_numerical_default['cutadapt_maximum_length']
+
+        if not (params is None):
+            if 'cutadapt_error_rate' in params:
+                cutadapt_error_rate = parameters_numerical_default['cutadapt_error_rate']
+            if 'cutadapt_minimum_length' in params:
+                cutadapt_minimum_length = parameters_numerical_default['cutadapt_minimum_length']
+            if 'cutadapt_maximum_length' in params:
+                cutadapt_maximum_length = parameters_numerical_default['cutadapt_maximum_length']
 
         fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
         fastainfo_df.columns = fastainfo_df.columns.str.lower()
@@ -34,11 +47,12 @@ class CommandSortReads(object):
         tempdir = PathManager.instance().get_tempdir()
         sorted_read_info_df = pandas.DataFrame()
 
-        read_min_length = 150
-        read_max_length = 200
+        ################################################################################################################
+        #
+        # Loop over tag and primer pairs to demultiplex and trim reads
+        #
+        ################################################################################################################
 
-        # for i, fasta_filename in enumerate(sorted(fastainfo_df.fasta.unique().tolist())):
-        # for i, fasta_info_row in enumerate(fastainfo_df.itertuples()):
         for i in range(0, fastainfo_df.shape[0]):
             fasta_info_series = fastainfo_df.iloc[i]
 
@@ -46,7 +60,7 @@ class CommandSortReads(object):
             tag_rev = fasta_info_series.tagrev
             primer_fwd = fasta_info_series.primerfwd
             primer_rev = fasta_info_series.primerrev
-            in_fasta_basename = fasta_info_series.fasta
+            in_fasta_basename = fasta_info_series.mergedfasta
 
             Logger.instance().debug("Analysing FASTA file: {}".format(in_fasta_basename))
 
@@ -56,6 +70,10 @@ class CommandSortReads(object):
             ############################################################################################################
             #
             # Cut adapt tag of forward reads
+            # cutadapt --cores=8 --no-indels --error-rate 0 --trimmed-only
+            # --front 'tcgatcacgatgt;min_overlap=13...gctgtagatcgaca;min_overlap=14'
+            # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_000.fasta
+            # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
             ############################################################################################################
 
@@ -66,9 +84,9 @@ class CommandSortReads(object):
             cmd_cutadapt_tag_dic = {'tag_fwd': tag_fwd, 'tag_fwd_len': len(tag_fwd), 'tag_rev_rc': tag_rev_rc,
                         'tag_rev_rc_len': len(tag_rev_rc), 'num_threads': num_threads, 'in_fasta_path': in_raw_fasta_path,
                                 'out_fasta': out_fasta_path}
-            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels -e 0 --trimmed-only " \
-                               "-g '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
-                               "-o {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
+            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only " \
+                               "--front '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
+                               "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
             run_result = subprocess.run(shlex.split(cmd_cutadapt_tag_str), stdout=subprocess.PIPE)
@@ -77,12 +95,12 @@ class CommandSortReads(object):
             ############################################################################################################
             #
             # Trim primers from output
-            # (Error allowed, 0.1 by default; minimum overlap: length of the primer; no indel; multithreading)
+            # cutadapt --cores=8 --no-indels --error-rate 0.1 --minimum-length 50 --maximum-length 500 --trimmed-only
+            # --front 'TCCACTAATCACAARGATATTGGTAC;min_overlap=26...GGAGGATTTGGWAATTGATTAGTW;min_overlap=24'
+            # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_trimmed_000.fasta
+            # /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_000.fasta
             #
             ############################################################################################################
-            #   cutadapt --cores=THREADS --no-indels -e ERROR_RATE -m MINIMUM_LENGTH -M MAXIMUM_LENGTH --trimmed-only
-            #   -g "PRIMER_FW_SEQ;min_overlap=LENGTH_OF_PRIMER_FW...PRIMER_REV_REVCOMP_SEQ;min_overlap=LENGTH_OF_PRIMER_REV"
-            #   -o TRIMMED_MARKER_RUN_SAMPLE_REPLICATE.fasta DEMULT_MARKER_RUN_SAMPLE_REPLICATE.fasta
 
             primer_rev_rc = str(Seq(primer_rev, generic_dna).reverse_complement())
             in_fasta_path = out_fasta_path
@@ -91,12 +109,13 @@ class CommandSortReads(object):
 
             cmd_cutadapt_primer_dic = {'primer_fwd': primer_fwd, 'primer_fwd_len': len(primer_fwd), 'primer_rev_rc': primer_rev_rc,
                         'primer_rev_rc_len': len(primer_rev_rc), 'num_threads': num_threads, 'in_fasta_path': in_fasta_path,
-                                'out_fasta': out_fasta_path, 'error_rate': 0.1, 'read_min_length': read_min_length,
-                                       'read_max_length': read_max_length}
-            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels -e {error_rate} -m {read_min_length} " \
-                                      "-M {read_max_length} --trimmed-only  " \
-                                      "-g '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
-                               "-o {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
+                                'out_fasta': out_fasta_path, 'error_rate': cutadapt_error_rate, 'read_min_length': cutadapt_minimum_length,
+                                       'read_max_length': cutadapt_maximum_length}
+            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} " \
+                                      "--minimum-length {read_min_length} " \
+                                      "--maximum-length {read_max_length} --trimmed-only  " \
+                                      "--front '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
+                               "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
             run_result = subprocess.run(shlex.split(cmd_cutadapt_primer_str), stdout=subprocess.PIPE)
@@ -105,6 +124,10 @@ class CommandSortReads(object):
             ############################################################################################################
             #
             # Cut adapt tag of reverse-complement reads
+            # cutadapt --cores=8 --no-indels --error-rate 0 --trimmed-only
+            # --front 'tgtcgatctacagc;min_overlap=14...acatcgtgatcga;min_overlap=13'
+            # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_000.fasta
+            # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
             ############################################################################################################
 
@@ -115,9 +138,9 @@ class CommandSortReads(object):
             cmd_cutadapt_tag_dic = {'tag_fwd': tag_rev, 'tag_fwd_len': len(tag_rev), 'tag_rev_rc': tag_fwd_rc,
                         'tag_rev_rc_len': len(tag_fwd_rc), 'num_threads': num_threads, 'in_fasta_path': in_raw_fasta_path,
                                 'out_fasta': out_rc_fasta_path}
-            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels -e 0 --trimmed-only " \
-                               "-g '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
-                               "-o {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
+            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only " \
+                       "--front '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
+                       "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
             run_result = subprocess.run(shlex.split(cmd_cutadapt_tag_str), stdout=subprocess.PIPE)
@@ -126,12 +149,12 @@ class CommandSortReads(object):
             ############################################################################################################
             #
             # Trim primers from output
-            # (Error allowed, 0.1 by default; minimum overlap: length of the primer; no indel; multithreading)
+            # cutadapt --cores=8 --no-indels --error-rate 0.1 --minimum-length 50 --maximum-length 500 --trimmed-only
+            # --front 'WACTAATCAATTWCCAAATCCTCC;min_overlap=24...GTACCAATATCYTTGTGATTAGTGGA;min_overlap=26'
+            # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_trimmed_000.fasta
+            # /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_000.fasta
             #
             ############################################################################################################
-            #   cutadapt --cores=THREADS --no-indels -e ERROR_RATE -m MINIMUM_LENGTH -M MAXIMUM_LENGTH --trimmed-only
-            #   -g "PRIMER_FW_SEQ;min_overlap=LENGTH_OF_PRIMER_FW...PRIMER_REV_REVCOMP_SEQ;min_overlap=LENGTH_OF_PRIMER_REV"
-            #   -o TRIMMED_MARKER_RUN_SAMPLE_REPLICATE.fasta DEMULT_MARKER_RUN_SAMPLE_REPLICATE.fasta
 
             primer_fwd_rc = str(Seq(primer_fwd, generic_dna).reverse_complement())
             in_fasta_path = out_rc_fasta_path
@@ -140,12 +163,13 @@ class CommandSortReads(object):
 
             cmd_cutadapt_primer_dic = {'primer_fwd': primer_rev, 'primer_fwd_len': len(primer_rev), 'primer_rev_rc': primer_fwd_rc,
                         'primer_rev_rc_len': len(primer_fwd_rc), 'num_threads': num_threads, 'in_fasta_path': in_fasta_path,
-                                'out_fasta': out_rc_fasta_path, 'error_rate': 0.1, 'read_min_length': read_min_length,
-                                       'read_max_length': read_max_length}
-            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels -e {error_rate} -m {read_min_length} " \
-                                      "-M {read_max_length} --trimmed-only  " \
-                                      "-g '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
-                               "-o {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
+                                'out_fasta': out_rc_fasta_path, 'error_rate': cutadapt_error_rate, 'read_min_length': cutadapt_minimum_length,
+                                       'read_max_length': cutadapt_maximum_length}
+            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} " \
+                              "--minimum-length {read_min_length} " \
+                              "--maximum-length {read_max_length} --trimmed-only  " \
+                              "--front '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
+                              "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
             run_result = subprocess.run(shlex.split(cmd_cutadapt_primer_str), stdout=subprocess.PIPE)
@@ -170,8 +194,8 @@ class CommandSortReads(object):
                         else:
                             fout.write(line)
 
-            fasta_info_df_i.drop(['tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'fastqfwd', 'fastqrev', 'fasta'], axis=1, inplace=True)
-            fasta_info_df_i['sorted'] = out_final_fasta_basename
+            fasta_info_df_i = fasta_info_df_i[['run', 'marker', 'biosample', 'replicate']]
+            fasta_info_df_i['fastasorted'] = out_final_fasta_basename
             sorted_read_info_df = pandas.concat([sorted_read_info_df, fasta_info_df_i], axis=0)
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')

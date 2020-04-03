@@ -154,7 +154,7 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'run', 'marker', 'biosample', 'replicate', 'sorted'}
+        header_lower = {'run', 'marker', 'biosample', 'replicate', 'fastasorted'}
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
@@ -195,8 +195,8 @@ class ArgParserChecker(object):
 
         path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
         df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate', 'fastqfwd', 'fastqrev',
-         'fasta'}
+        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
+         'mergedfasta'}
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
