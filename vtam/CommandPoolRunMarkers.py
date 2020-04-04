@@ -145,14 +145,13 @@ class CommandPoolRunMarkers(object):
         vsearch_output_centroid_fasta = os.path.join(self.tmp_dir, 'centroid.fa')
         # Define cluster output path
         vsearch_output_cluster_path = os.path.join(self.tmp_dir, 'cluster.fa')
-
         #
         # Create object and run vsearch
-        vsearch_parameters = {'--cluster_size': fasta_path,
-                              '--clusters':  vsearch_output_cluster_path,
-                              '--id': 1, '--sizein': None,
-                              '--centroids': vsearch_output_centroid_fasta,
-                              "--threads": int(os.getenv('VTAM_THREADS')),
+        vsearch_parameters = {'cluster_size': fasta_path,
+                              'clusters':  vsearch_output_cluster_path,
+                              'id': 1, 'sizein': None,
+                              'centroids': vsearch_output_centroid_fasta,
+                              "threads": int(os.getenv('VTAM_THREADS')),
                               }
         vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
@@ -169,6 +168,7 @@ class CommandPoolRunMarkers(object):
 
         :return: pandas.DataFrame with columns: variant_id_centroid and variant_id
         """
+
         if self.cluster_path is None:
             self.run_vsearch_to_cluster_sequences()
 
@@ -236,6 +236,7 @@ class CommandPoolRunMarkers(object):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
             run_marker_df = None
-        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=run_marker_tsv_reader.asv_df_final, run_marker_df=run_marker_df)
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=run_marker_tsv_reader.asv_df_final,
+                                                   run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

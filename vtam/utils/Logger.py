@@ -118,7 +118,7 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.debug(msg)
+        self.__logger.info(msg)
 
     def info(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
@@ -130,17 +130,17 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'magenta', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.warning(msg)
+        self.__logger.info(msg)
 
     def error(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.error(msg)
+        self.__logger.info(msg)
 
     def critical(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold', 'reverse']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.critical(msg)
+        self.__logger.info(msg)
 

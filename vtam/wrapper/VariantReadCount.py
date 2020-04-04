@@ -107,12 +107,14 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
         sample_instance_list  = []
+        readinfo_df.columns = readinfo_df.columns.str.lower()
+
         for row in readinfo_df.itertuples():
             Logger.instance().debug(row)
-            marker_name = row.Marker
-            run_name = row.Run
-            biosample_name = row.Biosample
-            replicate = row.Replicate
+            marker_name = row.marker
+            run_name = row.run
+            biosample_name = row.biosample
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
@@ -160,18 +162,16 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            sorted_read_file = row.SortedReadFile
+            read_fasta = row.sortedfasta
 
             Logger.instance().debug(
-                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, sorted_read_file))
+                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, read_fasta))
 
-            sorted_read_path = os.path.join(read_dir, sorted_read_file)
+            read_fasta_path = os.path.join(read_dir, read_fasta)
 
-            if os.path.exists(sorted_read_path):
-
-                with open(sorted_read_path, "r") as fin:
-                    sorted_read_list = [x.upper() for x in fin.read().split("\n")]
-
+            if os.path.exists(read_fasta_path):
+                with open(read_fasta_path, "r") as fin:
+                    sorted_read_list = [x.upper() for x in fin.read().split("\n") if (not x.startswith('>') and x != '')]
                 variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
                                                                    'marker_id': [marker_id] * len(sorted_read_list),
                                                                    'biosample_id': [biosample_id] * len(
@@ -186,7 +186,7 @@ class VariantReadCount(ToolWrapper):
                 variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
             else:
-                Logger.instance().warning('This file {} doest not exists'.format(sorted_read_path))
+                Logger.instance().warning('This file {} doest not exists'.format(read_fasta_path))
 
         ################################################################################################################
         #

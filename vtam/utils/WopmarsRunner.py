@@ -6,7 +6,7 @@ import jinja2
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
-from vtam.utils.constants import parameters_numerical
+from vtam.utils.constants import parameters_numerical_default
 
 
 class WopmarsRunner(Singleton):
@@ -23,7 +23,7 @@ class WopmarsRunner(Singleton):
         # Load default numerical parameters and overwrite with custom parameters
         #
         ##################################
-        self.parameters = parameters_numerical.copy()
+        self.parameters = parameters_numerical_default.copy()
         for k in parameters:
             self.parameters[k] = parameters[k]
         #

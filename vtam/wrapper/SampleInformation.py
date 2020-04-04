@@ -54,13 +54,14 @@ class SampleInformation(ToolWrapper):
         sampleinformation_model = self.output_table(SampleInformation.__output_table_sample_information)
 
         sorted_read_info_df = pandas.read_csv(csv_path, sep="\t", header=0)
-
+        sorted_read_info_df.columns = sorted_read_info_df.columns.str.lower()
         for row in sorted_read_info_df.itertuples():
-            run_name = row.Run
-            marker_name = row.Marker
-            biosample_name = row.Biosample
-            replicate = row.Replicate
-            sorted_read_file = row.SortedReadFile
+
+            run_name = row.run
+            marker_name = row.marker
+            biosample_name = row.biosample
+            replicate = row.replicate
+            sorted_read_file = row.sortedfasta
             #
             # Insert run
             run_obj = {'name': run_name}
