@@ -4,7 +4,7 @@ import os
 import pandas
 import sqlalchemy
 from Bio import SeqIO
-from sqlalchemy import select, bindparam
+from sqlalchemy import select, bindparam, func
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
@@ -204,7 +204,7 @@ class VariantReadCount(ToolWrapper):
 
         ################################################################################################################
         #
-        # 5. Remove singletons
+        # 5. Remove variants with absolute read count lower than lfn_read_count_threshold
         #
         ################################################################################################################
 
@@ -225,25 +225,34 @@ class VariantReadCount(ToolWrapper):
         sample_instance_list = []
         variant_read_count_df.sort_values(
             by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate'], inplace=True)
-        for row in variant_read_count_df.itertuples():
-            run_id = row.run_id
-            marker_id = row.marker_id
-            biosample_id = row.biosample_id
-            replicate = row.replicate
-            variant_sequence = row.variant_sequence
-            read_count = row.read_count
-            with engine.connect() as conn:
+        variant_new_set = set()
+        variant_new_instance_list = []
+        with engine.connect() as conn:
+            select_variant_id_max = conn.execute(sqlalchemy.select([func.max(variant_model.__table__.c.id)])).first()[0]
+            if select_variant_id_max is None:
+                select_variant_id_max = 0
+            for row in variant_read_count_df.itertuples():
+                run_id = row.run_id
+                marker_id = row.marker_id
+                biosample_id = row.biosample_id
+                replicate = row.replicate
+                variant_sequence = row.variant_sequence
+                read_count = row.read_count
                 select_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.id])
                                           .where(variant_model.__table__.c.sequence == variant_sequence)).first()
-                if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
-                    insert_row = conn.execute(variant_model.__table__.insert().values(sequence=variant_sequence))
-                    variant_id = insert_row.inserted_primary_key[0]
-                else: # variant_sequence IS in the database
+                if select_row is None:  # variant_sequence IS NOT in the database, so will INSERT it
+                    if not (variant_sequence in variant_new_set):
+                        variant_id = select_variant_id_max + len(variant_new_instance_list) + 1
+                        variant_new_set.add(variant_sequence)
+                        variant_new_instance_list.append({'id': variant_id,
+                                                          'sequence': variant_sequence})
+
+                else:  # variant_sequence IS in the database
                     variant_id = select_row[0]
-            variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
-                'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
-            sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                         'replicate': replicate})
+                variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
+                    'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                             'replicate': replicate})
 
         ################################################################################################################
         #
@@ -253,7 +262,10 @@ class VariantReadCount(ToolWrapper):
 
         Logger.instance().debug(
             "file: {}; line: {};  Insert variant read count".format(__file__, inspect.currentframe().f_lineno))
+        # import pdb; pdb.set_trace()
         with engine.connect() as conn:
+            if len(variant_new_instance_list) > 0:
+                conn.execute(variant_model.__table__.insert(), variant_new_instance_list)
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
             conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)
 
