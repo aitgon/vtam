@@ -58,13 +58,13 @@ class WopmarsRunner(Singleton):
         if self.command in ['filter', 'optimize']:
             # Add output to sortreads file
             if self.command == 'filter':
-                self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
+                # self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
                 self.parameters['update_taxassign'] = 0
-                self.parameters['asvtable'] = os.path.join(self.parameters['outdir'], "asvtable.tsv")
-                self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
+                self.parameters['asvtable'] = self.parameters['asvtable']
+                # self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
                 template = jinja2_env.get_template('wopfile_filter.yml')
                 # Create wopfile
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_filter.yml')
+                wopfile_path = os.path.join(self.tempdir, 'wopfile_filter.yml')
                 # Create wopfile
             elif self.command == 'optimize':
                 self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
