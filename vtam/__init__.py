@@ -72,11 +72,11 @@ class VTAM(object):
 
         if vars(self.args)['command'] in ['filter', 'optimize']:
 
-            #################################################################
+            ############################################################################################################
             #
             # Create FilterLFNreference table and fill it
             #
-            #################################################################
+            ############################################################################################################
 
             from sqlalchemy import create_engine
             from sqlalchemy import Table, Column, Integer, String, MetaData
@@ -101,11 +101,11 @@ class VTAM(object):
             wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
             wopmars_command = wopmars_runner.get_wopmars_command()
 
-            ###############################################################
+            ############################################################################################################
             #
             # Create wopmars command and implicitely wopfile
             #
-            ###############################################################
+            ############################################################################################################
 
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
