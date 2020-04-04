@@ -19,6 +19,8 @@ parameters_numerical_default = {
     'cutadapt_error_rate': 0.1,
     'cutadapt_minimum_length': 50,
     'cutadapt_maximum_length': 500,
+    # Filter/VariantReadCount parameters
+    'global_read_count_threshold': 2,
     #
     'genetic_table_number': 5,
     'ltg_rule_threshold': 97,
