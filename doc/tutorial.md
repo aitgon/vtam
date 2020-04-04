@@ -18,7 +18,8 @@ VTAM depends on these dependencies
 
 * vsearch=2.7.0
 * blast=2.9.0
-* wopmars=0.0.8 ( https://github.com/aitgon/wopmars )
+* cutadapt=2.9.0
+* wopmars=0.0.10 ( https://github.com/aitgon/wopmars )
 
 These dependencies can be installed within the Conda environment with this command:
 

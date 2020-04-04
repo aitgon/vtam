@@ -16,6 +16,7 @@ class SampleInformationUtils(object):
         """Takes the engine and the sample_information_df to carry out several computations"""
         self.__engine = engine
         self.sample_information_df = sample_information_df
+        self.sample_information_df.columns = self.sample_information_df.columns.str.lower()
         self.sample_record_list = list(self.sample_information_df.T.to_dict().values())
 
     def get_variant_read_count_df(self, variant_read_count_like_model, filter_id=None):
@@ -222,11 +223,11 @@ class FastaInformationTSV(SampleInformationUtils):
         fasta_info_instance_list = []
 
         for row in self.fasta_information_df.itertuples():
-            marker_name = row.Marker
-            run_name = row.Run
-            biosample_name = row.Biosample
+            marker_name = row.marker
+            run_name = row.run
+            biosample_name = row.biosample
             # replicate_name = row.replicate_name
-            replicate = row.Replicate
+            replicate = row.replicate
             with self.__engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
@@ -270,10 +271,10 @@ class FastaInformationTSV(SampleInformationUtils):
 
         with self.__engine.connect() as conn:
             for k, row in self.fasta_information_df.iterrows():
-                marker_name = row.Marker
-                run_name = row.Run
-                biosample_name = row.Biosample
-                replicate = int(row.Replicate)
+                marker_name = row.marker
+                run_name = row.run
+                biosample_name = row.biosample
+                replicate = int(row.replicate)
                 # get run_id ###########
                 stmt_select_run_id = sqlalchemy.select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
@@ -288,10 +289,10 @@ class FastaInformationTSV(SampleInformationUtils):
                 new_row_dic['marker_id'] = marker_id
                 new_row_dic['biosample_id'] = biosample_id
                 new_row_dic['replicate'] = replicate
-                del new_row_dic["Run"]
-                del new_row_dic["Marker"]
-                del new_row_dic["Biosample"]
-                del new_row_dic["Replicate"]
+                del new_row_dic["run"]
+                del new_row_dic["marker"]
+                del new_row_dic["biosample"]
+                # del new_row_dic["replicate"]
 
                 fasta_info_ids_df = fasta_info_ids_df.append(pandas.DataFrame(new_row_dic, index=[0]), sort=False)
                 # fasta_information_obj = {'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id, 'replicate': replicate}
@@ -299,4 +300,5 @@ class FastaInformationTSV(SampleInformationUtils):
                 # fasta_info_instance_list.append(fasta_information_obj)
 
         # sample_information_id_df = pandas.DataFrame.from_records(data=fasta_info_instance_list).drop_duplicates(inplace=False)
+        fasta_info_ids_df.columns = fasta_info_ids_df.columns.str.lower()
         return fasta_info_ids_df
