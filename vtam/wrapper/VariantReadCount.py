@@ -59,6 +59,7 @@ class VariantReadCount(ToolWrapper):
         """
         return {
             "read_dir": "str",
+            "global_read_count_threshold": "int",
         }
 
     def run(self):
@@ -86,6 +87,7 @@ class VariantReadCount(ToolWrapper):
         variant_read_count_model = self.output_table(VariantReadCount.__output_table_variant_read_count)
         # Options
         read_dir = self.option("read_dir")
+        global_read_count_threshold = self.option("global_read_count_threshold")
 
         ################################################################################################################
         #
@@ -204,13 +206,15 @@ class VariantReadCount(ToolWrapper):
 
         ################################################################################################################
         #
-        # 5. Remove variants with absolute read count lower than lfn_read_count_threshold
+        # 5. Remove variants with read count across all run, markers, biosamples and replicates lower than
+        # global_read_count_threshold parameter
         #
         ################################################################################################################
 
         variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_lfn.filter_out_singletons() # returns variant_read_count wout singletons
+        # returns variants with read_count across all samples with read_count above global_read_count_threshold
+        variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_threshold(global_read_count_threshold)
         variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
         ################################################################################################################

@@ -47,11 +47,13 @@ class WopmarsRunner(Singleton):
         if wopfile_path is None:
             wopfile_path = tempfile.NamedTemporaryFile().name
         self.wopfile_path = wopfile_path
-        #####################
+
+        ################################################################################################################
         #
         # Create Wopfile content
         #
-        #####################
+        ################################################################################################################
+
         template_dir = os.path.join(os.path.dirname(__file__), '../data')
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
         template = None
@@ -92,7 +94,7 @@ class WopmarsRunner(Singleton):
         #
         ################################################################################################################
 
-        pathlib.Path(os.path.dirname(wopfile_path)).mkdir(exist_ok=True)
+        pathlib.Path(os.path.dirname(wopfile_path)).mkdir(parents=True, exist_ok=True)
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
         return wopfile_path, wopfile_content
