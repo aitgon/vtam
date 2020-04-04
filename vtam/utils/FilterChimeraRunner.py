@@ -77,10 +77,10 @@ class FilterChimeraRunner(object):
 
             #
             # Create object and run vsearch
-            vsearch_parameters = {'--uchime2_denovo': uchime_fasta_path,
-                                  '--borderline': uchime_borderline_fasta_path,
-                                  '--nonchimeras': uchime_nonchimeras_fasta_path,
-                                  '--chimeras': uchime_chimeras_fasta_path,
+            vsearch_parameters = {'uchime2_denovo': uchime_fasta_path,
+                                  'borderline': uchime_borderline_fasta_path,
+                                  'nonchimeras': uchime_nonchimeras_fasta_path,
+                                  'chimeras': uchime_chimeras_fasta_path,
                                   }
             vsearch_cluster = VSearch(parameters=vsearch_parameters)
             vsearch_cluster.run()

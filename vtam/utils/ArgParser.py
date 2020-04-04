@@ -154,7 +154,7 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedreadfile'}
+        header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
@@ -182,6 +182,26 @@ class ArgParserChecker(object):
             return path
         else:
             raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+
+    @staticmethod
+    def check_fastainfo(path):
+
+        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+
+        :param path: Valid non-empty TSV fastainfo path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
+         'mergedfasta'}
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
 
     @staticmethod
     def check_fastqinfo(path):
@@ -284,7 +304,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_pool(subparsers=subparsers)
+        cls.create_pool(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -335,7 +355,7 @@ class ArgParser:
                                                   parents=[parent_parser])
         parser_vtam_sortreads\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
-                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                          required=True, type=ArgParserChecker.check_fastainfo)
         parser_vtam_sortreads.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
@@ -416,9 +436,11 @@ class ArgParser:
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
     @classmethod
-    def create_pool(cls, subparsers):
+    def create_pool(cls, subparsers, parent_parser):
 
-        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True,
+                                                         formatter_class=argparse.RawTextHelpFormatter,
+                                                         parents=[parent_parser])
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         from vtam.utils.SelectionRunMarker import SelectionRunMarker
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
