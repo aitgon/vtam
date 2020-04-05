@@ -1,4 +1,4 @@
-Run	Marker	Biosample	Replicate	SortedReadFile
+Run	Marker	Biosample	Replicate	SortedFasta
 prerun	MFZR	Tpos1_prerun	1	MFZR1_S4_L001_R1_001_merged_000.txt
 prerun	MFZR	Tpos2_prerun	1	MFZR1_S4_L001_R1_001_merged_001.txt
 prerun	MFZR	TnegExt1_prerun	1	MFZR1_S4_L001_R1_001_merged_002.txt

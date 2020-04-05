@@ -35,7 +35,7 @@ class TestWorpmarsRunnerFilter(TestCase):
 
     def test_wopmars_runner_filter(self):
         #
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir}'.format(**self.foopaths)
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
@@ -85,6 +85,7 @@ rule VariantReadCount:
             VariantReadCount: vtam.models.VariantReadCount
     params:
         read_dir: vtam/tests
+        global_read_count_threshold: 2
 
 
 rule FilterLFN:
@@ -275,12 +276,12 @@ rule MakeAsvTable:
             readinfo: vtam/tests/test_files/readinfo.tsv
     output:
         file:
-            ASVTable: vtam/tests/output/asvtable.tsv"""
+            ASVTable: asvtableoutput.tsv"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
 
     def test_wopmars_runner_asv_with_threshold_specific(self):
 
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir}' \
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
                    ' --threshold_specific {foofile}'.format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
@@ -323,7 +324,7 @@ rule MakeAsvTable:
         this_foopaths = self.foopaths.copy()
         this_foopaths['params_yml'] = params_yml_path
 
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {outdir} --threshold_specific {foofile} ' \
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv --threshold_specific {foofile} ' \
                    '--params {params_yml}'.format(**this_foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())

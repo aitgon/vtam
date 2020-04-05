@@ -42,7 +42,7 @@ class TestArgParser(TestCase):
     def test_arg_parser_filter(self):
 
         # Ok
-        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --outdir {foodir}".format(**self.foopaths).split()
+        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
         ################################################################################################################
