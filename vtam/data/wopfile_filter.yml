@@ -100,7 +100,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
     params:
-        upper_renkonen_tail: {{upper_renkonen_tail}}
+        renkonen_distance_quantile: {{renkonen_distance_quantile}}
 
 
 rule FilterMinReplicateNumber3:

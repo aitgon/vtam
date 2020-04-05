@@ -6,7 +6,7 @@ from vtam.utils.VTAMexception import VTAMexception
 
 class VariantReadCountDF(object):
     """
-    Takes as input a variant_read_count_df (run_id, marker_id, biosample_id, replicate, N_ijk) and returns
+    Takes as input a variant_read_count_input_df (run_id, marker_id, biosample_id, replicate, N_ijk) and returns
     the different LFN calculation, that is N_i, N_ik, ...
 
     N_ijk stands for the read count for each variant_id i, biosample_id j and replicate k
@@ -18,7 +18,7 @@ class VariantReadCountDF(object):
         :param variant_read_count_df: DataFrame with columns run_id, marker_id, biosample_id, replicate, N_ijk
         """
 
-        # This is the only order allowed of variant_read_count_df columns
+        # This is the only order allowed of variant_read_count_input_df columns
         self.column_list = ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']
         try:
             assert set(variant_read_count_df.columns.tolist()) >= set(self.column_list)
@@ -29,13 +29,14 @@ class VariantReadCountDF(object):
 
         self.variant_read_count_df = variant_read_count_df
 
-    def filter_out_singletons(self):
-        """Returns a new variant_read_count_df without singletons that is variants i where N_i=1
+    def filter_out_below_global_read_count_threshold(self, global_read_count_threshold):
+        """ Returns variants with read_count across all samples with read_count above global_read_count_threshold
 
-        :return variant_read_count_df: DataFrame without singletons
+        :param global_read_count_threshold: Threshold to get variants. Default throws singletons global_read_count_threshold=2
+        :return variant_read_count_input_df: DataFrame without singletons
         """
         N_i_df = self.get_N_i_df()
-        N_i_df = N_i_df.loc[N_i_df.N_i > 1] # get non-singletons
+        N_i_df = N_i_df.loc[N_i_df.N_i >= global_read_count_threshold] # get equal or above global_read_count_threshold
         variant_read_count_df = self.variant_read_count_df.merge(N_i_df, on=['run_id', 'marker_id', 'variant_id'])
         variant_read_count_df.drop('N_i', axis=1, inplace=True)
         # variant_read_count_df.drop_duplicates(inplace=True)

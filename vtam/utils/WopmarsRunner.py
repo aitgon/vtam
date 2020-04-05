@@ -6,7 +6,7 @@ import jinja2
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
-from vtam.utils.constants import parameters_numerical
+from vtam.utils.constants import parameters_numerical_default
 
 
 class WopmarsRunner(Singleton):
@@ -23,7 +23,7 @@ class WopmarsRunner(Singleton):
         # Load default numerical parameters and overwrite with custom parameters
         #
         ##################################
-        self.parameters = parameters_numerical.copy()
+        self.parameters = parameters_numerical_default.copy()
         for k in parameters:
             self.parameters[k] = parameters[k]
         #
@@ -47,24 +47,26 @@ class WopmarsRunner(Singleton):
         if wopfile_path is None:
             wopfile_path = tempfile.NamedTemporaryFile().name
         self.wopfile_path = wopfile_path
-        #####################
+
+        ################################################################################################################
         #
         # Create Wopfile content
         #
-        #####################
+        ################################################################################################################
+
         template_dir = os.path.join(os.path.dirname(__file__), '../data')
         jinja2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
         template = None
         if self.command in ['filter', 'optimize']:
             # Add output to sortreads file
             if self.command == 'filter':
-                self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
+                # self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
                 self.parameters['update_taxassign'] = 0
-                self.parameters['asvtable'] = os.path.join(self.parameters['outdir'], "asvtable.tsv")
-                self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
+                self.parameters['asvtable'] = self.parameters['asvtable']
+                # self.parameters['pooled_markers'] = os.path.join(self.parameters['outdir'], "pooled_markers.tsv")
                 template = jinja2_env.get_template('wopfile_filter.yml')
                 # Create wopfile
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_filter.yml')
+                wopfile_path = os.path.join(self.tempdir, 'wopfile_filter.yml')
                 # Create wopfile
             elif self.command == 'optimize':
                 self.parameters['sortreads'] = os.path.join(self.parameters['outdir'], "sortreads.tsv")
@@ -83,7 +85,7 @@ class WopmarsRunner(Singleton):
                     = os.path.join(self.parameters['outdir'], "optimize_lfn_variant_replicate_specific.tsv")
                 #
                 template = jinja2_env.get_template('wopfile_optimize.yml')
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_optimize.yml')
+                wopfile_path = os.path.join(self.tempdir, 'wopfile_optimize.yml')
         wopfile_content = template.render(self.parameters)
 
         ################################################################################################################
@@ -92,7 +94,7 @@ class WopmarsRunner(Singleton):
         #
         ################################################################################################################
 
-        pathlib.Path(os.path.dirname(wopfile_path)).mkdir(exist_ok=True)
+        pathlib.Path(os.path.dirname(wopfile_path)).mkdir(parents=True, exist_ok=True)
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
         return wopfile_path, wopfile_content

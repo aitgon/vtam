@@ -55,7 +55,6 @@ class FilterPCRerror(ToolWrapper):
     def specify_params(self):
         return {
             "pcr_error_var_prop": "float",
-
         }
 
     def run(self):
@@ -106,7 +105,7 @@ class FilterPCRerror(ToolWrapper):
 
         ##########################################################
         #
-        # variant_read_count_df
+        # variant_read_count_input_df
         #
         ##########################################################
 
@@ -139,7 +138,7 @@ class FilterPCRerror(ToolWrapper):
 
             ##########################################################
             #
-            # Run vsearch and get alignement df
+            # Run vsearch and get alignement variant_read_count_input_df
             #
             ##########################################################
 
