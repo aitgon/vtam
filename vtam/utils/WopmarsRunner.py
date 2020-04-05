@@ -85,7 +85,7 @@ class WopmarsRunner(Singleton):
                     = os.path.join(self.parameters['outdir'], "optimize_lfn_variant_replicate_specific.tsv")
                 #
                 template = jinja2_env.get_template('wopfile_optimize.yml')
-                wopfile_path = os.path.join(self.parameters['outdir'], 'wopfile_optimize.yml')
+                wopfile_path = os.path.join(self.tempdir, 'wopfile_optimize.yml')
         wopfile_content = template.render(self.parameters)
 
         ################################################################################################################
