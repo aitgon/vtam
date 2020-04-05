@@ -95,7 +95,7 @@ class VariantReadCount(ToolWrapper):
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
-        # 5. Delete singleton
+        # 5. Delete variants if below global_read_count_threshold
         # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################################################################################################
