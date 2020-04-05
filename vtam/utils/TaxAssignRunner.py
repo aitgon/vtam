@@ -115,7 +115,7 @@ class TaxAssignRunner(object):
             Logger.instance().debug(
                 "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
             blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
-            # getting the taxonomy_db to df
+            # getting the taxonomy_db to variant_read_count_input_df
             # taxonomy_tsv_path = taxonomy_tsv
             #
             Logger.instance().debug(
@@ -133,8 +133,6 @@ class TaxAssignRunner(object):
             variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
                                                                    right_on='tax_id')
             variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
-            # variantid_identity_lineage_tsv = os.path.join(self.this_temp_dir, 'variantid_identity_lineage.tsv')
-            # variantid_identity_lineage_df.to_csv(variantid_identity_lineage_tsv, sep="\t", header=True)
 
             ##########################################################
             #
@@ -228,7 +226,7 @@ class TaxAssignRunner(object):
     2           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
     3           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
     4           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
-        Example of the output df:
+        Example of the output variant_read_count_input_df:
         identity ltg_rank  ltg_tax_id  variant_id
     0       100  species      189839           3
     1       100  species     1077837           7
@@ -319,7 +317,7 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
 2           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
 3           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
 4           3    99.429         189839  50557  172515  189838       33339    33208   131567  30073    6656   189839      7496    185809       6960          2759
-    Example of the output df:
+    Example of the output variant_read_count_input_df:
     identity ltg_rank  ltg_tax_id  variant_id
 0       100  species      189839           3
 1       100  species     1077837           7

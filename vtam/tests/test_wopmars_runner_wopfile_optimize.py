@@ -79,6 +79,7 @@ rule VariantReadCount:
             VariantReadCount: vtam.models.VariantReadCount
     params:
         read_dir: vtam/tests
+        global_read_count_threshold: 2
 
 
 rule OptimizeLFNbiosampleReplicate:

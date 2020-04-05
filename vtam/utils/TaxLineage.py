@@ -94,5 +94,6 @@ class TaxLineage(object):
             filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
         lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
         tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
+        tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})  # do not move. required because sometimes tax_id is none
 
         return tax_lineage_df

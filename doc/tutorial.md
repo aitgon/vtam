@@ -1,129 +1,123 @@
 % Tutorial
 % Aitor Gonzalez, Emese Meglecz
 
-# Installation
+# Install
 
-## Build Conda environment
-
-Create a conda environment with vsearch and blast
+Create a conda environment and activate conda
 
 ~~~
 conda create --name vtam python=3.7 -y
-~~~
-
-Activate conda
-
-~~~
 conda activate vtam
 ~~~
 
-## Install VTAM and its dependencies
+- Download the latest release of VTAM
+- Untar the file
+- Change to the VTAM package
 
-Download latest release of VTAM: https://www.dropbox.com/sh/g1mshtlet0ymyud/AAA4BNPGpJlewTvJ172B3TFHa?dl=0
-
-~~~
-tar zxvf vtam-0.0.1.tar.gz
-cd vtam-0.0.1
-~~~
-
-_TODO_
-
-VTAM depends on these List of dependencies:
+VTAM depends on these dependencies
 
 * vsearch=2.7.0
 * blast=2.9.0
-* wopmars=0.0.8 ( https://github.com/aitgon/wopmars )
+* cutadapt=2.9.0
+* wopmars=0.0.10 ( https://github.com/aitgon/wopmars )
 
-These dependencies and VTAM can be installed automatically using within the Conda environment with this command:
+These dependencies can be installed within the Conda environment with this command:
 
 ~~~
 make
 ~~~
 
-# Merge FASTQ files
+# Data
 
-The first step is to merge the FASTQ files.
-
-## Data
-
-We can use the dataset from our previous publication: [PMID 28776936](https://pubmed.ncbi.nlm.nih.gov/28776936). 
+In this tutorial, we can use the dataset from our previous publication: [PMID 28776936](https://pubmed.ncbi.nlm.nih.gov/28776936). 
 You can download these FASTQ files from the Dryad website [doi:10.5061/dryad.f40v5](https://datadryad.org/stash/dataset/doi:10.5061/dryad.f40v5).
-Create a *fastq* directory:
+Create a *FASTQ* directory, copy the FASTQ files inside and verify the directory:
 
 ~~~
-mkdir -p fastq
-~~~
-
-Copy the FASTQ file inside and verify the directory:
-
-~~~
-$ ls fastq/*.fastq
+$ mkdir -p fastq
+$ ls fastq/*.fastq``
 fastq/MFZR1_S4_L001_R1_001.fastq  fastq/MFZR2_S5_L001_R2_001.fastq  fastq/ZFZR1_S1_L001_R1_001.fastq  fastq/ZFZR2_S2_L001_R2_001.fastq
 fastq/MFZR1_S4_L001_R2_001.fastq  fastq/MFZR3_S6_L001_R1_001.fastq  fastq/ZFZR1_S1_L001_R2_001.fastq  fastq/ZFZR3_S3_L001_R1_001.fastq
 fastq/MFZR2_S5_L001_R1_001.fastq  fastq/MFZR3_S6_L001_R2_001.fastq  fastq/ZFZR2_S2_L001_R1_001.fastq  fastq/ZFZR3_S3_L001_R2_001.fastq
 ~~~
 
-## Define FASTQ file sample information
+# Merge FASTQ files
 
+The first step is to merge the FASTQ files.
 Create a TSV (tab-separated file), with a header and 10 columns with all the information per FASTQ file pair.
 
 These columns are needed
 
-- Tag_fwd
-- Primer_fwd
-- Tag_rev
-- Primer_rev
+- TagFwd
+- PrimerFwd
+- TagRev
+- PrimerRev
 - Marker
 - Biosample
 - Replicate
 - Run
-- Fastq_fw
-- Fastq_rv
-
+- FastqFwd
+- FastqRev
 
 There is an example in the "tutorial" folder with these first lines
 
 ~~~
-$ head -n3 fastqinfo.tsv 
-TagPair Forward	Primer Forward	TagPair Reverse	Primer Reverse	Marker name	 Biosample	Replicate	Run	Fastq_fw	Fastq_rv
+TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev
 tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos1_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq
 tgatcgatgatcag	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos2_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq
 ~~~
 
-## Merge FASTQ files
-
-In addition to *fastq* and *fastqinfo.tsv*, we need
-
-- Output WopMars DB file
-- Output TSV file with FASTA file sample information
-- Output directory to write the merged FASTA files
+We define an output directory and then we run the *merge* command:
 
 ~~~
 mkdir -p out/fasta
 vtam merge --fastqinfo fastqinfo.tsv --fastqdir fastq --fastainfo out/fastainfo.tsv --fastadir out/fasta --log out/vtam.log -v
 ~~~
 
-Open the *fastainfo.tsv* file and verify its content. A new column should be written with the names of the merged FASTA files.
+The result is a directory with the merged files in FASTA format and a *fastainfo.tsv* with the FASTA information.
+The first lines of the *fastainfo.tsv* look like this:
 
-Verify also the content of the *out/fasta* with the merged FASTA files.
+~~~
+TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev	Fasta
+tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos1_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq	MFZR1_S4_L001_R1_001_merged.fasta
+tgatcgatgatcag	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	Tpos2_prerun	1	prerun	MFZR1_S4_L001_R1_001.fastq	MFZR1_S4_L001_R2_001.fastq	MFZR1_S4_L001_R1_001_merged.fasta
+~~~
 
-# Sort (Demultiplex and trim) the reads
+# Demultiplex, trim and sort the reads
 
-There is a single command *sortreads* to trim and demultiplex the reads. This command takes quite long but its progress can be seen in the log file.
+There is a single command *sortreads* to trim and demultiplex the reads.
+This command takes quite long.
 
 ~~~
 vtam sortreads --fastainfo out/fastainfo.tsv --fastadir out/fasta --outdir out/sorted --log out/vtam.log
 ~~~
 
+The sorted reads will be written in individual text files in the *out/sorted* directory.
+In the *out/sorted* directory, there is also a *readinfo.tsv* file with the information about each sorted read file that looks like this:
+
+~~~
+Run	Marker	Biosample	Replicate	SortedReadFile
+prerun	MFZR	Tpos1_prerun	1	MFZR1_S4_L001_R1_001_merged_000.txt
+prerun	MFZR	Tpos2_prerun	1	MFZR1_S4_L001_R1_001_merged_001.txt
+~~~
+
 # Filter variants and create the ASV table
 
-This command filters variants and create the ASV table. 
+This command filters variants and creates the ASV table. 
 
 ~~~
-vtam filter --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --outdir out --log out/vtam.log -v
+vtam filter --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --outdir out
 ~~~
 
-The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
+The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. 
+The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
+These are the first lines of the *out/asvtable.tsv*
+
+~~~
+variant_id	marker	run	sequence_length	read_count	Tpos1_prerun	Tpos2_prerun	chimera_borderline	sequence
+27	MFZR	prerun	181	564	237	327	False	ACTATACCTTATCTTCGCAGTATTCTCAGGAATGCTAGGAACTGCTTTTAGTGTTCTTATTCGAATGGAACTAACATCTCCAGGTGTACAATACCTACAGGGAAACCACCAACTTTACAATGTAATCATTACAGCTCACGCATTCCTAATGATCTTTTTCATGGTTATGCCAGGACTTGTT
+75	MFZR	prerun	175	587	318	269	False	ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC
+~~~
 
 # Asign variants of ASV table to taxa
 
@@ -142,7 +136,7 @@ The command to carry out the taxon assignation with the *asvtable.tsv* is:
 vtam taxassign --db out/db.sqlite --variants out/asvtable.tsv --output out/asvtable_taxa.tsv --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log -v
 ~~~
 
-# Pool markers
+# Pool run and markers
 
 When variants were amplified with different markers, these variants can be pooled around a centroid variant.
 
@@ -160,11 +154,35 @@ Then the *pool_markers* subcommand can be used:
 vtam pool --db out/db.sqlite --runmarker pool_run_marker.tsv --output out/pooled_markers.tsv
 ~~~
 
-# Parameter Optimization
+# Compute filter parameters of mock and negative biosamples to select the best parameters
 
-To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
+To help the user select the parameters, VTAM has an *optimize* command that will compute different values based on positive and negative variants present in the mock, negative and real biosamples.
+
+The TSV file for the known variants of the ZFZR marker look like this:
 
 ~~~
-vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out --log out/vtam.log -v
+Marker	Run	Biosample	BiosampleType	VariantId	Action	Sequence	Note
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		tolerate	TATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	GGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC	dummy info
+ZFZR	prerun	Tpos1_prerun	mock		keep	TGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		tolerate	TATCTGATCAGGTCTCGTAGGATCATCACTTAGATTTATTATTCGAATAGAATTAAGAACTCCTGGTAGATTTATTGGCAACGACCAAATTTATAACGTAATTGTTACATCTCATGCATTTATTATAATTTTTTTTATAGTTATACCAATCATAATT	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	GGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC	dummy info
+ZFZR	prerun	Tpos2_prerun	mock		keep	TGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT	dummy info
+ZFZR	prerun	TnegPai1_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegPai2_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegTag_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegPCR_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegExt1_prerun	negative		delete		dummy info
+ZFZR	prerun	TnegExt2_prerun	negative		delete		dummy info
 ~~~
 
+There is a *variant_known.tsv* file in the *doc* directory of the VTAM package.
+Then the *optimize* command is run like this:
+
+~~~
+vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out
+~~~

@@ -4,7 +4,7 @@ import os
 import pandas
 import sqlalchemy
 from Bio import SeqIO
-from sqlalchemy import select, bindparam
+from sqlalchemy import select, bindparam, func
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
@@ -59,6 +59,7 @@ class VariantReadCount(ToolWrapper):
         """
         return {
             "read_dir": "str",
+            "global_read_count_threshold": "int",
         }
 
     def run(self):
@@ -86,6 +87,7 @@ class VariantReadCount(ToolWrapper):
         variant_read_count_model = self.output_table(VariantReadCount.__output_table_variant_read_count)
         # Options
         read_dir = self.option("read_dir")
+        global_read_count_threshold = self.option("global_read_count_threshold")
 
         ################################################################################################################
         #
@@ -93,7 +95,7 @@ class VariantReadCount(ToolWrapper):
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
-        # 5. Delete singleton
+        # 5. Delete variants if below global_read_count_threshold
         # 6. Insert into Variant and VariantReadCountDF tables
         #
         ################################################################################################################
@@ -107,12 +109,14 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
         sample_instance_list  = []
+        readinfo_df.columns = readinfo_df.columns.str.lower()
+
         for row in readinfo_df.itertuples():
             Logger.instance().debug(row)
-            marker_name = row.Marker
-            run_name = row.Run
-            biosample_name = row.Biosample
-            replicate = row.Replicate
+            marker_name = row.marker
+            run_name = row.run
+            biosample_name = row.biosample
+            replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
                 stmt_select_run_id = select([run_model.__table__.c.id]).where(run_model.__table__.c.name == run_name)
@@ -160,18 +164,16 @@ class VariantReadCount(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
             replicate = row.replicate
-            sorted_read_file = row.SortedReadFile
+            read_fasta = row.sortedfasta
 
             Logger.instance().debug(
-                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, sorted_read_file))
+                "file: {}; line: {}; Read FASTA: {}".format(__file__, inspect.currentframe().f_lineno, read_fasta))
 
-            sorted_read_path = os.path.join(read_dir, sorted_read_file)
+            read_fasta_path = os.path.join(read_dir, read_fasta)
 
-            if os.path.exists(sorted_read_path):
-
-                with open(sorted_read_path, "r") as fin:
-                    sorted_read_list = [x.upper() for x in fin.read().split("\n")]
-
+            if os.path.exists(read_fasta_path):
+                with open(read_fasta_path, "r") as fin:
+                    sorted_read_list = [x.upper() for x in fin.read().split("\n") if (not x.startswith('>') and x != '')]
                 variant_read_count_df_sorted_i = pandas.DataFrame({'run_id': [run_id] * len(sorted_read_list),
                                                                    'marker_id': [marker_id] * len(sorted_read_list),
                                                                    'biosample_id': [biosample_id] * len(
@@ -186,7 +188,7 @@ class VariantReadCount(ToolWrapper):
                 variant_read_count_df = variant_read_count_df.append(variant_read_count_df_sorted_i)
 
             else:
-                Logger.instance().warning('This file {} doest not exists'.format(sorted_read_path))
+                Logger.instance().warning('This file {} doest not exists'.format(read_fasta_path))
 
         ################################################################################################################
         #
@@ -195,7 +197,7 @@ class VariantReadCount(ToolWrapper):
         ################################################################################################################
 
         Logger.instance().debug("file: {}; line: {}; Group by read sequence".format(__file__, inspect.currentframe().f_lineno))
-        # variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
+        # variant_read_count_input_df = variant_read_count_input_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate',
         #                                                        'read_sequence']).size().reset_index(name='read_count')
         variant_read_count_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence'])\
             .sum().reset_index()
@@ -204,13 +206,15 @@ class VariantReadCount(ToolWrapper):
 
         ################################################################################################################
         #
-        # 5. Remove singletons
+        # 5. Remove variants with read count across all run, markers, biosamples and replicates lower than
+        # global_read_count_threshold parameter
         #
         ################################################################################################################
 
         variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_lfn.filter_out_singletons() # returns variant_read_count wout singletons
+        # returns variants with read_count across all samples with read_count above global_read_count_threshold
+        variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_threshold(global_read_count_threshold)
         variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)
 
         ################################################################################################################
@@ -225,25 +229,34 @@ class VariantReadCount(ToolWrapper):
         sample_instance_list = []
         variant_read_count_df.sort_values(
             by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate'], inplace=True)
-        for row in variant_read_count_df.itertuples():
-            run_id = row.run_id
-            marker_id = row.marker_id
-            biosample_id = row.biosample_id
-            replicate = row.replicate
-            variant_sequence = row.variant_sequence
-            read_count = row.read_count
-            with engine.connect() as conn:
+        variant_new_set = set()
+        variant_new_instance_list = []
+        with engine.connect() as conn:
+            select_variant_id_max = conn.execute(sqlalchemy.select([func.max(variant_model.__table__.c.id)])).first()[0]
+            if select_variant_id_max is None:
+                select_variant_id_max = 0
+            for row in variant_read_count_df.itertuples():
+                run_id = row.run_id
+                marker_id = row.marker_id
+                biosample_id = row.biosample_id
+                replicate = row.replicate
+                variant_sequence = row.variant_sequence
+                read_count = row.read_count
                 select_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.id])
                                           .where(variant_model.__table__.c.sequence == variant_sequence)).first()
-                if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
-                    insert_row = conn.execute(variant_model.__table__.insert().values(sequence=variant_sequence))
-                    variant_id = insert_row.inserted_primary_key[0]
-                else: # variant_sequence IS in the database
+                if select_row is None:  # variant_sequence IS NOT in the database, so will INSERT it
+                    if not (variant_sequence in variant_new_set):
+                        variant_id = select_variant_id_max + len(variant_new_instance_list) + 1
+                        variant_new_set.add(variant_sequence)
+                        variant_new_instance_list.append({'id': variant_id,
+                                                          'sequence': variant_sequence})
+
+                else:  # variant_sequence IS in the database
                     variant_id = select_row[0]
-            variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
-                'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
-            sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                         'replicate': replicate})
+                variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
+                    'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
+                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
+                                             'replicate': replicate})
 
         ################################################################################################################
         #
@@ -253,7 +266,10 @@ class VariantReadCount(ToolWrapper):
 
         Logger.instance().debug(
             "file: {}; line: {};  Insert variant read count".format(__file__, inspect.currentframe().f_lineno))
+        # import pdb; pdb.set_trace()
         with engine.connect() as conn:
+            if len(variant_new_instance_list) > 0:
+                conn.execute(variant_model.__table__.insert(), variant_new_instance_list)
             conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
             conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)
 
