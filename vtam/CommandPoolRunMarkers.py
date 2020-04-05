@@ -25,7 +25,7 @@ from vtam.utils.VTAMexception import VTAMexception
 
 
 class RunMarkerTSVreader():
-    """Prepares different DFs: engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
+    """Prepares different DFs: engine, variant_read_count_input_df, variant_df, run_df, marker_df, biosample_df,
                                           variant_to_chimera_borderline_df based on run_marker_tsv and db"""
 
     def __init__(self, db, run_marker_tsv):
@@ -77,7 +77,7 @@ class RunMarkerTSVreader():
 
         ################################################################################################################
         #
-        # Compute all df required for ASV table
+        # Compute all variant_read_count_input_df required for ASV table
         #
         ################################################################################################################
 
@@ -121,7 +121,7 @@ class CommandPoolRunMarkers(object):
 
         if run_marker_df is None:  # Default: pool all marker
             self.asv_table_df = asv_table_df
-        else:  # if run_marker_df: pool only markers in this df
+        else:  # if run_marker_df: pool only markers in this variant_read_count_input_df
             self.asv_table_df = asv_table_df.merge(run_marker_df, on=['run', 'marker'])
 
         self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
@@ -134,7 +134,7 @@ class CommandPoolRunMarkers(object):
     def run_vsearch_to_cluster_sequences(self):
         # Define fasta_path path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
-        # Create variant df
+        # Create variant variant_read_count_input_df
         variant_df = self.asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         variant_df.set_index('id', inplace=True)
@@ -145,14 +145,13 @@ class CommandPoolRunMarkers(object):
         vsearch_output_centroid_fasta = os.path.join(self.tmp_dir, 'centroid.fa')
         # Define cluster output path
         vsearch_output_cluster_path = os.path.join(self.tmp_dir, 'cluster.fa')
-
         #
         # Create object and run vsearch
-        vsearch_parameters = {'--cluster_size': fasta_path,
-                              '--clusters':  vsearch_output_cluster_path,
-                              '--id': 1, '--sizein': None,
-                              '--centroids': vsearch_output_centroid_fasta,
-                              "--threads": int(os.getenv('VTAM_THREADS')),
+        vsearch_parameters = {'cluster_size': fasta_path,
+                              'clusters':  vsearch_output_cluster_path,
+                              'id': 1, 'sizein': None,
+                              'centroids': vsearch_output_centroid_fasta,
+                              "threads": int(os.getenv('VTAM_THREADS')),
                               }
         vsearch_cluster = VSearch(parameters = vsearch_parameters)
         vsearch_cluster.run()
@@ -169,6 +168,7 @@ class CommandPoolRunMarkers(object):
 
         :return: pandas.DataFrame with columns: variant_id_centroid and variant_id
         """
+
         if self.cluster_path is None:
             self.run_vsearch_to_cluster_sequences()
 
@@ -236,6 +236,7 @@ class CommandPoolRunMarkers(object):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
             run_marker_df = None
-        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=run_marker_tsv_reader.asv_df_final, run_marker_df=run_marker_df)
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=run_marker_tsv_reader.asv_df_final,
+                                                   run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

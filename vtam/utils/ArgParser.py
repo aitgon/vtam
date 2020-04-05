@@ -22,7 +22,7 @@ class ArgParserChecker(object):
         path = cls.check_file_exists_and_is_nonempty(path)
 
         df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = map(str.lower, df.columns) # df columns to lower
+        df.columns = map(str.lower, df.columns) # variant_read_count_input_df columns to lower
         if not 'run' in df.columns and not 'marker' in df.columns:
             raise argparse.ArgumentTypeError("The TSV file {} does not contain columns with 'Run' and 'Marker' columns!".format(path))
         else:
@@ -56,12 +56,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'sequence'}
-        variant_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_df.columns = variant_df.columns.str.lower()
-        if not set(variant_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_taxassign_taxonomy(path):
@@ -77,12 +77,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'}
-        variant_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_df.columns = variant_df.columns.str.lower()
-        if not set(variant_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_parser_pool_arg_runmarker(path, error_message=None):
@@ -134,12 +134,12 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'marker', 'run', 'biosample', 'biosampletype', 'variantid', 'action', 'sequence'}
-        variant_known_df = pandas.read_csv(path, sep="\t", header=0)
-        variant_known_df.columns = variant_known_df.columns.str.lower()
-        if not set(variant_known_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
-        else:
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path  # return the path
+        else:
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_readinfo_tsv(path):
@@ -154,13 +154,13 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedreadfile'}
-        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
-        readinfo_df.columns = readinfo_df.columns.str.lower()
-        if not set(readinfo_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_pool_runmarker_tsv(path):
@@ -176,12 +176,32 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
         header_lower = {'run', 'marker'}
-        readinfo_df = pandas.read_csv(path, sep="\t", header=0)
-        readinfo_df.columns = readinfo_df.columns.str.lower()
-        if not set(readinfo_df.columns) >= header_lower:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+        df = pandas.read_csv(path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
         else:
-            return path  # return the path
+            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+
+    @staticmethod
+    def check_fastainfo(path):
+
+        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+
+        :param path: Valid non-empty TSV fastainfo path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
+         'mergedfasta'}
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
 
     @staticmethod
     def check_fastqinfo(path):
@@ -195,13 +215,13 @@ class ArgParserChecker(object):
 
         path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
         df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev', 'fasta',
+        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
          'primerfwd', 'biosample', 'tagfwd', 'marker'}
-        df.column = map(str.lower, df.columns)
-        if set(df.columns.tolist()) >= header_lower:
-            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
-        else:
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
 
     @staticmethod
     def check_dir_exists_and_is_nonempty(path):
@@ -284,7 +304,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_pool(subparsers=subparsers)
+        cls.create_pool(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -335,7 +355,7 @@ class ArgParser:
                                                   parents=[parent_parser])
         parser_vtam_sortreads\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
-                          required=True, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                          required=True, type=ArgParserChecker.check_fastainfo)
         parser_vtam_sortreads.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
@@ -355,8 +375,11 @@ class ArgParser:
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-                                     required=True)
+        # parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
+        #                              required=True)
+        parser_vtam_filter\
+            .add_argument('--asvtable', action='store', help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
+                          required=True)
         parser_vtam_filter.add_argument('--threshold_specific', default=None, action='store', required=False,
                                  help="TSV file with variant (col1: variant; col2: threshold) or variant-replicate "
                                   "(col1: variant; col2: replicate; col3: threshold)specific thresholds. Header expected.",
@@ -416,9 +439,11 @@ class ArgParser:
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
     @classmethod
-    def create_pool(cls, subparsers):
+    def create_pool(cls, subparsers, parent_parser):
 
-        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_pool_markers = subparsers.add_parser('pool', add_help=True,
+                                                         formatter_class=argparse.RawTextHelpFormatter,
+                                                         parents=[parent_parser])
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
         from vtam.utils.SelectionRunMarker import SelectionRunMarker
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,

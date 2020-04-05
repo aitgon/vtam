@@ -13,3 +13,4 @@ doc/vtam.wrapper.rst
 tutorial/fastq
 tutorial/out
 dist
+.coverage

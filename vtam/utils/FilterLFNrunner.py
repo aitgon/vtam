@@ -36,7 +36,7 @@ class FilterLFNrunner:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
         #
         ################################
-        #  Output df with deleted variants
+        #  Output variant_read_count_input_df with deleted variants
         ################################
         self.variant_read_count_filter_delete_df = pandas.DataFrame(data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
                                                                           'replicate': [],
@@ -115,7 +115,7 @@ class FilterLFNrunner:
         filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count',
                    'filter_id', 'filter_delete']]
         #
-        # Prepare output df and concatenate vertically output df to self.variant_read_count_filter_delete_df
+        # Prepare output variant_read_count_input_df and concatenate vertically output variant_read_count_input_df to self.variant_read_count_filter_delete_df
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False, axis=0)
 
@@ -157,10 +157,10 @@ class FilterLFNrunner:
         # Selecting all the indexes where the ratio is below the minimal readcount
         filter_df = self.variant_read_count_df.copy()
 
-        # do_not_pass_variant_id_list = self.variant_read_count_df.loc[
-        #     self.variant_read_count_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
-        # do_not_pass_replicate_list = self.variant_read_count_df.loc[
-        #     self.variant_read_count_df['read_count'] < lfn_read_count_threshold].replicate.tolist()
+        # do_not_pass_variant_id_list = self.variant_read_count_input_df.loc[
+        #     self.variant_read_count_input_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
+        # do_not_pass_replicate_list = self.variant_read_count_input_df.loc[
+        #     self.variant_read_count_input_df['read_count'] < lfn_read_count_threshold].replicate.tolist()
 
         filter_df['filter_id'] = this_filter_id  #  set this filter
         filter_df['filter_delete'] = False
@@ -170,8 +170,8 @@ class FilterLFNrunner:
         filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
                    'filter_id', 'filter_delete']]
         #
-        # Concatenate vertically output df
-        #  Prepare output df and concatenate to self.variant_read_count_filter_delete_df
+        # Concatenate vertically output variant_read_count_input_df
+        #  Prepare output variant_read_count_input_df and concatenate to self.variant_read_count_filter_delete_df
 
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False)

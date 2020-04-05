@@ -164,7 +164,7 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     :type variant_read_count_df: pandas.DataFrame
 
     :param min_replicate_number: Minimal number of replicates
-    :type variant_read_count_df: int
+    :type variant_read_count_input_df: int
 
     :return: The output of this filter is added to the 'self.variant_read_count_filter_delete_df' with 'filter_delete'=1 or 0
     :rtype: None

@@ -27,6 +27,7 @@ rule VariantReadCount:
             VariantReadCount: vtam.models.VariantReadCount
     params:
         read_dir: {{readdir}}
+        global_read_count_threshold: {{global_read_count_threshold}}
 
 
 {% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

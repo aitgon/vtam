@@ -53,14 +53,14 @@ class FilterPCRerrorRunner(object):
         #
         # Create object and run vsearch
         vsearch_pcr_error_tsv = os.path.join(self.__tmp_dir, '{}.tsv'.format("vsearch_pcr_error"))
-        vsearch_parameters = {'--db': variant_expected_fasta_path,
-                                       '--usearch_global': variant_unexpected_fasta_path,
-                                       '--id': str(identity),
-                                       '--maxrejects': 0,
-                                       '--maxaccepts': 0,
-                                       '--userout': vsearch_pcr_error_tsv,
-                                       '--userfields': "query+target+alnlen+ids+mism+gaps",
-                                        '--threads': int(os.getenv('VTAM_THREADS')),
+        vsearch_parameters = {'db': variant_expected_fasta_path,
+                                       'usearch_global': variant_unexpected_fasta_path,
+                                       'id': str(identity),
+                                       'maxrejects': 0,
+                                       'maxaccepts': 0,
+                                       'userout': vsearch_pcr_error_tsv,
+                                       'userfields': "query+target+alnlen+ids+mism+gaps",
+                                        'threads': int(os.getenv('VTAM_THREADS')),
                                        }
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()

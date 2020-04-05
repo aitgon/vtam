@@ -33,9 +33,9 @@ class TestOptimizeF7(TestCase):
         variants_optimize_df = pandas.read_csv(self.variants_optimize_path, sep='\t', header=0)
         #
         # variant_keep_list = (
-        # variant_read_count_df.loc[variant_read_count_df.action == 'keep']).variant_id.unique().tolist()
+        # variant_read_count_input_df.loc[variant_read_count_input_df.action == 'keep']).variant_id.unique().tolist()
         # variant_delete_list = (
-        # variant_read_count_df.loc[variant_read_count_df.action == 'delete']).variant_id.unique().tolist()
+        # variant_read_count_input_df.loc[variant_read_count_input_df.action == 'delete']).variant_id.unique().tolist()
 
 
         variant_keep_df = variants_optimize_df.loc[variants_optimize_df.action == 'keep']
