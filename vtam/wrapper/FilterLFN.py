@@ -178,8 +178,8 @@ class FilterLFN(ToolWrapper):
                 .where(output_filter_lfn_model.replicate == bindparam('replicate'))
             conn.execute(del_stmt, record_list)
 
-        # Insert new instances
-        conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
+            # Insert new instances
+            conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
 
         ##########################################################
         #
