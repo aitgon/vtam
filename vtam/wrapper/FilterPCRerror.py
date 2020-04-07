@@ -1,5 +1,6 @@
 import pathlib
 
+from sqlalchemy import bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam import Logger
@@ -164,6 +165,16 @@ class FilterPCRerror(ToolWrapper):
         ##########################################################
 
         with engine.connect() as conn:
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_pcr_error_model.__table__.delete() \
+                .where(output_filter_pcr_error_model.run_id == bindparam('run_id')) \
+                .where(output_filter_pcr_error_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_pcr_error_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_pcr_error_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
+
+            # Insert new instances
             conn.execute(output_filter_pcr_error_model.__table__.insert(), record_list)
 
         ##########################################################

@@ -2,6 +2,8 @@ import os
 import pathlib
 import sys
 
+from sqlalchemy import bindparam
+
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
@@ -129,13 +131,35 @@ class FilterChimera(ToolWrapper):
         #
         ##########################################################
 
-        records_chimera = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_chimera_df)
-        with engine.connect() as conn:
-            conn.execute(output_filter_chimera_model.__table__.insert(), records_chimera)
+        records_chimera_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_chimera_df)
 
-        records_chimera_borderline = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_borderline_output_df)
         with engine.connect() as conn:
-            conn.execute(filter_chimera_borderline_model.__table__.insert(), records_chimera_borderline)
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_chimera_model.__table__.delete() \
+                .where(output_filter_chimera_model.run_id == bindparam('run_id')) \
+                .where(output_filter_chimera_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_chimera_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_chimera_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, records_chimera_list)
+
+            # Insert new instances
+            conn.execute(output_filter_chimera_model.__table__.insert(), records_chimera_list)
+
+        records_chimera_borderline_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_borderline_output_df)
+
+        with engine.connect() as conn:
+
+            # Delete instances that will be inserted
+            del_stmt = filter_chimera_borderline_model.__table__.delete() \
+                .where(filter_chimera_borderline_model.run_id == bindparam('run_id')) \
+                .where(filter_chimera_borderline_model.marker_id == bindparam('marker_id')) \
+                .where(filter_chimera_borderline_model.biosample_id == bindparam('biosample_id')) \
+                .where(filter_chimera_borderline_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, records_chimera_borderline_list)
+
+            # Insert new instances
+            conn.execute(filter_chimera_borderline_model.__table__.insert(), records_chimera_borderline_list)
 
         ##########################################################
         #

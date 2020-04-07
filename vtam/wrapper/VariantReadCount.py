@@ -226,7 +226,7 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug(
             "file: {}; line: {}; Insert variants".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
-        sample_instance_list = []
+        # sample_instance_list = []
         variant_read_count_df.sort_values(
             by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate'], inplace=True)
         variant_new_set = set()
@@ -255,8 +255,6 @@ class VariantReadCount(ToolWrapper):
                     variant_id = select_row[0]
                 variant_read_count_instance_list.append({'run_id': run_id, 'marker_id': marker_id,
                     'variant_id':variant_id, 'biosample_id': biosample_id, 'replicate': replicate, 'read_count': read_count})
-                sample_instance_list.append({'run_id': run_id, 'marker_id': marker_id, 'biosample_id': biosample_id,
-                                             'replicate': replicate})
 
         ################################################################################################################
         #
@@ -266,15 +264,26 @@ class VariantReadCount(ToolWrapper):
 
         Logger.instance().debug(
             "file: {}; line: {};  Insert variant read count".format(__file__, inspect.currentframe().f_lineno))
-        # import pdb; pdb.set_trace()
+
         with engine.connect() as conn:
+
+            # Insert if there some new variants
             if len(variant_new_instance_list) > 0:
                 conn.execute(variant_model.__table__.insert(), variant_new_instance_list)
-            conn.execute(variant_read_count_model.__table__.delete(), sample_instance_list)
+
+            # Delete variant_read_count instances that will be inserted
+            del_stmt = variant_read_count_model.__table__.delete()\
+                .where(variant_read_count_model.run_id == bindparam('run_id'))\
+                .where(variant_read_count_model.marker_id == bindparam('marker_id'))\
+                .where(variant_read_count_model.biosample_id == bindparam('biosample_id'))\
+                .where(variant_read_count_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, variant_read_count_instance_list)
+
+            # Insert new variant_read_count_instances
             conn.execute(variant_read_count_model.__table__.insert(), variant_read_count_instance_list)
 
         # Touch variant table to update modification date
-        if len(sample_instance_list) > 0:
+        if len(variant_new_instance_list) > 0:
             with engine.connect() as conn:
                 variant_id, variant_sequence = conn.execute(sqlalchemy.select([variant_model.__table__])).first()
                 stmt_update = variant_model.__table__.update()\
