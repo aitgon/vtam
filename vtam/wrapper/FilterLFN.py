@@ -1,4 +1,6 @@
 import sqlalchemy
+from sqlalchemy import bindparam
+
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
@@ -165,23 +167,29 @@ class FilterLFN(ToolWrapper):
         filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
+
         with engine.connect() as conn:
-            try:
-                conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
-            except sqlalchemy.exc.IntegrityError:
-                Logger.instance().error(VTAMexception(
-                    "Records are not unique"))
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_lfn_model.__table__.delete() \
+                .where(output_filter_lfn_model.run_id == bindparam('run_id')) \
+                .where(output_filter_lfn_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_lfn_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_lfn_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
+
+            # Insert new instances
+            conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
 
         ##########################################################
         #
-        # Exit vtam if all variants delete
+        # Exit vtam if all variants deleted
         #
         ##########################################################
 
-        try:
-            assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
-        except AssertionError:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
 
 
