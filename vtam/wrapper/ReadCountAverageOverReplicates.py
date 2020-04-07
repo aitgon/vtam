@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, bindparam
 
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
@@ -124,11 +124,19 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         ############################################
         # Write to DB
         ############################################
-        records = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
+        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
-            conn.execute(consensus_model.__table__.insert(), records)
 
+            # Delete instances that will be inserted
+            del_stmt = consensus_model.__table__.delete() \
+                .where(consensus_model.run_id == bindparam('run_id')) \
+                .where(consensus_model.marker_id == bindparam('marker_id')) \
+                .where(consensus_model.biosample_id == bindparam('biosample_id')) \
+                .where(consensus_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
 
+            # Insert new instances
+            conn.execute(consensus_model.__table__.insert(), record_list)
 
 def read_count_average_over_replicates(variant_read_count_df):
     """
@@ -154,6 +162,3 @@ def read_count_average_over_replicates(variant_read_count_df):
     df_out['read_count_average'] = df_out.read_count/df_out.replicate_count
     #
     return df_out
-
-
-
