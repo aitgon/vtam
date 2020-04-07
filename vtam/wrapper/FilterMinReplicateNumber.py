@@ -1,3 +1,5 @@
+from sqlalchemy import bindparam
+
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
@@ -128,7 +130,18 @@ class FilterMinReplicateNumber(ToolWrapper):
         ##########################################################
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
+
         with engine.connect() as conn:
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_min_replicate_model.__table__.delete() \
+                .where(output_filter_min_replicate_model.run_id == bindparam('run_id')) \
+                .where(output_filter_min_replicate_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_min_replicate_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_min_replicate_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
+
+            # Insert new instances
             conn.execute(output_filter_min_replicate_model.__table__.insert(), record_list)
 
         ##########################################################
