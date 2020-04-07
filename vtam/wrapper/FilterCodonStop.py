@@ -149,14 +149,13 @@ class FilterCodonStop(ToolWrapper):
 
         ##########################################################
         #
-        # Exit vtam if all variants delete
+        # Exit vtam if all variants deleted
         #
         ##########################################################
 
-        try:
-            assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
-        except AssertionError:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
 
 
