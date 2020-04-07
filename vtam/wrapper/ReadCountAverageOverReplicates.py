@@ -131,8 +131,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
             del_stmt = consensus_model.__table__.delete() \
                 .where(consensus_model.run_id == bindparam('run_id')) \
                 .where(consensus_model.marker_id == bindparam('marker_id')) \
-                .where(consensus_model.biosample_id == bindparam('biosample_id')) \
-                .where(consensus_model.replicate == bindparam('replicate'))
+                .where(consensus_model.biosample_id == bindparam('biosample_id'))
             conn.execute(del_stmt, record_list)
 
             # Insert new instances
