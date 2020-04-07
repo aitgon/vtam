@@ -1,3 +1,5 @@
+from sqlalchemy import bindparam
+
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
@@ -124,23 +126,30 @@ class FilterIndel(ToolWrapper):
         #
         ##########################################################
 
-        records = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
+        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
-            conn.execute(output_filter_indel_model.__table__.insert(), records)
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_indel_model.__table__.delete() \
+                .where(output_filter_indel_model.run_id == bindparam('run_id')) \
+                .where(output_filter_indel_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_indel_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_indel_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
+
+            # Insert new instances
+            conn.execute(output_filter_indel_model.__table__.insert(), record_list)
 
         ##########################################################
         #
-        # Exit vtam if all variants delete
+        # Exit vtam if all variants deleted
         #
         ##########################################################
 
-        try:
-            assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
-        except AssertionError:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. The analysis will stop here.".format(self.__class__.__name__)))
+        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
+            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
+                                                    "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
-
-
 
 
 def f13_filter_indel(variant_read_count_df, variant_df):

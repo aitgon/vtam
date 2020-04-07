@@ -1,5 +1,6 @@
 import pathlib
 
+from sqlalchemy import bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam import Logger
@@ -157,6 +158,8 @@ class FilterPCRerror(ToolWrapper):
             record_per_biosample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_per_biosample_df)
             record_list = record_list + record_per_biosample_list
 
+        filter_output_df = pandas.DataFrame.from_records(data=record_list)
+
         ##########################################################
         #
         # Write to DB
@@ -164,19 +167,25 @@ class FilterPCRerror(ToolWrapper):
         ##########################################################
 
         with engine.connect() as conn:
+
+            # Delete instances that will be inserted
+            del_stmt = output_filter_pcr_error_model.__table__.delete() \
+                .where(output_filter_pcr_error_model.run_id == bindparam('run_id')) \
+                .where(output_filter_pcr_error_model.marker_id == bindparam('marker_id')) \
+                .where(output_filter_pcr_error_model.biosample_id == bindparam('biosample_id')) \
+                .where(output_filter_pcr_error_model.replicate == bindparam('replicate'))
+            conn.execute(del_stmt, record_list)
+
+            # Insert new instances
             conn.execute(output_filter_pcr_error_model.__table__.insert(), record_list)
 
         ##########################################################
         #
-        # Exit vtam if all variants delete
+        # Exit vtam if all variants deleted
         #
         ##########################################################
 
-        filter_output_df = pandas.DataFrame.from_records(data=record_list)
-
-        try:
-            assert not filter_output_df.filter_delete.sum() == filter_output_df.shape[0]
-        except AssertionError:
+        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
                                                     "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)

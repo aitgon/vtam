@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.0.1.3 (April 7, 2020)
+--------------------------------------------------
+
+- VariantReadCount: Fixed "insert variants"
+
 CHANGES IN VERSION 0.0.1.2 (April 5, 2020)
 --------------------------------------------------
 
