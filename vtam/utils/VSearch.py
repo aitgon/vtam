@@ -38,6 +38,7 @@ class VSearch(object):
         :return: void
         """
         command = self.create_command()
-        run_result = subprocess.run(shlex.split(command), stdout=subprocess.PIPE)
-        Logger.instance().info(run_result.stdout)
+        run_result = subprocess.run(shlex.split(command), capture_output=True)
+        Logger.instance().info(run_result.stdout.decode())
+        Logger.instance().info(run_result.stderr.decode())
 
