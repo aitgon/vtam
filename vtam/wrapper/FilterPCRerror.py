@@ -65,11 +65,11 @@ class FilterPCRerror(ToolWrapper):
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
         #
         # Input file output
         fasta_info_tsv = self.input_file(FilterPCRerror.__input_file_readinfo)
@@ -87,28 +87,28 @@ class FilterPCRerror(ToolWrapper):
         # Output table models
         output_filter_pcr_error_model = self.output_table(FilterPCRerror.__output_table_filter_pcr_error)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_pcr_error_model, engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # variant_read_count_input_df
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_min_replicate_model, filter_id=None)
@@ -137,11 +137,11 @@ class FilterPCRerror(ToolWrapper):
             this_step_tmp_per_biosample_dir = os.path.join(this_temp_dir, "run_{}_marker_{}_biosample{}".format(run_id, marker_id, biosample_id))
             pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
 
-            ##########################################################
+            ############################################################################################################
             #
             # Run vsearch and get alignement variant_read_count_input_df
             #
-            ##########################################################
+            ############################################################################################################
 
             filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=variant_per_biosample_df,
                                                            variant_unexpected_df=variant_per_biosample_df,
@@ -149,22 +149,22 @@ class FilterPCRerror(ToolWrapper):
                                                            tmp_dir=this_step_tmp_per_biosample_dir)
             filter_output_per_biosample_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)
 
-            ##########################################################
+            ############################################################################################################
             #
             # Per biosample add to record list
             #
-            ##########################################################
+            ############################################################################################################
 
             record_per_biosample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_per_biosample_df)
             record_list = record_list + record_per_biosample_list
 
         filter_output_df = pandas.DataFrame.from_records(data=record_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Write to DB
         #
-        ##########################################################
+        ################################################################################################################
 
         with engine.connect() as conn:
 
@@ -179,11 +179,23 @@ class FilterPCRerror(ToolWrapper):
             # Insert new instances
             conn.execute(output_filter_pcr_error_model.__table__.insert(), record_list)
 
-        ##########################################################
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
+        ################################################################################################################
         #
         # Exit vtam if all variants deleted
         #
-        ##########################################################
+        ################################################################################################################
 
         if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "

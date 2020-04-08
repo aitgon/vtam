@@ -140,6 +140,18 @@ class FilterIndel(ToolWrapper):
             # Insert new instances
             conn.execute(output_filter_indel_model.__table__.insert(), record_list)
 
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
         ##########################################################
         #
         # Exit vtam if all variants deleted
