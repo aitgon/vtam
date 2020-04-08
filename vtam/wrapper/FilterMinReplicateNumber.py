@@ -59,11 +59,11 @@ class FilterMinReplicateNumber(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
         #
         # Input files
         fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_readinfo)
@@ -81,30 +81,29 @@ class FilterMinReplicateNumber(ToolWrapper):
         # Output tables
         output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model
                                                                   =output_filter_min_replicate_model, engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
-        ##########################################################
-        #
+        ################################################################################################################
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         # If filter_id exists, then previous Filter is FilterLFN and we select filter_id=8
         if 'filter_id' in [c.key for c in input_filter_lfn_model.__table__.columns]:
@@ -115,19 +114,19 @@ class FilterMinReplicateNumber(ToolWrapper):
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 4. Run Filter
         #
-        ##########################################################
+        ################################################################################################################
 
         filter_output_df = f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Write to DB
         #
-        ##########################################################
+        ################################################################################################################
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
 
@@ -144,11 +143,23 @@ class FilterMinReplicateNumber(ToolWrapper):
             # Insert new instances
             conn.execute(output_filter_min_replicate_model.__table__.insert(), record_list)
 
-        ##########################################################
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
+        ################################################################################################################
         #
         # Exit vtam if all variants deleted
         #
-        ##########################################################
+        ################################################################################################################
 
         if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
