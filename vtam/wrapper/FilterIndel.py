@@ -129,16 +129,20 @@ class FilterIndel(ToolWrapper):
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
 
-            # Delete instances that will be inserted
-            del_stmt = output_filter_indel_model.__table__.delete() \
-                .where(output_filter_indel_model.run_id == bindparam('run_id')) \
-                .where(output_filter_indel_model.marker_id == bindparam('marker_id')) \
-                .where(output_filter_indel_model.biosample_id == bindparam('biosample_id')) \
-                .where(output_filter_indel_model.replicate == bindparam('replicate'))
-            conn.execute(del_stmt, record_list)
-
             # Insert new instances
             conn.execute(output_filter_indel_model.__table__.insert(), record_list)
+
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
 
         ##########################################################
         #

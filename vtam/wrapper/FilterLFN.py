@@ -57,11 +57,11 @@ class FilterLFN(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
 
         # Input file output
         fasta_info_tsv = self.input_file(FilterLFN.__input_file_readinfo)
@@ -83,7 +83,7 @@ class FilterLFN(ToolWrapper):
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
         lfn_read_count_threshold = self.option("lfn_read_count_threshold")
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
@@ -91,50 +91,52 @@ class FilterLFN(ToolWrapper):
         # 4. Apply filters
         # 5. Write filters to variant_filter_lfn_model
         #
-        ##########################################################
+        ################################################################################################################
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_lfn_model,
                                                                   engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_variant_read_count_model, filter_id=None)
 
-        ##########################################################
+        ################################################################################################################
         #
         #
-        ##########################################################
+        ################################################################################################################
 
         #
         lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
         #
         Logger.instance().info("Launching LFN filter:")
+
+        ################################################################################################################
         #
-        ############################################
         # Filter 2: f2_f4_lfn_delete_variant
         # Or
         # Filter  3: f3_f5_lfn_delete_variant_replicate
-        ############################################
+        #
+        ################################################################################################################
 
         if lfn_variant_replicate_threshold is None:  # run lfn_variant
             # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
@@ -142,44 +144,57 @@ class FilterLFN(ToolWrapper):
         else:  # run lfn_variant_replicate
             # lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
             lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_variant_replicate_threshold)
+
+        ################################################################################################################
         #
-
-        ############################################
         # Filter 6:  f6_lfn_delete_biosample_replicate_delete
-        ############################################
+        #
+        ################################################################################################################
 
-        # lfn_filter_runner.f6_lfn_delete_biosample_replicate(lfn_biosample_replicate_threshold)
         lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_biosample_replicate_threshold)
 
-        ############################################
+        ################################################################################################################
+        #
         # Filter  7:mark_delete_lfn_absolute_read_count
-        ############################################
+        #
+        ################################################################################################################
+
         lfn_filter_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
 
-        ############################################
+        ################################################################################################################
+        #
         # Filter 8:mark_delete_lfn_do_not_pass_all_filters
-        ############################################
+        #
+        ################################################################################################################
+
         lfn_filter_runner.mark_delete_lfn_do_not_pass_all_filters()
 
-        ############################################
+        ################################################################################################################
+        #
         # Write to DB
-        ############################################
+        #
+        ################################################################################################################
+
         filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
 
         with engine.connect() as conn:
 
-            # Delete instances that will be inserted
-            del_stmt = output_filter_lfn_model.__table__.delete() \
-                .where(output_filter_lfn_model.run_id == bindparam('run_id')) \
-                .where(output_filter_lfn_model.marker_id == bindparam('marker_id')) \
-                .where(output_filter_lfn_model.biosample_id == bindparam('biosample_id')) \
-                .where(output_filter_lfn_model.replicate == bindparam('replicate'))
-            conn.execute(del_stmt, record_list)
-
             # Insert new instances
             conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
+
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
 
         ##########################################################
         #

@@ -1,4 +1,5 @@
 import math
+import multiprocessing
 import os
 
 import pandas
@@ -30,6 +31,7 @@ class FilterPCRerrorRunner(object):
 
         Returns: Pandas DataFrame with output of vsearch and these columnts: query, target, alnlen, ids, mism, gaps
         """
+
         # length of smallest sequence
         length_min = min(
             self.__variant_expected_df.sequence.apply(len).tolist() + self.__variant_unexpected_df.sequence.apply(
@@ -52,6 +54,10 @@ class FilterPCRerrorRunner(object):
 
         #
         # Create object and run vsearch
+        if os.getenv('VTAM_THREADS') is None:
+            num_threads = multiprocessing.cpu_count()
+        else:
+            num_threads = int(os.getenv('VTAM_THREADS'))
         vsearch_pcr_error_tsv = os.path.join(self.__tmp_dir, '{}.tsv'.format("vsearch_pcr_error"))
         vsearch_parameters = {'db': variant_expected_fasta_path,
                                        'usearch_global': variant_unexpected_fasta_path,
@@ -60,7 +66,7 @@ class FilterPCRerrorRunner(object):
                                        'maxaccepts': 0,
                                        'userout': vsearch_pcr_error_tsv,
                                        'userfields': "query+target+alnlen+ids+mism+gaps",
-                                        'threads': int(os.getenv('VTAM_THREADS')),
+                                        'threads': num_threads,
                                        }
         vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
