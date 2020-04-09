@@ -220,7 +220,7 @@ class OptimizePCRerror(ToolWrapper):
         with engine.connect() as conn:
             for variant_id_unexpected in final_pcr_error_df.variant_id_unexpected.unique():
                 variant_id_unexpected = int(variant_id_unexpected)
-                variant_sequence_row = conn.execute(sqllchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id_unexpected)).first()
+                variant_sequence_row = conn.execute(sqlchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id_unexpected)).first()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
                     final_pcr_error_df.loc[(final_pcr_error_df.variant_id_unexpected == variant_id_unexpected).values, 'variant_seq_unexpected'] = variant_sequence
