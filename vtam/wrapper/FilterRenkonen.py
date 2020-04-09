@@ -94,35 +94,46 @@ class FilterRenkonen(ToolWrapper):
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_renkonen_model, engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # variant_read_count_input_df
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_chimera_model, filter_id=None)
 
-        ##########################################################
+        ################################################################################################################
         #
-        # 4. Run Filter
+        # Run per run_id, marker_id
         #
-        ##########################################################
+        ################################################################################################################
 
-        if variant_read_count_df.replicate.unique().shape[0] > 1: # if more than one replicate
-            filter_renkonen_runner_obj = FilterRenkonenRunner(variant_read_count_df)
-            filter_output_df = filter_renkonen_runner_obj.get_filter_output_df(renkonen_distance_quantile)
-            # filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_distance_quantile)
-        else: # Just one replicate
-            filter_output_df = variant_read_count_df.copy()
-            filter_output_df['filter_delete'] = False
+        filter_output_df = pandas.DataFrame()
+        run_marker_df = variant_read_count_df[['run_id', 'marker_id']].drop_duplicates()
 
+        for row in run_marker_df.itertuples():
+            run_id = row.run_id
+            marker_id = row.marker_id
 
-        ##########################################################
+            variant_read_count_per_run_marker_df = variant_read_count_df.loc[
+                (variant_read_count_df.run_id == run_id) & (variant_read_count_df.marker_id == marker_id)]
+
+            if variant_read_count_per_run_marker_df.replicate.unique().shape[0] > 1:  # if more than one replicate
+                filter_renkonen_runner_obj = FilterRenkonenRunner(variant_read_count_per_run_marker_df)
+                filter_output_i_df = filter_renkonen_runner_obj.get_filter_output_df(renkonen_distance_quantile)
+                # filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_distance_quantile)
+            else:  # Just one replicate
+                filter_output_i_df = variant_read_count_df.copy()
+                filter_output_i_df['filter_delete'] = False
+
+            filter_output_df = pandas.concat([filter_output_df, filter_output_i_df], axis=0)
+
+        ################################################################################################################
         #
         # Write to DB
         #
-        ##########################################################
+        ################################################################################################################
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
@@ -138,11 +149,11 @@ class FilterRenkonen(ToolWrapper):
             # Insert new instances
             conn.execute(output_filter_renkonen_model.__table__.insert(), record_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Exit vtam if all variants deleted
         #
-        ##########################################################
+        ################################################################################################################
 
         if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
