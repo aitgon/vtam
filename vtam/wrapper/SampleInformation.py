@@ -89,12 +89,24 @@ class SampleInformation(ToolWrapper):
             sample_information_obj['marker_id'] = marker_id
             SampleInformation.get_or_create(session, sampleinformation_model, **sample_information_obj)
 
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
     @staticmethod
     def get_or_create(session, model, **kwargs):
         instance = session.query(model).filter_by(**kwargs).first()
-        if instance:
+        if instance:  # get
             return instance
-        else:
+        else:  # create
             instance = model(**kwargs)
             session.add(instance)
             session.commit()
