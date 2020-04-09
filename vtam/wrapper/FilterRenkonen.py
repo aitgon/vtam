@@ -55,11 +55,11 @@ class FilterRenkonen(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
         #
         # Input file output
         fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_readinfo)
@@ -77,19 +77,19 @@ class FilterRenkonen(ToolWrapper):
         # Output table models
         output_filter_renkonen_model = self.output_table(FilterRenkonen.__output_table_filter_renkonen)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_renkonen_model, engine=engine)
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
@@ -138,18 +138,22 @@ class FilterRenkonen(ToolWrapper):
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
         with engine.connect() as conn:
 
-            # Delete instances that will be inserted
-            del_stmt = output_filter_renkonen_model.__table__.delete() \
-                .where(output_filter_renkonen_model.run_id == bindparam('run_id')) \
-                .where(output_filter_renkonen_model.marker_id == bindparam('marker_id')) \
-                .where(output_filter_renkonen_model.biosample_id == bindparam('biosample_id')) \
-                .where(output_filter_renkonen_model.replicate == bindparam('replicate'))
-            conn.execute(del_stmt, record_list)
-
             # Insert new instances
             conn.execute(output_filter_renkonen_model.__table__.insert(), record_list)
 
         ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
+        ##########################################################
         #
         # Exit vtam if all variants deleted
         #

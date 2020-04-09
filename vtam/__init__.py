@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import shlex
 import subprocess
 import sys
 
@@ -109,6 +110,9 @@ class VTAM(object):
 
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
+            # run_result = subprocess.run(shlex.split(wopmars_command), capture_output=True)
+            # Logger.instance().info(run_result.stdout.decode())
+            # Logger.instance().info(run_result.stderr.decode())
             sys.exit(run_result.returncode)
 
         ###############################################################
