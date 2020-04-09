@@ -396,11 +396,11 @@ class ArgParser:
                                  help="Only display what would have been done.")
         parser_vtam_filter.add_argument('-F', '--forceall', dest='forceall', action='store_true',
                                  help="Force argument of WopMars", required=False)
-        parser_vtam_filter.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
-                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
+        parser_vtam_filter.add_argument('-U', '--until', dest='until', action='store', default=None,
+                                 help="Execute the workflow until the given target RULE: SampleInformation, ...",
                                  required=False)
-        parser_vtam_filter.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
-                                 help="Execute the workflow from the given RULE.", required=False)
+        parser_vtam_filter.add_argument('-S', '--since', dest='since', action='store', default=None,
+                                 help="Execute the workflow since the given RULE.", required=False)
 
         parser_vtam_filter.set_defaults(command='filter')  # This attribute will trigger the good command
 
@@ -430,11 +430,11 @@ class ArgParser:
                                  help="Only display what would have been done.")
         parser_vtam_optimize.add_argument('-F', '--forceall', dest='forceall', action='store_true',
                                  help="Force argument of WopMars", required=False)
-        parser_vtam_optimize.add_argument('-t', '--targetrule', dest='targetrule', action='store', default=None,
-                                 help="Execute the workflow to the given target RULE: SampleInformation, ...",
+        parser_vtam_optimize.add_argument('-U', '--until', dest='until', action='store', default=None,
+                                 help="Execute the workflow until the given target RULE: SampleInformation, ...",
                                  required=False)
-        parser_vtam_optimize.add_argument('-f', '--sourcerule', dest='sourcerule', action='store', default=None,
-                                 help="Execute the workflow from the given RULE.", required=False)
+        parser_vtam_optimize.add_argument('-S', '--since', dest='since', action='store', default=None,
+                                 help="Execute the workflow since the given RULE.", required=False)
 
         parser_vtam_optimize.set_defaults(command='optimize')  # This attribute will trigger the good command
 
