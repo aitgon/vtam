@@ -67,6 +67,8 @@ rule FilterChimera:
         table:
             FilterChimera: vtam.models.FilterChimera
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+    params:
+        uchime3_denovo_abskew: {{uchime3_denovo_abskew}}
 
 
 rule FilterMinReplicateNumber2:
