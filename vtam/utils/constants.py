@@ -21,6 +21,8 @@ parameters_numerical_default = {
     'cutadapt_maximum_length': 500,
     # Filter/VariantReadCount parameters
     'global_read_count_threshold': 2,
+    # vsearch/Chimera detection/uchime3_denovo
+    'uchime3_denovo_abskew': 16.0,
     #
     'genetic_table_number': 5,
     'ltg_rule_threshold': 97,
@@ -34,7 +36,7 @@ parameters_numerical_default = {
     'pcr_error_var_prop': 0.1,
     'skip_filter_codon_stop': 0,
     'skip_filter_indel': 0,
-    'renkonen_distance_quantile': 0.1,
+    'renkonen_distance_quantile': 0.9,
     'threads': int(multiprocessing.cpu_count()),
 }
 

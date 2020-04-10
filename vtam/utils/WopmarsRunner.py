@@ -136,11 +136,11 @@ class WopmarsRunner(Singleton):
         if not self.parameters['log_file'] is None:
             wopmars_command += " --log " + self.parameters['log_file']
 
-        if not self.parameters['sourcerule'] is None:
-            wopmars_command += " --sourcerule {sourcerule}".format(**self.parameters)
+        if not self.parameters['since'] is None:
+            wopmars_command += " --since {since}".format(**self.parameters)
 
-        if not self.parameters['targetrule'] is None:
-            wopmars_command += " --targetrule {targetrule}".format(**self.parameters)
+        if not self.parameters['until'] is None:
+            wopmars_command += " --until {until}".format(**self.parameters)
 
         wopmars_command = wopmars_command.format(**self.parameters)
         return wopmars_command
