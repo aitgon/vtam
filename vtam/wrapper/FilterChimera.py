@@ -55,6 +55,7 @@ class FilterChimera(ToolWrapper):
 
     def specify_params(self):
         return{
+            "uchime3_denovo_abskew": "float",
         }
 
     def run(self):
