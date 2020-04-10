@@ -256,6 +256,7 @@ class ArgParser:
         """
         # create the top-level parser
         parser_vtam_main = argparse.ArgumentParser(add_help=False)
+        # TODO check that parameters in this file are recognized
         parser_vtam_main.add_argument('--params', action='store', default=None, help="YML file with parameter values",
                                  required=False, type=ArgParserChecker.check_file_exists_and_is_nonempty)
         parser_vtam_main.add_argument('--log', **cls.args_log_file)

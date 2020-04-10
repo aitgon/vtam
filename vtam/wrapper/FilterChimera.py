@@ -83,6 +83,9 @@ class FilterChimera(ToolWrapper):
         # Output table models
         output_filter_chimera_model = self.output_table(FilterChimera.__output_table_filter_chimera)
         filter_chimera_borderline_model = self.output_table(FilterChimera.__output_table_filter_chimera_borderline)
+        #
+        # Options
+        uchime3_denovo_abskew = self.option("uchime3_denovo_abskew")
 
         ################################################################################################################
         #
@@ -121,8 +124,8 @@ class FilterChimera(ToolWrapper):
         #
         ################################################################################################################
 
-        filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df)
-        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_temp_dir)
+        filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df, )
+        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_temp_dir, uchime3_denovo_abskew=uchime3_denovo_abskew)
 
         ################################################################################################################
         #
