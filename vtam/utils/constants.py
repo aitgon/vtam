@@ -34,7 +34,7 @@ parameters_numerical_default = {
     'pcr_error_var_prop': 0.1,
     'skip_filter_codon_stop': 0,
     'skip_filter_indel': 0,
-    'renkonen_distance_quantile': 0.1,
+    'renkonen_distance_quantile': 0.9,
     'threads': int(multiprocessing.cpu_count()),
 }
 
