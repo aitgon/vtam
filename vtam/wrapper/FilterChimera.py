@@ -55,6 +55,7 @@ class FilterChimera(ToolWrapper):
 
     def specify_params(self):
         return{
+            "uchime3_denovo_abskew": "float",
         }
 
     def run(self):
@@ -64,11 +65,11 @@ class FilterChimera(ToolWrapper):
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
         #
         # Input file output
         fasta_info_tsv = self.input_file(FilterChimera.__input_file_readinfo)
@@ -83,20 +84,23 @@ class FilterChimera(ToolWrapper):
         # Output table models
         output_filter_chimera_model = self.output_table(FilterChimera.__output_table_filter_chimera)
         filter_chimera_borderline_model = self.output_table(FilterChimera.__output_table_filter_chimera_borderline)
+        #
+        # Options
+        uchime3_denovo_abskew = self.option("uchime3_denovo_abskew")
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_like_table_obj = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_chimera_model, engine=engine)
         variant_read_count_like_table_obj.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
@@ -104,44 +108,35 @@ class FilterChimera(ToolWrapper):
         variant_read_count_like_table_borderline_obj = VariantReadCountLikeTable(variant_read_count_like_model=filter_chimera_borderline_model, engine=engine)
         variant_read_count_like_table_borderline_obj.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
-        ##########################################################
-        #
+        ################################################################################################################        #
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_pcr_error_model, filter_id=None)
         variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=input_filter_pcr_error_model,
                                                variant_model=variant_model)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 4. Run Filter
         #
-        ##########################################################
+        ################################################################################################################
 
-        filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df)
-        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_temp_dir)
+        filter_chimera_runner = FilterChimeraRunner(variant_df=variant_df, variant_read_count_df=variant_read_count_df, )
+        filter_output_chimera_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=this_temp_dir, uchime3_denovo_abskew=uchime3_denovo_abskew)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Write to DB
         #
-        ##########################################################
+        ################################################################################################################
 
         records_chimera_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_chimera_df)
 
         with engine.connect() as conn:
-
-            # Delete instances that will be inserted
-            del_stmt = output_filter_chimera_model.__table__.delete() \
-                .where(output_filter_chimera_model.run_id == bindparam('run_id')) \
-                .where(output_filter_chimera_model.marker_id == bindparam('marker_id')) \
-                .where(output_filter_chimera_model.biosample_id == bindparam('biosample_id')) \
-                .where(output_filter_chimera_model.replicate == bindparam('replicate'))
-            conn.execute(del_stmt, records_chimera_list)
 
             # Insert new instances
             conn.execute(output_filter_chimera_model.__table__.insert(), records_chimera_list)
@@ -150,22 +145,26 @@ class FilterChimera(ToolWrapper):
 
         with engine.connect() as conn:
 
-            # Delete instances that will be inserted
-            del_stmt = filter_chimera_borderline_model.__table__.delete() \
-                .where(filter_chimera_borderline_model.run_id == bindparam('run_id')) \
-                .where(filter_chimera_borderline_model.marker_id == bindparam('marker_id')) \
-                .where(filter_chimera_borderline_model.biosample_id == bindparam('biosample_id')) \
-                .where(filter_chimera_borderline_model.replicate == bindparam('replicate'))
-            conn.execute(del_stmt, records_chimera_borderline_list)
-
             # Insert new instances
             conn.execute(filter_chimera_borderline_model.__table__.insert(), records_chimera_borderline_list)
 
-        ##########################################################
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
+
+        ################################################################################################################
         #
         # Exit vtam if all variants delete
         #
-        ##########################################################
+        ################################################################################################################
 
         if filter_output_chimera_df.filter_delete.sum() == filter_output_chimera_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "

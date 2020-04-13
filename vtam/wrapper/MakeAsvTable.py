@@ -52,11 +52,11 @@ class MakeAsvTable(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ################################################################################################################
         #
         # Input file output
         fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_readinfo)
@@ -71,12 +71,12 @@ class MakeAsvTable(ToolWrapper):
         # Output table models
         asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
         #
@@ -92,11 +92,11 @@ class MakeAsvTable(ToolWrapper):
         variant_to_chimera_borderline_df = fasta_info_tsv.get_variant_to_chimera_borderline_df(
             filter_chimera_borderline_model=filter_chimera_borderline_model)
 
-        ##########################################################
+        ################################################################################################################
         #
         # Compute variant_to_chimera_borderline_df
         #
-        ##########################################################
+        ################################################################################################################
 
         asv_table_runner = AsvTableRunner(engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df,
                                           variant_to_chimera_borderline_df)

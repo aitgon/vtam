@@ -17,7 +17,7 @@ class FilterChimeraRunner(object):
         self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df
 
-    def run(self, tmp_dir):
+    def run(self, tmp_dir, uchime3_denovo_abskew):
 
         this_step_tmp_dir = os.path.join(tmp_dir, os.path.basename(__name__))
         pathlib.Path(this_step_tmp_dir).mkdir(exist_ok=True)
@@ -43,7 +43,7 @@ class FilterChimeraRunner(object):
 
             variant_size_df = self.variant_df.merge(N_i_df, left_index=True, right_on='variant_id')
             variant_size_df = variant_size_df[['variant_id', 'sequence', 'N_i']]
-            variant_size_df.rename(columns = {'N_i': 'size'}, inplace=True)
+            variant_size_df.rename(columns={'N_i': 'size'}, inplace=True)
             variant_size_df.set_index('variant_id', inplace=True)
 
             ###################################################################
@@ -65,6 +65,7 @@ class FilterChimeraRunner(object):
             # Run uchime_denovo
             #
             ###################################################################
+
             uchime_borderline_fasta_path = os.path.join(this_step_tmp_dir,
                                                      'run_{}_marker_{}_biosample_{}_borderline.fasta'
                                                          .format(run_id, marker_id, biosample_id))
@@ -77,10 +78,11 @@ class FilterChimeraRunner(object):
 
             #
             # Create object and run vsearch
-            vsearch_parameters = {'uchime2_denovo': uchime_fasta_path,
+            vsearch_parameters = {'uchime3_denovo': uchime_fasta_path,
                                   'borderline': uchime_borderline_fasta_path,
                                   'nonchimeras': uchime_nonchimeras_fasta_path,
                                   'chimeras': uchime_chimeras_fasta_path,
+                                  'abskew': uchime3_denovo_abskew,
                                   }
             vsearch_cluster = VSearch(parameters=vsearch_parameters)
             vsearch_cluster.run()
