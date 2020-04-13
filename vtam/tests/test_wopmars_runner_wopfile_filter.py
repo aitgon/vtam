@@ -157,6 +157,8 @@ rule FilterChimera:
         table:
             FilterChimera: vtam.models.FilterChimera
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+    params:
+        uchime3_denovo_abskew: 16.0
 
 
 rule FilterMinReplicateNumber2:
@@ -190,7 +192,7 @@ rule FilterRenkonen:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
     params:
-        renkonen_distance_quantile: 0.1
+        renkonen_distance_quantile: 0.9
 
 
 rule FilterMinReplicateNumber3:
