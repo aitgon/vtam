@@ -71,19 +71,19 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # Output table models
         consensus_model = self.output_table(ReadCountAverageOverReplicates.__output_table_filter_consensus)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2. Delete /run/markerbiosample/replicate from this filter table
         #
-        ##########################################################
+        ################################################################################################################
         # with engine.connect() as conn:
         #     # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         #     conn.execute(consensus_model.__table__.delete(), sample_instance_list)
@@ -93,11 +93,11 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
 
 
-        ##########################################################
+        ################################################################################################################
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
-        ##########################################################
+        ################################################################################################################
 
         variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
             variant_read_count_like_model=codon_stop_model, filter_id=None)
@@ -109,33 +109,37 @@ class ReadCountAverageOverReplicates(ToolWrapper):
             sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
             sys.exit(1)
 
-        ##########################################################
-        #
-        #
-        ##########################################################
-        # else:
-        ##########################################################
+        ################################################################################################################
         #
         # 4. Run Filter
         #
-        ##########################################################
+        ################################################################################################################
+
         df_out = read_count_average_over_replicates(variant_read_count_df)
 
-        ############################################
+        ################################################################################################################
+        #
         # Write to DB
-        ############################################
+        #
+        ################################################################################################################
+
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
         with engine.connect() as conn:
 
-            # Delete instances that will be inserted
-            del_stmt = consensus_model.__table__.delete() \
-                .where(consensus_model.run_id == bindparam('run_id')) \
-                .where(consensus_model.marker_id == bindparam('marker_id')) \
-                .where(consensus_model.biosample_id == bindparam('biosample_id'))
-            conn.execute(del_stmt, record_list)
-
             # Insert new instances
             conn.execute(consensus_model.__table__.insert(), record_list)
+
+        ################################################################################################################
+        #
+        # Touch output tables, to update modification date
+        #
+        ################################################################################################################
+
+        for output_table_i in self.specify_output_table():
+            declarative_meta_i = self.output_table(output_table_i)
+            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            session.commit()
 
 def read_count_average_over_replicates(variant_read_count_df):
     """

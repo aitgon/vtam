@@ -87,82 +87,83 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         for vknown_grouped_key in vknown_grouped.groups:
             variant_known_i_df = variant_known_df.loc[vknown_grouped.groups[vknown_grouped_key], :]
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Read user known variant information and verify consistency with DB
             #
-            ########################### #####################################################################################
+            ############################################################################################################
 
             variant_known = VariantKnown(variant_known_i_df, fasta_info_tsv_path, engine)
             variant_known_ids_df = variant_known.variant_known_ids_df
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Get run_id, marker_id, biosample_id rows marked as mock
             #
-            ################################################################################################################
+            ############################################################################################################
 
             run_marker_biosample_mock_df = variant_known_ids_df.loc[
                 variant_known_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
             run_marker_biosample_mock_df.drop_duplicates(inplace=True)
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Get variant read count variant_read_count_input_df
             #
-            ################################################################################################################
+            ############################################################################################################
+
             fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
             variant_read_count_df = fasta_info_tsv_obj.get_variant_read_count_df(variant_read_count_model)
 
             variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
             N_jk_df = variant_read_count_df_obj.get_N_jk_df()
 
-            ################################################################################################
+            ############################################################################################################
             #
             # Get delete variants, that are not keep in mock samples
             #
-            ################################################################################################
+            ############################################################################################################
 
             # These columns: run_id  marker_id  biosample_id  variant_id
             variant_keep_df = variant_known.get_keep_run_marker_biosample_variant_df()
 
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # variant_read_count for keep variants only
             #
-            ################################################################################################################
+            ############################################################################################################
 
             variant_read_count_keep_df = variant_read_count_df.merge(variant_keep_df, on=['run_id', 'marker_id',
                                                                                                         'biosample_id',
                                                                                                         'variant_id'])
 
-            ##########################################################
+            ############################################################################################################
             #
             # 4. Compute ratio per_sum_biosample_replicate: N_ijk / N_jk
             #
-            ##########################################################
+            ############################################################################################################
 
             optimize_output_df = variant_read_count_keep_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
             optimize_output_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
             optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_output_df['N_ijk'] / optimize_output_df['N_jk']
 
-            ##########################################################
+            ############################################################################################################
             #
             # 5.Sort and extract the lowest value of the ration with 4 digit
             #
-            ##########################################################
+            ############################################################################################################
 
             optimize_output_df=optimize_output_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
             # Make round.inf with 4 decimals
             round_down_4_decimals = lambda x: int(x * 10 ** 4) / 10 ** 4
             optimize_output_df['round_down'] = optimize_output_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
 
-            ##########################################################
+            ############################################################################################################
             #
             # Convert run_id, marker_id and biosample_id to their names
             #
-            ##########################################################
+            ############################################################################################################
 
             with engine.connect() as conn:
                 run_id_to_name = conn.execute(
@@ -202,12 +203,12 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
                     variant_sequence = variant_sequence_row[0]
                     final_optimize_output_df.loc[(final_optimize_output_df.variant_id == variant_id).values, 'sequence'] = variant_sequence
 
-        ##########################################################
+        ################################################################################################################
         #
         # 7. Write TSV file
         #
-        ##########################################################
-        # lines should be ordered : run, marker, round_down,
+        ################################################################################################################
+
         final_optimize_output_df.sort_values(by=['run', 'marker', 'round_down', 'lfn_biosample_replicate: N_ijk/N_jk',
                                                  'biosample', 'replicate'],
                                        ascending=[True, True, True, True, True, True], inplace=True)

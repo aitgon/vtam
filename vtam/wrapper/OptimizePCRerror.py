@@ -100,20 +100,20 @@ class OptimizePCRerror(ToolWrapper):
         for vknown_grouped_key in vknown_grouped.groups:
             variant_known_i_df = variant_known_df.loc[vknown_grouped.groups[vknown_grouped_key], :]
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Read user known variant information and verify consistency with DB
             #
-            ################################################################################################################
+            ############################################################################################################
 
             variant_known = VariantKnown(variant_known_i_df, fasta_info_tsv_path, engine)
             variant_known_ids_df = variant_known.variant_known_ids_df
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Get run_marker_biosample IDs marked as mock
             #
-            ################################################################################################################
+            ############################################################################################################
 
             run_marker_biosample_mock_df = variant_known_ids_df.loc[
                 variant_known_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
@@ -131,22 +131,22 @@ class OptimizePCRerror(ToolWrapper):
 
             variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=variant_read_count_model, variant_model=variant_model)
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Get variant_read_count_expected, variant_read_count_unexpected and variant_df
             #
-            ################################################################################################################
+            ############################################################################################################
 
             run_marker_biosample_variant_keep_df = variant_known.get_keep_run_marker_biosample_variant_df()
 
             variant_delete_df, variant_delete_mock_df, variant_delete_negative_df, variant_delete_real_df\
                 = variant_known.get_delete_run_marker_biosample_variant_df(variant_read_count_df=variant_read_count_df)
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Run per biosample_id
             #
-            ################################################################################################################
+            ############################################################################################################
 
             pcr_error_per_run_marker_df = pandas.DataFrame()
 
@@ -166,11 +166,11 @@ class OptimizePCRerror(ToolWrapper):
                 this_step_tmp_per_biosample_dir = os.path.join(this_temp_dir, str(biosample_id))
                 pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
 
-                ##########################################################
+                ############################################################################################################
                 #
                 # Run vsearch and get alignement variant_read_count_input_df
                 #
-                ##########################################################
+                ############################################################################################################
 
                 filter_pcr_error_runner = FilterPCRerrorRunner(variant_expected_df=variant_expected_per_biosample_df,
                                                                variant_unexpected_df=variant_unexpected_per_biosample_df,
@@ -181,11 +181,11 @@ class OptimizePCRerror(ToolWrapper):
 
                 pcr_error_per_run_marker_df = pandas.concat([pcr_error_per_run_marker_df, pcr_error_df], axis=0)
 
-            ##########################################################
+            ############################################################################################################
             #
             # Convert run_id, marker_id and biosample_id to their names
             #
-            ##########################################################
+            ############################################################################################################
 
             with engine.connect() as conn:
                 run_id_to_name = conn.execute(
@@ -235,11 +235,11 @@ class OptimizePCRerror(ToolWrapper):
                     variant_sequence = variant_sequence_row[0]
                     final_pcr_error_df.loc[(final_pcr_error_df.variant_id_expected == variant_id_expected).values, 'variant_seq_expected'] = variant_sequence
 
-        ##########################################################
+        ################################################################################################################
         #
         # Write Optimize PCRError to TSV file
         #
-        ##########################################################
+        ################################################################################################################
 
         # lines should be ordered: by run, marker,
         final_pcr_error_df.sort_values(by=['run', 'marker', 'N_ij_unexpected_to_expected_ratio', 'variant_id_expected', 'variant_id_unexpected'],
