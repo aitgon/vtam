@@ -1,44 +1,105 @@
+import multiprocessing
+import yaml
+
 ########################################################################################################################
 #
 # Default VTAM parameters_numerical_default
 #
 ########################################################################################################################
-import multiprocessing
 
-parameters_numerical_default = {
-    # Merge/vsearch parameters
-    'fastq_ascii': 33,
-    'fastq_maxee': 1,
-    'fastq_maxmergelen': 500,
-    'fastq_maxns': 0,
-    'fastq_minlen': 50,
-    'fastq_minmergelen': 100,
-    'fastq_minovlen': 50,
-    'fastq_truncqual': 10,
-    # Sortread/cutadapt parameters
-    'cutadapt_error_rate': 0.1,
-    'cutadapt_minimum_length': 50,
-    'cutadapt_maximum_length': 500,
-    # Filter/VariantReadCount parameters
-    'global_read_count_threshold': 2,
-    # vsearch/Chimera detection/uchime3_denovo
-    'uchime3_denovo_abskew': 16.0,
-    #
-    'genetic_table_number': 5,
-    'ltg_rule_threshold': 97,
-    'include_prop': 90,
-    'lfn_biosample_replicate_threshold': 0.001,
-    'lfn_read_count_threshold': 10,
-    'lfn_variant_replicate_threshold': None,
-    'lfn_variant_threshold': 0.001,
-    'min_number_of_taxa': 3,
-    'min_replicate_number': 2,
-    'pcr_error_var_prop': 0.1,
-    'skip_filter_codon_stop': 0,
-    'skip_filter_indel': 0,
-    'renkonen_distance_quantile': 0.9,
-    'threads': int(multiprocessing.cpu_count()),
-}
+params_default_str = """################################################################################
+# This parameter sets the number of cores (Default: maximal)
+threads: 8
+
+################################################################################
+# Parameters of the "merge" command
+# These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
+# For a description of these parameters run "vsearch --help"
+fastq_ascii: 33
+fastq_maxee: 1
+fastq_maxmergelen: 500
+fastq_maxns: 0
+fastq_minlen: 50
+fastq_minmergelen: 100
+fastq_minovlen: 50
+fastq_truncqual: 10
+
+################################################################################
+# Parameters of the "sortreads" command
+# These parameters correspond to the corresponding parametes by cutadapt that underlies the "vtam sortreads" command
+# For a description of these parameters run "cutadapt --help"
+cutadapt_error_rate: 0.1
+cutadapt_minimum_length: 50
+cutadapt_maximum_length: 500
+
+################################################################################
+# Parameters of the "filter" command
+# This parameter sets the minimal number of reads of a variant in the whole run
+global_read_count_threshold: 2
+
+################################################################################
+# Parameters of the "FilterLFN" filter in the "filter" command
+# These parameters set the thresholds for the low frequency noise (LFN) filters
+# Occurrence is deleted if N_ijk/N_i < lfn_variant_threshold
+lfn_variant_threshold: 0.001
+# Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_threshold
+lfn_variant_replicate_threshold: None
+# Occurrence is deleted if N_ijk/N_jk < lfn_ biosample _replicate_threshold
+lfn_biosample_replicate_threshold: 0.001
+# Occurrence is deleted if N_ijk < lfn_ read_count_threshold
+lfn_read_count_threshold: 10
+# Choice between lfn_variant (1) and lfn_variant_replicate (0) filters
+filter_lfn_variant: 1
+
+################################################################################
+# Parameters of the "FilterMinReplicateNumber" filter in the "filter" command
+# Occurrences of a variant in a given biosample are retained only if it is present in at least min_replicate_number replicates of the biosample
+min_replicate_number: 2
+
+################################################################################
+# Parameter of the "FilterPCRerror" filter in the "filter" command
+# A given variant 1 is eliminated if N_1j/N_2j < pcr_error_var_prop, where variant 2 is identical to variant 1 except a single mismatch
+pcr_error_var_prop: 0.1
+
+################################################################################
+# Parameter of the "FilterChimera" filter in the "filter" command
+# This parameter corresponds to the abskew parameter in the vsearch --uchime3_denovo tool that underlies the vtam FilterChimera
+# For a description of this parameter run "vsearch --help"
+uchime3_denovo_abskew: 16.0
+
+################################################################################
+# Parameter of the "FilterRenkonen" filter in the "filter" command
+# This parameters sets a cutoff renkonen distance at the given quantile of renkonen distances
+renkonen_distance_quantile: 0.9
+
+################################################################################
+# Parameter of the "FilterIndel" filter in the "filter" command
+# If 1, skips this filter for non-coding markers
+skip_filter_indel: 0
+
+################################################################################
+# Parameter of the "FilterCondonStop" filter in the "filter" command
+# If 1, skips this filter for non-coding markers
+skip_filter_codon_stop: 0
+# Translation table number from NCBI [ link]
+genetic_table_number: 5
+
+################################################################################
+# Parameters of the "taxassign" command
+# These parameters are used by the "vtam taxassign" command to assign taxa to variants
+# Identity percentage cutoff to use the "include_prop" rule (%identity>=ltg_rule_threshold)
+# or the min_number_of_tax rule (%identity<ltg_rule_threshold)
+ltg_rule_threshold: 97
+# The LTG must include include_prop percent of the hits
+include_prop: 90
+# Minimal number of taxa to keep a given LTG for %identity below ltg_rule_threshold
+min_number_of_taxa: 3"""
+
+def get_dic_params_default():
+    params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
+    params_default_dic['threads'] = multiprocessing.cpu_count()
+    params_default_dic['lfn_variant_replicate_threshold'] = None
+    return params_default_dic
 
 ########################################################################################################################
 #

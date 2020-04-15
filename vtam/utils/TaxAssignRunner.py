@@ -354,7 +354,8 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                 # Case 2: identity < ltg_rule_threshold and target_tax_id.unique.count > min_number_of_taxa
                 #
                 ###########
-                if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist()) >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
+                if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist())
+                    >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
                     # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
                     ltg_tax_id, ltg_rank = None, None
                     lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
