@@ -6,7 +6,7 @@ import jinja2
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
-from vtam.utils.constants import parameters_numerical_default
+from vtam.utils import constants
 
 
 class WopmarsRunner(Singleton):
@@ -18,12 +18,15 @@ class WopmarsRunner(Singleton):
         :param parameters: dictionnary (OptionManager.instance()) with command
         """
         self.command = command
-        ##################################
+
+        ################################################################################################################
         #
         # Load default numerical parameters and overwrite with custom parameters
         #
-        ##################################
-        self.parameters = parameters_numerical_default.copy()
+        ################################################################################################################
+
+        params_default = constants.get_dic_params_default()
+        self.parameters = params_default.copy()
         for k in parameters:
             self.parameters[k] = parameters[k]
         #
@@ -37,12 +40,14 @@ class WopmarsRunner(Singleton):
         :param wopfile_path: Path of output wopfile
         :return: tuple (wopfile_path, wopfile_content)
         """
-        #####################
+
+        ################################################################################################################
         #
         # Get Wopfile template output
         # Create Wopfile output
         #
-        #####################
+        ################################################################################################################
+
         wopfile_path = path
         if wopfile_path is None:
             wopfile_path = tempfile.NamedTemporaryFile().name

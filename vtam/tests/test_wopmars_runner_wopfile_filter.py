@@ -320,7 +320,7 @@ rule MakeAsvTable:
         #####################
 
         params_yml_str = "lfn_variant_replicate_threshold: {}".format(self.lfn_variant_replicate_threshold)
-        params_yml_path = os.path.join(self.tempdir, "params.yml")
+        params_yml_path = os.path.join(self.tempdir, "params_wrong.yml")
         with open(params_yml_path, "w") as fout:
             fout.write(params_yml_str)
         this_foopaths = self.foopaths.copy()

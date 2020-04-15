@@ -9,7 +9,7 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
-from vtam.utils.constants import parameters_numerical_default
+from vtam.utils import constants
 
 
 # class VSearchMergeRunner(object):
@@ -81,14 +81,15 @@ class CommandMerge(object):
 
         merge_vsearch_parameters = {}
 
-        merge_vsearch_parameters['fastq_ascii'] = parameters_numerical_default['fastq_ascii']
-        merge_vsearch_parameters['fastq_maxee'] = parameters_numerical_default['fastq_maxee']
-        merge_vsearch_parameters['fastq_maxmergelen'] = parameters_numerical_default['fastq_maxmergelen']
-        merge_vsearch_parameters['fastq_maxns'] = parameters_numerical_default['fastq_maxns']
-        merge_vsearch_parameters['fastq_minlen'] = parameters_numerical_default['fastq_minlen']
-        merge_vsearch_parameters['fastq_minmergelen'] = parameters_numerical_default['fastq_minmergelen']
-        merge_vsearch_parameters['fastq_minovlen'] = parameters_numerical_default['fastq_minovlen']
-        merge_vsearch_parameters['fastq_truncqual'] = parameters_numerical_default['fastq_truncqual']
+        params_default = constants.get_dic_params_default()
+        merge_vsearch_parameters['fastq_ascii'] = params_default['fastq_ascii']
+        merge_vsearch_parameters['fastq_maxee'] = params_default['fastq_maxee']
+        merge_vsearch_parameters['fastq_maxmergelen'] = params_default['fastq_maxmergelen']
+        merge_vsearch_parameters['fastq_maxns'] = params_default['fastq_maxns']
+        merge_vsearch_parameters['fastq_minlen'] = params_default['fastq_minlen']
+        merge_vsearch_parameters['fastq_minmergelen'] = params_default['fastq_minmergelen']
+        merge_vsearch_parameters['fastq_minovlen'] = params_default['fastq_minovlen']
+        merge_vsearch_parameters['fastq_truncqual'] = params_default['fastq_truncqual']
 
         if not (params is None):
             for parameter_i in merge_vsearch_parameters:
