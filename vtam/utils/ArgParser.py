@@ -438,6 +438,7 @@ class ArgParser:
                                           type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
+        # TODO change with known_occurrences
         parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
                                           required=True, type=ArgParserChecker.check_variant_known_tsv)
 
