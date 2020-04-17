@@ -171,25 +171,28 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             Logger.instance().debug("Search maximal value of lfn_variant_or_variant_replicate")
 
             count_keep = 0
-            count_keep_max = 0
-            #
+            count_keep_max = 0  # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
+
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
             lfn_read_count_threshold_previous = 10
             #  loop over lfn_read_count_threshold
             for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
-                Logger.instance().debug(
-                    "file: {}; line: {}; lfn_read_count_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
-                        .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, count_keep_max, count_keep))
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                     is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
                     lfn_biosample_replicate_threshold,
                     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+
+                Logger.instance().debug(
+                    "file: {}; line: {}; lfn_read_count_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
+                        .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, count_keep_max, count_keep))
+
                 if count_keep > count_keep_max:
                     count_keep_max = count_keep
                 elif count_keep < count_keep_max:
                     break  # stop when count_keep starts to decrease
+
                 lfn_read_count_threshold_previous = lfn_read_count_threshold
 
             lfn_read_count_threshold_max = lfn_read_count_threshold_previous  # upper border of lfn_read_count_threshold
@@ -202,7 +205,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             Logger.instance().debug("Search maximal value of lfn_variant_or_variant_replicate")
             count_keep = 0
-            count_keep_max = 0
+            count_keep_max = 0  # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
             #
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']].drop_duplicates(
@@ -210,19 +213,21 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             lfn_variant_or_variant_replicate_previous = 0.001  # is divided by 1000
             # loop over lfn_variant_or_variant_replicate: 0.001, 0.002, ...
             for lfn_variant_or_variant_replicate in [i / 1000 for i in range(int(lfn_variant_or_variant_replicate_previous * 1000), 101, 1)]:
-                Logger.instance().debug(
-                    "file: {}; line: {}; lfn_variant_or_variant_replicate_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
-                        .format(__file__, inspect.currentframe().f_lineno, lfn_variant_or_variant_replicate, count_keep_max, count_keep))
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                     is_optimize_lfn_variant_replicate,
                     variant_read_count_df, keep_run_marker_biosample_variant_df, lfn_biosample_replicate_threshold,
                     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
+                Logger.instance().debug(
+                    "file: {}; line: {}; lfn_variant_or_variant_replicate_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
+                        .format(__file__, inspect.currentframe().f_lineno, lfn_variant_or_variant_replicate, count_keep_max, count_keep))
+
                 if count_keep > count_keep_max:
                     count_keep_max = count_keep
                 elif count_keep < count_keep_max:
                     break  # stop when count_keep starts to decrease
+
                 lfn_variant_or_variant_replicate_previous = lfn_variant_or_variant_replicate
 
             lfn_variant_or_variant_replicate_max = lfn_variant_or_variant_replicate_previous  # upper border of lfn_read_count_threshold
@@ -232,6 +237,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             # Optimize together two parameters to previous define borders
             #
             ############################################################################################################
+
+            # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
+            # TODO Quelle paramètre et occurrence pose problème
 
             out_lfn_variant_list = []
 
