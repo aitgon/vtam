@@ -12,12 +12,13 @@ from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.models.Run import Run as RunModel
 from vtam.models.Marker import Marker as MarkerModel
 from vtam.models.Biosample import Biosample as BiosampleModel
-from vtam.models.Variant import Variant as VariantModel
+from vtam.models.Variant import Variant
+from vtam.models.VariantReadCount import VariantReadCount
 
 
-class VariantKnown(object):
+class KnownOccurrences(object):
 
-    def __init__(self, known_occurrences_df, fasta_info_tsv, engine):
+    def __init__(self, known_occurrences_df, readinfo_tsv, engine):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
@@ -26,7 +27,7 @@ class VariantKnown(object):
         # self.known_occurrences_tsv = known_occurrences_tsv
         self.known_occurrences_df = known_occurrences_df
         self.engine = engine
-        self.fasta_info_tsv = fasta_info_tsv
+        self.readinfo_tsv = readinfo_tsv
 
         ################################################################################################################
         #
@@ -141,7 +142,10 @@ class VariantKnown(object):
 
         with self.engine.connect() as conn:
 
-            for row in variant_control_df.itertuples():
+            # for row in variant_control_df.itertuples():
+            for row in self.known_occurrences_ids_df.itertuples():
+
+                # import pdb; pdb.set_trace()
 
                 ###########################################################################
                 #
@@ -151,18 +155,25 @@ class VariantKnown(object):
 
                 user_variant_id = row.variant_id
                 user_variant_sequence = row.variant_sequence
+                user_run_id = row.run_id
+                user_marker_id = row.marker_id
+                user_biosample_id = row.biosample_id
 
                 # Implicit 'delete' variants in 'negative' biosamples do not have sequence
-                if not (user_variant_sequence is None):
+                if not (user_variant_sequence is None):  # variants have sequence
 
-                    stmt_select = select([VariantModel.__table__.c.id, VariantModel.__table__.c.sequence])\
-                        .where(VariantModel.__table__.c.sequence == user_variant_sequence)
+                    stmt_select = select([VariantReadCount.__table__.c.variant_id, Variant.__table__.c.sequence])\
+                        .where(Variant.__table__.c.sequence == user_variant_sequence)\
+                        .where(VariantReadCount.__table__.c.variant_id == Variant.__table__.c.id)\
+                        .where(VariantReadCount.__table__.c.run_id == user_run_id)\
+                        .where(VariantReadCount.__table__.c.marker_id == user_marker_id)\
+                        .where(VariantReadCount.__table__.c.biosample_id == user_biosample_id)
 
                     known_variant_in_db = conn.execute(stmt_select).first()
 
                     if known_variant_in_db is None:  # user sequence not found in db
 
-                        msg_error = 'Error: This variant sequence was not found in the DB. ' \
+                        msg_error = 'Error: This variant sequence was not found in the given run-marker-biosample combination in the DB. ' \
                                     'Please verify this variant sequence: {}'\
                             .format(user_variant_sequence)
                         Logger.instance().error(VTAMexception(msg_error))
@@ -196,7 +207,7 @@ class VariantKnown(object):
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.fasta_info_tsv)
+        fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.readinfo_tsv)
         sample_information_df = fasta_info_tsv.sample_information_df
 
         ################################################################################################################
