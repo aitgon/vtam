@@ -134,10 +134,10 @@ The command to carry out the taxon assignation is:
 Parameter Optimization
 ------------------------------
 
-To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
+To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`known_occurrences.tsv <known_occurrences.tsv>`
 
 .. code-block:: bash
 
-    vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fastadir --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
+    vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fastadir --known_occurrences known_occurrences.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
 
 

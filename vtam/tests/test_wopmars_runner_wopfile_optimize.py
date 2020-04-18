@@ -21,12 +21,12 @@ class TestWorpmarsRunnerOptimize(TestCase):
                                               PathManager.get_package_path())
         foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "readinfo.tsv"), PathManager.get_package_path())
-        foopaths['variant_known_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
-                                                                "variant_known.tsv"), PathManager.get_package_path())
+        foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "known_occurrences.tsv"), PathManager.get_package_path())
         self.foopaths = foopaths
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --variant_known {variant_known_tsv} --outdir {outdir}'\
+        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences_tsv} --outdir {outdir}'\
             .format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
 
@@ -93,7 +93,7 @@ rule OptimizeLFNbiosampleReplicate:
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: vtam/tests/test_files/readinfo.tsv
-            variant_known: vtam/tests/test_files/variant_known.tsv
+            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
     output:
         file:
             optimize_lfn_biosample_replicate: vtam/tests/output/optimize_lfn_biosample_replicate.tsv
@@ -110,7 +110,7 @@ rule OptimizePCRerror:
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: vtam/tests/test_files/readinfo.tsv
-            variant_known: vtam/tests/test_files/variant_known.tsv
+            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
     output:
         file:
             optimize_pcr_error: vtam/tests/output/optimize_pcr_error.tsv
@@ -127,7 +127,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: vtam/tests/test_files/readinfo.tsv
-            variant_known: vtam/tests/test_files/variant_known.tsv
+            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
     output:
         file:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv

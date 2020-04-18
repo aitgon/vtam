@@ -180,9 +180,9 @@ ZFZR	prerun	TnegExt1_prerun	negative		delete		dummy info
 ZFZR	prerun	TnegExt2_prerun	negative		delete		dummy info
 ~~~
 
-There is a *variant_known.tsv* file in the *doc* directory of the VTAM package.
+There is a *known_occurrences.tsv* file in the *doc* directory of the VTAM package.
 Then the *optimize* command is run like this:
 
 ~~~
-vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out
+vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --known_occurrences  known_occurrences.tsv --outdir out
 ~~~

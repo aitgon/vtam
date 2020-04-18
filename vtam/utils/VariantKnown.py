@@ -17,14 +17,14 @@ from vtam.models.Variant import Variant as VariantModel
 
 class VariantKnown(object):
 
-    def __init__(self, variant_known_df, fasta_info_tsv, engine):
+    def __init__(self, known_occurrences_df, fasta_info_tsv, engine):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
-        :param variant_known_tsv: TSV file with known variants
+        :param known_occurrences_tsv: TSV file with known variants
         """
-        # self.variant_known_tsv = variant_known_tsv
-        self.variant_known_df = variant_known_df
+        # self.known_occurrences_tsv = known_occurrences_tsv
+        self.known_occurrences_df = known_occurrences_df
         self.engine = engine
         self.fasta_info_tsv = fasta_info_tsv
 
@@ -34,24 +34,24 @@ class VariantKnown(object):
         #
         ################################################################################################################
 
-        # self.variant_known_df = pandas.read_csv(self.variant_known_tsv, sep="\t", header=0, \
+        # self.known_occurrences_df = pandas.read_csv(self.known_occurrences_tsv, sep="\t", header=0, \
         #                                       names=['Marker', 'Run', 'Biosample', 'BiosampleType',
         #                                              'VariantId', 'Action', 'Sequence'], index_col=False,
         #                                         usecols=list(range(7)))
         # Change column names to lower
-        self.variant_known_df.columns = map(str.lower, self.variant_known_df.columns)
+        self.known_occurrences_df.columns = map(str.lower, self.known_occurrences_df.columns)
         # Rename columns
-        self.variant_known_df.rename({'marker': 'marker_name',
+        self.known_occurrences_df.rename({'marker': 'marker_name',
                                       'run': 'run_name',
                                       'biosample': 'biosample_name',
                                       'biosampletype': 'biosample_type',
                                       'variantid': 'variant_id',
                                       'sequence': 'variant_sequence'}, inplace=True, axis=1)
         # Sequence to upper case
-        self.variant_known_df['variant_sequence'] = self.variant_known_df.variant_sequence.str.upper()
+        self.known_occurrences_df['variant_sequence'] = self.known_occurrences_df.variant_sequence.str.upper()
 
         # columns: run_id, marker_id, biosample_id, replicate, variant_id, biosample_type, action, variant_sequence
-        self.variant_known_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
+        self.known_occurrences_ids_df = pandas.DataFrame.from_records(self.get_ids_of_run_marker_biosample_replicate())
 
         ################################################################################################################
         #
@@ -76,7 +76,7 @@ class VariantKnown(object):
         :return: list of dictionnaries: [{'run_id': 1, 'marker_id': 1, 'biosample_id': 1, 'replicate': 1}, {'run_id': 1, ...
         """
         instance_list = []
-        for row in self.variant_known_df.itertuples():
+        for row in self.known_occurrences_df.itertuples():
             marker_name = row.marker_name
             run_name = row.run_name
             biosample_name = row.biosample_name
@@ -88,7 +88,7 @@ class VariantKnown(object):
                 run_id_row = conn.execute(stmt_select_run_id).first()
                 if run_id_row is None:
                     Logger.instance().error(VTAMexception("Run {} not found in the DB. The program will exit. "
-                                                          "Please verify the variant_known TSV file.".format(run_name)))
+                                                          "Please verify the known_occurrences TSV file.".format(run_name)))
                     sys.exit(1)
                 else:
                     run_id = run_id_row[0]
@@ -99,7 +99,7 @@ class VariantKnown(object):
                 marker_id_row = conn.execute(stmt_select_marker_id).first()
                 if marker_id_row is None:
                     Logger.instance().error(VTAMexception("Marker {} not found in the DB. The program will exit. "
-                                                          "Please verify the variant_known TSV file.".format(marker_name)))
+                                                          "Please verify the known_occurrences TSV file.".format(marker_name)))
                     sys.exit(1)
                 else:
                     marker_id = marker_id_row[0]
@@ -110,7 +110,7 @@ class VariantKnown(object):
                 biosample_id_first = conn.execute(stmt_select_biosample_id).first()
                 if biosample_id_first is None:
                     Logger.instance().error(VTAMexception("Biosample {} not found in the DB. The program will exit. "
-                                                          "Please verify the variant_known TSV file.".format(biosample_name)))
+                                                          "Please verify the known_occurrences TSV file.".format(biosample_name)))
                     sys.exit(1)
                 else:
                     biosample_id = biosample_id_first[0]
@@ -121,12 +121,12 @@ class VariantKnown(object):
         return instance_list
 
 
-    def get_variant_known_df(self):
+    def get_known_occurrences_df(self):
         """
 
-        :return: variant_known in variant_read_count_input_df format
+        :return: known_occurrences in variant_read_count_input_df format
         """
-        return self.variant_known_df
+        return self.known_occurrences_df
 
     def __are_known_variants_coherent_with_db(self):
         """Raises an error and exists if some of these conditions
@@ -136,7 +136,7 @@ class VariantKnown(object):
         :return void
         """
 
-        variant_control_df = self.variant_known_df[['variant_id', 'variant_sequence']].drop_duplicates()
+        variant_control_df = self.known_occurrences_df[['variant_id', 'variant_sequence']].drop_duplicates()
         variant_control_df = variant_control_df.loc[~variant_control_df.variant_sequence.isnull()]
 
         with self.engine.connect() as conn:
@@ -172,11 +172,11 @@ class VariantKnown(object):
 
                     if math.isnan(user_variant_id):  # User has not given variant id, then keep this variant id
 
-                        self.variant_known_df.loc[
-                            self.variant_known_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
+                        self.known_occurrences_df.loc[
+                            self.known_occurrences_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
 
-                        self.variant_known_ids_df.loc[
-                            self.variant_known_ids_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
+                        self.known_occurrences_ids_df.loc[
+                            self.known_occurrences_ids_df.variant_sequence == user_variant_sequence, 'variant_id'] = db_variant_id
 
                     ###########################################################################
                     #
@@ -205,7 +205,7 @@ class VariantKnown(object):
         #
         ################################################################################################################
 
-        for row in self.variant_known_ids_df.itertuples():
+        for row in self.known_occurrences_ids_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
             biosample_id = row.biosample_id
@@ -214,7 +214,7 @@ class VariantKnown(object):
                     (sample_information_df['biosample_id'] == biosample_id) & (sample_information_df['marker_id'] == marker_id) & (
                                 sample_information_df['run_id'] == run_id)]).shape[0] > 0
             except AssertionError:
-                Logger.instance().error(VTAMexception("Error: Verify in the --variant_known file that run_id, marker_id and biosample_id"
+                Logger.instance().error(VTAMexception("Error: Verify in the --known_occurrences file that run_id, marker_id and biosample_id"
                                                       "are defined in the --fasta_info file"))
                 sys.exit(1)
 
@@ -225,13 +225,13 @@ class VariantKnown(object):
         :param: variant_tolerate: Boolean: Default False. include "variant_tolerate" variants or not?
         :return: pandas variant_read_count_input_df with columns: run_id, marker_id, biosample_id, variant_id
         """
-        # Get portion of variant_known_tsv with either keep or keep+variant_tolerate
+        # Get portion of known_occurrences_tsv with either keep or keep+variant_tolerate
         if variant_tolerate:  # get also variant_tolerate variant
-            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[
-                ((self.variant_known_df.action.isin(['keep', 'variant_tolerate']))).values]
+            run_marker_biosample_variant_keep_df = self.known_occurrences_ids_df.loc[
+                ((self.known_occurrences_df.action.isin(['keep', 'variant_tolerate']))).values]
         else:  # do only get keep variants
-            run_marker_biosample_variant_keep_df = self.variant_known_ids_df.loc[(self.variant_known_df.action == 'keep').values]
-        # run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df.merge(self.variant_known_ids_df,
+            run_marker_biosample_variant_keep_df = self.known_occurrences_ids_df.loc[(self.known_occurrences_df.action == 'keep').values]
+        # run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df.merge(self.known_occurrences_ids_df,
         #                                         on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
         # Select run_id, marker_id, biosample_id and variant_id
         run_marker_biosample_variant_keep_df = run_marker_biosample_variant_keep_df[
@@ -253,8 +253,8 @@ class VariantKnown(object):
         #
         ##########################################################
         # Get mock biosamples
-        run_marker_biosample_mock_df = self.variant_known_ids_df.loc[
-            (self.variant_known_df.biosample_type == 'mock').values, ['run_id', 'marker_id', 'biosample_id']]
+        run_marker_biosample_mock_df = self.known_occurrences_ids_df.loc[
+            (self.known_occurrences_df.biosample_type == 'mock').values, ['run_id', 'marker_id', 'biosample_id']]
         # Get variant_read_count_mock
         variant_read_count_mock = run_marker_biosample_mock_df.merge(variant_read_count_df,
                                                                      on=['run_id', 'marker_id', 'biosample_id'])
@@ -273,7 +273,7 @@ class VariantKnown(object):
         #
         ##########################################################
         # Get negative biosamples
-        variant_delete_negative_df = self.variant_known_ids_df.loc[(self.variant_known_df.biosample_type == 'negative').values,
+        variant_delete_negative_df = self.known_occurrences_ids_df.loc[(self.known_occurrences_df.biosample_type == 'negative').values,
                                                           ['run_id', 'marker_id', 'biosample_id']]
         # Inner merge of variants and negative biosamples
         variant_delete_negative_df = variant_delete_negative_df.merge(variant_read_count_df, on=['run_id', 'marker_id',
@@ -288,7 +288,7 @@ class VariantKnown(object):
         #
         ##########################################################
         # Get run_id, marker_id, biosample_id, variant_id that are explicitely marked as delete
-        variant_delete_real_df = self.variant_known_ids_df.loc[(self.variant_known_df.action == 'delete').values]
+        variant_delete_real_df = self.known_occurrences_ids_df.loc[(self.known_occurrences_df.action == 'delete').values]
         # Remove delete variant that are not explicite, ie in negative biosamples
         variant_delete_real_df = variant_delete_real_df[~variant_delete_real_df.variant_id.isnull()]
         #  Throw replicate and read count
