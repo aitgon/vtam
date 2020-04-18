@@ -5,7 +5,7 @@ import sqlalchemy
 from vtam.utils.FilterLFNrunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
-from vtam.utils.VariantKnown import VariantKnown
+from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -140,7 +140,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             #
             ############################################################################################################
 
-            known_occurrences = VariantKnown(known_occurrences_df=known_occurrences_i_df, fasta_info_tsv=fasta_info_tsv_path, engine=engine)
+            known_occurrences = KnownOccurrences(known_occurrences_df=known_occurrences_i_df, readinfo_tsv=fasta_info_tsv_path, engine=engine)
             keep_run_marker_biosample_variant_df = known_occurrences.get_keep_run_marker_biosample_variant_df(variant_tolerate=False)
 
             ############################################################################################################

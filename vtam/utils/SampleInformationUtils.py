@@ -208,6 +208,7 @@ class FastaInformationTSV(SampleInformationUtils):
         """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
         #
         self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0)
+        self.fasta_information_df.columns = self.fasta_information_df.columns.str.lower()
         self.__engine = engine
         sample_information_id_df = self.__get_sample_information_df(include_tag_primer_fasta=include_tag_primer_fasta)
         super().__init__(engine, sample_information_id_df)

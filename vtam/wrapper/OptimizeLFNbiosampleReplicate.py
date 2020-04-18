@@ -3,7 +3,7 @@ import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
-from vtam.utils.VariantKnown import VariantKnown
+from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
@@ -93,7 +93,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             #
             ############################################################################################################
 
-            known_occurrences = VariantKnown(known_occurrences_i_df, fasta_info_tsv_path, engine)
+            known_occurrences = KnownOccurrences(known_occurrences_i_df, fasta_info_tsv_path, engine)
             known_occurrences_ids_df = known_occurrences.known_occurrences_ids_df
 
             ############################################################################################################
