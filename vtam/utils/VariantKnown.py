@@ -42,11 +42,11 @@ class VariantKnown(object):
         self.known_occurrences_df.columns = map(str.lower, self.known_occurrences_df.columns)
         # Rename columns
         self.known_occurrences_df.rename({'marker': 'marker_name',
-                                      'run': 'run_name',
-                                      'biosample': 'biosample_name',
-                                      'biosampletype': 'biosample_type',
-                                      'variantid': 'variant_id',
-                                      'sequence': 'variant_sequence'}, inplace=True, axis=1)
+                                          'run': 'run_name',
+                                          'biosample': 'biosample_name',
+                                          'biosampletype': 'biosample_type',
+                                          'variantid': 'variant_id',
+                                          'sequence': 'variant_sequence'}, inplace=True, axis=1)
         # Sequence to upper case
         self.known_occurrences_df['variant_sequence'] = self.known_occurrences_df.variant_sequence.str.upper()
 
