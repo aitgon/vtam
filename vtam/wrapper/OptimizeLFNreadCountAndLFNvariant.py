@@ -7,6 +7,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.constants import get_dic_params_default
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -115,8 +116,8 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         is_optimize_lfn_variant_replicate = bool(int(self.option("is_optimize_lfn_variant_replicate")))
         min_replicate_number = self.option("min_replicate_number")
         lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
-        lfn_read_count_threshold = self.option("lfn_read_count_threshold")
-        lfn_variant_or_variant_replicate_threshold = self.option("lfn_variant_or_variant_replicate_threshold")
+        lfn_read_count_threshold = int(self.option("lfn_read_count_threshold"))
+        lfn_variant_or_variant_replicate_threshold = float(str(self.option("lfn_variant_or_variant_replicate_threshold")))
 
         ################################################################################################################
         #
@@ -168,34 +169,39 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             #
             ############################################################################################################
 
-            Logger.instance().debug("Search maximal value of lfn_variant_or_variant_replicate")
+            Logger.instance().debug("Searching upper limit of lfn_read_count_threshold")
 
-            count_keep = 0
-            count_keep_max = 0  # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
+            variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
+                is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
+                lfn_biosample_replicate_threshold,
+                lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+
+            count_keep_max = count_keep  # count_keep with default parameter corresponds to count_keep_max
 
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
-            lfn_read_count_threshold_previous = 10
+
+            lfn_read_count_threshold_max = lfn_read_count_threshold  # default max
+
             #  loop over lfn_read_count_threshold
-            for lfn_read_count_threshold in list(range(lfn_read_count_threshold_previous, 1001, 10)):
+            for lfn_read_count_threshold_i in list(range(lfn_read_count_threshold, lfn_read_count_threshold*100+1, 10)):
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                     is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
                     lfn_biosample_replicate_threshold,
-                    lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+                    lfn_read_count_threshold_i, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
                 Logger.instance().debug(
-                    "file: {}; line: {}; lfn_read_count_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
-                        .format(__file__, inspect.currentframe().f_lineno, lfn_read_count_threshold, count_keep_max, count_keep))
+                    "lfn_read_count_threshold: {}; count_keep_max: {}; count_keep: {}"
+                        .format(lfn_read_count_threshold_i, count_keep_max, count_keep))
 
-                if count_keep > count_keep_max:
-                    count_keep_max = count_keep
-                elif count_keep < count_keep_max:
-                    break  # stop when count_keep starts to decrease
+                if count_keep < count_keep_max:
+                    break  # stops when count_keep decreases below count_keep_max
 
-                lfn_read_count_threshold_previous = lfn_read_count_threshold
+                lfn_read_count_threshold_max = lfn_read_count_threshold_i
 
-            lfn_read_count_threshold_max = lfn_read_count_threshold_previous  # upper border of lfn_read_count_threshold
+            Logger.instance().debug(
+                "Upper limit of lfn_read_count_threshold: {}".format(lfn_read_count_threshold_max))
 
             ############################################################################################################
             #
@@ -203,16 +209,26 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             #
             ############################################################################################################
 
-            Logger.instance().debug("Search maximal value of lfn_variant_or_variant_replicate")
-            count_keep = 0
-            count_keep_max = 0  # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
-            #
+            Logger.instance().debug("Searching upper limit of lfn_variant_threshold or lfn_variant_replicate_threshold")
+
+            variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
+                is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
+                lfn_biosample_replicate_threshold,
+                lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+
+            count_keep_max = count_keep  # count_keep with default parameter corresponds to count_keep_max
+
             variant_read_count_df = variant_read_count_df[
-                ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']].drop_duplicates(
-                inplace=False)
-            lfn_variant_or_variant_replicate_previous = 0.001  # is divided by 1000
+                ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
+
+            # lfn_variant_or_variant_replicate_previous = 0.001  # is divided by 1000
+
+            lfn_variant_or_variant_replicate_threshold_max = lfn_variant_or_variant_replicate_threshold  # default max
+
             # loop over lfn_variant_or_variant_replicate: 0.001, 0.002, ...
-            for lfn_variant_or_variant_replicate in [i / 1000 for i in range(int(lfn_variant_or_variant_replicate_previous * 1000), 101, 1)]:
+            for lfn_variant_or_variant_replicate_threshold_i in [
+                i / 1000 for i in range(int(lfn_variant_or_variant_replicate_threshold * 1000),
+                                        int(lfn_variant_or_variant_replicate_threshold * 1000)*100+1, 1)]:
 
                 variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                     is_optimize_lfn_variant_replicate,
@@ -220,17 +236,17 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
                 Logger.instance().debug(
-                    "file: {}; line: {}; lfn_variant_or_variant_replicate_threshold: {}; count_keep_max: {}; count_keep: {} ----------------------"
-                        .format(__file__, inspect.currentframe().f_lineno, lfn_variant_or_variant_replicate, count_keep_max, count_keep))
+                    "lfn_variant_threshold or lfn_variant_replicate_threshold: {}; count_keep_max: {}; count_keep: {}"
+                        .format(lfn_variant_or_variant_replicate_threshold_i,
+                                count_keep_max, count_keep))
 
-                if count_keep > count_keep_max:
-                    count_keep_max = count_keep
-                elif count_keep < count_keep_max:
-                    break  # stop when count_keep starts to decrease
+                if count_keep < count_keep_max:
+                    break  # stops when count_keep decreases below count_keep_max
 
-                lfn_variant_or_variant_replicate_previous = lfn_variant_or_variant_replicate
+                lfn_variant_or_variant_replicate_threshold_max = lfn_variant_or_variant_replicate_threshold_i
 
-            lfn_variant_or_variant_replicate_max = lfn_variant_or_variant_replicate_previous  # upper border of lfn_read_count_threshold
+            Logger.instance().debug(
+                "Upper limit of lfn_variant_replicate_threshold: {}".format(lfn_variant_or_variant_replicate_threshold_max))
 
             ############################################################################################################
             #
@@ -238,18 +254,18 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             #
             ############################################################################################################
 
-            # TODO calculate count_keep_expected and check if default parameter returns this value, if not stop and error message
-            # TODO Quelle paramètre et occurrence pose problème
-
             out_lfn_variant_list = []
 
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']].drop_duplicates(
                 inplace=False)
+
             # loop over lfn_read_count_threshold
-            for lfn_read_count_threshold in list(range(10, lfn_read_count_threshold_max + 1, 5)):
+            for lfn_read_count_threshold_i in list(range(lfn_read_count_threshold, lfn_read_count_threshold_max + 1, 5)):
                 # loop over lfn_variant_or_variant_replicate_threshold: 0.001, 0.002, ...
-                for lfn_variant_or_variant_replicate_threshold in [i / 1000 for i in range(1, int(lfn_variant_or_variant_replicate_max * 1000) + 1, 1)]:
+                for lfn_variant_or_variant_replicate_threshold_i in [i / 1000 for i in range(
+                        int(lfn_variant_or_variant_replicate_threshold*1000), int(
+                            lfn_variant_or_variant_replicate_threshold_max*1000) + 1, 1)]:
 
                     ####################################################################################################
                     #
@@ -260,7 +276,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
                         is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
                         lfn_biosample_replicate_threshold,
-                        lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+                        lfn_read_count_threshold_i, min_replicate_number, lfn_variant_or_variant_replicate_threshold_i)
 
                     ####################################################################################################
                     #
@@ -280,20 +296,29 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                     ####################################################################################################
 
                     Logger.instance().debug(
-                        "file: {}; line: {}; lfn_read_count_threshold: {}; lfn_variant_or_variant_replicate_threshold: {}; "
-                        "count_keep_max: {}; count_keep: {} =============".format(
-                            __file__, inspect.currentframe().f_lineno, lfn_read_count_threshold,
-                            lfn_variant_or_variant_replicate_threshold, count_keep_max, count_keep))
+                        "lfn_read_count_threshold (current, max): {}, {}; lfn_variant_or_variant_replicate_threshold (current, max): {} {}; "
+                        "count_keep_max: {}; count_keep: {}".format(
+                            lfn_read_count_threshold_i, lfn_read_count_threshold_max, lfn_variant_or_variant_replicate_threshold_i,
+                            lfn_variant_or_variant_replicate_threshold_max, count_keep_max, count_keep))
 
                     if count_keep >= count_keep_max:  # Store results if count_keep maximal
                         out_lfn_variant_row_dic = {
-                            "lfn_variant_or_variant_replicate_threshold": lfn_variant_or_variant_replicate_threshold,
-                            "lfn_read_count_threshold": lfn_read_count_threshold,
+                            "lfn_variant_or_variant_replicate_threshold": lfn_variant_or_variant_replicate_threshold_i,
+                            "lfn_read_count_threshold": lfn_read_count_threshold_i,
                             "occurrence_nb_keep": count_keep, "occurrence_nb_delete": count_delete}
                         out_lfn_variant_list.append(out_lfn_variant_row_dic)
-                        count_keep_max = count_keep
-                    else:  # if count_keep < count_keep_max break, because we are loosing keep occurrences
-                        break
+                    else:
+                        break  # stops when count_keep decreases below count_keep_max
+
+                    # if count_keep >= count_keep_max:  # Store results if count_keep maximal
+                    #     out_lfn_variant_row_dic = {
+                    #         "lfn_variant_or_variant_replicate_threshold": lfn_variant_or_variant_replicate_threshold,
+                    #         "lfn_read_count_threshold": lfn_read_count_threshold,
+                    #         "occurrence_nb_keep": count_keep, "occurrence_nb_delete": count_delete}
+                    #     out_lfn_variant_list.append(out_lfn_variant_row_dic)
+                    #     count_keep_max = count_keep
+                    # else:  # if count_keep < count_keep_max break, because we are loosing keep occurrences
+                    #     break
 
             ############################################################################################################
             #

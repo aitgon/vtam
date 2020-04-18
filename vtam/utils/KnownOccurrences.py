@@ -160,7 +160,8 @@ class KnownOccurrences(object):
                 user_biosample_id = row.biosample_id
 
                 # Implicit 'delete' variants in 'negative' biosamples do not have sequence
-                if not (user_variant_sequence is None):  # variants have sequence
+                # keep and real variants have sequence, unlike delete
+                if not (user_variant_sequence is None) and not (str(user_variant_sequence) == 'nan'):
 
                     stmt_select = select([VariantReadCount.__table__.c.variant_id, Variant.__table__.c.sequence])\
                         .where(Variant.__table__.c.sequence == user_variant_sequence)\

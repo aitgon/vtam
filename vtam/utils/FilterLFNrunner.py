@@ -62,7 +62,6 @@ class FilterLFNrunner:
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_i
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
-            # TODO: the variant specific threshold must be tested
             if not threshold_specific_df is None:
                 this_filter_id = 4
                 for rowtuple in threshold_specific_df.itertuples():
@@ -78,7 +77,6 @@ class FilterLFNrunner:
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
-            # TODO: the variant-replicate specific threshold must be tested
             if not threshold_specific_df is None:
                 this_filter_id = 5
                 for rowtuple in threshold_specific_df.itertuples():
