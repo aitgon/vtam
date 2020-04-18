@@ -14,7 +14,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
     # Input file
     __input_file_readinfo = "readinfo"
-    __input_file_variant_known = "variant_known"
+    __input_file_known_occurrences = "known_occurrences"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -27,7 +27,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     def specify_input_file(self):
         return[
             OptimizeLFNbiosampleReplicate.__input_file_readinfo,
-            OptimizeLFNbiosampleReplicate.__input_file_variant_known,
+            OptimizeLFNbiosampleReplicate.__input_file_known_occurrences,
         ]
 
     def specify_input_table(self):
@@ -59,7 +59,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         ##########################################################
 
         # Input file output
-        variant_known_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_variant_known)
+        known_occurrences_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_known_occurrences)
         fasta_info_tsv_path = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_readinfo)
         #
         # Input table models
@@ -81,11 +81,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         final_optimize_output_df = pandas.DataFrame()
 
-        variant_known_df = pandas.read_csv(variant_known_tsv, sep="\t", header=0)
-        variant_known_df.columns = variant_known_df.columns.str.lower()
-        vknown_grouped = variant_known_df.groupby(by=['run', 'marker'])
+        known_occurrences_df = pandas.read_csv(known_occurrences_tsv, sep="\t", header=0)
+        known_occurrences_df.columns = known_occurrences_df.columns.str.lower()
+        vknown_grouped = known_occurrences_df.groupby(by=['run', 'marker'])
         for vknown_grouped_key in vknown_grouped.groups:
-            variant_known_i_df = variant_known_df.loc[vknown_grouped.groups[vknown_grouped_key], :]
+            known_occurrences_i_df = known_occurrences_df.loc[vknown_grouped.groups[vknown_grouped_key], :]
 
             ############################################################################################################
             #
@@ -93,8 +93,8 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             #
             ############################################################################################################
 
-            variant_known = VariantKnown(variant_known_i_df, fasta_info_tsv_path, engine)
-            variant_known_ids_df = variant_known.variant_known_ids_df
+            known_occurrences = VariantKnown(known_occurrences_i_df, fasta_info_tsv_path, engine)
+            known_occurrences_ids_df = known_occurrences.known_occurrences_ids_df
 
             ############################################################################################################
             #
@@ -102,8 +102,8 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             #
             ############################################################################################################
 
-            run_marker_biosample_mock_df = variant_known_ids_df.loc[
-                variant_known_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
+            run_marker_biosample_mock_df = known_occurrences_ids_df.loc[
+                known_occurrences_ids_df.biosample_type == 'mock', ['run_id', 'marker_id', 'biosample_id']]
             run_marker_biosample_mock_df.drop_duplicates(inplace=True)
 
             ############################################################################################################
@@ -125,7 +125,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             ############################################################################################################
 
             # These columns: run_id  marker_id  biosample_id  variant_id
-            variant_keep_df = variant_known.get_keep_run_marker_biosample_variant_df()
+            variant_keep_df = known_occurrences.get_keep_run_marker_biosample_variant_df()
 
 
             ############################################################################################################

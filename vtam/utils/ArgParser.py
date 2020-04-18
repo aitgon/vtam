@@ -239,9 +239,9 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
     @staticmethod
-    def check_variant_known_tsv(path):
+    def check_known_occurrences_tsv(path):
 
-        """Check variant_known_tsv format
+        """Check known_occurrences_tsv format
 
         :param path: Valid non-empty file path
         :return: void
@@ -439,8 +439,8 @@ class ArgParser:
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
         # TODO change with known_occurrences
-        parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
-                                          required=True, type=ArgParserChecker.check_variant_known_tsv)
+        parser_vtam_optimize.add_argument('--known_occurrences', action='store', help="TSV file with known variants",
+                                          required=True, type=ArgParserChecker.check_known_occurrences_tsv)
 
         ################################################################################################################
         #
