@@ -9,8 +9,8 @@ from vtam.utils.constants import public_data_dir
 
 class CommandBlastCOI(object):
 
-    def __init__(self, coi_blast_db, map_taxids_tsv=None):
-        self.coi_blast_db = coi_blast_db
+    def __init__(self, coi_blast_db_dir, map_taxids_tsv=None):
+        self.coi_blast_db = coi_blast_db_dir
         self.map_taxids_tsv = map_taxids_tsv
 
     ##########################################################
