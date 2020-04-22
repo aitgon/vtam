@@ -546,6 +546,6 @@ class ArgParser:
     def create_coiblastdb(cls, subparsers):
 
         parser_vtam_coi_blast_db = subparsers.add_parser('coi_blast_db', add_help=True)
-        parser_vtam_coi_blast_db.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
+        parser_vtam_coi_blast_db.add_argument('--coi_blast_db_dir', dest='coi_blast_db_dir', action='store', help="Path COI Blast DB",
                             required=True)
         parser_vtam_coi_blast_db.set_defaults(command='coi_blast_db')  # This attribute will trigger the good command

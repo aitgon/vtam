@@ -121,7 +121,7 @@ Precomputed versions of these files can be downloaded in the following way:
 .. code-block:: bash
 
     vtam taxonomy -o out/taxonomy.tsv --precomputed
-    vtam coi_blast_db --coi_blast_db out/coi_blast_db
+    vtam coi_blast_db --coi_blast_db_dir out/coi_blast_db
 
 The input file is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
 

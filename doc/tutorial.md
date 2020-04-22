@@ -125,7 +125,7 @@ The 'taxassign' command assigns variant sequences in the last column of a TSV fi
 
 ~~~
 vtam taxonomy -o out/taxonomy.tsv --precomputed
-vtam coi_blast_db --coi_blast_db out/coi_blast_db
+vtam coi_blast_db --coi_blast_db_dir out/coi_blast_db
 ~~~
 
 The input file of the 'taxassign' command is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
