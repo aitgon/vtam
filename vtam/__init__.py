@@ -203,8 +203,8 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'coi_blast_db':
-            coi_blast_db = OptionManager.instance()['coi_blast_db']
-            coi_blast_db = CommandBlastCOI(coi_blast_db=coi_blast_db)
+            coi_blast_db_dir = OptionManager.instance()['coi_blast_db_dir']
+            coi_blast_db = CommandBlastCOI(coi_blast_db_dir=coi_blast_db_dir)
             coi_blast_db.download()
 
         ###############################################################
