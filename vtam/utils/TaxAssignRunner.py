@@ -14,7 +14,7 @@ class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
     def __init__(self, sequence_list, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
-                 num_threads):
+                 num_threads, qcov_hsp_perc):
 
         # self.variant_df = variant_df
         self.taxonomy_df = taxonomy_df
@@ -25,6 +25,7 @@ class TaxAssignRunner(object):
         self.include_prop = include_prop
         self.min_number_of_taxa = min_number_of_taxa
         self.num_threads = num_threads
+        self.qcov_hsp_perc = qcov_hsp_perc
 
         ##########################################################
         #
@@ -60,7 +61,7 @@ class TaxAssignRunner(object):
 
         blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_name, evalue=1e-5,
                                              outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                             qcov_hsp_perc=80, num_threads=self.num_threads, out=blast_output_tsv)
+                                             qcov_hsp_perc=self.qcov_hsp_perc, num_threads=self.num_threads, out=blast_output_tsv)
         Logger.instance().debug(
             "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, str(blastn_cline)))
         #

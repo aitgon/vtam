@@ -28,9 +28,9 @@ fastq_truncqual: 10
 # Parameters of the "sortreads" command
 # These parameters correspond to the corresponding parametes by cutadapt that underlies the "vtam sortreads" command
 # For a description of these parameters run "cutadapt --help"
-cutadapt_error_rate: 0.1
-cutadapt_minimum_length: 50
-cutadapt_maximum_length: 500
+cutadapt_error_rate: 0.1 # -e in cutadapt
+cutadapt_minimum_length: 50 # -m in cutadapt
+cutadapt_maximum_length: 500 # -M in cutadapt
 
 ################################################################################
 # Parameters of the "filter" command
@@ -69,7 +69,8 @@ uchime3_denovo_abskew: 16.0
 
 ################################################################################
 # Parameter of the "FilterRenkonen" filter in the "filter" command
-# This parameters sets a cutoff renkonen distance at the given quantile of renkonen distances
+# Quantile renkonen distance to drop more extreme values
+# For. a 0.9 value will set the 9th decile of all renkonen distances as cutoff
 renkonen_distance_quantile: 0.9
 
 ################################################################################
@@ -86,14 +87,13 @@ genetic_table_number: 5
 
 ################################################################################
 # Parameters of the "taxassign" command
-# These parameters are used by the "vtam taxassign" command to assign taxa to variants
-# Identity percentage cutoff to use the "include_prop" rule (%identity>=ltg_rule_threshold)
-# or the min_number_of_tax rule (%identity<ltg_rule_threshold)
-ltg_rule_threshold: 97
+# Blast parameter for the minimum query coverage
+qcov_hsp_perc: 80
 # The LTG must include include_prop percent of the hits
 include_prop: 90
-# Minimal number of taxa to keep a given LTG for %identity below ltg_rule_threshold
-min_number_of_taxa: 3"""
+# Minimal number of taxa among the hits to assign LTG when %identity is below ltg_rule_threshold
+min_number_of_taxa: 3
+ltg_rule_threshold: 97"""
 
 def get_dic_params_default():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
