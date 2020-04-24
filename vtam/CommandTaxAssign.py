@@ -21,7 +21,7 @@ class CommandTaxAssign(object):
 
     @classmethod
     def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
-             min_number_of_taxa, num_threads):
+             min_number_of_taxa, qcov_hsp_perc, num_threads):
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
@@ -136,7 +136,7 @@ class CommandTaxAssign(object):
                                                 blast_db_dir=blasdb_dir_path, blast_db_name=blastdbname_str,
                                                 ltg_rule_threshold=ltg_rule_threshold,
                                                 include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
-                                                num_threads=num_threads)
+                                                num_threads=num_threads, qcov_hsp_perc=qcov_hsp_perc)
             ltg_blast_df = tax_assign_runner.ltg_df
 
             ######################################################

@@ -160,11 +160,12 @@ class VTAM(object):
             ltg_rule_threshold = OptionManager.instance()['ltg_rule_threshold']
             include_prop = OptionManager.instance()['include_prop']
             min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
+            qcov_hsp_perc = OptionManager.instance()['qcov_hsp_perc']
             num_threads = OptionManager.instance()['threads']
             CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output, taxonomy_tsv=taxonomy_tsv,
                                   blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
                                   ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
-                                  min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
+                                  min_number_of_taxa=min_number_of_taxa, qcov_hsp_perc=qcov_hsp_perc, num_threads=num_threads)
 
         ###############################################################
         #
