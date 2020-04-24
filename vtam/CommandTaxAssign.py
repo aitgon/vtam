@@ -9,22 +9,44 @@ from sqlalchemy import create_engine, select
 
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 from vtam.models.Variant import Variant as variant_declarative
+from vtam.utils import constants
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.TaxAssignRunner import TaxAssignRunner
 from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantDFutils import VariantDFutils
 
 
 class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
-             min_number_of_taxa, qcov_hsp_perc, num_threads):
+    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, num_threads, params):
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
+
+        ################################################################################################################
+        #
+        # Parameters
+        #
+        ################################################################################################################
+
+        params_default = constants.get_dic_params_default()
+
+        ltg_rule_threshold = params_default['ltg_rule_threshold']
+        include_prop = params_default['include_prop']
+        min_number_of_taxa = params_default['min_number_of_taxa']
+        qcov_hsp_perc = params_default['qcov_hsp_perc']
+
+        if not (params is None):
+            if 'ltg_rule_threshold' in params:
+                ltg_rule_threshold = params_default['ltg_rule_threshold']
+            if 'include_prop' in params:
+                include_prop = params_default['include_prop']
+            if 'min_number_of_taxa' in params:
+                min_number_of_taxa = params_default['min_number_of_taxa']
+            if 'qcov_hsp_perc' in params:
+                qcov_hsp_perc = params_default['qcov_hsp_perc']
 
         ################################################################################################################
         #
