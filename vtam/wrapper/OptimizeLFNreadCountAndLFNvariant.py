@@ -1,4 +1,3 @@
-import inspect
 import pandas
 import sqlalchemy
 
@@ -7,7 +6,6 @@ from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.utils.constants import get_dic_params_default
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -143,6 +141,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             known_occurrences = KnownOccurrences(known_occurrences_df=known_occurrences_i_df, readinfo_tsv=fasta_info_tsv_path, engine=engine)
             keep_run_marker_biosample_variant_df = known_occurrences.get_keep_run_marker_biosample_variant_df(variant_tolerate=False)
+            count_keep_max = keep_run_marker_biosample_variant_df.shape[0]  # count_keep_max taken from known_occurrences.tsv
 
             ############################################################################################################
             #
@@ -171,12 +170,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             Logger.instance().debug("Searching upper limit of lfn_read_count_threshold")
 
-            variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
-                is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
-                lfn_biosample_replicate_threshold,
-                lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
-
-            count_keep_max = count_keep  # count_keep with default parameter corresponds to count_keep_max
+            # variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
+            #     is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
+            #     lfn_biosample_replicate_threshold,
+            #     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
 
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
@@ -211,12 +208,12 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             Logger.instance().debug("Searching upper limit of lfn_variant_threshold or lfn_variant_replicate_threshold")
 
-            variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
-                is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
-                lfn_biosample_replicate_threshold,
-                lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
-
-            count_keep_max = count_keep  # count_keep with default parameter corresponds to count_keep_max
+            # variant_read_count_remained_df, count_keep = lfn_read_count_and_lfn_variant(
+            #     is_optimize_lfn_variant_replicate, variant_read_count_df, keep_run_marker_biosample_variant_df,
+            #     lfn_biosample_replicate_threshold,
+            #     lfn_read_count_threshold, min_replicate_number, lfn_variant_or_variant_replicate_threshold)
+            #
+            # count_keep_max = count_keep  # count_keep with default parameter corresponds to count_keep_max
 
             variant_read_count_df = variant_read_count_df[
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
