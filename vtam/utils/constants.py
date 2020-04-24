@@ -8,10 +8,6 @@ import yaml
 ########################################################################################################################
 
 params_default_str = """################################################################################
-# This parameter sets the number of cores (Default: maximal)
-threads: 8
-
-################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
 # For a description of these parameters run "vsearch --help"

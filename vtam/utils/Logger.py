@@ -4,7 +4,7 @@ import sys
 from logging.handlers import RotatingFileHandler
 
 from vtam.utils.Singleton import Singleton
-from vtam.utils.OptionManager import OptionManager
+# from vtam.utils.CLIargumentDict import CLIargumentDict
 
 from termcolor import colored
 
@@ -17,12 +17,26 @@ class LessThanFilter(logging.Filter):
         #non-zero return means we log this message
         return 1 if record.levelno < self.max_level else 0
 
+class LoggerArguments(dict, Singleton):
+    """
+    The LoggerArguments is a single dictionary with the log_verbosity and log_file values
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        """
+        :param: dict_args: dictionnary containing the arguments passed to the command line.
+        :return: void
+        """
+        super().__init__(*args, **kwargs)
+
+
 class Logger(Singleton):
     """
     This class defines the vtam logger.
 
     To use it in a wopmars wrapper, we need to pass the log_verbosity to the wrapper.
-    Then we get add this OptionManager.instance()['log_verbosity'] = int(self.option("log_verbosity"))
+    Then we get add this CLIargumentDict.instance()['log_verbosity'] = int(self.option("log_verbosity"))
     """
 
     def __init__(self):
@@ -32,17 +46,37 @@ class Logger(Singleton):
         formatter = logging.Formatter(self.formatter_str)
         self.__logger.setLevel(logging.DEBUG)  # set root's level
 
-        if 'log_verbosity' in OptionManager.instance():
-            verbosity = int(OptionManager.instance()['log_verbosity'])
-        elif not os.getenv('VTAM_LOG_VERBOSITY') is None:
-            verbosity = int(os.getenv('VTAM_LOG_VERBOSITY'))
+        ################################################################################################################
+        #
+        # Get verbosity and log file path
+        #
+        ################################################################################################################
+
+        if 'log_verbosity' in LoggerArguments.instance():
+            verbosity = int(LoggerArguments.instance()['log_verbosity'])
         else:
-            try:
-                # Get log_file from wopmars option manager
-                from wopmars.utils.OptionManager import OptionManager as wopmars_option_manager
-                verbosity = int(wopmars_option_manager.instance()['-v'])
-            except KeyError:
-                verbosity = 0
+            verbosity = 0
+
+        if not os.getenv('VTAM_LOG_VERBOSITY') is None:
+            verbosity = int(os.getenv('VTAM_LOG_VERBOSITY'))
+
+        if 'log_file' in LoggerArguments.instance():
+            log_file_path = LoggerArguments.instance()['log_file']
+        else:
+            log_file_path = None
+
+        # verbosity = int(LoggerArguments.instance()['log_verbosity'])
+        # log_file_path = None
+
+        # if 'log_file' in LoggerArguments.instance():
+        #     log_file_path = str(LoggerArguments.instance()['log_file'])
+        # else:
+        #     try:
+        #         # Get log_file from wopmars option manager
+        #         from wopmars.utils.OptionManager import OptionManager as wopmars_option_manager
+        #         log_file_path = str(wopmars_option_manager.instance()['--log'])
+        #     except KeyError:
+        #         log_file_path = None
 
         ################################################################################################################
         #
@@ -71,24 +105,6 @@ class Logger(Singleton):
             self.stream_handler_stdout.setLevel(logging.DEBUG)
         self.stream_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
         self.__logger.addHandler(self.stream_handler_stdout)
-
-        ################################################################################################################
-        #
-        # File stderr
-        #
-        ################################################################################################################
-
-        log_file_path = None
-
-        if 'log_file' in OptionManager.instance():
-            log_file_path = str(OptionManager.instance()['log_file'])
-        else:
-            try:
-                # Get log_file from wopmars option manager
-                from wopmars.utils.OptionManager import OptionManager as wopmars_option_manager
-                log_file_path = str(wopmars_option_manager.instance()['--log'])
-            except KeyError:
-                log_file_path = None
 
         if not log_file_path is None and not log_file_path == 'None':
 

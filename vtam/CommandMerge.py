@@ -94,7 +94,7 @@ class CommandMerge(object):
         if not (params is None):
             for parameter_i in merge_vsearch_parameters:
                 if parameter_i in params:
-                    merge_vsearch_parameters['vsearch_fastq_ascii'] = params[parameter_i]
+                    merge_vsearch_parameters[parameter_i] = params[parameter_i]
 
         ################################################################################################################
         #
@@ -144,11 +144,11 @@ class CommandMerge(object):
             fasta_merged_basename = os.path.basename(fastq_fw_abspath).replace('.fastq', '.fasta')
             out_fasta_path = os.path.join(fastadir, fasta_merged_basename)
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Run vsearch merge
             #
-            ################################################################################################################
+            ############################################################################################################
 
             # vsearch_parameters = {}
             # for par in merge_vsearch_parameters:
