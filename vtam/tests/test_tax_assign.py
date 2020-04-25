@@ -40,8 +40,11 @@ class TestTaxAssign(TestCase):
         """
         super(TestTaxAssign, cls).setUpClass()
         # create_vtam_data_dir()
-        taxonomydb = CommandTaxonomy(precomputed=True)
-        taxonomy_tsv_path = taxonomydb.get_path()
+        testdir_path = os.path.join(PathManager.get_test_path())
+        cls.outdir_path = os.path.join(testdir_path, "outdir")
+        pathlib.Path(cls.outdir_path).mkdir(exist_ok=True, parents=True)
+        taxonomy_tsv_path = os.path.join(cls.outdir_path, "taxonomy.tsv")
+        CommandTaxonomy(taxonomy_tsv=taxonomy_tsv_path).download_precomputed_taxonomy()
         #
         # cls.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
         cls.taxonomy_db_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
