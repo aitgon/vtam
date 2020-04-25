@@ -31,7 +31,7 @@ class VTAM(object):
    optimize   Finds optimal parameters for filtering
    pool   Pools overlapping markers from the ASV table into one
    taxonomy   Creates the taxonomy TSV file required for tax assignation 
-   coi_db   Downloads a precomputed COI Blast database 
+   coi_blast_db   Downloads a precomputed COI Blast database 
 """
 
     def __init__(self, sys_argv):
@@ -197,10 +197,6 @@ class VTAM(object):
             precomputed = arg_parser_dic['precomputed']
             taxonomy = CommandTaxonomy(taxonomy_tsv=taxonomy_tsv)
             taxonomy.main()
-            # if precomputed:
-            #     taxonomydb.download_precomputed_taxonomy()
-            # else:
-            #     taxonomydb.create_denovo_from_ncbi()
 
         ###############################################################
         #
