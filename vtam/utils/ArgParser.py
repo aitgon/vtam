@@ -342,7 +342,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxonomy(subparsers=subparsers)
+        cls.create_taxonomy(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -527,9 +527,10 @@ class ArgParser:
         parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigger the good command
 
     @classmethod
-    def create_taxonomy(cls, subparsers):
+    def create_taxonomy(cls, subparsers, parent_parser):
 
-        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True)
+        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
+                                                  parents=[parent_parser])
         parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
                             required=True)
         parser_vtam_taxonomy.add_argument('--precomputed', dest='precomputed', action='store_true', default=False,

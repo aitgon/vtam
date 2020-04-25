@@ -108,7 +108,7 @@ rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infrac
 rank_hierarchy_asv_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
 
 public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
-url_taxonomy_tsv = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
+url_taxonomy_tsv_gz = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
