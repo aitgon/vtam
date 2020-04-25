@@ -36,15 +36,6 @@ class CommandTaxonomy(object):
 
         self.tempdir = PathManager.instance().get_tempdir()
 
-    def get_path(self):
-        if not os.path.isfile(self.taxonomy_tsv_path):
-            if self.precomputed:
-                self.download_precomputed_taxonomy()
-            else:
-                self.create_denovo_from_ncbi()
-        return self.taxonomy_tsv_path
-
-
     def __download_ncbi_taxonomy_dump(self):
         # Download files
         remotefile = "ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz"
@@ -97,19 +88,13 @@ class CommandTaxonomy(object):
             Logger.instance().error(
                 VTAMexception("{}. Please, verify the output argument: {}".format(opererr, self.taxonomy_tsv_path)))
 
-    ##########################################################
-    #
-    # Define/create taxonomy.tsv output
-    #
-    ##########################################################
     def download_precomputed_taxonomy(self):
         """
         Copy the online TSV taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
         to the pathname output
         """
         Logger.instance().debug(
-            "file: {}; line: {}; Downloading taxonomy tsv".format(__file__,
-                                                                    inspect.currentframe().f_lineno, ))
+            "file: {}; line: {}; Downloading taxonomy tsv".format(__file__, inspect.currentframe().f_lineno, ))
 
         taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
 
