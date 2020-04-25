@@ -1,3 +1,7 @@
+import gzip
+import pathlib
+import shutil
+
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 
@@ -10,31 +14,35 @@ import urllib
 import urllib.request
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import url_taxonomy_tsv
+from vtam.utils.constants import url_taxonomy_tsv_gz
 from sqlalchemy.exc import OperationalError
 
 
 class CommandTaxonomy(object):
 
-    def __init__(self, output=None, precomputed=True):
-        #
-        # Download the precomputed database. The alternative to create a new DB with the create_db_taxonomy executable
-        self.precomputed = precomputed
-        #
-        # output to the taxonomy.tsv file
-        self.output = os.path.join(os.getcwd(), "taxonomy.tsv")
-        if not output is None:
-            self.output = output
-        #
+    def __init__(self, taxonomy_tsv=None):
+        """
+
+        :param taxonomy_tsv: Path to the taxonomy_tsv. Default None
+        :type taxonomy_tsv: str
+
+        :rtype: None
+        """
+
+        if taxonomy_tsv is None:  # If None, download to current wdir
+            self.taxonomy_tsv_path = os.path.join(os.getcwd(), "taxonomy.tsv")
+        else:  # Download to path
+            self.taxonomy_tsv_path = taxonomy_tsv
+
         self.tempdir = PathManager.instance().get_tempdir()
 
     def get_path(self):
-        if not os.path.isfile(self.output):
+        if not os.path.isfile(self.taxonomy_tsv_path):
             if self.precomputed:
-                self.download_taxonomy_tsv()
+                self.download_precomputed_taxonomy()
             else:
-                self.create_taxonomy_db()
-        return self.output
+                self.create_denovo_from_ncbi()
+        return self.taxonomy_tsv_path
 
 
     def __download_ncbi_taxonomy_dump(self):
@@ -47,7 +55,7 @@ class CommandTaxonomy(object):
             urllib.request.urlretrieve(remotefile, new_taxdump_path)
         return new_taxdump_path
 
-    def create_taxonomy_db(self):
+    def create_denovo_from_ncbi(self):
         new_taxdump_path = self.__download_ncbi_taxonomy_dump()
         #
         Logger.instance().debug(
@@ -82,25 +90,50 @@ class CommandTaxonomy(object):
         Logger.instance().debug(
             "file: {}; line: {}; Write to TSV DB".format(__file__, inspect.currentframe().f_lineno))
         try:
-            taxonomy_df.to_csv(self.output, sep="\t", header=True, float_format='%.0f', index=False)
+            taxonomy_df.to_csv(self.taxonomy_tsv_path, sep="\t", header=True, float_format='%.0f', index=False)
         except ValueError as valerr:
             Logger.instance().error(VTAMexception("{}. Error during the creation of the taxonomy DB".format(valerr)))
         except sqlalchemy.exc.OperationalError as opererr:
             Logger.instance().error(
-                VTAMexception("{}. Please, verify the output argument: {}".format(opererr, self.output)))
+                VTAMexception("{}. Please, verify the output argument: {}".format(opererr, self.taxonomy_tsv_path)))
 
     ##########################################################
     #
     # Define/create taxonomy.tsv output
     #
     ##########################################################
-    def download_taxonomy_tsv(self):
+    def download_precomputed_taxonomy(self):
         """
         Copy the online TSV taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
         to the pathname output
         """
         Logger.instance().debug(
-            "file: {}; line: {}; download_taxonomy_tsv()".format(__file__,
+            "file: {}; line: {}; Downloading taxonomy tsv".format(__file__,
                                                                     inspect.currentframe().f_lineno, ))
-        if not os.path.isfile(self.output):
-            urllib.request.urlretrieve(url_taxonomy_tsv, self.output)
+
+        taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
+
+        if not os.path.isfile(self.taxonomy_tsv_path):
+            urllib.request.urlretrieve(url_taxonomy_tsv_gz, taxonomy_tsv_gz_path)
+
+            with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
+                with open(self.taxonomy_tsv_path, 'wb') as fout:
+                    shutil.copyfileobj(fin, fout)
+            try:
+                pathlib.Path(taxonomy_tsv_gz_path).unlink()
+            except FileNotFoundError:
+                pass
+
+    def main(self, precomputed=True):
+        """
+
+        :param precomputed: Download precomputed taxonomy file. Default False
+        :type precomputed: bool
+
+        :rtype: None
+        """
+
+        if precomputed:
+            self.download_precomputed_taxonomy()
+        else:
+            self.create_denovo_from_ncbi()

@@ -193,13 +193,14 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'taxonomy':
-            output = arg_parser_dic['output']
+            taxonomy_tsv = arg_parser_dic['output']
             precomputed = arg_parser_dic['precomputed']
-            taxonomydb = CommandTaxonomy(output=output, precomputed=precomputed, )
-            if precomputed:
-                taxonomydb.download_taxonomy_tsv()
-            else:
-                taxonomydb.create_taxonomy_db()
+            taxonomy = CommandTaxonomy(taxonomy_tsv=taxonomy_tsv)
+            taxonomy.main()
+            # if precomputed:
+            #     taxonomydb.download_precomputed_taxonomy()
+            # else:
+            #     taxonomydb.create_denovo_from_ncbi()
 
         ###############################################################
         #
