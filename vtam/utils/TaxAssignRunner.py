@@ -17,7 +17,8 @@ class TaxAssignRunner(object):
                  min_number_of_taxa, num_threads, qcov_hsp_perc):
 
         # self.variant_df = variant_df
-        self.taxonomy_df = taxonomy_df
+        self.old_tax_id_df = taxonomy_df[['old_tax_id']].drop_duplicates()  # stores tax_id and old_tax_id
+        self.taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
         self.blast_db_dir = blast_db_dir
         self.this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(self.this_temp_dir).mkdir(exist_ok=True)
@@ -189,7 +190,6 @@ class TaxAssignRunner(object):
         #     except KeyError:
         #     import pdb; pdb.set_trace()
         #     # row empty, try to use old_tax_id
-        #     # TODO verify if old_tax_id is ever used and remove it from taxonomy if not
         #     if tax_id_row.shape[0] == 0:
         #         tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id, ]
         #     rank = tax_id_row['rank'].values[0]
@@ -200,14 +200,17 @@ class TaxAssignRunner(object):
         #     #     lineage_dic[rank] = tax_name
         #     tax_id = parent_tax_id
         while tax_id != 1:
-            # try to use taxonomy_df.tax_id
             if tax_id in self.taxonomy_df.index:
                 tax_id_row = self.taxonomy_df.loc[tax_id, ]
-                rank = tax_id_row['rank']
-                parent_tax_id = tax_id_row['parent_tax_id']
-                lineage_dic[rank] = tax_id
-                tax_id = parent_tax_id
-        # print(lineage_dic)
+            elif tax_id in self.old_tax_id_df.old_tax_id.tolist():  # Try old tax id
+                tax_id2 = self.old_tax_id_df.loc[self.old_tax_id_df.old_tax_id == tax_id, 'old_tax_id'].index[0]
+                tax_id_row = self.taxonomy_df.loc[tax_id2, ]
+            else:
+                return lineage_dic
+            rank = tax_id_row['rank']
+            parent_tax_id = tax_id_row['parent_tax_id']
+            lineage_dic[rank] = tax_id
+            tax_id = parent_tax_id
         return lineage_dic
 
     def f06_select_ltg(self, tax_lineage_df):
