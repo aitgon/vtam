@@ -151,7 +151,9 @@ class CommandTaxAssign(object):
             variant_to_blast_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
 
             taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
-                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'},
+                                          index_col='tax_id', usecols=['tax_id', 'parent_tax_id', 'rank', 'name_txt'])
+            taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
 
             sequence_list = variant_to_blast_df.sequence.tolist()
             tax_assign_runner = TaxAssignRunner(sequence_list=sequence_list, taxonomy_df=taxonomy_df,

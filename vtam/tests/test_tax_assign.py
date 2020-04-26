@@ -77,7 +77,7 @@ class TestTaxAssign(TestCase):
     # def test_f03_1_tax_id_to_taxonomy_lineage(self):
     #     tax_id = 183142
     #     #
-    #     # taxonomy_lineage_dic = f04_1_tax_id_to_taxonomy_lineage(tax_id, TestTaxAssign.taxonomy_db_df)
+    #     # taxonomy_lineage_dic = tax_id_to_taxonomy_lineage(tax_id, TestTaxAssign.taxonomy_db_df)
     #     # self.assertTrue({'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
     #     #                  'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
     #     #                  'superkingdom': 2759} == taxonomy_lineage_dic)
@@ -214,7 +214,7 @@ class TestTaxAssign(TestCase):
         # Run
         # lineage_list = []
         # for target_tax_id in lblast_output_df.target_tax_id.unique().tolist():
-        #     lineage_list.append(f04_1_tax_id_to_taxonomy_lineage(target_tax_id, TestTaxAssign.taxonomy_db_df))
+        #     lineage_list.append(tax_id_to_taxonomy_lineage(target_tax_id, TestTaxAssign.taxonomy_db_df))
         # tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
         # #
         # # Merge lblast output with tax_id_to_lineage_df

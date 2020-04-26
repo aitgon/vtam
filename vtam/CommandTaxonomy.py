@@ -34,6 +34,8 @@ class CommandTaxonomy(object):
         else:  # Download to path
             self.taxonomy_tsv_path = taxonomy_tsv
 
+        pathlib.Path(os.path.dirname(taxonomy_tsv)).mkdir(parents=True, exist_ok=True)
+
         self.tempdir = PathManager.instance().get_tempdir()
 
     def __download_ncbi_taxonomy_dump(self):
