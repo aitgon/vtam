@@ -93,7 +93,7 @@ class AsvTableRunner(object):
             #
             # taxonomy_db to variant_read_count_input_df
             #
-            #####from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+            #####from vtam.utils.TaxAssignRunner import tax_id_to_taxonomy_lineage
 
             taxonomy_df = pandas.read_csv(self.taxonomy_tsv, sep="\t", header=0,
                                              dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})

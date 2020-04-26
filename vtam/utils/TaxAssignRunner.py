@@ -13,8 +13,8 @@ from vtam.utils.constants import rank_hierarchy,identity_list
 class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
-    def __init__(self, sequence_list, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop, min_number_of_taxa,
-                 num_threads, qcov_hsp_perc):
+    def __init__(self, sequence_list, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop,
+                 min_number_of_taxa, num_threads, qcov_hsp_perc):
 
         # self.variant_df = variant_df
         self.taxonomy_df = taxonomy_df
@@ -27,11 +27,11 @@ class TaxAssignRunner(object):
         self.num_threads = num_threads
         self.qcov_hsp_perc = qcov_hsp_perc
 
-        ##########################################################
+        ################################################################################################################
         #
         # 2 Create FASTA file with Variants
         #
-        ##########################################################
+        ################################################################################################################
 
         Logger.instance().debug(
             "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno))
@@ -42,11 +42,11 @@ class TaxAssignRunner(object):
             for seq in sequence_list:
                 fout.write(">{}\n{}\n".format(seq, seq))
 
-        ##########################################################
+        ################################################################################################################
         #
         # 3 Run local blast
         #
-        ##########################################################
+        ################################################################################################################
 
         Logger.instance().debug(
             "file: {}; line: {}; Running local blast with FASTA input {}".format(__file__,
@@ -68,11 +68,11 @@ class TaxAssignRunner(object):
         # Run blast
         stdout, stderr = blastn_cline()
 
-        ##########################################################
+        ################################################################################################################
         #
         # Process blast results
         #
-        ##########################################################
+        ################################################################################################################
 
         Logger.instance().debug(
             "file: {}; line: {}; Reading Blast output from: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
@@ -123,8 +123,12 @@ class TaxAssignRunner(object):
                 "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
                     __file__, inspect.currentframe().f_lineno))
             lineage_list = []
-            for target_tax_id in blast_output_df.target_tax_id.unique().tolist():
-                lineage_list.append(self.f04_1_tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
+            for target_tax_id_i, target_tax_id in enumerate(blast_output_df.target_tax_id.unique().tolist()):
+                if target_tax_id_i%100 == 0:
+                    Logger.instance().debug(
+                        "Get lineage of {}-th tax id {} (Total {} tax ids)".format(
+                            target_tax_id_i, target_tax_id, len(blast_output_df.target_tax_id.unique().tolist())))
+                lineage_list.append(self.tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
             tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
             #
             Logger.instance().debug(
@@ -151,9 +155,9 @@ class TaxAssignRunner(object):
             #
             self.ltg_df = self.f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df)
 
-    def f04_1_tax_id_to_taxonomy_lineage(self, tax_id):
+    def tax_id_to_taxonomy_lineage(self, tax_id):
         """
-        Takes tax_id and taxonomy_df and creates a dictionary with the taxonomy lineage
+        Takes a tax_id and creates a dictionary with the taxonomy lineage
 
         :param tax_id: Identifier of taxon
         :type tax_id: int
@@ -174,19 +178,36 @@ class TaxAssignRunner(object):
         """
 
         lineage_dic = {'tax_id': tax_id}
+        # while tax_id != 1:
+        #     # try to use taxonomy_df.tax_id
+        #     # import pdb; pdb.set_trace()
+        #     # tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.tax_id == tax_id, ]
+        #     if tax_id in self.taxonomy_df.index:
+        #
+        #     try:
+        #         tax_id_row = self.taxonomy_df.loc[tax_id, ]
+        #     except KeyError:
+        #     import pdb; pdb.set_trace()
+        #     # row empty, try to use old_tax_id
+        #     # TODO verify if old_tax_id is ever used and remove it from taxonomy if not
+        #     if tax_id_row.shape[0] == 0:
+        #         tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id, ]
+        #     rank = tax_id_row['rank'].values[0]
+        #     parent_tax_id = tax_id_row['parent_tax_id'].values[0]
+        #     lineage_dic[rank] = tax_id
+        #     # if return_tax_name: # return tax_name instead of tax_id
+        #     #     tax_name = tax_id_row['name_txt'].values[0]
+        #     #     lineage_dic[rank] = tax_name
+        #     tax_id = parent_tax_id
         while tax_id != 1:
             # try to use taxonomy_df.tax_id
-            tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.tax_id == tax_id,]
-            # row empty, try to use old_tax_id
-            if tax_id_row.shape[0] == 0:
-                tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id,]
-            rank = tax_id_row['rank'].values[0]
-            parent_tax_id = tax_id_row['parent_tax_id'].values[0]
-            lineage_dic[rank] = tax_id
-            # if return_tax_name: # return tax_name instead of tax_id
-            #     tax_name = tax_id_row['name_txt'].values[0]
-            #     lineage_dic[rank] = tax_name
-            tax_id = parent_tax_id
+            if tax_id in self.taxonomy_df.index:
+                tax_id_row = self.taxonomy_df.loc[tax_id, ]
+                rank = tax_id_row['rank']
+                parent_tax_id = tax_id_row['parent_tax_id']
+                lineage_dic[rank] = tax_id
+                tax_id = parent_tax_id
+        # print(lineage_dic)
         return lineage_dic
 
     def f06_select_ltg(self, tax_lineage_df):
