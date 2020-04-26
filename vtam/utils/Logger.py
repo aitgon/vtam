@@ -2,9 +2,7 @@ import logging
 import os
 import sys
 from logging.handlers import RotatingFileHandler
-
 from vtam.utils.Singleton import Singleton
-# from vtam.utils.CLIargumentDict import CLIargumentDict
 
 from termcolor import colored
 
@@ -54,29 +52,17 @@ class Logger(Singleton):
 
         if 'log_verbosity' in LoggerArguments.instance():
             verbosity = int(LoggerArguments.instance()['log_verbosity'])
+        elif 'VTAM_LOG_VERBOSITY' in os.environ:
+            verbosity = int(os.environ['VTAM_LOG_VERBOSITY'])
         else:
             verbosity = 0
 
-        if not os.getenv('VTAM_LOG_VERBOSITY') is None:
-            verbosity = int(os.getenv('VTAM_LOG_VERBOSITY'))
-
         if 'log_file' in LoggerArguments.instance():
             log_file_path = LoggerArguments.instance()['log_file']
+        elif 'VTAM_LOG_FILE' in os.environ:
+            log_file_path = os.environ['VTAM_LOG_FILE']
         else:
             log_file_path = None
-
-        # verbosity = int(LoggerArguments.instance()['log_verbosity'])
-        # log_file_path = None
-
-        # if 'log_file' in LoggerArguments.instance():
-        #     log_file_path = str(LoggerArguments.instance()['log_file'])
-        # else:
-        #     try:
-        #         # Get log_file from wopmars option manager
-        #         from wopmars.utils.OptionManager import OptionManager as wopmars_option_manager
-        #         log_file_path = str(wopmars_option_manager.instance()['--log'])
-        #     except KeyError:
-        #         log_file_path = None
 
         ################################################################################################################
         #
@@ -108,11 +94,9 @@ class Logger(Singleton):
 
         if not log_file_path is None and not log_file_path == 'None':
 
-            log_stdout_path = log_file_path.rsplit(".", 1)[0]
-
             # log file in append mode of size 1 Mo and 1 backup
             # handler equivalent to stream_handler in term of logging level but write in .log file
-            self.__file_handler_stdout = RotatingFileHandler(log_stdout_path + ".log", 'a', 1000000, 1)
+            self.__file_handler_stdout = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
             self.__file_handler_stdout.setFormatter(formatter)
             if verbosity <= 0:
                 self.__file_handler_stdout.setLevel(logging.WARNING)
@@ -120,12 +104,13 @@ class Logger(Singleton):
                 self.__file_handler_stdout.setLevel(logging.INFO)
             elif verbosity >= 2:
                 self.__file_handler_stdout.setLevel(logging.DEBUG)
-            self.__file_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
+            # self.__file_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
             self.__logger.addHandler(self.__file_handler_stdout)
 
             # err file in append mode of size 1 Mo and 1 backup
             # this handler will write everything in the .err file.
-            self.__file_handler_stderr = RotatingFileHandler(log_stdout_path + ".err", 'a', 1000000, 1)
+            self.__file_handler_stderr = RotatingFileHandler(
+                "{}.err".format(log_file_path.rsplit(".", 1)[0]), 'a', 1000000, 1)
             self.__file_handler_stderr.setFormatter(formatter)
             self.__file_handler_stderr.setLevel(logging.WARNING)
             self.__logger.addHandler(self.__file_handler_stderr)
@@ -134,7 +119,7 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.info(msg)
+        self.__logger.debug(msg)
 
     def info(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
@@ -146,17 +131,17 @@ class Logger(Singleton):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'magenta', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.info(msg)
+        self.__logger.warning(msg)
 
     def error(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.info(msg)
+        self.__logger.error(msg)
 
     def critical(self, msg):
         formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold', 'reverse']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
-        self.__logger.info(msg)
+        self.__logger.critical(msg)
 

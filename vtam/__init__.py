@@ -49,7 +49,18 @@ class VTAM(object):
 
         arg_parser_dic = vars(self.args)
 
-        (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'], 'log_file': arg_parser_dic['log_file']})
+        ################################################################################################################
+        #
+        # Parse log arguments
+        #
+        ################################################################################################################
+
+        (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
+                                             'log_file': arg_parser_dic['log_file']})
+        if 'log_verbosity' in arg_parser_dic:
+            os.environ['VTAM_LOG_VERBOSITY'] = str(arg_parser_dic['log_verbosity'])
+        if 'log_file' in arg_parser_dic:
+            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log_file'])
 
         ################################################################################################################
         #
