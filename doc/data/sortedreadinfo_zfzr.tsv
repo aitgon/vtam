@@ -1,0 +1,13 @@
+run	marker	biosample	replicate	sortedfasta
+run1	zfzr	tpos1_run1	1	zfzr_tpos1_1_fw_012.fasta
+run1	zfzr	tnegtag_run1	1	zfzr_tnegtag_1_fw_013.fasta
+run1	zfzr	14ben01	1	zfzr_14ben01_1_fw_014.fasta
+run1	zfzr	14ben02	1	zfzr_14ben02_1_fw_015.fasta
+run1	zfzr	tpos1_run1	2	zfzr_tpos1_2_fw_016.fasta
+run1	zfzr	tnegtag_run1	2	zfzr_tnegtag_2_fw_017.fasta
+run1	zfzr	14ben01	2	zfzr_14ben01_2_fw_018.fasta
+run1	zfzr	14ben02	2	zfzr_14ben02_2_fw_019.fasta
+run1	zfzr	tpos1_run1	3	zfzr_tpos1_3_fw_020.fasta
+run1	zfzr	tnegtag_run1	3	zfzr_tnegtag_3_fw_021.fasta
+run1	zfzr	14ben01	3	zfzr_14ben01_3_fw_022.fasta
+run1	zfzr	14ben02	3	zfzr_14ben02_3_fw_023.fasta

@@ -1,0 +1,10 @@
+project: 'aspersnake'
+subproject: 'run1_mfzr'
+fastqinfo: 'aspersnake/user_input/fastqinfo_mfzr.tsv'
+fastqdir: 'fastq'
+known_occurrences: 'aspersnake/user_input/known_occurrences_mfzr.tsv'
+params: 'aspersnake/user_input/params_mfzr.yml'
+blastdbdir: 'vtam_data/coi_blast_db'
+blastdbname: 'coi_blast_db'
+taxonomy: 'vtam_data/taxonomy.tsv'
+

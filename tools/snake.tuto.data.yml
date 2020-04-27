@@ -1,0 +1,128 @@
+MARKER=None
+if "MARKER" in config:
+    MARKER = config["MARKER"]
+
+PROJECT = config["PROJECT"]
+
+import vtam
+
+rule all_two_markers:
+    input:
+        taxonomy="vtam_data/taxonomy.tsv",
+        nhr="vtam_data/coi_blast_db/coi_blast_db.nhr",
+        nin="vtam_data/coi_blast_db/coi_blast_db.nin",
+        nog="vtam_data/coi_blast_db/coi_blast_db.nog",
+        nsd="vtam_data/coi_blast_db/coi_blast_db.nsd",
+        nsi="vtam_data/coi_blast_db/coi_blast_db.nsi",
+        nsq="vtam_data/coi_blast_db/coi_blast_db.nsq",
+        fastq1="fastq/mfzr_14ben01_1_fw.fastq",
+        fastq2="fastq/mfzr_tpos1_3_rv.fastq",
+        fastq3="fastq/zfzr_14ben01_1_fw.fastq",
+        fastq4="fastq/zfzr_tpos1_3_rv.fastq",
+        fastqinfo=expand("{PROJECT}/user_input/fastqinfo.tsv", PROJECT=PROJECT),
+        known_occurrences=expand("{PROJECT}/user_input/known_occurrences.tsv", PROJECT=PROJECT),
+        params=expand("{PROJECT}/user_input/params.yml", PROJECT=PROJECT),
+        snakeconfig=expand("{PROJECT}/user_input/snakeconfig.yml", PROJECT=PROJECT),
+        snakefile="snakefile.yml",
+        sortedreadinfo_mfzr=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'sortedreadinfo_mfzr.tsv'),
+        sortedreadinfo_zfzr=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'sortedreadinfo_zfzr.tsv'),
+
+rule all_one_marker:
+    input:
+        taxonomy="vtam_data/taxonomy.tsv",
+        nhr="vtam_data/coi_blast_db/coi_blast_db.nhr",
+        nin="vtam_data/coi_blast_db/coi_blast_db.nin",
+        nog="vtam_data/coi_blast_db/coi_blast_db.nog",
+        nsd="vtam_data/coi_blast_db/coi_blast_db.nsd",
+        nsi="vtam_data/coi_blast_db/coi_blast_db.nsi",
+        nsq="vtam_data/coi_blast_db/coi_blast_db.nsq",
+        fastq1="fastq/mfzr_14ben01_1_fw.fastq",
+        fastq2="fastq/mfzr_tpos1_3_rv.fastq",
+        fastq3="fastq/zfzr_14ben01_1_fw.fastq",
+        fastq4="fastq/zfzr_tpos1_3_rv.fastq",
+        fastqinfo=expand("{PROJECT}/user_input/fastqinfo_{MARKER}.tsv", MARKER=MARKER, PROJECT=PROJECT),
+        known_occurrences=expand("{PROJECT}/user_input/known_occurrences_{MARKER}.tsv", MARKER=MARKER, PROJECT=PROJECT),
+        params=expand("{PROJECT}/user_input/params_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
+        snakeconfig=expand("{PROJECT}/user_input/snakeconfig_{MARKER}.yml", MARKER=MARKER, PROJECT=PROJECT),
+        snakefile="snakefile.yml",
+
+rule snakefile:
+    input:
+        snakefile=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'snakefile.yml'),
+    output:
+        snakefile="snakefile.yml",
+    shell:
+        """rsync -avt {input.snakefile} {output.snakefile}"""
+
+rule user_input_two_markers:
+    input:
+        fastqinfo=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'fastqinfo.tsv'),
+        known_occurrences=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'known_occurrences.tsv'),
+        params=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'params.yml'),
+        snakeconfig=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'snakeconfig.yml'),
+        sortedreadinfo_mfzr=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'sortedreadinfo_mfzr.tsv'),
+        sortedreadinfo_zfzr=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'sortedreadinfo_zfzr.tsv'),
+    output:
+        fastqinfo="{PROJECT}/user_input/fastqinfo.tsv",
+        known_occurrences="{PROJECT}/user_input/known_occurrences.tsv",
+        params="{PROJECT}/user_input/params.yml",
+        snakeconfig="{PROJECT}/user_input/snakeconfig.yml",
+        sortedreadinfo_mfzr="{PROJECT}/user_input/sortedreadinfo_mfzr.tsv",
+        sortedreadinfo_zfzr="{PROJECT}/user_input/sortedreadinfo_zfzr.tsv",
+    shell:
+        """rsync -avt {input.fastqinfo} {output.fastqinfo}
+rsync -avt {input.known_occurrences} {output.known_occurrences}
+rsync -avt {input.params} {output.params}
+rsync -avt {input.snakeconfig} {output.snakeconfig}
+rsync -avt {input.sortedreadinfo_mfzr} {output.sortedreadinfo_mfzr}
+rsync -avt {input.sortedreadinfo_zfzr} {output.sortedreadinfo_zfzr}"""
+
+rule user_input_one_marker:
+    input:
+        fastqinfo=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'fastqinfo_{MARKER}.tsv'),
+        known_occurrences=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'known_occurrences_{MARKER}.tsv'),
+        params=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'params_{MARKER}.yml'),
+        snakeconfig=os.path.join(os.path.dirname(vtam.__file__), '..', 'doc/data', 'snakeconfig_{MARKER}.yml'),
+    output:
+        fastqinfo="{PROJECT}/user_input/fastqinfo_{MARKER}.tsv",
+        known_occurrences="{PROJECT}/user_input/known_occurrences_{MARKER}.tsv",
+        params="{PROJECT}/user_input/params_{MARKER}.yml",
+        snakeconfig="{PROJECT}/user_input/snakeconfig_{MARKER}.yml",
+    shell:
+        """rsync -avt {input.fastqinfo} {output.fastqinfo}
+rsync -avt {input.known_occurrences} {output.known_occurrences}
+rsync -avt {input.params} {output.params}
+rsync -avt {input.snakeconfig} {output.snakeconfig}"""
+
+rule fastq:
+    output:
+        fastq1="fastq/mfzr_14ben01_1_fw.fastq",
+        fastq2="fastq/mfzr_tpos1_3_rv.fastq",
+        fastq3="fastq/zfzr_14ben01_1_fw.fastq",
+        fastq4="fastq/zfzr_tpos1_3_rv.fastq",
+    params:
+        gz="http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz",
+    shell:
+        """
+wget -N {params.gz} -O fastq.tar.gz;
+tar zxvf fastq.tar.gz -C $(dirname $(dirname {output.fastq1} ) )
+rm -f fastq.tar.gz
+"""
+
+rule coi_blast_db:
+    output:
+        nhr="vtam_data/coi_blast_db/coi_blast_db.nhr",
+        nin="vtam_data/coi_blast_db/coi_blast_db.nin",
+        nog="vtam_data/coi_blast_db/coi_blast_db.nog",
+        nsd="vtam_data/coi_blast_db/coi_blast_db.nsd",
+        nsi="vtam_data/coi_blast_db/coi_blast_db.nsi",
+        nsq="vtam_data/coi_blast_db/coi_blast_db.nsq",
+    shell:
+        "vtam coi_blast_db --coi_blast_db_dir $(dirname {output.nhr})"
+
+rule taxonomy:
+    output:
+        taxonomy="vtam_data/taxonomy.tsv",
+    shell:
+        "vtam taxonomy -o {output.taxonomy} --precomputed"
+
