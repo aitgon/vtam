@@ -7,6 +7,7 @@ import yaml
 #
 ########################################################################################################################
 
+# TODO lfn_filter_variant: check
 params_default_str = """################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
@@ -39,13 +40,12 @@ global_read_count_threshold: 2
 # Occurrence is deleted if N_ijk/N_i < lfn_variant_threshold
 lfn_variant_threshold: 0.001
 # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_threshold
+# If this parameter is set (Not None), then the lfn_variant_replicate_threshold instead of lfn_variant_threshold is used
 lfn_variant_replicate_threshold: None
 # Occurrence is deleted if N_ijk/N_jk < lfn_ biosample _replicate_threshold
 lfn_biosample_replicate_threshold: 0.001
 # Occurrence is deleted if N_ijk < lfn_ read_count_threshold
 lfn_read_count_threshold: 10
-# Choice between lfn_variant (1) and lfn_variant_replicate (0) filters
-filter_lfn_variant: 1
 
 ################################################################################
 # Parameters of the "FilterMinReplicateNumber" filter in the "filter" command

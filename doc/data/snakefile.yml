@@ -13,7 +13,7 @@ outdir = os.path.join(project, subproject)
 
 rule all:
     input:
-        variant_taxa=expand("{outdir}/asvtable_taxa.tsv", outdir=outdir),
+        variant_taxa=expand("{outdir}/asvtable_default_taxa.tsv", outdir=outdir),
 
 rule optimize:
     input:
@@ -24,7 +24,7 @@ rule optimize:
 
 rule asvtable_taxa:
     input:
-        variant_taxa=expand("{outdir}/asvtable_taxa.tsv", outdir=outdir),
+        variant_taxa=expand("{outdir}/asvtable_default_taxa.tsv", outdir=outdir),
 
 rule asvtable_params_taxa:
     input:
@@ -32,7 +32,7 @@ rule asvtable_params_taxa:
 
 rule optimize_tmp:
     input:
-        asvtable="{outdir}/asvtable_taxa.tsv",
+        asvtable="{outdir}/asvtable_default_taxa.tsv",
         readinfo="{outdir}/sorted/readinfo.tsv",
         known_occurrences=known_occurrences,
     output:
