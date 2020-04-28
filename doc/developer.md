@@ -11,23 +11,35 @@ This snakefile will download these data to the specified working directory
 - The taxonomy TSV file
 
 
-Marker MFZR
+Marker MFZR: data
 
 ~~~
-mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml --config MARKER=mfzr PROJECT=aspersnake --until all_one_marker
+mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml --config MARKER=mfzr PROJECT=asper1 --until all_one_marker
 ~~~
 
-Marker ZFZR
+Marker MFZR: pipeline
 
 ~~~
-mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml --config MARKER=mfzr PROJECT=aspersnake --until one_marker
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa
 ~~~
 
-Two markers MFZR and ZFZR simultaneously
+Marker ZFZR: data
 
 ~~~
-mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml PROJECT=aspersnake2 --until all_two_markers
+mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml --config MARKER=zfzr PROJECT=asper1 --until all_one_marker
 ~~~
 
+Marker ZFZR: pipeline
 
+~~~
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_zfzr.yml --until asvtable_taxa
+~~~
+
+Markers MFZR and ZFZR: data
+
+~~~
+mkdir -p out && snakemake -p --cores $(grep -c ^processor /proc/cpuinfo) -d out -s tools/snake.tuto.data.yml --config PROJECT=asper2 --until all_two_markers
+~~~
+
+Then we can run the tutorials
 
