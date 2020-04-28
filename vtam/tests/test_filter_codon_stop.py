@@ -35,6 +35,7 @@ class TestFilterChimera(TestCase):
             ],
         })
 
+    # Verified this test
     def test_02_f14_codon_stop(self):
         """""
          Function searching stop codon the different reading frame of a sequence and tag/delete variant if there is
