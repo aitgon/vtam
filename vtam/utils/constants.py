@@ -7,7 +7,6 @@ import yaml
 #
 ########################################################################################################################
 
-# TODO lfn_filter_variant: check
 params_default_str = """################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
