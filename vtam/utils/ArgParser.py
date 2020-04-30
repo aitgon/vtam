@@ -397,8 +397,6 @@ class ArgParser:
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        # parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-        #                              required=True)
         parser_vtam_filter\
             .add_argument('--asvtable', action='store', help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
                           required=True)
