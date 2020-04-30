@@ -155,7 +155,7 @@ rule FilterCodonStop:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
     params:
-        genetic_table_number: {{genetic_table_number}}
+        genetic_code: {{genetic_code}}
         skip_filter_codon_stop: {{skip_filter_codon_stop}}
 
 

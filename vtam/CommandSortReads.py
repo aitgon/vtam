@@ -28,6 +28,7 @@ class CommandSortReads(object):
         ################################################################################################################
 
         params_default = constants.get_dic_params_default()
+
         cutadapt_error_rate = params_default['cutadapt_error_rate']
         cutadapt_minimum_length = params_default['cutadapt_minimum_length']
         cutadapt_maximum_length = params_default['cutadapt_maximum_length']
@@ -40,19 +41,19 @@ class CommandSortReads(object):
             if 'cutadapt_maximum_length' in params:
                 cutadapt_maximum_length = params_default['cutadapt_maximum_length']
 
-        fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
-        fastainfo_df.columns = fastainfo_df.columns.str.lower()
-
-        pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
-
-        tempdir = PathManager.instance().get_tempdir()
-        sorted_read_info_df = pandas.DataFrame()
-
         ################################################################################################################
         #
         # Loop over tag and primer pairs to demultiplex and trim reads
         #
         ################################################################################################################
+
+        fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
+        fastainfo_df.columns = fastainfo_df.columns.str.lower()
+
+        pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
+        tempdir = PathManager.instance().get_tempdir()
+
+        sorted_read_info_df = pandas.DataFrame()
 
         for i in range(0, fastainfo_df.shape[0]):
             fasta_info_series = fastainfo_df.iloc[i]
