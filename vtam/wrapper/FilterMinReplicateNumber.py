@@ -1,5 +1,3 @@
-from sqlalchemy import bindparam
-
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
@@ -8,10 +6,6 @@ from wopmars.models.ToolWrapper import ToolWrapper
 
 import pandas
 import sys
-
-
-class FilterVarious(object):
-    pass
 
 
 class FilterMinReplicateNumber(ToolWrapper):
@@ -29,11 +23,9 @@ class FilterMinReplicateNumber(ToolWrapper):
     # Output table
     __output_table_filter_min_replicate_number = "FilterMinReplicateNumber"
 
-
     def specify_input_file(self):
         return[
             FilterMinReplicateNumber.__input_file_readinfo,
-
         ]
 
     def specify_input_table(self):
@@ -43,7 +35,6 @@ class FilterMinReplicateNumber(ToolWrapper):
             FilterMinReplicateNumber.__input_table_biosample,
             FilterMinReplicateNumber.__input_table_variant_filter_lfn,
         ]
-
 
     def specify_output_table(self):
         return [

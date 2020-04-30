@@ -1,5 +1,3 @@
-from sqlalchemy import bindparam
-
 from vtam import Logger
 from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
@@ -7,7 +5,6 @@ from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
-import itertools
 import pandas
 import sys
 

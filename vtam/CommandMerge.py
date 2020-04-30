@@ -3,68 +3,11 @@ import os
 import pandas
 import pathlib
 import sys
-import yaml
 
-from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
-from vtam.utils.constants import parameters_numerical_default
-
-
-# class VSearchMergeRunner(object):
-#
-#     # parameters = {
-#     # 'fastq_ascii': 33,
-#     # 'fastq_maxee': 1,
-#     # 'fastq_maxmergelen': 500,
-#     # 'fastq_maxns': 0,
-#     # 'fastq_minlen': 50,
-#     # 'fastq_minmergelen': 100,
-#     # 'fastq_minovlen': 50,
-#     # 'fastq_truncqual': 10,
-#     # "threads": int(multiprocessing.cpu_count()),
-#     # }
-#
-#     def __init__(self, fastq_fw_abspath, fastq_rv_abspath, fasta_abspath, params_yml=None, threads=None):
-#
-#         self.fastq_fw_abspath = fastq_fw_abspath
-#         self.fastq_rv_abspath = fastq_rv_abspath
-#         self.fasta_abspath = fasta_abspath
-#         self.params_yml = params_yml
-#         self.threads = threads
-#
-#     def load_parameters(self):
-#
-#         self.parameters['fastq_mergepairs'] = self.fastq_fw_abspath
-#         self.parameters['reverse'] = self.fastq_rv_abspath
-#         self.parameters['fastaout'] = self.fasta_abspath
-#         if not (self.threads is None):
-#             self.parameters['threads'] = self.threads
-#
-#         # Read parameters
-#         if not (self.params_yml is None):
-#             with open(self.params_yml, 'r') as fin:
-#                 user_params_dic = yaml.load(fin, Loader=yaml.SafeLoader)
-#                 for k_in in user_params_dic:
-#                     if k_in in VSearchMergeRunner.parameters.keys():
-#                         self.parameters[k_in] = user_params_dic[k_in]
-#                     else:
-#                         Logger.instance().error(
-#                             VTAMexception("One of the Merge parameters is not used by VSearch. "
-#                                           "Please set one or more of these parameters: {}".format(self.parameters.keys())))
-#                         sys.exit(1)
-#
-#     def run(self):
-#
-#         self.load_parameters()  # update vsearch parameters from user
-#
-#         # Add double dash '--' to all parameters to create vsearch parameters
-#         vsearch_parameters = {}
-#         for par in self.parameters:
-#             vsearch_parameters['--{}'.format(par)] = self.parameters[par]
-#         vsearch_cluster = VSearch(parameters=vsearch_parameters)
-#         vsearch_cluster.run()
+from vtam.utils import constants
 
 
 class CommandMerge(object):
@@ -81,19 +24,20 @@ class CommandMerge(object):
 
         merge_vsearch_parameters = {}
 
-        merge_vsearch_parameters['fastq_ascii'] = parameters_numerical_default['fastq_ascii']
-        merge_vsearch_parameters['fastq_maxee'] = parameters_numerical_default['fastq_maxee']
-        merge_vsearch_parameters['fastq_maxmergelen'] = parameters_numerical_default['fastq_maxmergelen']
-        merge_vsearch_parameters['fastq_maxns'] = parameters_numerical_default['fastq_maxns']
-        merge_vsearch_parameters['fastq_minlen'] = parameters_numerical_default['fastq_minlen']
-        merge_vsearch_parameters['fastq_minmergelen'] = parameters_numerical_default['fastq_minmergelen']
-        merge_vsearch_parameters['fastq_minovlen'] = parameters_numerical_default['fastq_minovlen']
-        merge_vsearch_parameters['fastq_truncqual'] = parameters_numerical_default['fastq_truncqual']
+        params_default = constants.get_dic_params_default()
+        merge_vsearch_parameters['fastq_ascii'] = params_default['fastq_ascii']
+        merge_vsearch_parameters['fastq_maxee'] = params_default['fastq_maxee']
+        merge_vsearch_parameters['fastq_maxmergelen'] = params_default['fastq_maxmergelen']
+        merge_vsearch_parameters['fastq_maxns'] = params_default['fastq_maxns']
+        merge_vsearch_parameters['fastq_minlen'] = params_default['fastq_minlen']
+        merge_vsearch_parameters['fastq_minmergelen'] = params_default['fastq_minmergelen']
+        merge_vsearch_parameters['fastq_minovlen'] = params_default['fastq_minovlen']
+        merge_vsearch_parameters['fastq_truncqual'] = params_default['fastq_truncqual']
 
         if not (params is None):
             for parameter_i in merge_vsearch_parameters:
                 if parameter_i in params:
-                    merge_vsearch_parameters['vsearch_fastq_ascii'] = params[parameter_i]
+                    merge_vsearch_parameters[parameter_i] = params[parameter_i]
 
         ################################################################################################################
         #
@@ -106,7 +50,6 @@ class CommandMerge(object):
 
         pathlib.Path(fastadir).mkdir(parents=True, exist_ok=True)
 
-        # tempdir = PathManager.instance().get_tempdir()
         fastainfo_df = pandas.DataFrame()
 
         ################################################################################################################
@@ -143,11 +86,11 @@ class CommandMerge(object):
             fasta_merged_basename = os.path.basename(fastq_fw_abspath).replace('.fastq', '.fasta')
             out_fasta_path = os.path.join(fastadir, fasta_merged_basename)
 
-            ################################################################################################################
+            ############################################################################################################
             #
             # Run vsearch merge
             #
-            ################################################################################################################
+            ############################################################################################################
 
             # vsearch_parameters = {}
             # for par in merge_vsearch_parameters:
