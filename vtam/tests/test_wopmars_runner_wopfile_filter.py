@@ -240,7 +240,7 @@ rule FilterCodonStop:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
     params:
-        genetic_table_number: 5
+        genetic_code: 5
         skip_filter_codon_stop: 0
 
 
