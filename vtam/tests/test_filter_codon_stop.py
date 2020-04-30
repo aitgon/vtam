@@ -1,58 +1,123 @@
-
+import pandas
 from unittest import TestCase
 
-import Bio
-import pandas
-from Bio.Alphabet import IUPAC
-from Bio.Seq import Seq
-
-from vtam.wrapper.FilterCodonStop import f14_filter_codon_stop
+from vtam.utils.FilterCodonStopRunner2 import FilterCodonStopRunner2
+# from vtam.wrapper.FilterCodonStop import f14_filter_codon_stop
+from io import StringIO
 
 
-class TestFilterChimera(TestCase):
+class TestFilterCodonStop(TestCase):
+    """Emese Meglecz
+
+    codeX refers to the genetic code (https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
+    frameX the reading frame with the smallest number of codon STOP
+    stopX refers to the number of codon STOP with using codeX in frameX
+
+    code5 (The Invertebrate Mitochondrial Code (transl_table=5))
+    is a code that contains only two codon STOPs (TAA,TAG),
+    the most frequently used ones among all genetic codes
+
+    >seq_stop0_code5_stop2_code1_frame2
+    AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG
+    >seq_stop0_code5_stop2_code1_frame1
+    ATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG
+    >seq_stop1_code5_stop3_code1_frame2
+    AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+    >seq_stop2_code5_stop4_code1_frame2_TAA_TAG
+    ATAAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+    >seq_stop2_code5_stop5_code1_frame1_TAA_TAG_TGA
+    TAAGTATTTTGACTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+    """
 
     def setUp(self):
-        # Input from min_replicate_number
-        # Variants 1 and 2 are ok but 3-5 are chimeras
-        self.variant_df = pandas.DataFrame({
-            'id': list(range(1,6)),
-            'sequence': [ 'AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG',
-                          'ATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG',
-                          'AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG',
-                          'ATAAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG',
-                          'TAAGTATTTTGACTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG',
-                         ],
-        })
         #
-        self.variant_read_count_df = pandas.DataFrame({
-            'run_id': [1] * 12,
-            'marker_id': [1] * 12,
-            'variant_id': [7] * 1 + [6] * 1 + [1] * 2 + [2] * 2 + [3] * 2 + [4] * 2 + [5] * 2,
-            'biosample_id': [1] * 12,
-            'replicate': [1, 2] * 6,
-            'read_count': [
-                25, 25, 350, 360, 335, 325, 350, 350, 325, 325, 35, 25
-            ],
-        })
-
-    def test_02_f14_codon_stop(self):
-        """""
-         Function searching stop codon the different reading frame of a sequence and tag/delete variant if there is
-         stop codon in the 3 reading frames
-         :param df_codon_stop_per_genetic_code: data frame which contains all codon stop classified by genetic code
-         :param genetic_code: genetic code to search stop codon in the df_codon_stop_per_genetic_code dataframe
-         :param delete_var: option which define if the variants must be deleted or tagged
-         :return: void
-
-        """
-        # Input
-        # self.variant_df
-        # self.variant_read_count_input_df
-        # transl_table=1
-        #
-
-        #
-        df= f14_filter_codon_stop(self.variant_read_count_df,self.variant_df, 10)
+        variant_str = """id	sequence
+seq_stop0_code5_stop2_code1_frame2	AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG
+seq_stop0_code5_stop2_code1_frame1	ATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATATTTAGTTGG
+seq_stop1_code5_stop3_code1_frame2	AATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+seq_stop2_code5_stop4_code1_frame2_TAA_TAG	ATAAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG
+seq_stop2_code5_stop5_code1_frame1_TAA_TAG_TGA	TAAGTATTTTGACTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG"""
+        self.variant_df = pandas.read_csv(StringIO(variant_str), sep="\t", header=0)
 
 
+    def test_count_codon_stop_nb_one_seq(self):
 
+        ################################################################################################################
+        # next seq
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        seqi = self.variant_df.loc[self.variant_df.id == "seq_stop0_code5_stop2_code1_frame2", "sequence"].values[0]
+        framei = 2
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(2 == codon_stop_nb)
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=5)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(0 == codon_stop_nb)
+
+        ################################################################################################################
+        # next seq
+        seqi = self.variant_df.loc[self.variant_df.id == "seq_stop0_code5_stop2_code1_frame1", "sequence"].values[0]
+        framei = 1
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(2 == codon_stop_nb)
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=5)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(0 == codon_stop_nb)
+
+        ################################################################################################################
+        # next seq
+        seqi = self.variant_df.loc[self.variant_df.id == "seq_stop1_code5_stop3_code1_frame2", "sequence"].values[0]
+        framei = 2
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(3 == codon_stop_nb)
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=5)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(1 == codon_stop_nb)
+
+        ################################################################################################################
+        # next seq
+        seqi = self.variant_df.loc[self.variant_df.id == "seq_stop2_code5_stop4_code1_frame2_TAA_TAG", "sequence"].values[0]
+        framei = 2
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(4 == codon_stop_nb)
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=5)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(2 == codon_stop_nb)
+
+        ################################################################################################################
+        # next seq
+        seqi = self.variant_df.loc[self.variant_df.id == "seq_stop2_code5_stop5_code1_frame1_TAA_TAG_TGA", "sequence"].values[0]
+        framei = 1
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(5 == codon_stop_nb)
+
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=5)
+        codon_stop_nb = filter_codon_stop_runner_obj.count_codon_stop_nb_one_seq(seq=seqi, frame=framei)
+        self.assertTrue(2 == codon_stop_nb)
+
+    def test_annotate_stop_codon_count(self):
+        filter_codon_stop_runner_obj = FilterCodonStopRunner2(code=1)
+        variant_has_stop_codon_df = filter_codon_stop_runner_obj.annotate_stop_codon_count(self.variant_df)
+
+        variant_stop_codon_count_df_bak_str = """                                               id  has_stop_codon
+0              seq_stop0_code5_stop2_code1_frame2               1
+1              seq_stop0_code5_stop2_code1_frame1               1
+2              seq_stop1_code5_stop3_code1_frame2               1
+3      seq_stop2_code5_stop4_code1_frame2_TAA_TAG               1
+4  seq_stop2_code5_stop5_code1_frame1_TAA_TAG_TGA               1"""
+        variant_stop_codon_count_df_str = variant_has_stop_codon_df[['id', 'has_stop_codon']].to_string()
+        self.assertTrue(variant_stop_codon_count_df_str == variant_stop_codon_count_df_bak_str)

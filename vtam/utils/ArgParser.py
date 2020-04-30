@@ -334,7 +334,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxassign(subparsers=subparsers)
+        cls.create_taxassign(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -342,7 +342,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxonomy(subparsers=subparsers)
+        cls.create_taxonomy(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -397,8 +397,6 @@ class ArgParser:
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        # parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-        #                              required=True)
         parser_vtam_filter\
             .add_argument('--asvtable', action='store', help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
                           required=True)
@@ -477,9 +475,10 @@ class ArgParser:
         parser_vtam_pool_markers.set_defaults(command='pool')  # This attribute will trigger the good command
 
     @classmethod
-    def create_taxassign(cls, subparsers):
+    def create_taxassign(cls, subparsers, parent_parser):
 
-        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[parent_parser])
 
         parser_vtam_taxassign\
             .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
@@ -494,12 +493,6 @@ class ArgParser:
                                       "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
                                       "input variants.")
         parser_vtam_taxassign.add_argument('--db', **cls.args_db)
-        parser_vtam_taxassign.add_argument('--log', **cls.args_log_file)
-        parser_vtam_taxassign.add_argument('-v', **cls.args_log_verbosity)
-        parser_vtam_taxassign.add_argument('--threads', action='store',
-                                     help="Number of threads",
-                                     required=False,
-                                     default=multiprocessing.cpu_count())
         parser_vtam_taxassign.add_argument('--blastdbdir', action='store',
                                            help="REQUIRED: Blast DB directory (Full or custom one) with DB files.",
                                            required=True, type=ArgParserChecker.check_dir_exists_and_is_nonempty)
@@ -515,26 +508,27 @@ class ArgParser:
         vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
                                            required=True,
                                            type=ArgParserChecker.check_taxassign_taxonomy)
-        parser_vtam_taxassign.add_argument('--ltg_rule_threshold', default=97, type=ArgParserChecker.check_real_between_0_and_100,
-                                           required=False,
-                                           help="Identity threshold to use either 'include_prop' parameter "
-                                                "(blast identity>=ltg_rule_threshold) or use 'min_number_of_taxa' "
-                                                "parameter  (blast identity<ltg_rule_threshold)")
-        parser_vtam_taxassign.add_argument('--include_prop', action='store', default=90, type=ArgParserChecker.check_real_between_0_and_100,
-                                           required=False,
-                                           help="Determine the Lowest Taxonomic Group "
-                                                "(LTG) that contains at least the include_prop percentage of the hits.")
-        parser_vtam_taxassign.add_argument('--min_number_of_taxa', default=3, type=ArgParserChecker.check_real_positive,
-                                           required=False,
-                                           help="Determine the Lowest Taxonomic Group (LTG) "
-                                                "only if selected hits contain at least --min_number_of_taxa different taxa")
+        # parser_vtam_taxassign.add_argument('--ltg_rule_threshold', default=97, type=ArgParserChecker.check_real_between_0_and_100,
+        #                                    required=False,
+        #                                    help="Identity threshold to use either 'include_prop' parameter "
+        #                                         "(blast identity>=ltg_rule_threshold) or use 'min_number_of_taxa' "
+        #                                         "parameter  (blast identity<ltg_rule_threshold)")
+        # parser_vtam_taxassign.add_argument('--include_prop', action='store', default=90, type=ArgParserChecker.check_real_between_0_and_100,
+        #                                    required=False,
+        #                                    help="Determine the Lowest Taxonomic Group "
+        #                                         "(LTG) that contains at least the include_prop percentage of the hits.")
+        # parser_vtam_taxassign.add_argument('--min_number_of_taxa', default=3, type=ArgParserChecker.check_real_positive,
+        #                                    required=False,
+        #                                    help="Determine the Lowest Taxonomic Group (LTG) "
+        #                                         "only if selected hits contain at least --min_number_of_taxa different taxa")
 
         parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigger the good command
 
     @classmethod
-    def create_taxonomy(cls, subparsers):
+    def create_taxonomy(cls, subparsers, parent_parser):
 
-        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True)
+        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
+                                                  parents=[parent_parser])
         parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
                             required=True)
         parser_vtam_taxonomy.add_argument('--precomputed', dest='precomputed', action='store_true', default=False,

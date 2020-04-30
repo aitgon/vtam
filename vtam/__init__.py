@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import shlex
 import subprocess
 import sys
 
@@ -13,11 +12,11 @@ from vtam.utils.ArgParser import ArgParser
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
-from vtam.utils.OptionManager import OptionManager
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.Logger import LoggerArguments
 
 class VTAM(object):
 
@@ -32,7 +31,7 @@ class VTAM(object):
    optimize   Finds optimal parameters for filtering
    pool   Pools overlapping markers from the ASV table into one
    taxonomy   Creates the taxonomy TSV file required for tax assignation 
-   coi_db   Downloads a precomputed COI Blast database 
+   coi_blast_db   Downloads a precomputed COI Blast database 
 """
 
     def __init__(self, sys_argv):
@@ -48,22 +47,30 @@ class VTAM(object):
         parser = ArgParser.get_main_arg_parser()
         self.args = parser.parse_args(sys_argv)
 
+        arg_parser_dic = vars(self.args)
+
         ################################################################################################################
         #
-        # Add argparser attributes to optionmanager
+        # Parse log arguments
         #
         ################################################################################################################
 
-        option_dic = vars(self.args)
-        OptionManager.instance().add_options(option_dic) # Add options to OptionManager
+        (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
+                                             'log_file': arg_parser_dic['log_file']})
+        if 'log_verbosity' in arg_parser_dic:
+            os.environ['VTAM_LOG_VERBOSITY'] = str(arg_parser_dic['log_verbosity'])
+        if 'log_file' in arg_parser_dic:
+            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log_file'])
+
+        ################################################################################################################
+        #
+        # Set arguments, logger
+        #
+        ################################################################################################################
 
         # Some arguments will be passed through environmental variables
         if 'threads' in vars(self.args):
             os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
-        if 'fastqdir' in vars(self.args):
-            os.environ['VTAM_FASTQ_DIR'] = vars(self.args)['fastqdir']
-        if 'fastadir' in vars(self.args):
-            os.environ['VTAM_FASTA_DIR'] = vars(self.args)['fastadir']
 
         ###############################################################
         #
@@ -72,6 +79,12 @@ class VTAM(object):
         ###############################################################
 
         if vars(self.args)['command'] in ['filter', 'optimize']:
+
+            ############################################################################################################
+            #
+            # Filter and optimize CLI arguments and numerical parameters
+            #
+            ############################################################################################################
 
             ############################################################################################################
             #
@@ -99,7 +112,7 @@ class VTAM(object):
                     if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
                         conn.execute(filter_lfn_reference.insert().values(**filter_rec))
 
-            wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], parameters=OptionManager.instance())
+            wopmars_runner = WopmarsRunner(command=vars(self.args)['command'], cli_args_dic=arg_parser_dic)
             wopmars_command = wopmars_runner.get_wopmars_command()
 
             ############################################################################################################
@@ -108,11 +121,11 @@ class VTAM(object):
             #
             ############################################################################################################
 
+            # Some arguments will be passed through environmental variables
+            if 'threads' in vars(self.args):
+                os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
             Logger.instance().info(wopmars_command)
             run_result = subprocess.run(wopmars_command, shell=True)
-            # run_result = subprocess.run(shlex.split(wopmars_command), capture_output=True)
-            # Logger.instance().info(run_result.stdout.decode())
-            # Logger.instance().info(run_result.stderr.decode())
             sys.exit(run_result.returncode)
 
         ###############################################################
@@ -122,13 +135,14 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'merge':
-            fastqinfo = OptionManager.instance()['fastqinfo']
-            fastqdir = OptionManager.instance()['fastqdir']
-            fastainfo = OptionManager.instance()['fastainfo']
-            fastadir = OptionManager.instance()['fastadir']
-            num_threads = OptionManager.instance()['threads']
+            fastqinfo = arg_parser_dic['fastqinfo']
+            fastqdir = arg_parser_dic['fastqdir']
+            fastainfo = arg_parser_dic['fastainfo']
+            fastadir = arg_parser_dic['fastadir']
+            num_threads = arg_parser_dic['threads']
+            params = arg_parser_dic['params']
             CommandMerge.main(fastqinfo=fastqinfo, fastqdir=fastqdir, fastainfo=fastainfo, fastadir=fastadir,
-                              params=None, num_threads=num_threads)
+                              params=params, num_threads=num_threads)
 
         ###############################################################
         #
@@ -137,11 +151,12 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'sortreads':
-            fastadir = OptionManager.instance()['fastadir']
-            fastainfo = OptionManager.instance()['fastainfo']
-            outdir = OptionManager.instance()['outdir']
-            num_threads = OptionManager.instance()['threads']
-            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=None, num_threads=num_threads, outdir=outdir)
+            fastadir = arg_parser_dic['fastadir']
+            fastainfo = arg_parser_dic['fastainfo']
+            outdir = arg_parser_dic['outdir']
+            num_threads = arg_parser_dic['threads']
+            params = arg_parser_dic['params']
+            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params, num_threads=num_threads, outdir=outdir)
 
         ###############################################################
         #
@@ -150,21 +165,18 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'taxassign':
-            db = OptionManager.instance()['db']
-            variants_tsv = OptionManager.instance()['variants']
-            output = OptionManager.instance()['output']
-            mode = OptionManager.instance()['mode']
-            taxonomy_tsv = OptionManager.instance()['taxonomy']
-            blasdb_dir_path = OptionManager.instance()['blastdbdir']
-            blastdbname_str = OptionManager.instance()['blastdbname']
-            ltg_rule_threshold = OptionManager.instance()['ltg_rule_threshold']
-            include_prop = OptionManager.instance()['include_prop']
-            min_number_of_taxa = OptionManager.instance()['min_number_of_taxa']
-            num_threads = OptionManager.instance()['threads']
+            db = arg_parser_dic['db']
+            variants_tsv = arg_parser_dic['variants']
+            output = arg_parser_dic['output']
+            mode = arg_parser_dic['mode']
+            taxonomy_tsv = arg_parser_dic['taxonomy']
+            blasdb_dir_path = arg_parser_dic['blastdbdir']
+            blastdbname_str = arg_parser_dic['blastdbname']
+            num_threads = arg_parser_dic['threads']
+            params = arg_parser_dic['params']
             CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output, taxonomy_tsv=taxonomy_tsv,
-                                  blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str,
-                                  ltg_rule_threshold=ltg_rule_threshold, include_prop=include_prop,
-                                  min_number_of_taxa=min_number_of_taxa, num_threads=num_threads)
+                                  blasdb_dir_path=blasdb_dir_path, blastdbname_str=blastdbname_str, params=params,
+                                  num_threads=num_threads)
 
         ###############################################################
         #
@@ -173,12 +185,9 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'pool':
-            db = OptionManager.instance()['db']
-            run_marker_tsv = OptionManager.instance()['runmarker']
-            pooled_marker_tsv = OptionManager.instance()['output']
-            # taxonomy_tsv = OptionManager.instance()['taxonomy']
-            # CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, taxonomy_tsv=taxonomy_tsv,
-            #                         run_marker_tsv=run_marker_tsv)
+            db = arg_parser_dic['db']
+            run_marker_tsv = arg_parser_dic['runmarker']
+            pooled_marker_tsv = arg_parser_dic['output']
             CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv, run_marker_tsv=run_marker_tsv)
 
         ###############################################################
@@ -188,13 +197,10 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'taxonomy':
-            output = OptionManager.instance()['output']
-            precomputed = OptionManager.instance()['precomputed']
-            taxonomydb = CommandTaxonomy(output=output, precomputed=precomputed, )
-            if precomputed:
-                taxonomydb.download_taxonomy_tsv()
-            else:
-                taxonomydb.create_taxonomy_db()
+            taxonomy_tsv = arg_parser_dic['output']
+            precomputed = arg_parser_dic['precomputed']
+            taxonomy = CommandTaxonomy(taxonomy_tsv=taxonomy_tsv)
+            taxonomy.main()
 
         ###############################################################
         #
@@ -203,7 +209,7 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'coi_blast_db':
-            coi_blast_db_dir = OptionManager.instance()['coi_blast_db_dir']
+            coi_blast_db_dir = arg_parser_dic['coi_blast_db_dir']
             coi_blast_db = CommandBlastCOI(coi_blast_db_dir=coi_blast_db_dir)
             coi_blast_db.download()
 
