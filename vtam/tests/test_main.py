@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
+from unittest import TestCase
+
+import filecmp
+import os
 import pathlib
 import shutil
 import subprocess
-import sys
 import tarfile
 import urllib
-from unittest import TestCase
-
-import os
-import filecmp
 
 from vtam import CommandMerge, CommandSortReads, WopmarsRunner
 from vtam.utils.Logger import Logger
@@ -16,6 +15,7 @@ from vtam.utils.PathManager import PathManager
 
 
 class TestVTAM(TestCase):
+    """Will test main commands based on a complete test dataset"""
 
     @classmethod
     def setUpClass(cls):
