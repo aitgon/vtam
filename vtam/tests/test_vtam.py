@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pathlib
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -77,8 +78,6 @@ class TestVTAM(TestCase):
         db_path = os.path.join(self.test_outdir_path, "db.sqlite")
 
         # Remove if exists, equivalent force
-        if os.path.exists(asvtable_path):
-            pathlib.Path(asvtable_path).unlink()
         if os.path.exists(db_path):
             pathlib.Path(db_path).unlink()
 
@@ -99,34 +98,57 @@ class TestVTAM(TestCase):
         asvtable_bak_path = os.path.join(self.test_outdir_bak_path, "asvtable.tsv")
         self.assertTrue(filecmp.cmp(asvtable_path, asvtable_bak_path, shallow=False))
 
-        # ################################################################################################################
-        # #
-        # # Command Optimize
-        # #
-        # ################################################################################################################
+        ################################################################################################################
         #
-        # # asvtable_path = os.path.join(self.test_outdir_path, "asvtable.tsv")
-        # db_path = os.path.join(self.test_outdir_path, "db.sqlite")
+        # Command Optimize
         #
-        # # Remove if exists, equivalent force
-        # if os.path.exists(asvtable_path):
-        #     pathlib.Path(asvtable_path).unlink()
-        # if os.path.exists(db_path):
-        #     pathlib.Path(db_path).unlink()
-        #
-        # cli_args_dic = {'readinfo': sortedreadinfo_path,
-        #                 'readdir': sorteddir_path,
-        #                 'asvtable': asvtable_path,
-        #                 'db': db_path,
-        #                 'params': None,
-        #                 'threshold_specific': None}
-        # #
-        # # wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=cli_args_dic)
-        # # wopmars_command = wopmars_runner.get_wopmars_command()
-        # #
-        # # # Some arguments will be passed through environmental variables
-        # # Logger.instance().info(wopmars_command)
-        # # run_result = subprocess.run(wopmars_command, shell=True)
-        # #
-        # # asvtable_bak_path = os.path.join(self.test_outdir_bak_path, "asvtable.tsv")
-        # # self.assertTrue(filecmp.cmp(asvtable_path, asvtable_bak_path, shallow=False))
+        ################################################################################################################
+
+        # asvtable_path = os.path.join(self.test_outdir_path, "asvtable.tsv")
+        db_path = os.path.join(self.test_outdir_path, "db.sqlite")
+        known_occurrences_path = os.path.join(PathManager.get_package_path(), "doc/data/known_occurrences.tsv")
+
+        optimize_lfn_biosample_replicate = os.path.join(self.test_outdir_path, "optimize_lfn_biosample_replicate.tsv")
+        optimize_lfn_read_count_and_lfn_variant = os.path.join(self.test_outdir_path, "optimize_lfn_read_count_and_lfn_variant.tsv")
+        optimize_lfn_variant_specific = os.path.join(self.test_outdir_path, "optimize_lfn_variant_specific.tsv")
+        optimize_pcr_error = os.path.join(self.test_outdir_path, "optimize_pcr_error.tsv")
+
+        # Remove if exists
+        if os.path.exists(optimize_lfn_biosample_replicate):
+            pathlib.Path(optimize_lfn_biosample_replicate).unlink()
+        if os.path.exists(optimize_lfn_read_count_and_lfn_variant):
+            pathlib.Path(optimize_lfn_read_count_and_lfn_variant).unlink()
+        if os.path.exists(optimize_lfn_variant_specific):
+            pathlib.Path(optimize_lfn_variant_specific).unlink()
+        if os.path.exists(optimize_pcr_error):
+            pathlib.Path(optimize_pcr_error).unlink()
+
+        cli_args_dic = {'readinfo': sortedreadinfo_path,
+                        'readdir': sorteddir_path,
+                        'outdir': self.test_outdir_path,
+                        'known_occurrences': known_occurrences_path,
+                        'db': db_path,
+                        'params': None}
+
+        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=cli_args_dic)
+        wopmars_command = wopmars_runner.get_wopmars_command()
+
+        # Some arguments will be passed through environmental variables
+        run_result = subprocess.run(wopmars_command, shell=True)
+
+        optimize_lfn_biosample_replicate_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_biosample_replicate.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_biosample_replicate, optimize_lfn_biosample_replicate_bak, shallow=False))
+
+        optimize_lfn_read_count_and_lfn_variant_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_read_count_and_lfn_variant.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_read_count_and_lfn_variant, optimize_lfn_read_count_and_lfn_variant_bak, shallow=False))
+
+        optimize_lfn_variant_specific_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_variant_specific.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_variant_specific, optimize_lfn_variant_specific_bak, shallow=False))
+
+        optimize_pcr_error_bak = os.path.join(self.test_outdir_bak_path, "optimize_pcr_error.tsv")
+        self.assertTrue(filecmp.cmp(optimize_pcr_error, optimize_pcr_error_bak, shallow=False))
+
+    @classmethod
+    def tearDownClass(cls):
+
+        shutil.rmtree(cls.test_outdir_path)
