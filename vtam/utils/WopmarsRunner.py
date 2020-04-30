@@ -105,6 +105,7 @@ class WopmarsRunner(Singleton):
             #
             template = jinja2_env.get_template('wopfile_optimize.yml')
             wopfile_path = os.path.join(self.tempdir, 'wopfile_optimize.yml')
+
         wopfile_content = template.render(self.cli_args_and_numerical_params)
 
         ################################################################################################################
@@ -141,25 +142,31 @@ class WopmarsRunner(Singleton):
         wopmars_command = wopmars_command_template\
             .format(wopfile_path=self.wopfile_path, **self.cli_args_and_numerical_params)
 
-        if self.cli_args_and_numerical_params['dryrun']:
-            wopmars_command += " -n"
+        if 'dryrun' in self.cli_args_and_numerical_params:
+            if self.cli_args_and_numerical_params['dryrun']:
+                wopmars_command += " -n"
 
-        if self.cli_args_and_numerical_params['forceall']:
-            wopmars_command += " -F"
+        if 'forceall' in self.cli_args_and_numerical_params:
+            if self.cli_args_and_numerical_params['forceall']:
+                wopmars_command += " -F"
 
-        if self.cli_args_and_numerical_params['log_verbosity'] > 0: # -v then pass this verbosity to wopmars
-            wopmars_command += " -v"
-            if self.cli_args_and_numerical_params['log_verbosity'] > 1: # -vv or higher, then do no pass it through environmental variables
-                os.environ['VTAM_LOG_VERBOSITY'] = str(self.cli_args_and_numerical_params['log_verbosity'])
+        if 'log_verbosity' in self.cli_args_and_numerical_params:
+            if self.cli_args_and_numerical_params['log_verbosity'] > 0: # -v then pass this verbosity to wopmars
+                wopmars_command += " -v"
+                if self.cli_args_and_numerical_params['log_verbosity'] > 1: # -vv or higher, then do no pass it through environmental variables
+                    os.environ['VTAM_LOG_VERBOSITY'] = str(self.cli_args_and_numerical_params['log_verbosity'])
 
-        if not self.cli_args_and_numerical_params['log_file'] is None:
-            wopmars_command += " --log " + self.cli_args_and_numerical_params['log_file']
+        if 'log_file' in self.cli_args_and_numerical_params:
+            if not self.cli_args_and_numerical_params['log_file'] is None:
+                wopmars_command += " --log " + self.cli_args_and_numerical_params['log_file']
 
-        if not self.cli_args_and_numerical_params['since'] is None:
-            wopmars_command += " --since {since}".format(**self.cli_args_and_numerical_params)
+        if 'since' in self.cli_args_and_numerical_params:
+            if not self.cli_args_and_numerical_params['since'] is None:
+                wopmars_command += " --since {since}".format(**self.cli_args_and_numerical_params)
 
-        if not self.cli_args_and_numerical_params['until'] is None:
-            wopmars_command += " --until {until}".format(**self.cli_args_and_numerical_params)
+        if 'until' in self.cli_args_and_numerical_params:
+            if not self.cli_args_and_numerical_params['until'] is None:
+                wopmars_command += " --until {until}".format(**self.cli_args_and_numerical_params)
 
         wopmars_command = wopmars_command.format(**self.cli_args_and_numerical_params)
         return wopmars_command
