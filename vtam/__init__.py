@@ -68,16 +68,9 @@ class VTAM(object):
         #
         ################################################################################################################
 
-        # (CLIargumentDict.instance()).update(vars(self.args))
-        # CLIargumenargparser_dictDict.instance().add_options(option_dic) # Add options to CLIargumentDict
-
         # Some arguments will be passed through environmental variables
         if 'threads' in vars(self.args):
             os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
-        # if 'fastqdir' in vars(self.args):
-        #     os.environ['VTAM_FASTQ_DIR'] = vars(self.args)['fastqdir']
-        # if 'fastadir' in vars(self.args):
-        #     os.environ['VTAM_FASTA_DIR'] = vars(self.args)['fastadir']
 
         ###############################################################
         #
