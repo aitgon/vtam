@@ -7,7 +7,7 @@ from unittest import TestCase
 import os
 import filecmp
 
-from vtam import CommandMerge
+from vtam import CommandMerge, CommandSortReads
 from vtam.utils.PathManager import PathManager
 
 
@@ -55,14 +55,28 @@ class TestVTAM(TestCase):
         # Command SortReads
         #
         ################################################################################################################
-        
-        fastainfo_path = os.path.join(self.test_outdir_path, "fastainfo.tsv")
-        fastadir_path = os.path.join(self.test_outdir_path, "merged")
-        CommandMerge.main(fastqinfo=fastqinfo_path, fastqdir=self.fastqdir_path, fastainfo=fastainfo_path,
-                          fastadir=fastadir_path)
 
-        fastainfo_bak_path = os.path.join(self.test_outdir_bak_path, "fastainfo.tsv")
-        self.assertTrue(filecmp.cmp(fastainfo_path, fastainfo_path, shallow=False))
+        sorteddir_path = os.path.join(self.test_outdir_path, "sorted")
+        sortedreadinfo_path = os.path.join(sorteddir_path, "readinfo.tsv")
+
+        CommandSortReads.main(fastainfo=fastainfo_path, fastadir=fastadir_path, outdir=sorteddir_path)
+
+        sortedreadinfo_bak_path = os.path.join(self.test_outdir_bak_path, "readinfo.tsv")
+        self.assertTrue(filecmp.cmp(sortedreadinfo_path, sortedreadinfo_bak_path, shallow=False))
+
+        # ################################################################################################################
+        # #
+        # # Command Filter
+        # #
+        # ################################################################################################################
+        #
+        # sorteddir_path = os.path.join(self.test_outdir_path, "sorted")
+        # sortedreadinfo_path = os.path.join(sorteddir_path, "readinfo.tsv")
+        #
+        # CommandSortReads.main(fastainfo=fastainfo_path, fastadir=fastadir_path, outdir=sorteddir_path)
+        #
+        # sortedreadinfo_bak_path = os.path.join(self.test_outdir_bak_path, "readinfo.tsv")
+        # self.assertTrue(filecmp.cmp(sortedreadinfo_path, sortedreadinfo_bak_path, shallow=False))
 
 
 
