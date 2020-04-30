@@ -21,8 +21,12 @@ class TestArgParser(TestCase):
         foopaths['filenottsv'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "readinfo.tsv"), PathManager.get_package_path())
-        foopaths['variant_known_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
-                                                                "variant_known.tsv"), PathManager.get_package_path())
+        foopaths['params_yml'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "params.yml"), PathManager.get_package_path())
+        foopaths['params_wrong_yml'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "params_wrong.yml"), PathManager.get_package_path())
+        foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+                                                                "known_occurrences.tsv"), PathManager.get_package_path())
         foopaths['asvtable_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "asvtable.tsv"), PathManager.get_package_path())
         foopaths['runmarker_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
@@ -39,9 +43,22 @@ class TestArgParser(TestCase):
                                               PathManager.get_package_path())
         cls.foopaths = foopaths
 
+    def test_arg_parser_params(self):
+
+        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
+            **self.foopaths).split()
+        self.assertTrue(self.parser.parse_args(args), 0)
+        # Eror
+        # import pdb; pdb.set_trace()
+        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv --params {params_wrong_yml}".format(
+            **self.foopaths).split()
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
     def test_arg_parser_filter(self):
 
         # Ok
+        # import pdb; pdb.set_trace()
         args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -74,7 +91,7 @@ class TestArgParser(TestCase):
     def test_arg_parser_optimize(self):
 
         # Ok
-        args = "optimize --variant_known {variant_known_tsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {known_occurrences_tsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -88,12 +105,12 @@ class TestArgParser(TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --variant_known {filedoesnotexist} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {filedoesnotexist} --readinfo {readinfo_tsv} --readdir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --variant_known {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)

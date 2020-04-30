@@ -2,13 +2,105 @@ import argparse
 import multiprocessing
 import os
 import pandas
+import yaml
 
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
-
+from vtam.utils import constants
 
 class ArgParserChecker(object):
     """Methods to check arguments"""
+
+    @staticmethod
+    def check_dir_exists_and_is_nonempty(path):
+        """Checks if directory exists and is not empty
+
+        :param path: Valid non-empty directory path
+        :return: void
+        """
+        if not os.path.isdir(path):
+            raise argparse.ArgumentTypeError("The directory '{}' does not exist. Please fix it.".format(path))
+        elif not len(os.listdir(path)) > 0:
+            raise argparse.ArgumentTypeError("The directory '{}' is empty. Please fix it.".format(path))
+        else:
+            return path
+
+    @staticmethod
+    def check_fastainfo(path):
+
+        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+
+        :param path: Valid non-empty TSV fastainfo path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
+         'mergedfasta'}
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(path, header_lower))
+
+    @staticmethod
+    def check_fastqinfo(path):
+
+        """Checks if fastqinfo exists, is not empty
+
+        :param path: Valid non-empty TSV fastqinfo path
+        :return: void
+
+        """
+
+        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+        df = pandas.read_csv(path, sep='\t', header=0)
+        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
+         'primerfwd', 'biosample', 'tagfwd', 'marker'}
+        df.columns = df.columns.str.lower()
+        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return path
+        else:
+            raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(
+                path, header_lower))
+
+    @staticmethod
+    def check_file_exists_and_is_nonempty(path):
+
+        """Checks if file exists and is not empty
+
+        :param path: Valid non-empty file path
+        :return: void
+
+        """
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file '{}' is empty. Please fix it.".format(path))
+        else:
+            return path  # return the path
+
+    @classmethod
+    def check_params_yml(cls, path):
+
+        """Checks if file exists and is not empty
+
+        :param path: Path to the sampleselect TSV file
+        :return: void
+        """
+
+        path = cls.check_file_exists_and_is_nonempty(path)
+
+        with open(path, 'r') as fin:
+            params_user = yaml.load(fin, Loader=yaml.SafeLoader)
+            for params_k in params_user:
+                if not (params_k in constants.get_dic_params_default()):
+                    raise argparse.ArgumentTypeError(
+                        "This parameter '{}' in the YML file '{}' is not recognized by VTAM. Please fix it.".format(params_k, path))
+                else:
+                    return path
 
     @classmethod
     def check_parser_filter_arg_sampleselect(cls, path):
@@ -24,65 +116,9 @@ class ArgParserChecker(object):
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = map(str.lower, df.columns) # variant_read_count_input_df columns to lower
         if not 'run' in df.columns and not 'marker' in df.columns:
-            raise argparse.ArgumentTypeError("The TSV file {} does not contain columns with 'Run' and 'Marker' columns!".format(path))
+            raise argparse.ArgumentTypeError("The TSV file '{}' does not contain columns with 'Run' and 'Marker' columns. Please fix it.".format(path))
         else:
             return path
-
-    @staticmethod
-    def check_real_between_0_and_100(value):
-        fvalue = float(value)
-        if fvalue < 0 or fvalue > 100:
-            raise argparse.ArgumentTypeError("%s is an invalid real value between 0 and 100" % value)
-        return fvalue
-
-    @staticmethod
-    def check_real_positive(value):
-        fvalue = float(value)
-        if fvalue <= 0:
-            raise argparse.ArgumentTypeError("%s is an invalid positive real value" % value)
-        return fvalue
-
-    @staticmethod
-    def check_taxassign_variants(path):
-
-        """Check variants format
-
-        :param path: Valid non-empty file path
-        :return: void
-
-        """
-        if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
-        elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'sequence'}
-        df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = df.columns.str.lower()
-        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
-        else:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
-
-    @staticmethod
-    def check_taxassign_taxonomy(path):
-
-        """Check taxonomy format
-
-        :param path: Valid non-empty file path
-        :return: void
-
-        """
-        if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
-        elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'}
-        df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = df.columns.str.lower()
-        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
-        else:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
 
     @staticmethod
     def check_parser_pool_arg_runmarker(path, error_message=None):
@@ -105,41 +141,39 @@ class ArgParserChecker(object):
         return path
 
     @staticmethod
-    def check_file_exists_and_is_nonempty(path):
+    def check_pool_runmarker_tsv(path):
 
-        """Checks if file exists and is not empty
-
-        :param path: Valid non-empty file path
-        :return: void
-
-        """
-        if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
-        elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        else:
-            return path  # return the path
-
-    @staticmethod
-    def check_variant_known_tsv(path):
-
-        """Check variant_known_tsv format
+        """Check runmarker_tsv format
 
         :param path: Valid non-empty file path
         :return: void
 
         """
         if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
         elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'marker', 'run', 'biosample', 'biosampletype', 'variantid', 'action', 'sequence'}
+            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(path))
+        header_lower = {'run', 'marker'}
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path  # return the path
+            return path
         else:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
+
+    @staticmethod
+    def check_real_between_0_and_100(value):
+        fvalue = float(value)
+        if fvalue < 0 or fvalue > 100:
+            raise argparse.ArgumentTypeError("%s is an invalid real value between 0 and 100. Please fix it." % value)
+        return fvalue
+
+    @staticmethod
+    def check_real_positive(value):
+        fvalue = float(value)
+        if fvalue <= 0:
+            raise argparse.ArgumentTypeError("%s is an invalid positive real value. Please fix it." % value)
+        return fvalue
 
     @staticmethod
     def check_readinfo_tsv(path):
@@ -151,91 +185,79 @@ class ArgParserChecker(object):
 
         """
         if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+            raise argparse.ArgumentTypeError("The file '{}' does not exist!".format(path))
         elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
+            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(path))
         header_lower = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
         else:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
     @staticmethod
-    def check_pool_runmarker_tsv(path):
+    def check_taxassign_taxonomy(path):
 
-        """Check runmarker_tsv format
+        """Check taxonomy format
 
         :param path: Valid non-empty file path
         :return: void
 
         """
         if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file {} does not exist!".format(path))
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
         elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file {} is empty!".format(path))
-        header_lower = {'run', 'marker'}
+            raise argparse.ArgumentTypeError("The file '{}' is empty. Please fix it.".format(path))
+        header_lower = {'tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'}
         df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
         else:
-            raise argparse.ArgumentTypeError("The format of file {} is wrong!".format(path))
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
     @staticmethod
-    def check_fastainfo(path):
+    def check_taxassign_variants(path):
 
-        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+        """Check variants format
 
-        :param path: Valid non-empty TSV fastainfo path
+        :param path: Valid non-empty file path
         :return: void
 
         """
-
-        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-        df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
-         'mergedfasta'}
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file '{}' is empty. Please fix it.".format(path))
+        header_lower = {'sequence'}
+        df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return path
         else:
-            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
     @staticmethod
-    def check_fastqinfo(path):
+    def check_known_occurrences_tsv(path):
 
-        """Checks if fastqinfo exists, is not empty
+        """Check known_occurrences_tsv format
 
-        :param path: Valid non-empty TSV fastqinfo path
+        :param path: Valid non-empty file path
         :return: void
 
         """
-
-        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-        df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
-         'primerfwd', 'biosample', 'tagfwd', 'marker'}
+        if not os.path.isfile(path):
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
+        elif not os.stat(path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(path))
+        header_lower = {'marker', 'run', 'biosample', 'biosampletype', 'variantid', 'action', 'sequence'}
+        df = pandas.read_csv(path, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
+            return path  # return the path
         else:
-            raise argparse.ArgumentTypeError("The header of the file {} does not contain these fields: {}!".format(path, header_lower))
-
-    @staticmethod
-    def check_dir_exists_and_is_nonempty(path):
-        """Checks if directory exists and is not empty
-
-        :param path: Valid non-empty directory path
-        :return: void
-        """
-        if not os.path.isdir(path):
-            raise argparse.ArgumentTypeError("The directory {} does not exist!".format(path))
-        elif not len(os.listdir(path)) > 0:
-            raise argparse.ArgumentTypeError("The directory {} is empty!".format(path))
-        else:
-            return path
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
 
 class ArgParser:
@@ -256,9 +278,8 @@ class ArgParser:
         """
         # create the top-level parser
         parser_vtam_main = argparse.ArgumentParser(add_help=False)
-        # TODO check that parameters in this file are recognized
         parser_vtam_main.add_argument('--params', action='store', default=None, help="YML file with parameter values",
-                                 required=False, type=ArgParserChecker.check_file_exists_and_is_nonempty)
+                                 required=False, type=ArgParserChecker.check_params_yml)
         parser_vtam_main.add_argument('--log', **cls.args_log_file)
         parser_vtam_main.add_argument('--threads', action='store',
                                      help="Number of threads",
@@ -313,7 +334,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxassign(subparsers=subparsers)
+        cls.create_taxassign(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -321,7 +342,7 @@ class ArgParser:
         #
         ################################################################################################################
 
-        cls.create_taxonomy(subparsers=subparsers)
+        cls.create_taxonomy(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         ################################################################################################################
         #
@@ -376,8 +397,6 @@ class ArgParser:
         parser_vtam_filter.add_argument('--readdir', action='store', help="REQUIRED: TSV file with information of sorted read files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        # parser_vtam_filter.add_argument('--outdir', action='store', help="REQUIRED: Directory for output", default="out",
-        #                              required=True)
         parser_vtam_filter\
             .add_argument('--asvtable', action='store', help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
                           required=True)
@@ -417,8 +436,8 @@ class ArgParser:
                                           type=ArgParserChecker.check_dir_exists_and_is_nonempty)
         parser_vtam_optimize.add_argument('--outdir', action='store', help="Directory for output", default="out",
                                           required=True)
-        parser_vtam_optimize.add_argument('--variant_known', action='store', help="TSV file with known variants",
-                                          required=True, type=ArgParserChecker.check_variant_known_tsv)
+        parser_vtam_optimize.add_argument('--known_occurrences', action='store', help="TSV file with known variants",
+                                          required=True, type=ArgParserChecker.check_known_occurrences_tsv)
 
         ################################################################################################################
         #
@@ -456,9 +475,10 @@ class ArgParser:
         parser_vtam_pool_markers.set_defaults(command='pool')  # This attribute will trigger the good command
 
     @classmethod
-    def create_taxassign(cls, subparsers):
+    def create_taxassign(cls, subparsers, parent_parser):
 
-        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter)
+        parser_vtam_taxassign = subparsers.add_parser('taxassign', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[parent_parser])
 
         parser_vtam_taxassign\
             .add_argument('--variants', action='store', help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
@@ -473,12 +493,6 @@ class ArgParser:
                                       "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
                                       "input variants.")
         parser_vtam_taxassign.add_argument('--db', **cls.args_db)
-        parser_vtam_taxassign.add_argument('--log', **cls.args_log_file)
-        parser_vtam_taxassign.add_argument('-v', **cls.args_log_verbosity)
-        parser_vtam_taxassign.add_argument('--threads', action='store',
-                                     help="Number of threads",
-                                     required=False,
-                                     default=multiprocessing.cpu_count())
         parser_vtam_taxassign.add_argument('--blastdbdir', action='store',
                                            help="REQUIRED: Blast DB directory (Full or custom one) with DB files.",
                                            required=True, type=ArgParserChecker.check_dir_exists_and_is_nonempty)
@@ -494,26 +508,27 @@ class ArgParser:
         vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
                                            required=True,
                                            type=ArgParserChecker.check_taxassign_taxonomy)
-        parser_vtam_taxassign.add_argument('--ltg_rule_threshold', default=97, type=ArgParserChecker.check_real_between_0_and_100,
-                                           required=False,
-                                           help="Identity threshold to use either 'include_prop' parameter "
-                                                "(blast identity>=ltg_rule_threshold) or use 'min_number_of_taxa' "
-                                                "parameter  (blast identity<ltg_rule_threshold)")
-        parser_vtam_taxassign.add_argument('--include_prop', action='store', default=90, type=ArgParserChecker.check_real_between_0_and_100,
-                                           required=False,
-                                           help="Determine the Lowest Taxonomic Group "
-                                                "(LTG) that contains at least the include_prop percentage of the hits.")
-        parser_vtam_taxassign.add_argument('--min_number_of_taxa', default=3, type=ArgParserChecker.check_real_positive,
-                                           required=False,
-                                           help="Determine the Lowest Taxonomic Group (LTG) "
-                                                "only if selected hits contain at least --min_number_of_taxa different taxa")
+        # parser_vtam_taxassign.add_argument('--ltg_rule_threshold', default=97, type=ArgParserChecker.check_real_between_0_and_100,
+        #                                    required=False,
+        #                                    help="Identity threshold to use either 'include_prop' parameter "
+        #                                         "(blast identity>=ltg_rule_threshold) or use 'min_number_of_taxa' "
+        #                                         "parameter  (blast identity<ltg_rule_threshold)")
+        # parser_vtam_taxassign.add_argument('--include_prop', action='store', default=90, type=ArgParserChecker.check_real_between_0_and_100,
+        #                                    required=False,
+        #                                    help="Determine the Lowest Taxonomic Group "
+        #                                         "(LTG) that contains at least the include_prop percentage of the hits.")
+        # parser_vtam_taxassign.add_argument('--min_number_of_taxa', default=3, type=ArgParserChecker.check_real_positive,
+        #                                    required=False,
+        #                                    help="Determine the Lowest Taxonomic Group (LTG) "
+        #                                         "only if selected hits contain at least --min_number_of_taxa different taxa")
 
         parser_vtam_taxassign.set_defaults(command='taxassign')  # This attribute will trigger the good command
 
     @classmethod
-    def create_taxonomy(cls, subparsers):
+    def create_taxonomy(cls, subparsers, parent_parser):
 
-        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True)
+        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
+                                                  parents=[parent_parser])
         parser_vtam_taxonomy.add_argument('-o', '--output', dest='output', action='store', help="Path to TSV taxonomy file",
                             required=True)
         parser_vtam_taxonomy.add_argument('--precomputed', dest='precomputed', action='store_true', default=False,
@@ -525,6 +540,6 @@ class ArgParser:
     def create_coiblastdb(cls, subparsers):
 
         parser_vtam_coi_blast_db = subparsers.add_parser('coi_blast_db', add_help=True)
-        parser_vtam_coi_blast_db.add_argument('--coi_blast_db', dest='coi_blast_db', action='store', help="Path COI Blast DB",
+        parser_vtam_coi_blast_db.add_argument('--coi_blast_db_dir', dest='coi_blast_db_dir', action='store', help="Path COI Blast DB",
                             required=True)
         parser_vtam_coi_blast_db.set_defaults(command='coi_blast_db')  # This attribute will trigger the good command

@@ -1,8 +1,4 @@
-import pathlib
-
-from sqlalchemy import bindparam
 from wopmars.models.ToolWrapper import ToolWrapper
-
 from vtam import Logger
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
@@ -12,6 +8,7 @@ from vtam.utils.VTAMexception import VTAMexception
 
 import os
 import pandas
+import pathlib
 import sys
 
 

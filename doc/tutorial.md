@@ -125,7 +125,7 @@ The 'taxassign' command assigns variant sequences in the last column of a TSV fi
 
 ~~~
 vtam taxonomy -o out/taxonomy.tsv --precomputed
-vtam coi_blast_db --coi_blast_db out/coi_blast_db
+vtam coi_blast_db --coi_blast_db_dir out/coi_blast_db
 ~~~
 
 The input file of the 'taxassign' command is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
@@ -180,9 +180,9 @@ ZFZR	prerun	TnegExt1_prerun	negative		delete		dummy info
 ZFZR	prerun	TnegExt2_prerun	negative		delete		dummy info
 ~~~
 
-There is a *variant_known.tsv* file in the *doc* directory of the VTAM package.
+There is a *known_occurrences.tsv* file in the *doc* directory of the VTAM package.
 Then the *optimize* command is run like this:
 
 ~~~
-vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --variant_known  variant_known.tsv --outdir out
+vtam optimize --db out/db.sqlite --readinfo out/sorted/readinfo.tsv --readdir out/sorted --known_occurrences  known_occurrences.tsv --outdir out
 ~~~
