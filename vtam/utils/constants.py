@@ -78,7 +78,8 @@ skip_filter_indel: 0
 # If 1, skips this filter for non-coding markers
 skip_filter_codon_stop: 0
 # Translation table number from NCBI [ link]
-genetic_table_number: 5
+# Default NCBI translation table 5: stops: ['TAA', 'UAA', 'TAG', 'UAG']
+genetic_code: 5
 
 ################################################################################
 # Parameters of the "taxassign" command
