@@ -3,7 +3,7 @@ import shutil
 from unittest import TestCase
 from vtam.utils.ArgParser import ArgParser
 
-from vtam.utils.OptionManager import OptionManager
+# from vtam.utils.CLIargumentDict import CLIargumentDict
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.PathManager import PathManager
 
@@ -38,15 +38,15 @@ class TestWorpmarsRunnerOptimize(TestCase):
         #
         #####################
 
-        option_dic = vars(args) # Dictionnary with options
-        OptionManager.instance().add_options(option_dic) # Add options to OptionManager
+        # arg_parser_dic = vars(args) # Dictionnary with options
+        # (CLIargumentDict.instance()).update(option_dic) # Add options to CLIargumentDict
 
         ###############################################################
         #
         # Test wopfile
         #
         ###############################################################
-        wopmars_runner = WopmarsRunner(command='optimize', parameters=OptionManager.instance())
+        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
                                     PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)

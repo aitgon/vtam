@@ -8,7 +8,6 @@ from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 class AsvTableRunner(object):
 
-
     def __init__(self, engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df, variant_to_chimera_borderline_df,
                  taxonomy_tsv=None):
 
@@ -40,10 +39,15 @@ class AsvTableRunner(object):
         #
         ################################################################################################################
 
-        asv_df2 = asv_df
-        biosample_name_list = self.biosample_df.name.tolist()
-        asv_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in asv_df2.iloc[:, 3:].columns.tolist()]
-        asv_df2 = asv_df2[asv_df2_columns]
+        asv_df2 = asv_df[['run_id', 'marker_id', 'variant_id']].copy()
+        for biosample_name in self.biosample_df.name.tolist():
+            if biosample_name in asv_df.columns:  # biosample with read counts
+                asv_df2[biosample_name] = asv_df[biosample_name].tolist()
+            else:  # biosample without read counts
+                asv_df2[biosample_name] = [0]*asv_df2.shape[0]
+            # biosample_name_list = self.biosample_df.name.tolist()
+            # asv_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in asv_df2.iloc[:, 3:].columns.tolist()]
+            # asv_df2 = asv_df2[asv_df2_columns]
 
         ################################################################################################################
         #
@@ -93,7 +97,7 @@ class AsvTableRunner(object):
             #
             # taxonomy_db to variant_read_count_input_df
             #
-            #####from vtam.utils.TaxAssignRunner import f04_1_tax_id_to_taxonomy_lineage
+            #####from vtam.utils.TaxAssignRunner import tax_id_to_taxonomy_lineage
 
             taxonomy_df = pandas.read_csv(self.taxonomy_tsv, sep="\t", header=0,
                                              dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})

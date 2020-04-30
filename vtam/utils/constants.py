@@ -8,10 +8,6 @@ import yaml
 ########################################################################################################################
 
 params_default_str = """################################################################################
-# This parameter sets the number of cores (Default: maximal)
-threads: 8
-
-################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
 # For a description of these parameters run "vsearch --help"
@@ -28,9 +24,9 @@ fastq_truncqual: 10
 # Parameters of the "sortreads" command
 # These parameters correspond to the corresponding parametes by cutadapt that underlies the "vtam sortreads" command
 # For a description of these parameters run "cutadapt --help"
-cutadapt_error_rate: 0.1
-cutadapt_minimum_length: 50
-cutadapt_maximum_length: 500
+cutadapt_error_rate: 0.1 # -e in cutadapt
+cutadapt_minimum_length: 50 # -m in cutadapt
+cutadapt_maximum_length: 500 # -M in cutadapt
 
 ################################################################################
 # Parameters of the "filter" command
@@ -43,13 +39,12 @@ global_read_count_threshold: 2
 # Occurrence is deleted if N_ijk/N_i < lfn_variant_threshold
 lfn_variant_threshold: 0.001
 # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_threshold
+# If this parameter is set (Not None), then the lfn_variant_replicate_threshold instead of lfn_variant_threshold is used
 lfn_variant_replicate_threshold: None
 # Occurrence is deleted if N_ijk/N_jk < lfn_ biosample _replicate_threshold
 lfn_biosample_replicate_threshold: 0.001
 # Occurrence is deleted if N_ijk < lfn_ read_count_threshold
 lfn_read_count_threshold: 10
-# Choice between lfn_variant (1) and lfn_variant_replicate (0) filters
-filter_lfn_variant: 1
 
 ################################################################################
 # Parameters of the "FilterMinReplicateNumber" filter in the "filter" command
@@ -69,7 +64,8 @@ uchime3_denovo_abskew: 16.0
 
 ################################################################################
 # Parameter of the "FilterRenkonen" filter in the "filter" command
-# This parameters sets a cutoff renkonen distance at the given quantile of renkonen distances
+# Quantile renkonen distance to drop more extreme values
+# For. a 0.9 value will set the 9th decile of all renkonen distances as cutoff
 renkonen_distance_quantile: 0.9
 
 ################################################################################
@@ -82,18 +78,18 @@ skip_filter_indel: 0
 # If 1, skips this filter for non-coding markers
 skip_filter_codon_stop: 0
 # Translation table number from NCBI [ link]
-genetic_table_number: 5
+# Default NCBI translation table 5: stops: ['TAA', 'UAA', 'TAG', 'UAG']
+genetic_code: 5
 
 ################################################################################
 # Parameters of the "taxassign" command
-# These parameters are used by the "vtam taxassign" command to assign taxa to variants
-# Identity percentage cutoff to use the "include_prop" rule (%identity>=ltg_rule_threshold)
-# or the min_number_of_tax rule (%identity<ltg_rule_threshold)
-ltg_rule_threshold: 97
+# Blast parameter for the minimum query coverage
+qcov_hsp_perc: 80
 # The LTG must include include_prop percent of the hits
 include_prop: 90
-# Minimal number of taxa to keep a given LTG for %identity below ltg_rule_threshold
-min_number_of_taxa: 3"""
+# Minimal number of taxa among the hits to assign LTG when %identity is below ltg_rule_threshold
+min_number_of_taxa: 3
+ltg_rule_threshold: 97"""
 
 def get_dic_params_default():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
@@ -111,8 +107,9 @@ rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infrac
                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
 rank_hierarchy_asv_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
 
-public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
-url_taxonomy_tsv = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
+# public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
+url_taxonomy_tsv_gz = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
+url_coi_blast_db_gz = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
