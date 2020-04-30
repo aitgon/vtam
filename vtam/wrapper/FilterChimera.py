@@ -2,8 +2,6 @@ import os
 import pathlib
 import sys
 
-from sqlalchemy import bindparam
-
 from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable

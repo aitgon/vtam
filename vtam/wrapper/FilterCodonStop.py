@@ -24,8 +24,6 @@ class FilterCodonStop(ToolWrapper):
     # Output table
     __output_table_filter_codon_stop = "FilterCodonStop"
 
-
-
     def specify_input_file(self):
         return[
             FilterCodonStop.__input_file_readinfo,
@@ -40,11 +38,9 @@ class FilterCodonStop(ToolWrapper):
             FilterCodonStop.__input_table_Variant,
         ]
 
-
     def specify_output_table(self):
         return [
             FilterCodonStop.__output_table_filter_codon_stop,
-
         ]
 
     def specify_params(self):
@@ -52,7 +48,6 @@ class FilterCodonStop(ToolWrapper):
             "genetic_code": "int",
             "skip_filter_codon_stop": "int",
         }
-
 
     def run(self):
         session = self.session

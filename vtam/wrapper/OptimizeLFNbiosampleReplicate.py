@@ -1,10 +1,10 @@
 import pandas
 import sqlalchemy
-from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from wopmars.models.ToolWrapper import ToolWrapper
 
 
 class OptimizeLFNbiosampleReplicate(ToolWrapper):
