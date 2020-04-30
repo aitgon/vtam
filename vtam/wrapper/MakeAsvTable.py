@@ -1,5 +1,4 @@
 from wopmars.models.ToolWrapper import ToolWrapper
-
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.SampleInformationUtils import FastaInformationTSV
 

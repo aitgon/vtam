@@ -72,6 +72,11 @@ class RunMarkerTSVreader():
                         sample_record_list.append(dict(zip(result_proxy_row.keys(), result_proxy_row)))
         conn.close()
 
+        if len(sample_record_list) == 0:  # empty list, that is problem with run_marker_tsv from user
+            msg_error = 'Error: There is a problem in the file of the --runmarker argument. Please verify it.'
+            Logger.instance().error(VTAMexception(msg_error))
+            sys.exit(1)
+
         sample_information_df = pandas.DataFrame.from_records(data=sample_record_list)
         sample_information_utils = SampleInformationUtils(engine=engine, sample_information_df=sample_information_df)
 

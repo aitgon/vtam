@@ -121,7 +121,7 @@ Precomputed versions of these files can be downloaded in the following way:
 .. code-block:: bash
 
     vtam taxonomy -o out/taxonomy.tsv --precomputed
-    vtam coi_blast_db --coi_blast_db out/coi_blast_db
+    vtam coi_blast_db --coi_blast_db_dir out/coi_blast_db
 
 The input file is a TSV file, where the last column are the sequence of the variants. Both the *out/asvtable.tsv* and *pool_run_marker.tsv* can be used for the assignation.
 
@@ -134,10 +134,10 @@ The command to carry out the taxon assignation is:
 Parameter Optimization
 ------------------------------
 
-To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`variant_known.tsv <variant_known.tsv>`
+To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`known_occurrences.tsv <known_occurrences.tsv>`
 
 .. code-block:: bash
 
-    vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fastadir --variant_known variant_known.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
+    vtam optimize --fastainfo out/fastainfo.tsv --fastadir out/fastadir --known_occurrences known_occurrences.tsv --db out/db.sqlite --outdir out --log out/vtam.log -v
 
 

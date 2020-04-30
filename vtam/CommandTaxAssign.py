@@ -9,22 +9,44 @@ from sqlalchemy import create_engine, select
 
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 from vtam.models.Variant import Variant as variant_declarative
+from vtam.utils import constants
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.TaxAssignRunner import TaxAssignRunner
 from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantDFutils import VariantDFutils
 
 
 class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, ltg_rule_threshold, include_prop,
-             min_number_of_taxa, num_threads):
+    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, num_threads, params):
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
+
+        ################################################################################################################
+        #
+        # Parameters
+        #
+        ################################################################################################################
+
+        params_default = constants.get_dic_params_default()
+
+        ltg_rule_threshold = params_default['ltg_rule_threshold']
+        include_prop = params_default['include_prop']
+        min_number_of_taxa = params_default['min_number_of_taxa']
+        qcov_hsp_perc = params_default['qcov_hsp_perc']
+
+        if not (params is None):
+            if 'ltg_rule_threshold' in params:
+                ltg_rule_threshold = params_default['ltg_rule_threshold']
+            if 'include_prop' in params:
+                include_prop = params_default['include_prop']
+            if 'min_number_of_taxa' in params:
+                min_number_of_taxa = params_default['min_number_of_taxa']
+            if 'qcov_hsp_perc' in params:
+                qcov_hsp_perc = params_default['qcov_hsp_perc']
 
         ################################################################################################################
         #
@@ -129,14 +151,21 @@ class CommandTaxAssign(object):
             variant_to_blast_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
 
             taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
-                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'},
+                                          index_col='tax_id', usecols=['tax_id', 'parent_tax_id', 'rank', 'name_txt', 'old_tax_id'])
+            taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt', 'old_tax_id']].drop_duplicates()
+
+            # taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
+            #                               dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'},
+            #                               index_col='tax_id', usecols=['tax_id', 'parent_tax_id', 'rank', 'name_txt'])
+            # taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
 
             sequence_list = variant_to_blast_df.sequence.tolist()
             tax_assign_runner = TaxAssignRunner(sequence_list=sequence_list, taxonomy_df=taxonomy_df,
                                                 blast_db_dir=blasdb_dir_path, blast_db_name=blastdbname_str,
                                                 ltg_rule_threshold=ltg_rule_threshold,
                                                 include_prop=include_prop, min_number_of_taxa=min_number_of_taxa,
-                                                num_threads=num_threads)
+                                                num_threads=num_threads, qcov_hsp_perc=qcov_hsp_perc)
             ltg_blast_df = tax_assign_runner.ltg_df
 
             ######################################################

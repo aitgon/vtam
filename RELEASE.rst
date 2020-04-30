@@ -1,3 +1,11 @@
+CHANGES IN VERSION 0.1.0 (April 30, 2020)
+--------------------------------------------------
+
+- Bugs fixed
+- Added tests
+- Created test dataset
+- Made faster some parts of the code
+
 CHANGES IN VERSION 0.0.1.4 (April 13, 2020)
 --------------------------------------------------
 
