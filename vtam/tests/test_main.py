@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 
+import pip
+
 from vtam import CommandMerge, CommandSortReads, WopmarsRunner
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
@@ -15,13 +17,18 @@ import urllib
 
 
 class TestMain(TestCase):
+
     """Will test main commands based on a complete test dataset"""
 
     @classmethod
     def setUpClass(cls):
 
+        # Needs to be installed package to work wopmars
+        pip.main(['install', '-e', '{}/.'.format(PathManager.get_package_path()), '--upgrade'])
+
         url_taxonomy_fastq_tar = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
         cls.test_outdir_path = os.path.join(PathManager.get_test_path(), 'outdir', cls.__qualname__)
+        shutil.rmtree(cls.test_outdir_path, ignore_errors=True)
         cls.test_outdir_bak_path = os.path.join(PathManager.get_test_path(), 'test_files', cls.__qualname__)
 
         cls.fastqdir_path = os.path.join(cls.test_outdir_path, "fastq")
@@ -36,7 +43,17 @@ class TestMain(TestCase):
         tar.extractall(path=cls.test_outdir_path)
         tar.close()
 
-    def test_01(self):
+        # Set test paths
+        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
+        cls.fastainfo_path = os.path.join(cls.test_outdir_path, "fastainfo.tsv")
+        cls.fastadir_path = os.path.join(cls.test_outdir_path, "merged")
+
+        cls.sorteddir_path = os.path.join(cls.test_outdir_path, "sorted")
+        cls.sortedreadinfo_path = os.path.join(cls.sorteddir_path, "readinfo.tsv")
+
+        cls.log_path = os.path.join(cls.test_outdir_path, "vtam.log")
+
+    def test_step01_merge(self):
 
         ################################################################################################################
         #
@@ -44,15 +61,14 @@ class TestMain(TestCase):
         #
         ################################################################################################################
 
-        fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
-        # fastqdir =
-        fastainfo_path = os.path.join(self.test_outdir_path, "fastainfo.tsv")
-        fastadir_path = os.path.join(self.test_outdir_path, "merged")
-        CommandMerge.main(fastqinfo=fastqinfo_path, fastqdir=self.fastqdir_path, fastainfo=fastainfo_path,
-                          fastadir=fastadir_path)
+
+        CommandMerge.main(fastqinfo=self.fastqinfo_path, fastqdir=self.fastqdir_path, fastainfo=self.fastainfo_path,
+                          fastadir=self.fastadir_path)
 
         fastainfo_bak_path = os.path.join(self.test_outdir_bak_path, "fastainfo.tsv")
-        self.assertTrue(filecmp.cmp(fastainfo_path, fastainfo_path, shallow=False))
+        self.assertTrue(filecmp.cmp(self.fastainfo_path, fastainfo_bak_path, shallow=False))
+
+    def test_step02_sort_reads(self):
 
         ################################################################################################################
         #
@@ -60,13 +76,14 @@ class TestMain(TestCase):
         #
         ################################################################################################################
 
-        sorteddir_path = os.path.join(self.test_outdir_path, "sorted")
-        sortedreadinfo_path = os.path.join(sorteddir_path, "readinfo.tsv")
-
-        CommandSortReads.main(fastainfo=fastainfo_path, fastadir=fastadir_path, outdir=sorteddir_path)
+        self.sorteddir_path = os.path.join(self.test_outdir_path, "sorted")
+        self.sortedreadinfo_path = os.path.join(self.sorteddir_path, "readinfo.tsv")
+        CommandSortReads.main(fastainfo=self.fastainfo_path, fastadir=self.fastadir_path, outdir=self.sorteddir_path)
 
         sortedreadinfo_bak_path = os.path.join(self.test_outdir_bak_path, "readinfo.tsv")
-        self.assertTrue(filecmp.cmp(sortedreadinfo_path, sortedreadinfo_bak_path, shallow=False))
+        self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, sortedreadinfo_bak_path, shallow=False))
+
+    def test_step03_filter(self):
 
         ################################################################################################################
         #
@@ -81,12 +98,13 @@ class TestMain(TestCase):
         if os.path.exists(db_path):
             pathlib.Path(db_path).unlink()
 
-        cli_args_dic = {'readinfo': sortedreadinfo_path,
-                        'readdir': sorteddir_path,
+        cli_args_dic = {'readinfo': self.sortedreadinfo_path,
+                        'readdir': self.sorteddir_path,
                         'asvtable': asvtable_path,
                         'db': db_path,
                         'params': None,
-                        'threshold_specific': None}
+                        'threshold_specific': None,
+                        'log_file': self.log_path}
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=cli_args_dic)
         wopmars_command = wopmars_runner.get_wopmars_command()
@@ -98,6 +116,8 @@ class TestMain(TestCase):
         asvtable_bak_path = os.path.join(self.test_outdir_bak_path, "asvtable.tsv")
         self.assertTrue(filecmp.cmp(asvtable_path, asvtable_bak_path, shallow=False))
 
+    def test_step04_optimize(self):
+
         ################################################################################################################
         #
         # Command Optimize
@@ -107,6 +127,22 @@ class TestMain(TestCase):
         # asvtable_path = os.path.join(self.test_outdir_path, "asvtable.tsv")
         db_path = os.path.join(self.test_outdir_path, "db.sqlite")
         known_occurrences_path = os.path.join(PathManager.get_package_path(), "doc/data/known_occurrences.tsv")
+
+        cli_args_dic = {'readinfo': self.sortedreadinfo_path,
+                        'readdir': self.sorteddir_path,
+                        'outdir': self.test_outdir_path,
+                        'known_occurrences': known_occurrences_path,
+                        'db': db_path,
+                        'params': None,
+                        'log_file': self.log_path}
+
+        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=cli_args_dic)
+        wopmars_command = wopmars_runner.get_wopmars_command()
+
+        # Some arguments will be passed through environmental variables
+        Logger.instance().info(wopmars_command)
+
+        run_result = subprocess.run(wopmars_command, shell=True)
 
         optimize_lfn_biosample_replicate = os.path.join(self.test_outdir_path, "optimize_lfn_biosample_replicate.tsv")
         optimize_lfn_read_count_and_lfn_variant = os.path.join(self.test_outdir_path, "optimize_lfn_read_count_and_lfn_variant.tsv")
@@ -123,17 +159,7 @@ class TestMain(TestCase):
         if os.path.exists(optimize_pcr_error):
             pathlib.Path(optimize_pcr_error).unlink()
 
-        cli_args_dic = {'readinfo': sortedreadinfo_path,
-                        'readdir': sorteddir_path,
-                        'outdir': self.test_outdir_path,
-                        'known_occurrences': known_occurrences_path,
-                        'db': db_path,
-                        'params': None}
-
-        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=cli_args_dic)
-        wopmars_command = wopmars_runner.get_wopmars_command()
-
-        # Some arguments will be passed through environmental variables
+        # This second run is necessary but I do not know why
         run_result = subprocess.run(wopmars_command, shell=True)
 
         optimize_lfn_biosample_replicate_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_biosample_replicate.tsv")
