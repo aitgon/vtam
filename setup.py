@@ -12,13 +12,13 @@ import os
 import sys
 
 install_requires = [
-    'Jinja2>=2.10',
-    'PyYAML>=5.1.2',
-    'SQLAlchemy>=1.3.0',
-    'biopython>=1.14.2',
-    'pandas==0.23.3',
-    'termcolor>=1.1.0',
-    'wopmars>=0.0.10',
+    'Jinja2>=2.11',
+    'PyYAML>=5.3',
+    'SQLAlchemy>=1.3',
+    'biopython>=1.76',
+    'pandas>=1.0',
+    'termcolor>=1.1',
+    'wopmars>=0.0.11',
 ]
 
 if sys.version_info < (3, 7):
