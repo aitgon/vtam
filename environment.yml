@@ -1,0 +1,17 @@
+channels:
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.7
+  - sqlalchemy
+  - pandas
+  - termcolor
+  - pyyaml
+  - biopython
+  - jinja2
+  - vsearch
+  - blast
+  - pip
+  - pip:
+    - git+https://github.com/aitgon/wopmars@0.0.11
+
