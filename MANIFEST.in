@@ -1,4 +1,4 @@
 exclude _build
 include Makefile
-recursive-include doc *.md Makefile *.tsv
-include doc/*.tsv
+recursive-include doc *.md Makefile *.tsv *.yml
+include doc/data/*
