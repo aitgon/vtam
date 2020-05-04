@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 __author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
-__copyright__ = "Since 2018, Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
+__copyright__ = "Copyright 2018-2020, Aitor Gonzalez, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
 
@@ -64,7 +64,8 @@ setup(
     url='https://tagc.univ-amu.fr/en/users/gonzalez-aitor, http://net.imbe.fr/~emeglecz/',
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
-    package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*", "tests/output/*"]},
+    package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*",
+                           "tests/output/*"]},
     data_files = [],
     install_requires=install_requires,
     entry_points={

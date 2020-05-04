@@ -1,4 +1,4 @@
-lfn_variant_replicate_threshold: 0.0025
+lfn_variant_replicate_threshold: 0.001
 lfn_biosample_replicate_threshold: 0.003
-lfn_read_count_threshold: 30
-pcr_error_var_prop: 0.2
+lfn_read_count_threshold: 138
+pcr_error_var_prop: 0.1
