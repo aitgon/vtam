@@ -174,7 +174,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
                 ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count']]
 
             lfn_read_count_threshold_current_max = lfn_read_count_threshold  # current max
-            lfn_read_count_threshold_test_max = 500  # max value
+            lfn_read_count_threshold_test_max = 100  # max value
 
             #  loop over lfn_read_count_threshold
             for lfn_read_count_threshold_i in list(range(lfn_read_count_threshold, lfn_read_count_threshold_test_max+1, 10)):
@@ -217,7 +217,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             # lfn_variant_or_variant_replicate_previous = 0.001  # is divided by 1000
 
             lfn_variant_or_variant_replicate_threshold_current_max = lfn_variant_or_variant_replicate_threshold  # current max
-            lfn_variant_or_variant_replicate_threshold_test_max = 0.1  # max value
+            lfn_variant_or_variant_replicate_threshold_test_max = 0.05  # max value
 
             # loop over lfn_variant_or_variant_replicate: 0.001, 0.002, ...
             for lfn_variant_or_variant_replicate_threshold_i in [
