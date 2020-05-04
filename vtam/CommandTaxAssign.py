@@ -72,7 +72,7 @@ class CommandTaxAssign(object):
         ################################################################################################################
 
         variant_input_df = pandas.read_csv(variants_tsv, sep="\t", header=0)
-        variant_sequence_list = variant_input_df.ix[:, -1].tolist()  # get variant sequences as list
+        variant_sequence_list = variant_input_df.sequence.tolist()  # get list of variant sequences
 
         # Add variant to DB if not already there
         for variant_sequence in variant_sequence_list:
