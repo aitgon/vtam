@@ -156,9 +156,11 @@ class WopmarsRunner(Singleton):
                 if self.cli_args_and_numerical_params['log_verbosity'] > 1: # -vv or higher, then do no pass it through environmental variables
                     os.environ['VTAM_LOG_VERBOSITY'] = str(self.cli_args_and_numerical_params['log_verbosity'])
 
-        if 'log_file' in self.cli_args_and_numerical_params:
-            if not self.cli_args_and_numerical_params['log_file'] is None:
-                wopmars_command += " --log " + self.cli_args_and_numerical_params['log_file']
+        # Todo must be fixed in next wopmars version that a log file is necessary for wopmars
+        if not 'log_file' in self.cli_args_and_numerical_params or self.cli_args_and_numerical_params['log_file'] is None:
+            self.cli_args_and_numerical_params['log_file'] = '.vtam.log'
+        if not self.cli_args_and_numerical_params['log_file'] is None:
+            wopmars_command += " --log " + self.cli_args_and_numerical_params['log_file']
 
         if 'since' in self.cli_args_and_numerical_params:
             if not self.cli_args_and_numerical_params['since'] is None:

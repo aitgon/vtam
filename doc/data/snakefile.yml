@@ -26,9 +26,9 @@ rule asvtable_taxa:
     input:
         variant_taxa=expand("{outdir}/asvtable_default_taxa.tsv", outdir=outdir),
 
-rule asvtable_params_taxa:
+rule asvtable_optimized_taxa:
     input:
-        variant_taxa=expand("{outdir}/asvtable_params_taxa.tsv", outdir=outdir),
+        variant_taxa=expand("{outdir}/asvtable_optimized_taxa.tsv", outdir=outdir),
 
 rule optimize_tmp:
     input:
@@ -66,7 +66,7 @@ rule asvtable_taxa_tmp:
     shell:
         "vtam taxassign --db {params.db} --variants {input.variants} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname coi_blast_db -v --log {params.log}"
 
-rule asvtable_params_taxa_tmp:
+rule asvtable_optimized_taxa_tmp:
     input:
         nhr="{}/{}.nhr".format(blastdbdir, blastdbname),
         nin="{}/{}.nin".format(blastdbdir, blastdbname),
@@ -75,9 +75,9 @@ rule asvtable_params_taxa_tmp:
         nsi="{}/{}.nsi".format(blastdbdir, blastdbname),
         nsq="{}/{}.nsq".format(blastdbdir, blastdbname),
         taxonomy=taxonomy,
-        variants="{outdir}/asvtable_params.tsv",
+        variants="{outdir}/asvtable_optimized.tsv",
     output:
-        variant_taxa="{outdir}/asvtable_params_taxa.tsv",
+        variant_taxa="{outdir}/asvtable_optimized_taxa.tsv",
     params:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
@@ -89,7 +89,7 @@ rule filter_params:
         readinfo="{outdir}/sorted/readinfo.tsv",
         params=params,
     output:
-        asvtable="{outdir}/asvtable_params.tsv",
+        asvtable="{outdir}/asvtable_optimized.tsv",
     resources:
         db=1
     params:
