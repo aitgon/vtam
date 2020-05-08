@@ -3,15 +3,19 @@ channels:
   - bioconda
 dependencies:
   - python=3.7
-  - sqlalchemy
-  - pandas
-  - termcolor
-  - pyyaml
   - biopython
-  - jinja2
-  - vsearch
   - blast
+  - coverage
+  - jinja2
+  - pandas
+  - pygments
+  - pyyaml
+  - sphinx
+  - sphinx_rtd_theme
+  - sqlalchemy
+  - termcolor
+  - twine
+  - vsearch
   - pip
   - pip:
     - wopmars==0.0.13
-
