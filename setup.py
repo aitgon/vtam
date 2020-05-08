@@ -18,7 +18,7 @@ install_requires = [
     'biopython>=1.76',
     'pandas>=1.0',
     'termcolor>=1.1',
-    'wopmars>=0.0.11',
+    'wopmars>=0.0.13',
 ]
 
 if sys.version_info < (3, 7):

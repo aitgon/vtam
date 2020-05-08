@@ -16,7 +16,7 @@ import tarfile
 import urllib
 
 
-class TestMain(TestCase):
+class TestExample(TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
