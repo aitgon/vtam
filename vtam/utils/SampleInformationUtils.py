@@ -9,6 +9,7 @@ from vtam.models.Run import Run as run_model
 from vtam.models.Marker import Marker as marker_model
 from vtam.models.Biosample import Biosample as biosample_model
 
+
 class SampleInformationUtils(object):
     """Takes an object as in the SampleInformation model and carries out several computations on and the DB"""
 
@@ -205,7 +206,7 @@ class FastaInformationTSV(SampleInformationUtils):
     """Reads fasta information TSV file to a sample_information_id object"""
 
     def __init__(self, fasta_info_tsv, engine, include_tag_primer_fasta=False):
-        """A new instance needs the path to the fasta information path information TSV file as wel as DB information to interact with the DB"""
+        """A new instance needs the fastqinfo_tsv_path to the fasta information fastqinfo_tsv_path information TSV file as wel as DB information to interact with the DB"""
         #
         self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0)
         self.fasta_information_df.columns = self.fasta_information_df.columns.str.lower()

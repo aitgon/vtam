@@ -1,6 +1,6 @@
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
-from sqlalchemy import Column, String, Integer, CheckConstraint
+from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import validates
 from wopmars.Base import Base
 

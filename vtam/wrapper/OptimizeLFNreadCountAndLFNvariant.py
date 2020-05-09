@@ -127,8 +127,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         final_out_lfn_variant_or_variant_replicate_df = pandas.DataFrame()
         final_out_lfn_variant_or_variant_replicate_specific_threshold_df = pandas.DataFrame()
 
-        known_occurrences_df = pandas.read_csv(known_occurrences_tsv, sep="\t", header=0)
-        known_occurrences_df.columns = known_occurrences_df.columns.str.lower()
+        # known_occurrences_df = pandas.read_csv(fastqinfo_tsv_path, sep="\t", header=0)
+        # known_occurrences_df.columns = known_occurrences_df.columns.str.lower()
+        known_occurrences_df = KnownOccurrences.read_tsv_into_df(known_occurrences_tsv)
         vknown_grouped = known_occurrences_df.groupby(by=['run', 'marker'])
         for vknown_grouped_key in vknown_grouped.groups:
             known_occurrences_i_df = known_occurrences_df.loc[vknown_grouped.groups[vknown_grouped_key], :]

@@ -25,7 +25,7 @@ class TestArgParser(TestCase):
                                                                 "params.yml"), PathManager.get_package_path())
         foopaths['params_wrong_yml'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "params_wrong.yml"), PathManager.get_package_path())
-        foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+        foopaths['fastqinfo_tsv_path'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "known_occurrences.tsv"), PathManager.get_package_path())
         foopaths['asvtable_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "asvtable.tsv"), PathManager.get_package_path())
@@ -40,6 +40,9 @@ class TestArgParser(TestCase):
                                                PathManager.get_package_path())
         Path(os.path.join(foopaths['emptydir'])).mkdir(parents=True, exist_ok=True)
         foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
+                                              PathManager.get_package_path())
+        foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(
+            PathManager.get_package_path(), 'doc/data/dryad.f40v5_small/known_occurrences.tsv'),
                                               PathManager.get_package_path())
         cls.foopaths = foopaths
 
@@ -91,6 +94,7 @@ class TestArgParser(TestCase):
     def test_arg_parser_optimize(self):
 
         # Ok
+        # TODO fix Mai 9, 2020
         args = "optimize --known_occurrences {known_occurrences_tsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
