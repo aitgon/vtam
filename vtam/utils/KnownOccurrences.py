@@ -1,19 +1,18 @@
+import argparse
 import math
-
+import os
 import pandas
+import sqlalchemy
 import sys
 
-import sqlalchemy
-from sqlalchemy import select
-
-from vtam import Logger, VTAMexception
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
-
-from vtam.models.Run import Run as RunModel
-from vtam.models.Marker import Marker as MarkerModel
 from vtam.models.Biosample import Biosample as BiosampleModel
+from vtam.models.Marker import Marker as MarkerModel
+from vtam.models.Run import Run as RunModel
 from vtam.models.Variant import Variant
 from vtam.models.VariantReadCount import VariantReadCount
+from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.VTAMexception import VTAMexception
 
 
 class KnownOccurrences(object):
@@ -22,9 +21,9 @@ class KnownOccurrences(object):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
-        :param known_occurrences_tsv: TSV file with known variants
+        :param fastqinfo_tsv_path: TSV file with known variants
         """
-        # self.known_occurrences_tsv = known_occurrences_tsv
+        # self.fastqinfo_tsv_path = fastqinfo_tsv_path
         self.known_occurrences_df = known_occurrences_df
         self.engine = engine
         self.readinfo_tsv = readinfo_tsv
@@ -35,7 +34,7 @@ class KnownOccurrences(object):
         #
         ################################################################################################################
 
-        # self.known_occurrences_df = pandas.read_csv(self.known_occurrences_tsv, sep="\t", header=0, \
+        # self.known_occurrences_df = pandas.read_csv(self.fastqinfo_tsv_path, sep="\t", header=0, \
         #                                       names=['Marker', 'Run', 'Biosample', 'BiosampleType',
         #                                              'VariantId', 'Action', 'Sequence'], index_col=False,
         #                                         usecols=list(range(7)))
@@ -70,6 +69,62 @@ class KnownOccurrences(object):
 
         self.__are_known_variants_coherent_with_fasta_info_file()
 
+    @staticmethod
+    def read_tsv_into_df(known_occurrences_tsv_path):
+        """
+        Updated: Mai 8, 2020
+
+        Parameters
+        ----------
+        known_occurrences_tsv_path: str
+            Path to the known_occurrences files in TSV format
+
+        Returns
+        -------
+        pandas.DataFrame
+
+        """
+        known_occurrences_df = pandas.read_csv(known_occurrences_tsv_path, sep="\t", header=0)
+        known_occurrences_df.columns = known_occurrences_df.columns.str.lower()
+        df = pandas.read_csv(known_occurrences_tsv_path, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        return known_occurrences_df
+
+    @classmethod
+    def check_known_occurrences_tsv(cls, known_occurrences_tsv_path):
+        """
+        Checks that the this input file is in the correct format. It is also used by the argparser.
+        Updated: Mai 8, 2020
+
+        Parameters
+        ----------
+        known_occurrences_tsv_path: str
+            Path to the known_occurrences files in TSV format
+
+        Returns
+        -------
+
+        """
+
+        """Check fastqinfo_tsv_path format
+
+        :param fastqinfo_tsv_path: Valid non-empty file fastqinfo_tsv_path
+        :return: void
+
+        """
+
+        if not os.path.isfile(known_occurrences_tsv_path):
+            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(
+                known_occurrences_tsv_path))
+        elif not os.stat(known_occurrences_tsv_path).st_size > 0:
+            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(known_occurrences_tsv_path))
+        header_lower = {'marker', 'run', 'biosample', 'mock', 'variantid', 'action', 'sequence'}
+        known_occurrences_df = cls.read_tsv_into_df(known_occurrences_tsv_path)
+        if set(known_occurrences_df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+            return known_occurrences_tsv_path  # return the fastqinfo_tsv_path
+        else:
+            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please look at the example in the VTAM documentation.".format(
+                known_occurrences_tsv_path))
 
     def get_ids_of_run_marker_biosample_replicate(self):
         """Returns a list of dictionnaries with run_id, marker_id, biosample_id and replicate entries (See return)
@@ -163,7 +218,7 @@ class KnownOccurrences(object):
                 # keep and real variants have sequence, unlike delete
                 if not (user_variant_sequence is None) and not (str(user_variant_sequence) == 'nan'):
 
-                    stmt_select = select([VariantReadCount.__table__.c.variant_id, Variant.__table__.c.sequence])\
+                    stmt_select = sqlalchemy.select([VariantReadCount.__table__.c.variant_id, Variant.__table__.c.sequence])\
                         .where(Variant.__table__.c.sequence == user_variant_sequence)\
                         .where(VariantReadCount.__table__.c.variant_id == Variant.__table__.c.id)\
                         .where(VariantReadCount.__table__.c.run_id == user_run_id)\
@@ -237,7 +292,7 @@ class KnownOccurrences(object):
         :param: variant_tolerate: Boolean: Default False. include "variant_tolerate" variants or not?
         :return: pandas variant_read_count_input_df with columns: run_id, marker_id, biosample_id, variant_id
         """
-        # Get portion of known_occurrences_tsv with either keep or keep+variant_tolerate
+        # Get portion of fastqinfo_tsv_path with either keep or keep+variant_tolerate
         if variant_tolerate:  # get also variant_tolerate variant
             run_marker_biosample_variant_keep_df = self.known_occurrences_ids_df.loc[
                 ((self.known_occurrences_df.action.isin(['keep', 'variant_tolerate']))).values]

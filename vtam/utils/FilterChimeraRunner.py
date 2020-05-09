@@ -94,7 +94,7 @@ class FilterChimeraRunner(object):
             #
             ###################################################################
 
-            Logger.instance().debug("Vsearch uchime chimera path: {}".format(uchime_chimeras_fasta_path))
+            Logger.instance().debug("Vsearch uchime chimera fastqinfo_tsv_path: {}".format(uchime_chimeras_fasta_path))
             with open(uchime_chimeras_fasta_path, "r") as handle:
                 for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])
@@ -103,7 +103,7 @@ class FilterChimeraRunner(object):
                                          & (filter_output_chimera_df['biosample_id'] == biosample_id)
                                          & (filter_output_chimera_df['variant_id'] == variant_id), 'filter_delete'] = True
 
-            Logger.instance().debug("Vsearch uchime chimera borderline path: {}".format(uchime_borderline_fasta_path))
+            Logger.instance().debug("Vsearch uchime chimera borderline fastqinfo_tsv_path: {}".format(uchime_borderline_fasta_path))
             with open(uchime_borderline_fasta_path, "r") as handle:
                 for chimera_seqrecord in SeqIO.parse(handle, "fasta"):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])

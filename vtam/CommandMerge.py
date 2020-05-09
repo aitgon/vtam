@@ -4,6 +4,7 @@ import pandas
 import pathlib
 import sys
 
+from vtam.utils.PairedFastqInfo import PairedFastqInfo
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
@@ -13,8 +14,8 @@ from vtam.utils import constants
 class CommandMerge(object):
     """Class for the Merge command"""
 
-    @classmethod
-    def main(cls, fastqinfo, fastqdir, fastainfo, fastadir, params=None, num_threads=multiprocessing.cpu_count()):
+    @staticmethod
+    def main(fastqinfo, fastqdir, fastainfo, fastadir, params=None, num_threads=multiprocessing.cpu_count()):
 
         ################################################################################################################
         #
@@ -41,13 +42,13 @@ class CommandMerge(object):
 
         ################################################################################################################
         #
-        # Open fastq information
+        # Read fastq information into df
         #
         ################################################################################################################
 
-        fastqinfo_df = pandas.read_csv(fastqinfo, sep='\t', header=0)
-        fastqinfo_df.columns = fastqinfo_df.columns.str.lower()
+        fastqinfo_df = PairedFastqInfo.read_tsv_into_df(fastqinfo)
 
+        pathlib.Path(os.path.dirname(fastainfo)).mkdir(parents=True, exist_ok=True)
         pathlib.Path(fastadir).mkdir(parents=True, exist_ok=True)
 
         fastainfo_df = pandas.DataFrame()
@@ -82,7 +83,7 @@ class CommandMerge(object):
                     VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
                 sys.exit(1)
 
-            # fasta_merged_basename = '.'.join(os.path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
+            # fasta_merged_basename = '.'.join(os.fastqinfo_tsv_path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
             fasta_merged_basename = os.path.basename(fastq_fw_abspath).replace('.fastq', '.fasta')
             out_fasta_path = os.path.join(fastadir, fasta_merged_basename)
 

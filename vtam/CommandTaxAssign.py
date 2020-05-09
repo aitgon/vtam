@@ -1,9 +1,9 @@
 import inspect
+import multiprocessing
 import os
-import sqlalchemy
-
 import pandas
 import pathlib
+import sqlalchemy
 
 from sqlalchemy import create_engine, select
 
@@ -20,7 +20,27 @@ class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str, num_threads, params):
+    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blasdb_dir_path, blastdbname_str,
+             num_threads=multiprocessing.cpu_count(), params=None):
+        """
+
+        Parameters
+        ----------
+        db: str
+            Path to SQLITE database with Variant and Taxassign tables
+        mode
+        variants_tsv
+        output
+        taxonomy_tsv
+        blasdb_dir_path
+        blastdbname_str
+        num_threads
+        params
+
+        Returns
+        -------
+
+        """
 
         this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)

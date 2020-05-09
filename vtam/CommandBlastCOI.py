@@ -6,7 +6,7 @@ import tarfile
 import urllib.request
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import url_coi_blast_db_gz
+from vtam.utils.constants import coi_blast_db_gz_url
 
 
 class CommandBlastCOI(object):
@@ -51,7 +51,7 @@ class CommandBlastCOI(object):
                 or not os.path.isfile(nsd_path) \
                 or not os.path.isfile(nsi_path) \
                 or not os.path.isfile(nsq_path):
-            urllib.request.urlretrieve(url_coi_blast_db_gz, coi_blast_db_gz_path)
+            urllib.request.urlretrieve(coi_blast_db_gz_url, coi_blast_db_gz_path)
 
             pathlib.Path(os.path.join(self.coi_blast_db_dir)).mkdir(exist_ok=True, parents=True)
 
@@ -72,9 +72,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = 'coi_blast_db_dir.nhr'
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
@@ -82,9 +82,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = 'coi_blast_db_dir.nin'
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
@@ -92,9 +92,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = 'coi_blast_db_dir.nog'
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
@@ -102,9 +102,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = 'coi_blast_db_dir.nsd'
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
@@ -112,9 +112,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = 'coi_blast_db_dir.nsi'
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
@@ -122,9 +122,9 @@ class CommandBlastCOI(object):
         # ####################################################################
         #
         # basename = "coi_blast_db_dir.nsq"
-        # coi_db_url = os.path.join(public_data_dir, basename)
-        # coi_db_path = os.path.join(self.coi_blast_db_dir, basename)
-        # if not os.path.isfile(os.path.join(coi_db_path)):
+        # coi_db_url = os.fastqinfo_tsv_path.join(public_data_dir, basename)
+        # coi_db_path = os.fastqinfo_tsv_path.join(self.coi_blast_db_dir, basename)
+        # if not os.fastqinfo_tsv_path.isfile(os.fastqinfo_tsv_path.join(coi_db_path)):
         #     urllib.request.urlretrieve(coi_db_url, coi_db_path)
         #
         # ####################################################################
