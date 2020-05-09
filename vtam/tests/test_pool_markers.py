@@ -27,7 +27,7 @@ class TestPoolMarkers(TestCase):
         # Create this_tempdir
         this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
-        # Define fasta_path path
+        # Define fasta_path fastqinfo_tsv_path
         fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
         # Create variant variant_read_count_input_df
         variant_df = asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
@@ -35,9 +35,9 @@ class TestPoolMarkers(TestCase):
         # Create fasta_path file from asv_table_df
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
-        # Define vsearch output path
+        # Define vsearch output fastqinfo_tsv_path
         vsearch_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'centroid_out.fa')
-        # Define cluster output path
+        # Define cluster output fastqinfo_tsv_path
         vsearch_cluster_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'cluster.fa')
         #
         # Create object and run vsearch

@@ -24,7 +24,7 @@ class TestFilterRenkonen(TestCase):
 
     # @classmethod
     # def setUpClass(cls):
-    #     test_filter_renkonen_input_tsv_path = os.path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_input.tsv')
+    #     test_filter_renkonen_input_tsv_path = os.fastqinfo_tsv_path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_input.tsv')
     #     #
     #     # cls.variant_read_count_input_df = pandas.read_csv(test_filter_renkonen_input_tsv_path, sep="\t", header=0)
     #     # cls.filter_renkonen_runner_obj = FilterRenkonenRunner(cls.variant_read_count_input_df)

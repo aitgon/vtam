@@ -22,9 +22,9 @@ class SelectionRunMarker(object):
 
     def check_argument(self):
 
-        """Checks if fastqinfo exists, is not empty
+        """Checks if fastqinfo_tsv_path exists, is not empty
 
-        :param path: Valid non-empty TSV fastqinfo path
+        :param fastqinfo_tsv_path: Valid non-empty TSV fastqinfo_tsv_path fastqinfo_tsv_path
         :return: void
 
         """

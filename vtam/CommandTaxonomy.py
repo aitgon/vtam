@@ -14,7 +14,7 @@ import urllib
 import urllib.request
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import url_taxonomy_tsv_gz
+from vtam.utils.constants import taxonomy_tsv_gz_url
 from sqlalchemy.exc import OperationalError
 
 
@@ -31,7 +31,7 @@ class CommandTaxonomy(object):
 
         if taxonomy_tsv is None:  # If None, download to current wdir
             self.taxonomy_tsv_path = os.path.join(os.getcwd(), "taxonomy.tsv")
-        else:  # Download to path
+        else:  # Download to fastqinfo_tsv_path
             self.taxonomy_tsv_path = taxonomy_tsv
 
         pathlib.Path(os.path.dirname(taxonomy_tsv)).mkdir(parents=True, exist_ok=True)
@@ -101,7 +101,7 @@ class CommandTaxonomy(object):
         taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
 
         if not os.path.isfile(self.taxonomy_tsv_path):
-            urllib.request.urlretrieve(url_taxonomy_tsv_gz, taxonomy_tsv_gz_path)
+            urllib.request.urlretrieve(taxonomy_tsv_gz_url, taxonomy_tsv_gz_path)
 
             with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
                 with open(self.taxonomy_tsv_path, 'wb') as fout:

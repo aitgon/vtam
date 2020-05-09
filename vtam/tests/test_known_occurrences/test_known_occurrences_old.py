@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import os
-import pandas
 from unittest import TestCase
 
-from sqlalchemy import create_engine
+import os
+import pandas
+import sqlalchemy
 
+from vtam.models.Biosample import Biosample
+from vtam.models.Marker import Marker
+from vtam.models.Run import Run
 from vtam.models.Variant import Variant
 from vtam.models.VariantReadCount import VariantReadCount
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.PathManager import PathManager
-
-from vtam.models.Run import Run
-from vtam.models.Marker import Marker
-from vtam.models.Biosample import Biosample
 from wopmars.Base import Base
-from sqlalchemy.orm import sessionmaker
 
 
 class TestKnownOccurrences(TestCase):
@@ -29,9 +27,9 @@ class TestKnownOccurrences(TestCase):
         #
         ################################################################################################################
 
-        self.engine = create_engine('sqlite://')  # memory db
+        self.engine = sqlalchemy.create_engine('sqlite://')  # memory db
 
-        Session = sessionmaker(bind=self.engine)
+        Session = sqlalchemy.orm.sessionmaker(bind=self.engine)
         self.session = Session()
 
         Base.metadata.create_all(self.engine)
