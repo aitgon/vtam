@@ -11,6 +11,8 @@ from vtam.utils.VTAMexception import VTAMexception
 from vtam.models.Run import Run
 from vtam.models.Marker import Marker
 from vtam.models.Biosample import Biosample
+from vtam.models.SampleInformation import SampleInformation
+from vtam.models.SortedReadFile import SortedReadFile
 
 
 class SampleInformationFile:
@@ -117,6 +119,49 @@ class SampleInformationFile:
         sample_info_df.columns = sample_info_df.columns.str.lower()
         return sample_info_df
 
+    def to_sqlite(self, session):
+        """Takes the sample information df and replaces names with ids
+
+        Returns
+        -------
+        pandas.DataFrame
+        DF with ids instead of names and columns run_id, marker_id, biosample_id
+
+        """
+
+        for row in self.read_tsv_into_df().itertuples():
+            run_name = row.run
+            marker_name = row.marker
+            biosample_name = row.biosample
+            replicate = row.replicate
+            sorted_read_file = row.sortedfasta
+            #
+            # Insert run
+            run_obj = {'name': run_name}
+            run_instance = SampleInformationFile.get_or_create(session, Run, **run_obj)
+            run_id = run_instance.id
+            #
+            # Insert marker_id
+            marker_obj = {'name': marker_name}
+            marker_instance = SampleInformationFile.get_or_create(session, Marker, **marker_obj)
+            marker_id = marker_instance.id
+            #
+            # Insert Biosamples
+            biosample_obj = {'name': biosample_name}
+            biosample_instance = SampleInformationFile.get_or_create(session, Biosample, **biosample_obj)
+            biosample_id = biosample_instance.id
+            #
+            # Insert file output
+            fasta_obj = {'name': sorted_read_file, 'run_id': run_id}
+            fasta_instance = SampleInformationFile.get_or_create(session, SortedReadFile, **fasta_obj)
+            fasta_id = fasta_instance.id
+
+            # Insert sample_information
+            sample_information_obj = {'biosample_id': biosample_id, 'replicate': replicate, 'run_id': run_id}
+            sample_information_obj['sortedreadfile_id'] = fasta_id
+            sample_information_obj['marker_id'] = marker_id
+            SampleInformationFile.get_or_create(session, SampleInformation, **sample_information_obj)
+
     def get_variant_read_count_df(self, engine, variant_read_count_like_model, filter_id=None):
         """
         Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
@@ -176,3 +221,13 @@ class SampleInformationFile:
             sys.exit(0)
         return variant_read_count_df
 
+    @staticmethod
+    def get_or_create(session, model, **kwargs):
+        instance = session.query(model).filter_by(**kwargs).first()
+        if instance:  # get
+            return instance
+        else:  # create
+            instance = model(**kwargs)
+            session.add(instance)
+            session.commit()
+            return instance
