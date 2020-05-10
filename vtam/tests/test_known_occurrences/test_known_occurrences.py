@@ -36,7 +36,7 @@ class TestKnownOccurrences(TestCase):
         #
         # Base.metadata.create_all(self.engine)
         #
-        # readinfo_tsv = os.fastqinfo_tsv_path.join(PathManager.get_test_path(), 'test_files', 'readinfo.tsv')
+        # readinfo_tsv = os.tsv_path.join(PathManager.get_test_path(), 'test_files', 'readinfo.tsv')
         # df = pandas.read_csv(readinfo_tsv, sep="\t", header=0)
         #
         # for run_name in df.Run.unique().tolist():
@@ -53,10 +53,10 @@ class TestKnownOccurrences(TestCase):
         #
         # self.session.commit()
         #
-        # self.fastqinfo_tsv_path = os.fastqinfo_tsv_path.join(PathManager.get_test_path(), 'test_files', 'known_occurrences.tsv')
-        # self.known_occurrences_df = pandas.read_csv(self.fastqinfo_tsv_path, sep="\t", header=0)
+        # self.tsv_path = os.tsv_path.join(PathManager.get_test_path(), 'test_files', 'known_occurrences.tsv')
+        # self.known_occurrences_df = pandas.read_csv(self.tsv_path, sep="\t", header=0)
         #
-        # self.readinfo_tsv = os.fastqinfo_tsv_path.join(PathManager.get_test_path(), 'test_files', 'readinfo.tsv')
+        # self.readinfo_tsv = os.tsv_path.join(PathManager.get_test_path(), 'test_files', 'readinfo.tsv')
 
         known_occurrences_tsv_path = os.path.join(PathManager.get_package_path(), 'doc/data/dryad.f40v5/known_occurrences.tsv')
         known_occurrences_df = KnownOccurrences.read_tsv_into_df(known_occurrences_tsv_path)

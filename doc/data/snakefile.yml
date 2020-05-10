@@ -1,6 +1,6 @@
 project = config['project']
 subproject = config['subproject']
-fastqinfo_tsv_path = config['fastqinfo_tsv_path']
+tsv_path = config['tsv_path']
 fastqdir = config['fastqdir']
 known_occurrences = config['known_occurrences']
 if 'params' in config:
@@ -9,7 +9,7 @@ blastdbdir = config['blastdbdir']
 blastdbname = config['blastdbname']
 taxonomy = config['taxonomy']
 
-outdir = os.fastqinfo_tsv_path.join(project, subproject)
+outdir = os.tsv_path.join(project, subproject)
 
 rule all:
     input:
@@ -43,8 +43,8 @@ rule optimize_tmp:
     resources:
         db=1
     params:
-        db=os.fastqinfo_tsv_path.join(project, 'db.sqlite'),
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        db=os.tsv_path.join(project, 'db.sqlite'),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         "vtam optimize --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_biosample_replicate}) -v --log {params.log}"
 
@@ -61,8 +61,8 @@ rule asvtable_taxa_tmp:
     output:
         variant_taxa="{outdir}/asvtable_default_taxa.tsv",
     params:
-        db=os.fastqinfo_tsv_path.join(project, 'db.sqlite'),
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        db=os.tsv_path.join(project, 'db.sqlite'),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         "vtam taxassign --db {params.db} --variants {input.variants} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname coi_blast_db -v --log {params.log}"
 
@@ -79,8 +79,8 @@ rule asvtable_optimized_taxa_tmp:
     output:
         variant_taxa="{outdir}/asvtable_optimized_taxa.tsv",
     params:
-        db=os.fastqinfo_tsv_path.join(project, 'db.sqlite'),
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        db=os.tsv_path.join(project, 'db.sqlite'),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         "vtam taxassign --db {params.db} --variants {input.variants} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname coi_blast_db -v --log {params.log}"
 
@@ -93,8 +93,8 @@ rule filter_params:
     resources:
         db=1
     params:
-        db=os.fastqinfo_tsv_path.join(project, 'db.sqlite'),
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        db=os.tsv_path.join(project, 'db.sqlite'),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
 
@@ -106,8 +106,8 @@ rule filter:
     resources:
         db=1
     params:
-        db=os.fastqinfo_tsv_path.join(project, 'db.sqlite'),
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        db=os.tsv_path.join(project, 'db.sqlite'),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
 
@@ -119,20 +119,20 @@ rule sortreads:
     resources:
         db=1
     params:
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
         """vtam sortreads --fastainfo {input.fastainfo} --fastadir $(dirname {input.fastainfo})/merged --outdir $(dirname {output.readinfo}) -v --log {params.log}"""
 
 rule merge:
     input:
-        fastqinfo_tsv_path=fastqinfo_tsv_path,
+        tsv_path=tsv_path,
     output:
         fastainfo="{outdir}/fastainfo.tsv",
     resources:
         db=1
     params:
         fastqdir=fastqdir,
-        log=os.fastqinfo_tsv_path.join(project, "vtam.log"),
+        log=os.tsv_path.join(project, "vtam.log"),
     shell:
-        "vtam merge --fastqinfo_tsv_path {input.fastqinfo_tsv_path} --fastqdir {params.fastqdir} --fastainfo {output.fastainfo} --fastadir $(dirname {output.fastainfo})/merged -v --log {params.log}"
+        "vtam merge --tsv_path {input.tsv_path} --fastqdir {params.fastqdir} --fastainfo {output.fastainfo} --fastadir $(dirname {output.fastainfo})/merged -v --log {params.log}"
 

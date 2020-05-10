@@ -6,9 +6,11 @@ import yaml
 
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.Logger import Logger
-from vtam.utils.PairedFastqInfo import PairedFastqInfo
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils import constants
+from vtam.utils.constants import header_merged_fasta, header_paired_fastq
+
 
 class ArgParserChecker(object):
     """Methods to check arguments"""
@@ -17,7 +19,7 @@ class ArgParserChecker(object):
     def check_dir_exists_and_is_nonempty(path):
         """Checks if directory exists and is not empty
 
-        :param path: Valid non-empty directory fastqinfo_tsv_path
+        :param path: Valid non-empty directory tsv_path
         :return: void
         """
         if not os.path.isdir(path):
@@ -27,32 +29,32 @@ class ArgParserChecker(object):
         else:
             return path
 
-    @staticmethod
-    def check_fastainfo(path):
-
-        """Checks if fastainfo exists, is not empty and it has a minimal set of columns
-
-        :param path: Valid non-empty TSV fastainfo fastqinfo_tsv_path
-        :return: void
-
-        """
-
-        path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-        df = pandas.read_csv(path, sep='\t', header=0)
-        header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
-         'mergedfasta'}
-        df.columns = df.columns.str.lower()
-        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
-        else:
-            raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(path, header_lower))
+    # @staticmethod
+    # def check_fastainfo(path):
+    #
+    #     """Checks if fastainfo exists, is not empty and it has a minimal set of columns
+    #
+    #     :param path: Valid non-empty TSV fastainfo tsv_path
+    #     :return: void
+    #
+    #     """
+    #
+    #     path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
+    #     df = pandas.read_csv(path, sep='\t', header=0)
+    #     header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
+    #      'mergedfasta'}
+    #     df.columns = df.columns.str.lower()
+    #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
+    #         return path
+    #     else:
+    #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(path, header_lower))
 
     # @staticmethod
     # def check_fastqinfo(path):
     #
-    #     """Checks if fastqinfo_tsv_path exists, is not empty
+    #     """Checks if tsv_path exists, is not empty
     #
-    #     :param path: Valid non-empty TSV fastqinfo_tsv_path fastqinfo_tsv_path
+    #     :param path: Valid non-empty TSV tsv_path tsv_path
     #     :return: void
     #
     #     """
@@ -73,7 +75,7 @@ class ArgParserChecker(object):
 
         """Checks if file exists and is not empty
 
-        :param path: Valid non-empty file fastqinfo_tsv_path
+        :param path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -82,7 +84,7 @@ class ArgParserChecker(object):
         elif not os.stat(path).st_size > 0:
             raise argparse.ArgumentTypeError("The file '{}' is empty. Please fix it.".format(path))
         else:
-            return path  # return the fastqinfo_tsv_path
+            return path  # return the tsv_path
 
     @classmethod
     def check_params_yml(cls, path):
@@ -147,7 +149,7 @@ class ArgParserChecker(object):
 
         """Check runmarker_tsv format
 
-        :param path: Valid non-empty file fastqinfo_tsv_path
+        :param path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -182,7 +184,7 @@ class ArgParserChecker(object):
 
         """Check read_info_tsv format
 
-        :param path: Valid non-empty file fastqinfo_tsv_path
+        :param path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -203,7 +205,7 @@ class ArgParserChecker(object):
 
         """Check taxonomy format
 
-        :param path: Valid non-empty file fastqinfo_tsv_path
+        :param path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -224,7 +226,7 @@ class ArgParserChecker(object):
 
         """Check variants format
 
-        :param path: Valid non-empty file fastqinfo_tsv_path
+        :param path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -241,23 +243,23 @@ class ArgParserChecker(object):
             raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
 
     # @staticmethod
-    # def check_known_occurrences_tsv(fastqinfo_tsv_path):
+    # def check_known_occurrences_tsv(tsv_path):
     #
-    #     """Check fastqinfo_tsv_path format
+    #     """Check tsv_path format
     #
-    #     :param fastqinfo_tsv_path: Valid non-empty file fastqinfo_tsv_path
+    #     :param tsv_path: Valid non-empty file tsv_path
     #     :return: void
     #
     #     """
-    #     if not os.fastqinfo_tsv_path.isfile(fastqinfo_tsv_path):
-    #         raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(fastqinfo_tsv_path))
-    #     elif not os.stat(fastqinfo_tsv_path).st_size > 0:
-    #         raise argparse.ArgumentTypeError("The file '{}' is empty!".format(fastqinfo_tsv_path))
+    #     if not os.tsv_path.isfile(tsv_path):
+    #         raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(tsv_path))
+    #     elif not os.stat(tsv_path).st_size > 0:
+    #         raise argparse.ArgumentTypeError("The file '{}' is empty!".format(tsv_path))
     #
     #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-    #         return fastqinfo_tsv_path  # return the fastqinfo_tsv_path
+    #         return tsv_path  # return the tsv_path
     #     else:
-    #         raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(fastqinfo_tsv_path))
+    #         raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(tsv_path))
 
 
 class ArgParser:
@@ -359,8 +361,10 @@ class ArgParser:
 
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True, formatter_class=argparse.RawTextHelpFormatter,
                                                   parents=[parent_parser])
-        parser_vtam_merge.add_argument('--fastqinfo_tsv_path', action='store', help="TSV file with FASTQ sample information",
-                                       required=True, type=PairedFastqInfo.check_fastqinfo_tsv)
+
+        parser_vtam_merge.add_argument('--fastqinfo', action='store', help="TSV file with FASTQ sample information",
+                                       required=True, type=lambda x: SampleInformationFile(x).check_args(
+                header=header_paired_fastq))
         parser_vtam_merge\
             .add_argument('--fastainfo', action='store', help="REQUIRED: Output TSV file for FASTA sample information",
                           required=True)
@@ -376,7 +380,9 @@ class ArgParser:
                                                   parents=[parent_parser])
         parser_vtam_sortreads\
             .add_argument('--fastainfo', action='store', help="REQUIRED: TSV file with FASTA information",
-                          required=True, type=ArgParserChecker.check_fastainfo)
+                          required=True, type=lambda x: SampleInformationFile(x).check_args(
+                header=header_merged_fasta))
+                          # required=True, type=ArgParserChecker.check_fastainfo)
         parser_vtam_sortreads.add_argument('--fastadir', action='store', help="REQUIRED: Directory with FASTA files",
                                         required=True,
                                         type=ArgParserChecker.check_dir_exists_and_is_nonempty)

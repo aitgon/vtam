@@ -10,6 +10,7 @@ import pathlib
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
 
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Logger import Logger
 from vtam.utils import constants
@@ -47,16 +48,17 @@ class CommandSortReads(object):
         #
         ################################################################################################################
 
-        fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
-        fastainfo_df.columns = fastainfo_df.columns.str.lower()
+        # fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
+        # fastainfo_df.columns = fastainfo_df.columns.str.lower()
+        merged_fastainfo_df = SampleInformationFile(fastainfo).read_tsv_into_df()
 
         pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
 
         sorted_read_info_df = pandas.DataFrame()
 
-        for i in range(0, fastainfo_df.shape[0]):
-            fasta_info_series = fastainfo_df.iloc[i]
+        for i in range(0, merged_fastainfo_df.shape[0]):
+            fasta_info_series = merged_fastainfo_df.iloc[i]
 
             tag_fwd = fasta_info_series.tagfwd
             tag_rev = fasta_info_series.tagrev

@@ -10,7 +10,7 @@ class VariantDFutils:
     def to_fasta(self, fasta_path, add_column=None):
         """
         Takes variant DF with two columns (id, sequence) or optionally a third column (add_column)
-        and returns a fastqinfo_tsv_path to the fasta_path file
+        and returns a tsv_path to the fasta_path file
 
         Args:
             variant_df (pandas.DataFrame): DF with two columns (id, sequence)

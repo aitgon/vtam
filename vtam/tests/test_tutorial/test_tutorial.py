@@ -126,7 +126,7 @@ class TestTutorialCommands(unittest.TestCase):
 
         asvtable_bak_path = os.path.join(os.path.dirname(__file__), "asvtable_default.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
-    #
+
     # def test_step04_optimize(self):
     #
     #     ################################################################################################################
@@ -135,7 +135,7 @@ class TestTutorialCommands(unittest.TestCase):
     #     #
     #     ################################################################################################################
     #
-    #     # asvtable_path = os.fastqinfo_tsv_path.join(self.outdir_path, "asvtable.tsv")
+    #     # asvtable_path = os.tsv_path.join(self.outdir_path, "asvtable.tsv")
     #     db_path = os.path.join(self.test_outdir_path, "db.sqlite")
     #     known_occurrences_path = os.path.join(PathManager.get_package_path(), "doc/data/known_occurrences.tsv")
     #
