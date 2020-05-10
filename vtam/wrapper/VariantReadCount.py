@@ -3,7 +3,6 @@ import os
 
 import pandas
 import sqlalchemy
-from Bio import SeqIO
 from sqlalchemy import select, bindparam, func
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -12,16 +11,13 @@ from vtam.utils.SampleInformationUtils import FastaInformationTSV
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
-# from vtam.utils.FilterLFNrunner import f1_lfn_delete_singleton
-
-
 class VariantReadCount(ToolWrapper):
+
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.VariantReadCount"
+        "polymorphic_identity": __module__
     }
     # Input
     # Input file
-    # __input_file_sort_reads = 'sortreads'
     __input_file_readinfo = "readinfo"
     # Input table
     __input_table_run = "Run"
@@ -147,11 +143,11 @@ class VariantReadCount(ToolWrapper):
             stmt_del = stmt_del.where(variant_read_count_model.__table__.c.replicate == bindparam('replicate'))
             conn.execute(stmt_del, sample_instance_list)
 
-        ##########################################################
+        ################################################################################################################
         #
         # 3. Read tsv file with sorted reads
         #
-        ##########################################################
+        ################################################################################################################
 
         fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
         fasta_info_ids_df = fasta_info_obj.get_ids_df()

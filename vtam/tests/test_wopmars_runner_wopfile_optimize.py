@@ -3,7 +3,6 @@ import shutil
 from unittest import TestCase
 from vtam.utils.ArgParser import ArgParser
 
-# from vtam.utils.CLIargumentDict import CLIargumentDict
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.PathManager import PathManager
 
