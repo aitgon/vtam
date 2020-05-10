@@ -4,7 +4,7 @@ import pandas
 import pathlib
 import sys
 
-from vtam.utils.PairedFastqInfo import PairedFastqInfo
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
@@ -46,7 +46,7 @@ class CommandMerge(object):
         #
         ################################################################################################################
 
-        fastqinfo_df = PairedFastqInfo.read_tsv_into_df(fastqinfo)
+        fastqinfo_df = SampleInformationFile(fastqinfo).read_tsv_into_df()
 
         pathlib.Path(os.path.dirname(fastainfo)).mkdir(parents=True, exist_ok=True)
         pathlib.Path(fastadir).mkdir(parents=True, exist_ok=True)
@@ -83,7 +83,7 @@ class CommandMerge(object):
                     VTAMexception("VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
                 sys.exit(1)
 
-            # fasta_merged_basename = '.'.join(os.fastqinfo_tsv_path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
+            # fasta_merged_basename = '.'.join(os.tsv_path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
             fasta_merged_basename = os.path.basename(fastq_fw_abspath).replace('.fastq', '.fasta')
             out_fasta_path = os.path.join(fastadir, fasta_merged_basename)
 

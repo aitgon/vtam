@@ -137,7 +137,7 @@ class CommandPoolRunMarkers(object):
         self.cluster_df = None # returned by get_vsearch_clusters_to_df
 
     def run_vsearch_to_cluster_sequences(self):
-        # Define fasta_path fastqinfo_tsv_path
+        # Define fasta_path tsv_path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant variant_read_count_input_df
         variant_df = self.asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
@@ -146,9 +146,9 @@ class CommandPoolRunMarkers(object):
         # Create fasta_path file from asv_table_df
         variant_df_utils = VariantDFutils(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
-        # Define vsearch output fastqinfo_tsv_path
+        # Define vsearch output tsv_path
         vsearch_output_centroid_fasta = os.path.join(self.tmp_dir, 'centroid.fa')
-        # Define cluster output fastqinfo_tsv_path
+        # Define cluster output tsv_path
         vsearch_output_cluster_path = os.path.join(self.tmp_dir, 'cluster.fa')
         #
         # Create object and run vsearch
@@ -166,7 +166,7 @@ class CommandPoolRunMarkers(object):
     def get_vsearch_clusters_to_df(self):
 
         """
-        Analysis vsearch cluster output, which a fastqinfo_tsv_path that corresponds to the same fastqinfo_tsv_path with ticker 0, 1, 2
+        Analysis vsearch cluster output, which a tsv_path that corresponds to the same tsv_path with ticker 0, 1, 2
 
         For instance, if self.cluster_path=/tmp/tmpibbwi9oc/test_pool_markers.py/cluster.fa,
         then there are /tmp/tmpibbwi9oc/test_pool_markers.py/cluster.fa0, ...1, ...2, etc with the different clusters

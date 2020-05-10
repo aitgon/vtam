@@ -135,7 +135,7 @@ class VTAM(object):
         ###############################################################
 
         elif vars(self.args)['command'] == 'merge':
-            fastqinfo = arg_parser_dic['fastqinfo_tsv_path']
+            fastqinfo = arg_parser_dic['fastqinfo']
             fastqdir = arg_parser_dic['fastqdir']
             fastainfo = arg_parser_dic['fastainfo']
             fastadir = arg_parser_dic['fastadir']
