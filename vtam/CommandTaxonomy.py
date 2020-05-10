@@ -31,7 +31,7 @@ class CommandTaxonomy(object):
 
         if taxonomy_tsv is None:  # If None, download to current wdir
             self.taxonomy_tsv_path = os.path.join(os.getcwd(), "taxonomy.tsv")
-        else:  # Download to fastqinfo_tsv_path
+        else:  # Download to tsv_path
             self.taxonomy_tsv_path = taxonomy_tsv
 
         pathlib.Path(os.path.dirname(taxonomy_tsv)).mkdir(parents=True, exist_ok=True)

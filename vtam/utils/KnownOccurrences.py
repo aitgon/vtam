@@ -21,9 +21,9 @@ class KnownOccurrences(object):
         """
         A class to manipulate the known variant file for the optimize wrappers
 
-        :param fastqinfo_tsv_path: TSV file with known variants
+        :param tsv_path: TSV file with known variants
         """
-        # self.fastqinfo_tsv_path = fastqinfo_tsv_path
+        # self.tsv_path = tsv_path
         self.known_occurrences_df = known_occurrences_df
         self.engine = engine
         self.readinfo_tsv = readinfo_tsv
@@ -34,7 +34,7 @@ class KnownOccurrences(object):
         #
         ################################################################################################################
 
-        # self.known_occurrences_df = pandas.read_csv(self.fastqinfo_tsv_path, sep="\t", header=0, \
+        # self.known_occurrences_df = pandas.read_csv(self.tsv_path, sep="\t", header=0, \
         #                                       names=['Marker', 'Run', 'Biosample', 'BiosampleType',
         #                                              'VariantId', 'Action', 'Sequence'], index_col=False,
         #                                         usecols=list(range(7)))
@@ -106,9 +106,9 @@ class KnownOccurrences(object):
 
         """
 
-        """Check fastqinfo_tsv_path format
+        """Check tsv_path format
 
-        :param fastqinfo_tsv_path: Valid non-empty file fastqinfo_tsv_path
+        :param tsv_path: Valid non-empty file tsv_path
         :return: void
 
         """
@@ -121,7 +121,7 @@ class KnownOccurrences(object):
         header_lower = {'marker', 'run', 'biosample', 'mock', 'variantid', 'action', 'sequence'}
         known_occurrences_df = cls.read_tsv_into_df(known_occurrences_tsv_path)
         if set(known_occurrences_df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return known_occurrences_tsv_path  # return the fastqinfo_tsv_path
+            return known_occurrences_tsv_path  # return the tsv_path
         else:
             raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please look at the example in the VTAM documentation.".format(
                 known_occurrences_tsv_path))
@@ -292,7 +292,7 @@ class KnownOccurrences(object):
         :param: variant_tolerate: Boolean: Default False. include "variant_tolerate" variants or not?
         :return: pandas variant_read_count_input_df with columns: run_id, marker_id, biosample_id, variant_id
         """
-        # Get portion of fastqinfo_tsv_path with either keep or keep+variant_tolerate
+        # Get portion of tsv_path with either keep or keep+variant_tolerate
         if variant_tolerate:  # get also variant_tolerate variant
             run_marker_biosample_variant_keep_df = self.known_occurrences_ids_df.loc[
                 ((self.known_occurrences_df.action.isin(['keep', 'variant_tolerate']))).values]

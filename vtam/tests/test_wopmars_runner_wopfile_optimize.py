@@ -21,7 +21,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
                                               PathManager.get_package_path())
         foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "readinfo.tsv"), PathManager.get_package_path())
-        foopaths['fastqinfo_tsv_path'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+        foopaths['tsv_path'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "known_occurrences.tsv"), PathManager.get_package_path())
         foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(
             PathManager.get_package_path(), 'doc/data/dryad.f40v5_small/known_occurrences.tsv'),

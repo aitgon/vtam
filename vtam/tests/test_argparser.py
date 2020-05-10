@@ -25,7 +25,7 @@ class TestArgParser(TestCase):
                                                                 "params.yml"), PathManager.get_package_path())
         foopaths['params_wrong_yml'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "params_wrong.yml"), PathManager.get_package_path())
-        foopaths['fastqinfo_tsv_path'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
+        foopaths['tsv_path'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "known_occurrences.tsv"), PathManager.get_package_path())
         foopaths['asvtable_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
                                                                 "asvtable.tsv"), PathManager.get_package_path())

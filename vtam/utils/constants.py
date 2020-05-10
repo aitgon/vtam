@@ -91,21 +91,35 @@ include_prop: 90
 min_number_of_taxa: 3
 ltg_rule_threshold: 97"""
 
+
 def get_dic_params_default():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
     params_default_dic['threads'] = multiprocessing.cpu_count()
     params_default_dic['lfn_variant_replicate_threshold'] = None
     return params_default_dic
 
+
 ########################################################################################################################
 #
-# Tax_assign parameters_numerical_default
+#  Header of these information files
+#  PairedFastq, MergedFasta, SortedReadFasta
 #
 ########################################################################################################################
 
-rank_hierarchy =['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
-                 'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
-rank_hierarchy_asv_table =['phylum', 'class', 'order', 'family', 'genus', 'species']
+header_paired_fastq = {'run', 'marker', 'biosample', 'replicate'}
+header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'mergedfasta'}
+header_sortedread_fasta = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
+
+
+########################################################################################################################
+#
+#  Tax_assign parameters_numerical_default
+#
+########################################################################################################################
+
+rank_hierarchy = ['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
+                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
+rank_hierarchy_asv_table = ['phylum', 'class', 'order', 'family', 'genus', 'species']
 
 # public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
 taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
@@ -116,14 +130,14 @@ identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
 ########################################################################################################################
 #
-# FilterLFNreference
+#  FilterLFNreference
 #
 ########################################################################################################################
 
 FilterLFNreference_records = [
     {'filter_id': 2, 'filter_name': 'lfn_per_variant'},
     {'filter_id': 3, 'filter_name': 'lfn_per_varian'
-                      't_replicate'},
+                                    't_replicate'},
     {'filter_id': 4, 'filter_name': 'lfn_per_variant_specific'},
     {'filter_id': 5, 'filter_name': 'lfn_per_variant_replicate_specific'},
     {'filter_id': 6, 'filter_name': 'lfn_biosample_replicate'},

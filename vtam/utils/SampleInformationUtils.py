@@ -169,7 +169,7 @@ class SampleInformationUtils(object):
         return marker_df
 
     def get_run_df(self, run_model):
-        """Based on the SortedReadFile information TSV and run_model, returns the run_df
+        """Based on the SortedReadFile information TSV and Run, returns the run_df
 
         :return: DataFrame with columns: index, name
         """
@@ -186,7 +186,7 @@ class SampleInformationUtils(object):
         return run_df
 
     def get_variant_to_chimera_borderline_df(self, filter_chimera_borderline_model):
-        """Based on the SortedReadFile information TSV and run_model, returns the run_df
+        """Based on the SortedReadFile information TSV and Run, returns the run_df
 
         :return: DataFrame with columns: index, name
         """
@@ -206,7 +206,7 @@ class FastaInformationTSV(SampleInformationUtils):
     """Reads fasta information TSV file to a sample_information_id object"""
 
     def __init__(self, fasta_info_tsv, engine, include_tag_primer_fasta=False):
-        """A new instance needs the fastqinfo_tsv_path to the fasta information fastqinfo_tsv_path information TSV file as wel as DB information to interact with the DB"""
+        """A new instance needs the tsv_path to the fasta information tsv_path information TSV file as wel as DB information to interact with the DB"""
         #
         self.fasta_information_df = pandas.read_csv(fasta_info_tsv, sep="\t", header=0)
         self.fasta_information_df.columns = self.fasta_information_df.columns.str.lower()

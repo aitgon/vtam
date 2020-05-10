@@ -25,7 +25,7 @@ class TestTaxonomy(TestCase):
     # This test is very slow but tests creating denove taxonomy tsv file from NCBI
     # def test_create_denovo_from_ncbi(self):
     #     CommandTaxonomy(taxonomy_tsv=self.taxonomy_tsv).create_denovo_from_ncbi()
-    #     self.assertTrue(os.fastqinfo_tsv_path.getsize(self.taxonomy_tsv) >= 115036883)
+    #     self.assertTrue(os.tsv_path.getsize(self.taxonomy_tsv) >= 115036883)
 
     def tearDown(self):
         shutil.rmtree(self.outdir_path, ignore_errors=True)
