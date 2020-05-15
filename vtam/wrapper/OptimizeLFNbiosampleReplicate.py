@@ -1,10 +1,16 @@
 import pandas
 import sqlalchemy
 
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from wopmars.models.ToolWrapper import ToolWrapper
+
+from vtam.models.Run import Run
+from vtam.models.Marker import Marker
+from vtam.models.Biosample import Biosample
+from vtam.models.Variant import Variant
+from vtam.models.VariantReadCount import VariantReadCount
 
 
 class OptimizeLFNbiosampleReplicate(ToolWrapper):
@@ -62,13 +68,6 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         known_occurrences_tsv = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_known_occurrences)
         fasta_info_tsv_path = self.input_file(OptimizeLFNbiosampleReplicate.__input_file_readinfo)
         #
-        # Input table models
-        run_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_run)
-        marker_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_marker)
-        biosample_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_biosample)
-        variant_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant)
-        variant_read_count_model = self.input_table(OptimizeLFNbiosampleReplicate.__input_table_variant_read_count)
-        #
         # Output file output
         output_file_optimize_lfn = self.output_file(OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate)
 
@@ -112,8 +111,8 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             #
             ############################################################################################################
 
-            fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
-            variant_read_count_df = fasta_info_tsv_obj.get_variant_read_count_df(variant_read_count_model)
+            sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv_path)
+            variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(VariantReadCount, engine=engine)
 
             variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
             N_jk_df = variant_read_count_df_obj.get_N_jk_df()
@@ -167,11 +166,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
             with engine.connect() as conn:
                 run_id_to_name = conn.execute(
-                    sqlalchemy.select([run_model.__table__.c.id, run_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Run.__table__.c.id, Run.__table__.c.name])).fetchall()
                 marker_id_to_name = conn.execute(
-                    sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Marker.__table__.c.id, Marker.__table__.c.name])).fetchall()
                 biosample_id_to_name = conn.execute(
-                    sqlalchemy.select([biosample_model.__table__.c.id, biosample_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Biosample.__table__.c.id, Biosample.__table__.c.name])).fetchall()
 
             run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
             optimize_output_df = optimize_output_df.merge(run_id_to_name_df, on='run_id')
@@ -198,7 +197,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         with engine.connect() as conn:
             for variant_id in final_optimize_output_df.variant_id.unique():
                 variant_id = int(variant_id)
-                variant_sequence_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id)).first()
+                variant_sequence_row = conn.execute(sqlalchemy.select([Variant.__table__.c.sequence]).where(Variant.__table__.c.id == variant_id)).first()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
                     final_optimize_output_df.loc[(final_optimize_output_df.variant_id == variant_id).values, 'sequence'] = variant_sequence

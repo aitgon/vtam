@@ -19,6 +19,7 @@ class VariantReadCountLikeTable(object):
          marker_id, biosample_id, replicate"""
 
         sample_column_list = pandas.DataFrame(sample_record_list).columns.tolist()
+
         with self.engine.connect() as conn:
             stmt = self.variant_read_count_like_model.__table__.delete()
             stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == bindparam('run_id'))

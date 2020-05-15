@@ -11,7 +11,7 @@ from vtam.models.Run import Run as RunModel
 from vtam.models.Variant import Variant
 from vtam.models.VariantReadCount import VariantReadCount
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VTAMexception import VTAMexception
 
 
@@ -263,8 +263,10 @@ class KnownOccurrences(object):
 
     def __are_known_variants_coherent_with_fasta_info_file(self):
 
-        fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.readinfo_tsv)
-        sample_information_df = fasta_info_tsv.sample_information_df
+        # fasta_info_tsv = FastaInformationTSV(engine=self.engine, fasta_info_tsv=self.readinfo_tsv)
+        # sample_information_df = fasta_info_tsv.sample_information_df
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=self.readinfo_tsv)
+        sample_information_df = sample_info_tsv_obj.to_identifier_df()
 
         ################################################################################################################
         #

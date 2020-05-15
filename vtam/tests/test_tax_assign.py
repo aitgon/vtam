@@ -46,7 +46,7 @@ class TestTaxAssign(TestCase):
         taxonomy_tsv_path = os.path.join(cls.outdir_path, "taxonomy.tsv")
         CommandTaxonomy(taxonomy_tsv=taxonomy_tsv_path).download_precomputed_taxonomy()
         #
-        # cls.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
+        # self.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
         cls.taxonomy_db_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
                                          dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
 

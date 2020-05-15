@@ -30,45 +30,45 @@ class ArgParserChecker(object):
             return path
 
     # @staticmethod
-    # def check_fastainfo(path):
+    # def check_fastainfo(tsv_path):
     #
     #     """Checks if fastainfo exists, is not empty and it has a minimal set of columns
     #
-    #     :param path: Valid non-empty TSV fastainfo tsv_path
+    #     :param tsv_path: Valid non-empty TSV fastainfo tsv_path
     #     :return: void
     #
     #     """
     #
-    #     path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-    #     df = pandas.read_csv(path, sep='\t', header=0)
+    #     tsv_path = ArgParserChecker.check_file_exists_and_is_nonempty(tsv_path)
+    #     df = pandas.read_csv(tsv_path, sep='\t', header=0)
     #     header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
     #      'mergedfasta'}
     #     df.columns = df.columns.str.lower()
     #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-    #         return path
+    #         return tsv_path
     #     else:
-    #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(path, header_lower))
+    #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(tsv_path, header_lower))
 
     # @staticmethod
-    # def check_fastqinfo(path):
+    # def check_fastqinfo(tsv_path):
     #
     #     """Checks if tsv_path exists, is not empty
     #
-    #     :param path: Valid non-empty TSV tsv_path tsv_path
+    #     :param tsv_path: Valid non-empty TSV tsv_path tsv_path
     #     :return: void
     #
     #     """
     #
-    #     path = ArgParserChecker.check_file_exists_and_is_nonempty(path)
-    #     df = pandas.read_csv(path, sep='\t', header=0)
+    #     tsv_path = ArgParserChecker.check_file_exists_and_is_nonempty(tsv_path)
+    #     df = pandas.read_csv(tsv_path, sep='\t', header=0)
     #     header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
     #      'primerfwd', 'biosample', 'tagfwd', 'marker'}
     #     df.columns = df.columns.str.lower()
     #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-    #         return path
+    #         return tsv_path
     #     else:
     #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(
-    #             path, header_lower))
+    #             tsv_path, header_lower))
 
     @staticmethod
     def check_file_exists_and_is_nonempty(path):
@@ -470,10 +470,10 @@ class ArgParser:
                                                          formatter_class=argparse.RawTextHelpFormatter,
                                                          parents=[parent_parser])
         parser_vtam_pool_markers.add_argument('--db', action='store', required=True, help="SQLITE file with DB")
-        from vtam.utils.SelectionRunMarker import SelectionRunMarker
+        from vtam.utils.RunMarkerFile import RunMarkerFile
         parser_vtam_pool_markers.add_argument('--runmarker', action='store', default=None,
-                                     help=SelectionRunMarker.help(),
-                                     required=True, type=lambda x: SelectionRunMarker(x).check_argument())
+                                              help=RunMarkerFile.help(),
+                                              required=True, type=lambda x: RunMarkerFile(x).check_argument())
         parser_vtam_pool_markers.add_argument('--output', action='store', help="REQUIRED: Output TSV file with pooled markers",
                                        required=True)
 

@@ -1,6 +1,11 @@
 import pandas
 import sqlalchemy
 
+from vtam.models.Biosample import Biosample
+from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
+from vtam.models.Marker import Marker
+from vtam.models.Run import Run
+from vtam.models.Variant import Variant
 from vtam.utils.TaxLineage import TaxLineage
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
@@ -8,17 +13,28 @@ from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 class AsvTableRunner(object):
 
-    def __init__(self, engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df, variant_to_chimera_borderline_df,
-                 taxonomy_tsv=None):
+    def __init__(self, engine, variant_read_count_df, taxonomy_tsv=None):
+
+        self.run_df = pandas.read_sql(sqlalchemy.select(
+            [Run.__table__.c.id, Run.__table__.c.name]), con=engine.connect(), index_col='id')
+
+        self.marker_df = pandas.read_sql(sqlalchemy.select(
+            [Marker.__table__.c.id, Marker.__table__.c.name]), con=engine.connect(), index_col='id')
+
+        self.biosample_df = pandas.read_sql(sqlalchemy.select(
+            [Biosample.__table__.c.id, Biosample.__table__.c.name]), con=engine.connect(), index_col='id')
+
+        self.variant_df = pandas.read_sql(sqlalchemy.select(
+            [Variant.__table__.c.id, Variant.__table__.c.sequence]), con=engine.connect(), index_col='id')
+
+        self.variant_to_chimera_borderline_df = pandas.read_sql(sqlalchemy.select(
+            [FilterChimeraBorderline.__table__.c.run_id, FilterChimeraBorderline.__table__.c.marker_id,
+             FilterChimeraBorderline.__table__.c.variant_id,
+             FilterChimeraBorderline.__table__.c.filter_delete]).distinct(), con=engine.connect())
+        self.variant_to_chimera_borderline_df.rename({'filter_delete': 'chimera_borderline'}, axis=1, inplace=True)
 
         self.engine = engine
         self.variant_read_count_df = variant_read_count_df
-        self.variant_df = variant_df
-        self.run_df = run_df
-        self.marker_df = marker_df
-        self.biosample_df = biosample_df
-        self.variant_to_chimera_borderline_df = variant_to_chimera_borderline_df
-        # self.tax_assign_model = tax_assign_model
         self.taxonomy_tsv = taxonomy_tsv
 
     def run(self):

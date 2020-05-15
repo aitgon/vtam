@@ -27,7 +27,7 @@ class TestTutorialCommands(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # vtam needs to be in the path
+        # vtam needs to be in the tsv_path
         subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
                         '--upgrade'])
 
@@ -111,83 +111,6 @@ class TestTutorialCommands(unittest.TestCase):
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5131900)
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) >= 909500)  # 909507
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) <= 909510)
-
-    def test_step03_filter(self):
-
-        ################################################################################################################
-        #
-        # Command Filter
-        #
-        ################################################################################################################
-
-        cmd = "vtam filter --db {db} --readinfo {readinfo} --readdir {readdir} --asvtable {asvtable} " \
-              "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd))
-
-        asvtable_bak_path = os.path.join(os.path.dirname(__file__), "asvtable_default.tsv")
-        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
-
-    # def test_step04_optimize(self):
-    #
-    #     ################################################################################################################
-    #     #
-    #     # Command Optimize
-    #     #
-    #     ################################################################################################################
-    #
-    #     # asvtable_path = os.tsv_path.join(self.outdir_path, "asvtable.tsv")
-    #     db_path = os.path.join(self.test_outdir_path, "db.sqlite")
-    #     known_occurrences_path = os.path.join(PathManager.get_package_path(), "doc/data/known_occurrences.tsv")
-    #
-    #     cli_args_dic = {'readinfo': self.sortedreadinfo_path,
-    #                     'readdir': self.sorteddir_path,
-    #                     'outdir': self.test_outdir_path,
-    #                     'known_occurrences': known_occurrences_path,
-    #                     'db': db_path,
-    #                     'params': None,
-    #                     'log_file': self.log_path}
-    #
-    #     wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=cli_args_dic)
-    #     wopmars_command = wopmars_runner.get_wopmars_command()
-    #
-    #     # Some arguments will be passed through environmental variables
-    #     Logger.instance().info(wopmars_command)
-    #
-    #     run_result = subprocess.run(wopmars_command, shell=True)
-    #
-    #     optimize_lfn_biosample_replicate = os.path.join(self.test_outdir_path, "optimize_lfn_biosample_replicate.tsv")
-    #     optimize_lfn_read_count_and_lfn_variant = os.path.join(self.test_outdir_path, "optimize_lfn_read_count_and_lfn_variant.tsv")
-    #     optimize_lfn_variant_specific = os.path.join(self.test_outdir_path, "optimize_lfn_variant_specific.tsv")
-    #     optimize_pcr_error = os.path.join(self.test_outdir_path, "optimize_pcr_error.tsv")
-    #
-    #     # Remove if exists
-    #     if os.path.exists(optimize_lfn_biosample_replicate):
-    #         pathlib.Path(optimize_lfn_biosample_replicate).unlink()
-    #     if os.path.exists(optimize_lfn_read_count_and_lfn_variant):
-    #         pathlib.Path(optimize_lfn_read_count_and_lfn_variant).unlink()
-    #     if os.path.exists(optimize_lfn_variant_specific):
-    #         pathlib.Path(optimize_lfn_variant_specific).unlink()
-    #     if os.path.exists(optimize_pcr_error):
-    #         pathlib.Path(optimize_pcr_error).unlink()
-    #
-    #     # This second run is necessary but I do not know why
-    #     run_result = subprocess.run(wopmars_command, shell=True)
-    #
-    #     optimize_lfn_biosample_replicate_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_biosample_replicate.tsv")
-    #     # TODO must be fixed
-    #     # self.assertTrue(filecmp.cmp(optimize_lfn_biosample_replicate, optimize_lfn_biosample_replicate_bak, shallow=False))
-    #
-    #     optimize_lfn_read_count_and_lfn_variant_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_read_count_and_lfn_variant.tsv")
-    #     # TODO must be fixed
-    #     # self.assertTrue(filecmp.cmp(optimize_lfn_read_count_and_lfn_variant, optimize_lfn_read_count_and_lfn_variant_bak, shallow=False))
-    #
-    #     optimize_lfn_variant_specific_bak = os.path.join(self.test_outdir_bak_path, "optimize_lfn_variant_specific.tsv")
-    #     # TODO must be fixed
-    #     # self.assertTrue(filecmp.cmp(optimize_lfn_variant_specific, optimize_lfn_variant_specific_bak, shallow=False))
-    #
-    #     optimize_pcr_error_bak = os.path.join(self.test_outdir_bak_path, "optimize_pcr_error.tsv")
-    #     # TODO must be fixed
-    #     # self.assertTrue(filecmp.cmp(optimize_pcr_error, optimize_pcr_error_bak, shallow=False))
 
     @classmethod
     def tearDownClass(cls):
