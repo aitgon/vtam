@@ -1,6 +1,4 @@
 from wopmars.models.ToolWrapper import ToolWrapper
-import pandas
-
 from vtam.utils.SampleInformationFile import SampleInformationFile
 
 

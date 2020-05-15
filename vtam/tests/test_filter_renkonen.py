@@ -23,12 +23,12 @@ class TestFilterRenkonen(TestCase):
         self.filter_renkonen_runner_obj = FilterRenkonenRunner(self.variant_read_count_input_df)
 
     # @classmethod
-    # def setUpClass(cls):
+    # def setUpClass(self):
     #     test_filter_renkonen_input_tsv_path = os.tsv_path.join(PathManager.get_test_path(), 'test_files/test_filter_renkonen_input.tsv')
     #     #
-    #     # cls.variant_read_count_input_df = pandas.read_csv(test_filter_renkonen_input_tsv_path, sep="\t", header=0)
-    #     # cls.filter_renkonen_runner_obj = FilterRenkonenRunner(cls.variant_read_count_input_df)
-    #     # cls.renkonen_distance_df = cls.filter_renkonen_runner_obj.get_renkonen_distance_df_for_all_biosample_replicates()
+    #     # self.variant_read_count_input_df = pandas.read_csv(test_filter_renkonen_input_tsv_path, sep="\t", header=0)
+    #     # self.filter_renkonen_runner_obj = FilterRenkonenRunner(self.variant_read_count_input_df)
+    #     # self.renkonen_distance_df = self.filter_renkonen_runner_obj.get_renkonen_distance_df_for_all_biosample_replicates()
 
     def test_renkonen_distance(self):
 

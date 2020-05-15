@@ -5,7 +5,7 @@ from unittest import TestCase
 import pandas
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.FilterLFNrunner import FilterLFNrunner
+from vtam.utils.FilterLFNRunner import FilterLFNrunner
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 
 

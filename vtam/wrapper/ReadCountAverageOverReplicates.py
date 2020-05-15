@@ -1,12 +1,11 @@
-from sqlalchemy import select, bindparam
-
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from wopmars.models.ToolWrapper import ToolWrapper
 
 import os
 import pandas
 import sys
+
+from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 
 
 class ReadCountAverageOverReplicates(ToolWrapper):
@@ -77,7 +76,9 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
+        # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+
 
         ################################################################################################################
         #
@@ -90,7 +91,8 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         variant_read_count_like_utils = VariantReadCountLikeTable(
             variant_read_count_like_model=consensus_model, engine=engine)
-        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
 
 
         ################################################################################################################
@@ -99,7 +101,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
             variant_read_count_like_model=codon_stop_model, filter_id=None)
 
         # Exit if no variants for analysis

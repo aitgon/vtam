@@ -17,11 +17,11 @@ vtam/discussion_reda_aitor/example_filter.ods
 """
 import sys
 
-from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.Logger import Logger
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
-
 import pandas
+
+from vtam.utils.Logger import Logger
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
 class FilterLFNrunner:
@@ -29,20 +29,73 @@ class FilterLFNrunner:
     def __init__(self, variant_read_count_df):
         self.variant_read_count_df = variant_read_count_df[
             ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate', 'read_count']]
-        # Instance for all the calculations N_i, N_ij, etc
+        #  Instance for all the calculations N_i, N_ij, etc
         self.variant_read_count_lfn_df = VariantReadCountDF(variant_read_count_df)
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
+
+        ################################################################################################################
+        #
+        #  Output variant_read_count_input_df with deleted variants
         #
         ################################
-        #  Output variant_read_count_input_df with deleted variants
-        ################################
-        self.variant_read_count_filter_delete_df = pandas.DataFrame(data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
-                                                                          'replicate': [],
-                                                                          'read_count': [], 'filter_id': [],
-                                                                          'filter_delete': []},
-                                                                    dtype='uint32')
+
+        self.variant_read_count_filter_delete_df = pandas.DataFrame(
+            data={'run_id': [], 'marker_id': [], 'biosample_id': [], 'variant_id': [],
+                  'replicate': [],
+                  'read_count': [], 'filter_id': [],
+                  'filter_delete': []},
+            dtype='uint32')
+
+    def run(self, lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
+            lfn_read_count_threshold):
+
+        ################################################################################################################
+        #
+        # Filter 2: f2_f4_lfn_delete_variant
+        # Or
+        # Filter  3: f3_f5_lfn_delete_variant_replicate
+        #
+        ################################################################################################################
+
+        if lfn_variant_replicate_threshold is None:  # run lfn_variant
+            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+            self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i',
+                                                                   threshold=lfn_variant_threshold)
+        else:  # run lfn_variant_replicate
+            # self.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
+            self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik',
+                                                                   threshold=lfn_variant_replicate_threshold)
+
+        ################################################################################################################
+        #
+        # Filter 6:  f6_lfn_delete_biosample_replicate_delete
+        #
+        ################################################################################################################
+
+        self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk',
+                                                               threshold=lfn_biosample_replicate_threshold)
+
+        ################################################################################################################
+        #
+        # Filter  7:mark_delete_lfn_absolute_read_count
+        #
+        ################################################################################################################
+
+        self.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
+
+        ################################################################################################################
+        #
+        # Filter 8:mark_delete_lfn_do_not_pass_all_filters
+        #
+        ################################################################################################################
+
+        self.mark_delete_lfn_do_not_pass_all_filters()
+
+        return self.variant_read_count_filter_delete_df
+
+
     def mark_delete_lfn_per_Ni_or_Nik_or_Njk(self, lfn_denominator, threshold, threshold_specific_df=None):
         """
 
@@ -56,9 +109,9 @@ class FilterLFNrunner:
         """
         if lfn_denominator == 'N_i':  # variant
             this_filter_id = 2
-            N_df = self.variant_read_count_lfn_df.get_N_i_df() # Compute N_i_df
+            N_df = self.variant_read_count_lfn_df.get_N_i_df()  #  Compute N_i_df
             filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'variant_id'],
-                                                   right_on=['run_id', 'marker_id', 'variant_id'])
+                                                         right_on=['run_id', 'marker_id', 'variant_id'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_i
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
@@ -71,9 +124,10 @@ class FilterLFNrunner:
                     filter_df.loc[(filter_df.variant_id == variant_id), 'threshold'] = threshold
         elif lfn_denominator == 'N_ik':  # variant_replicate
             this_filter_id = 3
-            N_df = self.variant_read_count_lfn_df.get_N_ik_df() # Compute N_ik_df
-            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'variant_id', 'replicate'],
-                                                   right_on=['run_id', 'marker_id', 'variant_id', 'replicate'])
+            N_df = self.variant_read_count_lfn_df.get_N_ik_df()  #  Compute N_ik_df
+            filter_df = self.variant_read_count_df.merge(N_df,
+                                                         left_on=['run_id', 'marker_id', 'variant_id', 'replicate'],
+                                                         right_on=['run_id', 'marker_id', 'variant_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
@@ -84,12 +138,14 @@ class FilterLFNrunner:
                     replicate = rowtuple.replicate
                     threshold = rowtuple.threshold
                     filter_df['filter_id'] = this_filter_id
-                    filter_df.loc[(filter_df.variant_id == variant_id) & (filter_df.replicate == replicate), 'threshold'] = threshold
+                    filter_df.loc[(filter_df.variant_id == variant_id) & (
+                                filter_df.replicate == replicate), 'threshold'] = threshold
         elif lfn_denominator == 'N_jk':  # biosample_replicate
             this_filter_id = 6
-            N_df = self.variant_read_count_lfn_df.get_N_jk_df() # Compute N_jk_df
-            filter_df = self.variant_read_count_df.merge(N_df, left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
-                                                   right_on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
+            N_df = self.variant_read_count_lfn_df.get_N_jk_df()  #  Compute N_jk_df
+            filter_df = self.variant_read_count_df.merge(N_df,
+                                                         left_on=['run_id', 'marker_id', 'biosample_id', 'replicate'],
+                                                         right_on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_jk
             filter_df['filter_id'] = this_filter_id
             filter_df['threshold'] = threshold
@@ -111,9 +167,10 @@ class FilterLFNrunner:
         #
         #  Keep important columns
         filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count',
-                   'filter_id', 'filter_delete']]
+                               'filter_id', 'filter_delete']]
         #
-        # Prepare output variant_read_count_input_df and concatenate vertically output variant_read_count_input_df to self.variant_read_count_filter_delete_df
+        # Prepare output variant_read_count_input_df and concatenate vertically output variant_read_count_input_df
+        # to self.variant_read_count_filter_delete_df
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False, axis=0)
 
@@ -166,7 +223,7 @@ class FilterLFNrunner:
         filter_df.loc[
             filter_df.read_count < lfn_read_count_threshold, 'filter_delete'] = True
         filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
-                   'filter_id', 'filter_delete']]
+                               'filter_id', 'filter_delete']]
         #
         # Concatenate vertically output variant_read_count_input_df
         #  Prepare output variant_read_count_input_df and concatenate to self.variant_read_count_filter_delete_df
@@ -184,10 +241,11 @@ class FilterLFNrunner:
         filter_df = filter_df.rename(columns={'filter_delete': 'filter_delete_aggregate'})
 
         # Merge the column with the total reads by sample replicates for calculate the ratio
-        filter_df = self.variant_read_count_df.merge(filter_df, left_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                             'replicate'],
-                                               right_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
-                                                         'replicate'])
+        filter_df = self.variant_read_count_df.merge(filter_df,
+                                                     left_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                              'replicate'],
+                                                     right_on=['run_id', 'marker_id', 'variant_id', 'biosample_id',
+                                                               'replicate'])
         #
         # Initialize
         filter_df['filter_id'] = this_filter_id
@@ -200,7 +258,7 @@ class FilterLFNrunner:
         #
         # Let only interest columns
         filter_df = filter_df[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count',
-                   'filter_id', 'filter_delete']]
+                               'filter_id', 'filter_delete']]
         #
         self.variant_read_count_filter_delete_df = pandas.concat([self.variant_read_count_filter_delete_df, filter_df],
                                                                  sort=False)

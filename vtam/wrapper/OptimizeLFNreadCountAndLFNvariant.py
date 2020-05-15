@@ -1,13 +1,17 @@
 import pandas
 import sqlalchemy
 
-from vtam.utils.FilterLFNrunner import FilterLFNrunner
+from vtam.utils.FilterLFNRunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 from vtam.wrapper.FilterMinReplicateNumber import f9_delete_min_replicate_number
 from wopmars.models.ToolWrapper import ToolWrapper
+
+from vtam.models.Run import Run
+from vtam.models.Marker import Marker
+from vtam.models.Variant import Variant
 
 
 class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
@@ -95,12 +99,6 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # Input file output
         known_occurrences_tsv = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_known_occurrences)
         fasta_info_tsv_path = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_readinfo)
-        #
-        # Input table models
-        run_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_run)
-        marker_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_marker)
-        biosample_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_biosample)
-        variant_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant)
 
         variant_read_count_model = self.input_table(OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count)
         #
@@ -150,8 +148,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             #
             ############################################################################################################
 
-            fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
-            variant_read_count_df = fasta_info_tsv_obj.get_variant_read_count_df(variant_read_count_model)
+            # fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
+            sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv_path)
+            variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(variant_read_count_model, engine=engine)
 
             ############################################################################################################
             #
@@ -463,9 +462,9 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
             with engine.connect() as conn:
                 run_id_to_name = conn.execute(
-                    sqlalchemy.select([run_model.__table__.c.id, run_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Run.__table__.c.id, Run.__table__.c.name])).fetchall()
                 marker_id_to_name = conn.execute(
-                    sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Marker.__table__.c.id, Marker.__table__.c.name])).fetchall()
 
             run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
             lfn_variant_or_variant_replicate_specific_threshold_df = lfn_variant_or_variant_replicate_specific_threshold_df.merge(run_id_to_name_df, on='run_id')
@@ -511,7 +510,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         with engine.connect() as conn:
             for variant_id in final_out_lfn_variant_or_variant_replicate_specific_threshold_df.variant_id.unique():
                 variant_id = int(variant_id)
-                variant_sequence_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id)).first()
+                variant_sequence_row = conn.execute(sqlalchemy.select([Variant.__table__.c.sequence]).where(Variant.__table__.c.id == variant_id)).first()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
                     final_out_lfn_variant_or_variant_replicate_specific_threshold_df.loc[(final_out_lfn_variant_or_variant_replicate_specific_threshold_df.variant_id == variant_id).values, 'sequence'] = variant_sequence

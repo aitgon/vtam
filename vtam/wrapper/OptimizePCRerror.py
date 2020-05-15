@@ -5,9 +5,15 @@ import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
-from vtam.utils.SampleInformationUtils import SampleInformationUtils, FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 import pandas
+
+from vtam.models.Run import Run
+from vtam.models.Marker import Marker
+from vtam.models.Biosample import Biosample
+from vtam.models.Variant import Variant
+from vtam.models.VariantReadCount import VariantReadCount
 
 from vtam.utils.PathManager import PathManager
 
@@ -75,13 +81,6 @@ class OptimizePCRerror(ToolWrapper):
         known_occurrences_tsv = self.input_file(OptimizePCRerror.__input_file_known_occurrences)
         fasta_info_tsv_path = self.input_file(OptimizePCRerror.__input_file_readinfo)
         #
-        # Input models
-        run_model = self.input_table(OptimizePCRerror.__input_table_run)
-        marker_model = self.input_table(OptimizePCRerror.__input_table_marker)
-        variant_model = self.input_table(OptimizePCRerror.__input_table_variant)
-        biosample_model = self.input_table(OptimizePCRerror.__input_table_biosample)
-        variant_read_count_model = self.input_table(OptimizePCRerror.__input_table_variant_read_count)
-        #
         # Output file paths
         output_file_optimize_pcr_error = self.output_file(OptimizePCRerror.__output_file_optimize_pcr_error)
 
@@ -125,11 +124,16 @@ class OptimizePCRerror(ToolWrapper):
             #
             ##########################################################
 
-            fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
-            sample_information_df_analyzer = SampleInformationUtils(engine, fasta_info_tsv_obj.sample_information_df)
-            variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_like_model=variant_read_count_model)
+            # fasta_info_tsv_obj = FastaInformationTSV(fasta_info_tsv=fasta_info_tsv_path, engine=engine)
+            # sample_information_df_analyzer = SampleInformationUtils(engine, fasta_info_tsv_obj.sample_information_df)
+            # variant_read_count_df = sample_information_df_analyzer.get_variant_read_count_df(variant_read_count_like_model=VariantReadCount)
+            sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv_path)
+            variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(VariantReadCount, engine=engine)
 
-            variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=variant_read_count_model, variant_model=variant_model)
+
+            # variant_df = sample_information_df_analyzer.get_variant_df(variant_read_count_like_model=VariantReadCount, variant_model=Variant)
+            variant_df = pandas.read_sql(sqlalchemy.select(
+                [Variant.__table__.c.id, Variant.__table__.c.sequence]), con=engine.connect(), index_col='id')
 
             ############################################################################################################
             #
@@ -189,11 +193,11 @@ class OptimizePCRerror(ToolWrapper):
 
             with engine.connect() as conn:
                 run_id_to_name = conn.execute(
-                    sqlalchemy.select([run_model.__table__.c.id, run_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Run.__table__.c.id, Run.__table__.c.name])).fetchall()
                 marker_id_to_name = conn.execute(
-                    sqlalchemy.select([marker_model.__table__.c.id, marker_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Marker.__table__.c.id, Marker.__table__.c.name])).fetchall()
                 biosample_id_to_name = conn.execute(
-                    sqlalchemy.select([biosample_model.__table__.c.id, biosample_model.__table__.c.name])).fetchall()
+                    sqlalchemy.select([Biosample.__table__.c.id, Biosample.__table__.c.name])).fetchall()
 
             run_id_to_name_df = pandas.DataFrame.from_records(data=run_id_to_name, columns=['run_id', 'run_name'])
             pcr_error_per_run_marker_df = pcr_error_per_run_marker_df.merge(run_id_to_name_df, on='run_id')
@@ -220,7 +224,7 @@ class OptimizePCRerror(ToolWrapper):
         with engine.connect() as conn:
             for variant_id_unexpected in final_pcr_error_df.variant_id_unexpected.unique():
                 variant_id_unexpected = int(variant_id_unexpected)
-                variant_sequence_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id_unexpected)).first()
+                variant_sequence_row = conn.execute(sqlalchemy.select([Variant.__table__.c.sequence]).where(Variant.__table__.c.id == variant_id_unexpected)).first()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
                     final_pcr_error_df.loc[(final_pcr_error_df.variant_id_unexpected == variant_id_unexpected).values, 'variant_seq_unexpected'] = variant_sequence
@@ -230,7 +234,7 @@ class OptimizePCRerror(ToolWrapper):
         with engine.connect() as conn:
             for variant_id_expected in final_pcr_error_df.variant_id_expected.unique():
                 variant_id_expected = int(variant_id_expected)
-                variant_sequence_row = conn.execute(sqlalchemy.select([variant_model.__table__.c.sequence]).where(variant_model.__table__.c.id == variant_id_expected)).first()
+                variant_sequence_row = conn.execute(sqlalchemy.select([Variant.__table__.c.sequence]).where(Variant.__table__.c.id == variant_id_expected)).first()
                 if not (variant_sequence_row is None):
                     variant_sequence = variant_sequence_row[0]
                     final_pcr_error_df.loc[(final_pcr_error_df.variant_id_expected == variant_id_expected).values, 'variant_seq_expected'] = variant_sequence
