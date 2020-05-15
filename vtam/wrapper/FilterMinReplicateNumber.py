@@ -1,4 +1,4 @@
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
@@ -60,9 +60,6 @@ class FilterMinReplicateNumber(ToolWrapper):
         fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_readinfo)
         #
         # Input tables
-        run_model = self.input_table(FilterMinReplicateNumber.__input_table_run)
-        marker_model = self.input_table(FilterMinReplicateNumber.__input_table_marker)
-        biosample_model = self.input_table(FilterMinReplicateNumber.__input_table_biosample)
         input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
         #
         # Options
@@ -78,7 +75,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         ################################################################################################################
         #
@@ -86,9 +83,10 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model
-                                                                  =output_filter_min_replicate_model, engine=engine)
-        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
+        variant_read_count_like_utils = VariantReadCountLikeTable(
+            variant_read_count_like_model=output_filter_min_replicate_model, engine=engine)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
 
         ################################################################################################################
         #
@@ -102,8 +100,8 @@ class FilterMinReplicateNumber(ToolWrapper):
         # Previous filter is not FilterLFN
         else:
             filter_id = None
-        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
-            variant_read_count_like_model=input_filter_lfn_model, filter_id=filter_id)
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_lfn_model, engine=engine, filter_id=filter_id)
 
         ################################################################################################################
         #

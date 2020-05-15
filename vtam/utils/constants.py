@@ -125,6 +125,7 @@ rank_hierarchy_asv_table = ['phylum', 'class', 'order', 'family', 'genus', 'spec
 taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
 coi_blast_db_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz"
 fastq_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
+sorted_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/sorted.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

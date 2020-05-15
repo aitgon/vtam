@@ -1,7 +1,7 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 from vtam import Logger
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
@@ -72,10 +72,6 @@ class FilterPCRerror(ToolWrapper):
         fasta_info_tsv = self.input_file(FilterPCRerror.__input_file_readinfo)
         #
         # Input table models
-        marker_model = self.input_table(FilterPCRerror.__input_table_marker)
-        run_model = self.input_table(FilterPCRerror.__input_table_run)
-        biosample_model = self.input_table(FilterPCRerror.__input_table_biosample)
-        variant_model = self.input_table(FilterPCRerror.__input_table_variant)
         input_filter_min_replicate_model = self.input_table(FilterPCRerror.__input_table_filter_min_replicate_number)
         #
         # Options
@@ -90,7 +86,7 @@ class FilterPCRerror(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         ################################################################################################################
         #
@@ -99,7 +95,8 @@ class FilterPCRerror(ToolWrapper):
         ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_pcr_error_model, engine=engine)
-        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
 
         ################################################################################################################
         #
@@ -107,10 +104,9 @@ class FilterPCRerror(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
-            variant_read_count_like_model=input_filter_min_replicate_model, filter_id=None)
-        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=input_filter_min_replicate_model,
-                                               variant_model=variant_model)
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_min_replicate_model, engine=engine, filter_id=None)
+        variant_df = sample_info_tsv_obj.get_variant_df(variant_read_count_like_model=input_filter_min_replicate_model, engine=engine)
 
         ################################################################################################################
         #

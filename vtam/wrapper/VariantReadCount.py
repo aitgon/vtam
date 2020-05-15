@@ -7,7 +7,7 @@ from sqlalchemy import select, bindparam, func
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VariantReadCountDF import VariantReadCountDF
 
 
@@ -104,7 +104,7 @@ class VariantReadCount(ToolWrapper):
 
         Logger.instance().debug("file: {}; line: {}; Read sample information".format(__file__, inspect.currentframe().f_lineno))
         readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
-        sample_instance_list  = []
+        sample_instance_list = []
         readinfo_df.columns = readinfo_df.columns.str.lower()
 
         for row in readinfo_df.itertuples():
@@ -149,14 +149,16 @@ class VariantReadCount(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
-        fasta_info_ids_df = fasta_info_obj.get_ids_df()
+        # fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
+        # sample_info_ids_df = fasta_info_obj.get_ids_df()
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=input_file_readinfo)
+        sample_info_ids_df = sample_info_tsv_obj.to_identifier_df()
 
         Logger.instance().debug("file: {}; line: {}; Read demultiplexed FASTA files".format(__file__, inspect.currentframe().f_lineno))
 
         variant_read_count_df = pandas.DataFrame()
 
-        for row in fasta_info_ids_df.itertuples():
+        for row in sample_info_ids_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
             biosample_id = row.biosample_id

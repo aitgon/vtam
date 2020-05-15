@@ -1,24 +1,18 @@
 import os
 import pandas
 import pathlib
-import sqlalchemy
 import sys
 
+import sqlalchemy
 from Bio import SeqIO
 
 from sqlalchemy.ext.automap import automap_base
-from sqlalchemy import create_engine
 
-from vtam.models.Biosample import Biosample
-from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.FilterCodonStop import FilterCodonStop
-from vtam.models.Marker import Marker
-from vtam.models.Run import Run
-from vtam.models.Variant import Variant
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.SampleInformationUtils import SampleInformationUtils
+from vtam.utils.RunMarkerFile import RunMarkerFile
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDFutils import VariantDFutils
 from vtam.utils.VTAMexception import VTAMexception
@@ -26,59 +20,17 @@ from vtam.utils.VTAMexception import VTAMexception
 
 class RunMarkerTSVreader():
     """Prepares different DFs: engine, variant_read_count_input_df, variant_df, run_df, marker_df, biosample_df,
-                                          variant_to_chimera_borderline_df based on run_marker_tsv and db"""
+                                          variant_to_chimera_borderline_df based on run_marker_tsv_path and db"""
 
-    def __init__(self, db, run_marker_tsv):
+    def __init__(self, db, run_marker_tsv_path):
         self.__db = db
-        #
-        run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
 
-        engine = create_engine('sqlite:///{}'.format(db), echo=False)
+        # run_marker_df = pandas.read_csv(run_marker_tsv_path, sep="\t", header=0)
+        run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv_path)
+
+        engine = sqlalchemy.create_engine('sqlite:///{}'.format(db), echo=False)
         Base = automap_base()
         Base.prepare(engine, reflect=True)
-
-        run_declarative = Base.classes.Run
-        marker_declarative = Base.classes.Marker
-        sample_information_declarative = Base.classes.SampleInformation
-
-        conn = engine.connect()
-
-        ################################################################################################################
-        #
-        # Create SampleInformationUtils object
-        #
-        ################################################################################################################
-
-        sample_record_list = []
-        for row in run_marker_df.itertuples():
-            # Get run_id
-            run_row = conn.execute(sqlalchemy.select([run_declarative.id]).where(run_declarative.name == row.run)).first()
-            if not (run_row is None):
-                run_id = run_row[0]
-                # Get marker_id
-                marker_row = conn.execute(sqlalchemy.select([marker_declarative.id]).where(marker_declarative.name == row.marker)).first()
-                if not (marker_row is None):
-                    marker_id = marker_row[0]
-                    # Get sample_information entries for this run and marker
-                    select_query = sqlalchemy.select([sample_information_declarative.run_id,
-                                                      sample_information_declarative.marker_id,
-                                                      sample_information_declarative.biosample_id,
-                                                      sample_information_declarative.replicate,
-                                                      ])\
-                        .where(sample_information_declarative.run_id == run_id)\
-                        .where(sample_information_declarative.marker_id == marker_id).distinct()
-                    result_proxy = conn.execute(select_query)
-                    for result_proxy_row in result_proxy:
-                        sample_record_list.append(dict(zip(result_proxy_row.keys(), result_proxy_row)))
-        conn.close()
-
-        if len(sample_record_list) == 0:  # empty list, that is problem with run_marker_tsv from user
-            msg_error = 'Error: There is a problem in the file of the --runmarker argument. Please verify it.'
-            Logger.instance().error(VTAMexception(msg_error))
-            sys.exit(1)
-
-        sample_information_df = pandas.DataFrame.from_records(data=sample_record_list)
-        sample_information_utils = SampleInformationUtils(engine=engine, sample_information_df=sample_information_df)
 
         ################################################################################################################
         #
@@ -86,22 +38,10 @@ class RunMarkerTSVreader():
         #
         ################################################################################################################
 
-        variant_read_count_df = sample_information_utils.get_variant_read_count_df(FilterCodonStop)
+        variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
+            engine=engine, variant_read_count_like_model=FilterCodonStop)
 
-        variant_df = sample_information_utils.get_variant_df(FilterCodonStop, Variant)
-
-        run_df = sample_information_utils.get_run_df(Run)
-
-        marker_df = sample_information_utils.get_marker_df(Marker)
-
-        biosample_df = sample_information_utils.get_biosample_df(Biosample)
-
-        variant_to_chimera_borderline_df = sample_information_utils.get_variant_to_chimera_borderline_df(FilterChimeraBorderline)
-
-        asv_table_runner = AsvTableRunner(engine=engine, variant_read_count_df=variant_read_count_df, variant_df=variant_df,
-                                          run_df=run_df, marker_df=marker_df, biosample_df=biosample_df,
-                                          variant_to_chimera_borderline_df=variant_to_chimera_borderline_df,
-                                          taxonomy_tsv=None)
+        asv_table_runner = AsvTableRunner(engine=engine, variant_read_count_df=variant_read_count_df, taxonomy_tsv=None)
         self.asv_df_final = asv_table_runner.run()
 
 
@@ -214,10 +154,10 @@ class CommandPoolRunMarkers(object):
         centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
                                      ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
-        #
+
         # Centroid to aggregated variants and biosamples
         self.cluster_df_col = self.cluster_df.columns
-        # biosample_columns = list(set(self.cluster_df_col[6:]).difference(set(list(self.cluster_df_col[-12:]))))
+
         # Drop some columns
         are_reads = lambda x: int(sum(x)>0)
         agg_dic = {}
@@ -236,7 +176,7 @@ class CommandPoolRunMarkers(object):
 
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv):
-        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv=run_marker_tsv)
+        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv_path=run_marker_tsv)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:

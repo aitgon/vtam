@@ -1,5 +1,5 @@
 from vtam.utils.FilterCodonStopRunner2 import FilterCodonStopRunner2
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
@@ -63,10 +63,7 @@ class FilterCodonStop(ToolWrapper):
         fasta_info_tsv = self.input_file(FilterCodonStop.__input_file_readinfo)
         #
         # Input table models
-        marker_model = self.input_table(FilterCodonStop.__input_table_marker)
-        run_model = self.input_table(FilterCodonStop.__input_table_run)
-        biosample_model = self.input_table(FilterCodonStop.__input_table_biosample)
-        variant_model = self.input_table(FilterCodonStop.__input_table_Variant)
+        Variant = self.input_table(FilterCodonStop.__input_table_Variant)
         input_filter_indel_model = self.input_table(FilterCodonStop.__input_table_filter_indel)
         #
         # Options
@@ -82,7 +79,8 @@ class FilterCodonStop(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
+        # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         ################################################################################################################
         #
@@ -91,7 +89,8 @@ class FilterCodonStop(ToolWrapper):
         ################################################################################################################
 
         variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_codon_stop_model, engine=engine)
-        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
 
         ################################################################################################################
         #
@@ -99,10 +98,9 @@ class FilterCodonStop(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
-            variant_read_count_like_model=input_filter_indel_model, filter_id=None)
-        variant_df = fasta_info_tsv.get_variant_df(variant_read_count_like_model=input_filter_indel_model,
-                                               variant_model=variant_model)
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+            variant_read_count_like_model=input_filter_indel_model, engine=engine, filter_id=None)
+        variant_df = sample_info_tsv_obj.get_variant_df(variant_read_count_like_model=input_filter_indel_model, engine=engine)
 
         ##########################################################
         #

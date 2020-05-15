@@ -1,9 +1,6 @@
-import sqlalchemy
-from sqlalchemy import bindparam
-
-from vtam.utils.FilterLFNrunner import FilterLFNrunner
+from vtam.utils.FilterLFNRunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationUtils import FastaInformationTSV
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -54,6 +51,7 @@ class FilterLFN(ToolWrapper):
         }
 
     def run(self):
+
         session = self.session
         engine = session._session().get_bind()
 
@@ -69,10 +67,7 @@ class FilterLFN(ToolWrapper):
         # input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
         #
         # Input table models
-        run_model = self.input_table(FilterLFN.__input_table_run)
-        marker_model = self.input_table(FilterLFN.__input_table_marker)
-        biosample_model = self.input_table(FilterLFN.__input_table_biosample)
-        input_variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
+        VariantReadCount = self.input_table(FilterLFN.__input_table_variant_read_count)
         #
         # Output table models
         output_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
@@ -99,7 +94,7 @@ class FilterLFN(ToolWrapper):
         #
         ################################################################################################################
 
-        fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=fasta_info_tsv)
+        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         ################################################################################################################
         #
@@ -107,9 +102,9 @@ class FilterLFN(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_like_utils = VariantReadCountLikeTable(variant_read_count_like_model=output_filter_lfn_model,
-                                                                  engine=engine)
-        variant_read_count_like_utils.delete_from_db(sample_record_list=fasta_info_tsv.sample_record_list)
+        variant_read_count_like_utils = VariantReadCountLikeTable( variant_read_count_like_model=output_filter_lfn_model, engine=engine)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
 
         ################################################################################################################
         #
@@ -117,57 +112,21 @@ class FilterLFN(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_df = fasta_info_tsv.get_variant_read_count_df(
-            variant_read_count_like_model=input_variant_read_count_model, filter_id=None)
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+            variant_read_count_like_model=VariantReadCount, engine=engine, filter_id=None)
 
         ################################################################################################################
         #
+        # Create filter object and run
         #
         ################################################################################################################
 
-        #
         lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
         #
         Logger.instance().info("Launching LFN filter:")
 
-        ################################################################################################################
-        #
-        # Filter 2: f2_f4_lfn_delete_variant
-        # Or
-        # Filter  3: f3_f5_lfn_delete_variant_replicate
-        #
-        ################################################################################################################
-
-        if lfn_variant_replicate_threshold is None:  # run lfn_variant
-            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_variant_threshold)
-        else:  # run lfn_variant_replicate
-            # lfn_filter_runner.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_variant_replicate_threshold)
-
-        ################################################################################################################
-        #
-        # Filter 6:  f6_lfn_delete_biosample_replicate_delete
-        #
-        ################################################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_biosample_replicate_threshold)
-
-        ################################################################################################################
-        #
-        # Filter  7:mark_delete_lfn_absolute_read_count
-        #
-        ################################################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
-
-        ################################################################################################################
-        #
-        # Filter 8:mark_delete_lfn_do_not_pass_all_filters
-        #
-        ################################################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_do_not_pass_all_filters()
+        filter_output_df = lfn_filter_runner.run(lfn_variant_threshold, lfn_variant_replicate_threshold,
+                                                 lfn_biosample_replicate_threshold, lfn_read_count_threshold)
 
         ################################################################################################################
         #
@@ -175,7 +134,7 @@ class FilterLFN(ToolWrapper):
         #
         ################################################################################################################
 
-        filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
+        # filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
 
@@ -191,6 +150,7 @@ class FilterLFN(ToolWrapper):
         ################################################################################################################
 
         for output_table_i in self.specify_output_table():
+
             declarative_meta_i = self.output_table(output_table_i)
             obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
             session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
