@@ -12,6 +12,8 @@ class TestWorpmarsRunnerFilter(TestCase):
     @classmethod
     def setUpClass(cls):
 
+        package_path = PathManager.get_package_path()
+
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
@@ -19,8 +21,7 @@ class TestWorpmarsRunnerFilter(TestCase):
                                                                              'output'), PathManager.get_package_path())
         foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
                                               PathManager.get_package_path())
-        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
-                                                                "readinfo.tsv"), PathManager.get_package_path())
+        foopaths['readinfo_tsv'] = os.path.join(package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
         cls.foopaths = foopaths
 
         cls.minseqlength_value_32 = 32
@@ -55,7 +56,7 @@ class TestWorpmarsRunnerFilter(TestCase):
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -69,7 +70,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -92,7 +93,7 @@ rule FilterLFN:
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
@@ -111,7 +112,7 @@ rule FilterMinReplicateNumber:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterLFN
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
@@ -129,7 +130,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterPCRerror: vtam.models.FilterPCRerror
@@ -147,7 +148,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterChimera: vtam.models.FilterChimera
@@ -165,7 +166,7 @@ rule FilterMinReplicateNumber2:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterChimera
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
@@ -182,7 +183,7 @@ rule FilterRenkonen:
             Biosample: vtam.models.Biosample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
@@ -199,7 +200,7 @@ rule FilterMinReplicateNumber3:
             Biosample: vtam.models.Biosample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
@@ -217,7 +218,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
@@ -235,7 +236,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
@@ -253,7 +254,7 @@ rule ReadCountAverageOverReplicates:
             Biosample: vtam.models.Biosample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -270,7 +271,7 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: /home/gonzalez/Software/repositories/vtam/vtam/utils/../../doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
     output:
         file:
             ASVTable: asvtableoutput.tsv"""

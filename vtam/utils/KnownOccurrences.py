@@ -118,7 +118,7 @@ class KnownOccurrences(object):
                 known_occurrences_tsv_path))
         elif not os.stat(known_occurrences_tsv_path).st_size > 0:
             raise argparse.ArgumentTypeError("The file '{}' is empty!".format(known_occurrences_tsv_path))
-        header_lower = {'marker', 'run', 'biosample', 'mock', 'variantid', 'action', 'sequence'}
+        header_lower = {'run', 'marker', 'biosample', 'mock', 'variantid', 'action', 'sequence'}
         known_occurrences_df = cls.read_tsv_into_df(known_occurrences_tsv_path)
         if set(known_occurrences_df.columns) >= header_lower:  # contains at least the 'header_lower' columns
             return known_occurrences_tsv_path  # return the tsv_path

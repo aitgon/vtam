@@ -86,7 +86,7 @@ class OptimizePCRerror(ToolWrapper):
 
         ################################################################################################################
         #
-        # Group and run this code by run/marker combination
+        # Group and run this genetic_code by run/marker combination
         # Loop by run/marker
         #
         ################################################################################################################

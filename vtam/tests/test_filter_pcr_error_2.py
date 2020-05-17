@@ -62,7 +62,7 @@ class TestFilterPCRError(TestCase):
                                                        variant_read_count_df=self.variant_read_count_df, tmp_dir=self.this_tempdir)
         #
         pcr_error_var_prop = 0.05
-        filter_output_df = filter_pcr_error_runner.get_filter_output_df(pcr_error_var_prop)
+        filter_output_df = filter_pcr_error_runner.get_variant_read_count_delete_df(pcr_error_var_prop)
         filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
 0       1          1             1          1           1         350          False
 1       1          1             1          2           1         300          False

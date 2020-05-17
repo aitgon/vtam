@@ -37,7 +37,7 @@ class TaxAssignRunner(object):
         Logger.instance().debug(
             "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno))
         variant_fasta = os.path.join(self.this_temp_dir, 'variant.fasta')
-        # variant_df_utils = VariantDFutils(variant_df)
+        # variant_df_utils = VariantDF(variant_df)
         # variant_df_utils.to_fasta(variant_fasta)
         with open(variant_fasta, 'w') as fout:
             for seq in sequence_list:

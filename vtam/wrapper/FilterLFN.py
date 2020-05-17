@@ -6,6 +6,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 
 import sys
 
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 
 
@@ -63,11 +64,10 @@ class FilterLFN(ToolWrapper):
 
         # Input file output
         fasta_info_tsv = self.input_file(FilterLFN.__input_file_readinfo)
-        # Add FilterLFNthresholdspecific
-        # input_file_threshold_specific = self.input_file(FilterLFNthresholdspecific.__input_file_threshold_specific)
+
         #
         # Input table models
-        VariantReadCount = self.input_table(FilterLFN.__input_table_variant_read_count)
+        input_variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
         #
         # Output table models
         output_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
@@ -82,38 +82,16 @@ class FilterLFN(ToolWrapper):
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
-        # 3. Select marker/run/biosample/replicate from variant_read_count_model
-        # 4. Apply filters
-        # 5. Write filters to variant_filter_lfn_model
-        #
-        ################################################################################################################
-
-        ################################################################################################################
-        #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 3. Get variant_read_count_df input
         #
         ################################################################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        ################################################################################################################
-        #
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
-        #
-        ################################################################################################################
-
-        variant_read_count_like_utils = VariantReadCountLikeTable( variant_read_count_like_model=output_filter_lfn_model, engine=engine)
-        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
-        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
-
-        ################################################################################################################
-        #
-        # 3. Select marker/run/biosample/replicate from variant_read_count_model
-        #
-        ################################################################################################################
+        sample_info_tsv_obj.delete_from_db(engine=engine, variant_read_count_like_model=output_filter_lfn_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
-            variant_read_count_like_model=VariantReadCount, engine=engine, filter_id=None)
+            variant_read_count_like_model=input_variant_read_count_model, engine=engine, filter_id=None)
 
         ################################################################################################################
         #
@@ -121,48 +99,19 @@ class FilterLFN(ToolWrapper):
         #
         ################################################################################################################
 
-        lfn_filter_runner = FilterLFNrunner(variant_read_count_df)
-        #
-        Logger.instance().info("Launching LFN filter:")
+        variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
+            lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold, lfn_read_count_threshold)
 
-        filter_output_df = lfn_filter_runner.run(lfn_variant_threshold, lfn_variant_replicate_threshold,
-                                                 lfn_biosample_replicate_threshold, lfn_read_count_threshold)
-
-        ################################################################################################################
-        #
-        # Write to DB
-        #
-        ################################################################################################################
-
-        # filter_output_df = lfn_filter_runner.variant_read_count_filter_delete_df
-
-        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
-
-        with engine.connect() as conn:
-
-            # Insert new instances
-            conn.execute(output_filter_lfn_model.__table__.insert(), record_list)
-
-        ################################################################################################################
-        #
-        # Touch output tables, to update modification date
-        #
-        ################################################################################################################
+        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+            engine=engine, variant_read_count_like_model=output_filter_lfn_model)
 
         for output_table_i in self.specify_output_table():
-
             declarative_meta_i = self.output_table(output_table_i)
             obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
             session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
             session.commit()
 
-        ##########################################################
-        #
-        # Exit vtam if all variants deleted
-        #
-        ##########################################################
-
-        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
+        if variant_read_count_delete_df.filter_delete.sum() == variant_read_count_delete_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
                                                     "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)
