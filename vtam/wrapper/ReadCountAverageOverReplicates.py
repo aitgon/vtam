@@ -1,9 +1,7 @@
-from wopmars.models.ToolWrapper import ToolWrapper
 
-import os
 import pandas
-import sys
 
+from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 
@@ -53,66 +51,77 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         engine = session._session().get_bind()
         #
         # Input file output
-        input_file_readinfo = self.input_file(
+        fasta_info_tsv = self.input_file(
             ReadCountAverageOverReplicates.__input_file_readinfo)
         #
-        # Input table models
-        marker_model = self.input_table(
-            ReadCountAverageOverReplicates.__input_table_marker)
-        run_model = self.input_table(
-            ReadCountAverageOverReplicates.__input_table_run)
         codon_stop_model = self.input_table(
             ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
-        biosample_model = self.input_table(
-            ReadCountAverageOverReplicates.__input_table_biosample)
 
         #
         # Output table models
         consensus_model = self.output_table(
             ReadCountAverageOverReplicates.__output_table_filter_consensus)
 
+        # #######################################################################
+        # #
+        # # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # #
+        # #######################################################################
+        #
+        # # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
+        # sample_info_tsv_obj = SampleInformationFile(tsv_path=input_file_readinfo)
+        #
+        # #######################################################################
+        # #
+        # # 2. Delete /run/markerbiosample/replicate from this filter table
+        # #
+        # #######################################################################
+        # # with engine.connect() as conn:
+        # #     # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
+        # #     conn.execute(consensus_model.__table__.delete(), sample_instance_list)
+        # #
+        # variant_read_count_like_utils = VariantReadCountLikeTable(
+        #     variant_read_count_like_model=consensus_model, engine=engine)
+        # sample_record_list = sample_info_tsv_obj.to_identifier_df(
+        #     engine=engine).to_dict('records')
+        # variant_read_count_like_utils.delete_from_db(
+        #     sample_record_list=sample_record_list)
+        #
+        # #######################################################################
+        # #
+        # # 3. Select marker/run/biosample/replicate from variant_read_count_model
+        # #
+        # #######################################################################
+        #
+        # variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        #     variant_read_count_like_model=codon_stop_model, filter_id=None)
+        #
+        # # Exit if no variants for analysis
+        # try:
+        #     assert variant_read_count_df.shape[0] > 0
+        # except AssertionError:
+        #     sys.stderr.write(
+        #         "Error: No variants available for this filter: {}".format(
+        #             os.path.basename(__file__)))
+        #     sys.exit(1)
+
         #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 3. Get variant_read_count_df input
         #
         #######################################################################
 
-        # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        #######################################################################
-        #
-        # 2. Delete /run/markerbiosample/replicate from this filter table
-        #
-        #######################################################################
-        # with engine.connect() as conn:
-        #     # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
-        #     conn.execute(consensus_model.__table__.delete(), sample_instance_list)
-        #
-        variant_read_count_like_utils = VariantReadCountLikeTable(
-            variant_read_count_like_model=consensus_model, engine=engine)
-        sample_record_list = sample_info_tsv_obj.to_identifier_df(
-            engine=engine).to_dict('records')
-        variant_read_count_like_utils.delete_from_db(
-            sample_record_list=sample_record_list)
-
-        #######################################################################
-        #
-        # 3. Select marker/run/biosample/replicate from variant_read_count_model
-        #
-        #######################################################################
+        sample_info_tsv_obj.delete_from_db(
+            engine=engine, variant_read_count_like_model=consensus_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
-            variant_read_count_like_model=codon_stop_model, filter_id=None)
-
-        # Exit if no variants for analysis
-        try:
-            assert variant_read_count_df.shape[0] > 0
-        except AssertionError:
-            sys.stderr.write(
-                "Error: No variants available for this filter: {}".format(
-                    os.path.basename(__file__)))
-            sys.exit(1)
+            variant_read_count_like_model=codon_stop_model,
+            engine=engine,
+            filter_id=None)
 
         #######################################################################
         #
@@ -120,7 +129,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         #######################################################################
 
-        df_out = read_count_average_over_replicates(variant_read_count_df)
+        variant_read_count_delete_df = read_count_average_over_replicates(variant_read_count_df)
 
         #######################################################################
         #
@@ -129,7 +138,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #######################################################################
 
         record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
-            df_out)
+            variant_read_count_delete_df)
         with engine.connect() as conn:
 
             # Insert new instances

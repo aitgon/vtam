@@ -24,9 +24,9 @@ class TestWorpmarsRunnerOptimize(TestCase):
             os.path.join(test_path, 'output'), package_path)
         foopaths['blastdb'] = os.path.relpath(os.path.join(
             test_path, 'test_files', 'blastdb'), package_path)
-        foopaths['readinfo_tsv'] = "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv"
-        foopaths['tsv_path'] = "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv"
-        foopaths['known_occurrences'] = 'doc/data/dryad.f40v5_small/known_occurrences.tsv'
+        foopaths['readinfo_tsv'] = "doc/data/readinfo_mfzr.tsv"
+        foopaths['tsv_path'] = "doc/data/readinfo_mfzr.tsv"
+        foopaths['known_occurrences'] = 'doc/data/known_occurrences.tsv'
         self.foopaths = foopaths
 
     def test_wopmars_runner_optimize(self):
@@ -63,7 +63,7 @@ class TestWorpmarsRunnerOptimize(TestCase):
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            readinfo: doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -77,7 +77,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            readinfo: doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -101,8 +101,8 @@ rule OptimizeLFNbiosampleReplicate:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
-            known_occurrences: doc/data/dryad.f40v5_small/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_lfn_biosample_replicate: vtam/tests/output/optimize_lfn_biosample_replicate.tsv
@@ -118,8 +118,8 @@ rule OptimizePCRerror:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
-            known_occurrences: doc/data/dryad.f40v5_small/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_pcr_error: vtam/tests/output/optimize_pcr_error.tsv
@@ -135,8 +135,8 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: doc/data/dryad.f40v5_small/readinfo_mfzr.tsv
-            known_occurrences: doc/data/dryad.f40v5_small/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
