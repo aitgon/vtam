@@ -12,14 +12,12 @@ import urllib
 import unittest
 
 from vtam.utils.constants import fastq_tar_gz_url
-from vtam import CommandMerge, CommandSortReads, WopmarsRunner
-from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from urllib import request
 
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
-                 "Test dataset not available online!")
+                 "Test requires online connection!")
 class TestTutorialCommands(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -49,7 +47,7 @@ class TestTutorialCommands(unittest.TestCase):
         tar.close()
 
         # Set test paths
-        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/dryad.f40v5_small/fastqinfo.tsv")
+        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
         cls.fastqdir_path = os.path.join(cls.test_outdir_path, "fastq")
         cls.fastainfo_path = os.path.join(cls.test_outdir_path, "fastainfo.tsv")
         cls.fastadir_path = os.path.join(cls.test_outdir_path, "merged")

@@ -39,28 +39,28 @@ class VariantReadCountLikeTable(object):
     #
     ##########################################################
 
-    # @staticmethod
-    # def filter_delete_df_to_dict(filter_df):
-    #     """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
-    #     records = []
-    #     for row in filter_df.itertuples():
-    #         run_id = row.run_id
-    #         marker_id = row.marker_id
-    #         biosample_id = row.biosample_id
-    #         variant_id = row.variant_id
-    #         read_count = row.read_count
-    #         instance = {'run_id': run_id, 'marker_id': marker_id,
-    #                                                      'variant_id': variant_id, 'biosample_id': biosample_id,
-    #                                                      'read_count': read_count}
-    #         if 'filter_delete' in dir(row):
-    #             instance['filter_delete'] = row.filter_delete
-    #         if 'filter_id' in dir(row):
-    #             instance['filter_id'] = row.filter_id
-    #         if 'replicate' in dir(row):
-    #             instance['replicate'] = row.replicate
-    #         if 'replicate_count' in dir(row):
-    #             instance['replicate_count'] = row.replicate_count
-    #         if 'read_count_average' in dir(row):
-    #             instance['read_count_average'] = row.read_count_average
-    #         records.append(instance)
-    #     return records
+    @staticmethod
+    def filter_delete_df_to_dict(filter_df):
+        """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
+        records = []
+        for row in filter_df.itertuples():
+            run_id = row.run_id
+            marker_id = row.marker_id
+            biosample_id = row.biosample_id
+            variant_id = row.variant_id
+            read_count = row.read_count
+            instance = {'run_id': run_id, 'marker_id': marker_id,
+                                                         'variant_id': variant_id, 'biosample_id': biosample_id,
+                                                         'read_count': read_count}
+            if 'filter_delete' in dir(row):
+                instance['filter_delete'] = row.filter_delete
+            if 'filter_id' in dir(row):
+                instance['filter_id'] = row.filter_id
+            if 'replicate' in dir(row):
+                instance['replicate'] = row.replicate
+            if 'replicate_count' in dir(row):
+                instance['replicate_count'] = row.replicate_count
+            if 'read_count_average' in dir(row):
+                instance['read_count_average'] = row.read_count_average
+            records.append(instance)
+        return records
