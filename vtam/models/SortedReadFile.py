@@ -10,4 +10,10 @@ class SortedReadFile(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(150), nullable=False)
-    run_id = Column(Integer, ForeignKey("Run.id", onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    run_id = Column(
+        Integer,
+        ForeignKey(
+            "Run.id",
+            onupdate="CASCADE",
+            ondelete="CASCADE"),
+        nullable=False)

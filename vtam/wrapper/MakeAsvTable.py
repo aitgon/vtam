@@ -58,11 +58,11 @@ class MakeAsvTable(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Wrapper inputs, outputs and parameters
         #
-        ################################################################################################################
+        #######################################################################
 
         # Input file
         fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_readinfo)
@@ -70,24 +70,29 @@ class MakeAsvTable(ToolWrapper):
         # Output file
         asv_table_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #  Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
-        ################################################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(FilterCodonStop, engine=engine)
+        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+            FilterCodonStop, engine=engine)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Compute variant_to_chimera_borderline_df
         #
-        ################################################################################################################
+        #######################################################################
 
         asv_table_runner = AsvTableRunner(engine, variant_read_count_df)
         asv_df_final = asv_table_runner.run()
 
-        asv_df_final.to_csv(asv_table_tsv_path, sep='\t', index=False, header=True)
+        asv_df_final.to_csv(
+            asv_table_tsv_path,
+            sep='\t',
+            index=False,
+            header=True)

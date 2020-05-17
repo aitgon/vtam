@@ -19,7 +19,8 @@ class TestTaxonomy(TestCase):
         self.taxonomy_tsv = os.path.join(self.outdir_path, "taxonomy.tsv")
 
     def test_precomputed(self):
-        CommandTaxonomy(taxonomy_tsv=self.taxonomy_tsv).download_precomputed_taxonomy()
+        CommandTaxonomy(
+            taxonomy_tsv=self.taxonomy_tsv).download_precomputed_taxonomy()
         self.assertTrue(os.path.getsize(self.taxonomy_tsv) >= 115036883)
 
     # This test is very slow but tests creating denove taxonomy tsv file from NCBI

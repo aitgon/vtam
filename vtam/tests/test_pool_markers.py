@@ -22,33 +22,46 @@ class TestPoolMarkers(TestCase):
 8368	ZFZR	prerun	157	545	500	0	45	FALSE	TGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 83683	MFZR	prerun	175	484	0	28	456	FALSE	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 """
-        asv_table_df = pandas.read_csv(io.StringIO(asv_table_str), sep="\t", header=0)
+        asv_table_df = pandas.read_csv(
+            io.StringIO(asv_table_str), sep="\t", header=0)
         self.asv_table_df = asv_table_df
         # Create this_tempdir
-        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        this_tempdir = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         # Define fasta_path tsv_path
-        fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
+        fasta_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'variants.fa')
         # Create variant variant_read_count_input_df
-        variant_df = asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
+        variant_df = asv_table_df[[
+            'variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from asv_table_df
         variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
-        vsearch_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'centroid_out.fa')
+        vsearch_output_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'centroid_out.fa')
         # Define cluster output tsv_path
-        vsearch_cluster_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'cluster.fa')
+        vsearch_cluster_output_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'cluster.fa')
         #
         # Create object and run vsearch
         os.environ["VTAM_THREADS"] = "1"
         vsearch_parameters = {'--cluster_size': fasta_path,
-                              '--clusters':  vsearch_cluster_output_path,
+                              '--clusters': vsearch_cluster_output_path,
                               '--id': 1, '--sizein': None,
                               '--centroids': vsearch_output_path,
                               "--threads": int(os.getenv('VTAM_THREADS')),
                               }
-        vsearch_cluster = VSearch(parameters = vsearch_parameters)
+        vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
     def test_cluster_sequences_with_vsearch(self):
@@ -89,7 +102,8 @@ ATACCTATTATAATT
 333	33
 333	3
 83683	83683"""
-        cluster_df_bak = pandas.read_csv(io.StringIO(cluster_str_bak), sep="\t", header=0)
+        cluster_df_bak = pandas.read_csv(
+            io.StringIO(cluster_str_bak), sep="\t", header=0)
         pandas.testing.assert_frame_equal(cluster_df, cluster_df_bak)
 
         ####################################################################
@@ -102,9 +116,9 @@ ATACCTATTATAATT
 836	836,8368	prerun	MFZR,ZFZR	1	1	1	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 83683	83683	prerun	MFZR	0	1	1	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 """
-        pooled_marker_bak_df = pandas.read_csv(io.StringIO(pooled_marker_bak_str), sep="\t", header=0)
+        pooled_marker_bak_df = pandas.read_csv(
+            io.StringIO(pooled_marker_bak_str), sep="\t", header=0)
 
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
-        pandas.testing.assert_frame_equal(pooled_marker_df, pooled_marker_bak_df)
-
-
+        pandas.testing.assert_frame_equal(
+            pooled_marker_df, pooled_marker_bak_df)

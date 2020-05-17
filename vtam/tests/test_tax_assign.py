@@ -38,79 +38,92 @@ class TestTaxAssign(unittest.TestCase):
         cls.outdir_path = os.path.join(testdir_path, "outdir")
         pathlib.Path(cls.outdir_path).mkdir(exist_ok=True, parents=True)
         taxonomy_tsv_path = os.path.join(cls.outdir_path, "taxonomy.tsv")
-        CommandTaxonomy(taxonomy_tsv=taxonomy_tsv_path).download_precomputed_taxonomy()
+        CommandTaxonomy(
+            taxonomy_tsv=taxonomy_tsv_path).download_precomputed_taxonomy()
         #
         # self.taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
-        cls.taxonomy_db_df = pandas.read_csv(taxonomy_tsv_path, sep="\t", header=0,
-                                         dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
-
+        cls.taxonomy_db_df = pandas.read_csv(
+            taxonomy_tsv_path, sep="\t", header=0, dtype={
+                'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
 
     def test_variant_df_to_fasta(self):
         variant_dic = {
-            'id' : [57, 107],
-            'sequence' : ['ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC'
-                                  , 'ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC']
-        }
+            'id': [
+                57,
+                107],
+            'sequence': [
+                'ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC',
+                'ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC']}
         variant_df = pandas.DataFrame(data=variant_dic)
         variant_df.set_index('id', inplace=True)
 
         #
         Logger.instance().debug(
-            "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno ,'PoolMarkers'))
-        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+            "file: {}; line: {}; Create SortedReadFile from Variants".format(
+                __file__, inspect.currentframe().f_lineno, 'PoolMarkers'))
+        this_tempdir = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
         variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path=variant_fasta)
         #
-        variant_fasta_content_expected =""">57\nACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC\n>107\nACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC\n"""
+        variant_fasta_content_expected = """>57\nACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC\n>107\nACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC\n"""
         with open(variant_fasta, 'r') as fin:
             variant_fasta_content = fin.read()
-        self.assertTrue(variant_fasta_content_expected == variant_fasta_content)
+        self.assertTrue(variant_fasta_content_expected ==
+                        variant_fasta_content)
 
     def test_f06_select_ltg_identity_80(self):
-        # List of lineages that will correspond to list of tax_ids: One lineage per row
+        # List of lineages that will correspond to list of tax_ids: One lineage
+        # per row
         tax_lineage_df = pandas.DataFrame(data={
-            'species' : [666, 183142, 183142, 183142],
-            'genus' : [10194, 10194, 10194, 10194],
-            'order' : [10193, 10193, 10193, 10193],
-            'superorder' : [84394, 84394, 84394, 84394],
+            'species': [666, 183142, 183142, 183142],
+            'genus': [10194, 10194, 10194, 10194],
+            'order': [10193, 10193, 10193, 10193],
+            'superorder': [84394, 84394, 84394, 84394],
         })
         identity = 80
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
+        ltg_tax_id, ltg_rank = f06_select_ltg(
+            tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         # import pdb; pdb.set_trace()
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
 
     def test_f06_select_ltg_column_none(self):
-        # List of lineages that will correspond to list of tax_ids: One lineage per row
+        # List of lineages that will correspond to list of tax_ids: One lineage
+        # per row
         tax_lineage_df = pandas.DataFrame(data={
-            'species' : [666, 183142, 183142, 183142],
-            'subgenus' : [numpy.nan] * 4,
-            'genus' : [10194, 10194, 10194, 10194],
-            'order' : [10193, 10193, 10193, 10193],
-            'superorder' : [84394, 84394, 84394, 84394],
+            'species': [666, 183142, 183142, 183142],
+            'subgenus': [numpy.nan] * 4,
+            'genus': [10194, 10194, 10194, 10194],
+            'order': [10193, 10193, 10193, 10193],
+            'superorder': [84394, 84394, 84394, 84394],
         })
         #
         identity = 80
         #
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
+        ltg_tax_id, ltg_rank = f06_select_ltg(
+            tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')
 
     def test_f05_select_ltg_identity_100(self):
-        # List of lineages that will correspond to list of tax_ids: One lineage per row
+        # List of lineages that will correspond to list of tax_ids: One lineage
+        # per row
         tax_lineage_df = pandas.DataFrame(data={
-            'species' : [666, 183142, 183142, 183142],
-            'genus' : [10194, 10194, 10194, 10194],
-            'order' : [10193, 10193, 10193, 10193],
-            'superorder' : [84394, 84394, 84394, 84394],
+            'species': [666, 183142, 183142, 183142],
+            'genus': [10194, 10194, 10194, 10194],
+            'order': [10193, 10193, 10193, 10193],
+            'superorder': [84394, 84394, 84394, 84394],
         })
         identity = 100
         #
-        ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
+        ltg_tax_id, ltg_rank = f06_select_ltg(
+            tax_lineage_df=tax_lineage_df, include_prop=self.include_prop)
         #
         self.assertTrue(ltg_tax_id == 10194)
         self.assertTrue(ltg_rank == 'genus')

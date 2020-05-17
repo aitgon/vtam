@@ -7,20 +7,33 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import rank_hierarchy,identity_list
+from vtam.utils.constants import rank_hierarchy, identity_list
 
 
 class TaxAssignRunner(object):
     """Will assign variants to a taxon"""
 
-    def __init__(self, sequence_list, taxonomy_df, blast_db_dir, blast_db_name, ltg_rule_threshold, include_prop,
-                 min_number_of_taxa, num_threads, qcov_hsp_perc):
+    def __init__(
+            self,
+            sequence_list,
+            taxonomy_df,
+            blast_db_dir,
+            blast_db_name,
+            ltg_rule_threshold,
+            include_prop,
+            min_number_of_taxa,
+            num_threads,
+            qcov_hsp_perc):
 
         # self.variant_df = variant_df
-        self.old_tax_id_df = taxonomy_df[['old_tax_id']].drop_duplicates()  # stores tax_id and old_tax_id
-        self.taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
+        # stores tax_id and old_tax_id
+        self.old_tax_id_df = taxonomy_df[['old_tax_id']].drop_duplicates()
+        self.taxonomy_df = taxonomy_df[[
+            'parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
         self.blast_db_dir = blast_db_dir
-        self.this_temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        self.this_temp_dir = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__))
         pathlib.Path(self.this_temp_dir).mkdir(exist_ok=True)
         self.ltg_rule_threshold = ltg_rule_threshold
         self.include_prop = include_prop
@@ -28,14 +41,15 @@ class TaxAssignRunner(object):
         self.num_threads = num_threads
         self.qcov_hsp_perc = qcov_hsp_perc
 
-        ################################################################################################################
+        #######################################################################
         #
         # 2 Create FASTA file with Variants
         #
-        ################################################################################################################
+        #######################################################################
 
         Logger.instance().debug(
-            "file: {}; line: {}; Create SortedReadFile from Variants".format(__file__, inspect.currentframe().f_lineno))
+            "file: {}; line: {}; Create SortedReadFile from Variants".format(
+                __file__, inspect.currentframe().f_lineno))
         variant_fasta = os.path.join(self.this_temp_dir, 'variant.fasta')
         # variant_df_utils = VariantDF(variant_df)
         # variant_df_utils.to_fasta(variant_fasta)
@@ -43,16 +57,15 @@ class TaxAssignRunner(object):
             for seq in sequence_list:
                 fout.write(">{}\n{}\n".format(seq, seq))
 
-        ################################################################################################################
+        #######################################################################
         #
         # 3 Run local blast
         #
-        ################################################################################################################
+        #######################################################################
 
         Logger.instance().debug(
-            "file: {}; line: {}; Running local blast with FASTA input {}".format(__file__,
-                                                                                 inspect.currentframe().f_lineno,
-                                                                                 variant_fasta))
+            "file: {}; line: {}; Running local blast with FASTA input {}".format(
+                __file__, inspect.currentframe().f_lineno, variant_fasta))
 
         # Run and read local blast result
         blast_output_tsv = os.path.join(self.this_temp_dir, 'blast_output.tsv')
@@ -60,42 +73,72 @@ class TaxAssignRunner(object):
         # get blast db dir and filename prefix from NHR file
         os.environ['BLASTDB'] = self.blast_db_dir
 
-        blastn_cline = NcbiblastnCommandline(query=variant_fasta, db=blast_db_name, evalue=1e-5,
-                                             outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"', dust='yes',
-                                             qcov_hsp_perc=self.qcov_hsp_perc, num_threads=self.num_threads, out=blast_output_tsv)
+        blastn_cline = NcbiblastnCommandline(
+            query=variant_fasta,
+            db=blast_db_name,
+            evalue=1e-5,
+            outfmt='"6 qseqid sacc pident evalue qcovhsp staxids"',
+            dust='yes',
+            qcov_hsp_perc=self.qcov_hsp_perc,
+            num_threads=self.num_threads,
+            out=blast_output_tsv)
         Logger.instance().debug(
-            "file: {}; line: {}; {}".format(__file__, inspect.currentframe().f_lineno, str(blastn_cline)))
+            "file: {}; line: {}; {}".format(
+                __file__,
+                inspect.currentframe().f_lineno,
+                str(blastn_cline)))
         #
         # Run blast
         stdout, stderr = blastn_cline()
 
-        ################################################################################################################
+        #######################################################################
         #
         # Process blast results
         #
-        ################################################################################################################
+        #######################################################################
 
         Logger.instance().debug(
-            "file: {}; line: {}; Reading Blast output from: {}".format(__file__, inspect.currentframe().f_lineno, blast_output_tsv))
-        blast_output_df = pandas.read_csv(blast_output_tsv, sep='\t', header=None,
-                                          names=['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
-                                                 'target_tax_id'])
+            "file: {}; line: {}; Reading Blast output from: {}".format(
+                __file__, inspect.currentframe().f_lineno, blast_output_tsv))
+        blast_output_df = pandas.read_csv(
+            blast_output_tsv,
+            sep='\t',
+            header=None,
+            names=[
+                'variant_id',
+                'target_id',
+                'identity',
+                'evalue',
+                'coverage',
+                'target_tax_id'])
         # Remove null target tax ids
-        blast_output_df = blast_output_df.loc[~blast_output_df.target_tax_id.isnull()]
+        blast_output_df = blast_output_df.loc[~blast_output_df.target_tax_id.isnull(
+        )]
         # expand multiple target_tax_ids
-        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('str') # first convert as string
+        blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype(
+            'str')  # first convert as string
         blast_output_df = (
-            pandas.concat([blast_output_df, blast_output_df.target_tax_id.str.split(pat=';', n=1, expand=True)],
-                          axis=1))
+            pandas.concat(
+                [
+                    blast_output_df,
+                    blast_output_df.target_tax_id.str.split(
+                        pat=';',
+                        n=1,
+                        expand=True)],
+                axis=1))
         self.ltg_df = None  # Init it
         if blast_output_df.shape[0] > 0:  # If blast output exists
-        # Select first tax_id
-            blast_output_df = blast_output_df[['variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
+            # Select first tax_id
+            blast_output_df = blast_output_df[[
+                'variant_id', 'target_id', 'identity', 'evalue', 'coverage', 0]]
             # rename first tax_id
-            blast_output_df = blast_output_df.rename(columns={0: 'target_tax_id'})
+            blast_output_df = blast_output_df.rename(
+                columns={0: 'target_tax_id'})
             # Convert columns back to int
-            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('float')
-            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype('int')
+            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype(
+                'float')
+            blast_output_df.target_tax_id = blast_output_df.target_tax_id.astype(
+                'int')
             # Blast output extract
             """   variant_id  target_id  identity        evalue  coverage  target_tax_id
     0           2  MF7836761    99.429  1.620000e-86       100        1469487
@@ -115,8 +158,10 @@ class TaxAssignRunner(object):
             ##########################################################
 
             Logger.instance().debug(
-                "file: {}; line: {}; Open taxonomy.tsv DB".format(__file__, inspect.currentframe().f_lineno))
-            blast_output_df.target_tax_id = pandas.to_numeric(blast_output_df.target_tax_id)
+                "file: {}; line: {}; Open taxonomy.tsv DB".format(
+                    __file__, inspect.currentframe().f_lineno))
+            blast_output_df.target_tax_id = pandas.to_numeric(
+                blast_output_df.target_tax_id)
             # getting the taxonomy_db to variant_read_count_input_df
             # taxonomy_tsv_path = taxonomy_tsv
             #
@@ -124,20 +169,24 @@ class TaxAssignRunner(object):
                 "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
                     __file__, inspect.currentframe().f_lineno))
             lineage_list = []
-            for target_tax_id_i, target_tax_id in enumerate(blast_output_df.target_tax_id.unique().tolist()):
-                if target_tax_id_i%100 == 0:
+            for target_tax_id_i, target_tax_id in enumerate(
+                    blast_output_df.target_tax_id.unique().tolist()):
+                if target_tax_id_i % 100 == 0:
                     Logger.instance().debug(
                         "Get lineage of {}-th tax id {} (Total {} tax ids)".format(
-                            target_tax_id_i, target_tax_id, len(blast_output_df.target_tax_id.unique().tolist())))
-                lineage_list.append(self.tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
+                            target_tax_id_i, target_tax_id, len(
+                                blast_output_df.target_tax_id.unique().tolist())))
+                lineage_list.append(
+                    self.tax_id_to_taxonomy_lineage(
+                        tax_id=target_tax_id))
             tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
             #
             Logger.instance().debug(
-                "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(__file__,
-                                                                                                     inspect.currentframe().f_lineno))
+                "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(
+                    __file__, inspect.currentframe().f_lineno))
             # Merge local blast output with tax_id_to_lineage_df
-            variantid_identity_lineage_df = blast_output_df.merge(tax_id_to_lineage_df, left_on='target_tax_id',
-                                                                   right_on='tax_id')
+            variantid_identity_lineage_df = blast_output_df.merge(
+                tax_id_to_lineage_df, left_on='target_tax_id', right_on='tax_id')
             variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
 
             ##########################################################
@@ -149,12 +198,14 @@ class TaxAssignRunner(object):
             Logger.instance().debug(
                 "file: {}; line: {}; Main loop over variant and identity to"
                 "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
-                "to a dataframe".format(__file__, inspect.currentframe().f_lineno))
+                "to a dataframe".format(
+                    __file__, inspect.currentframe().f_lineno))
             #
             # f07_blast_result_to_ltg_tax_id(tax_lineage_df,ltg_rule_threshold=97, include_prop=90, min_number_of_taxa=3):
             # this function return a data frame containing the Ltg rank and Ltg Tax_id for each variant
             #
-            self.ltg_df = self.f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df)
+            self.ltg_df = self.f07_blast_result_to_ltg_tax_id(
+                variantid_identity_lineage_df)
 
     def tax_id_to_taxonomy_lineage(self, tax_id):
         """
@@ -203,7 +254,8 @@ class TaxAssignRunner(object):
             if tax_id in self.taxonomy_df.index:
                 tax_id_row = self.taxonomy_df.loc[tax_id, ]
             elif tax_id in self.old_tax_id_df.old_tax_id.tolist():  # Try old tax id
-                tax_id2 = self.old_tax_id_df.loc[self.old_tax_id_df.old_tax_id == tax_id, 'old_tax_id'].index[0]
+                tax_id2 = self.old_tax_id_df.loc[self.old_tax_id_df.old_tax_id ==
+                                                 tax_id, 'old_tax_id'].index[0]
                 tax_id_row = self.taxonomy_df.loc[tax_id2, ]
             else:
                 return lineage_dic
@@ -229,16 +281,26 @@ class TaxAssignRunner(object):
 
         # Remove column if all values=NaN
         tax_lineage_df.dropna(axis='columns', how='all', inplace=True)
-        lineage_list_df_columns_sorted = list(filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy))
+        lineage_list_df_columns_sorted = list(
+            filter(
+                lambda x: x in tax_lineage_df.columns.tolist(),
+                rank_hierarchy))
         tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
-        putative_ltg_df = \
-            pandas.DataFrame({'putative_ltg_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0),
-                              'putative_ltg_count': tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)})
-        putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / tax_lineage_df.shape[0] * 100
-        ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= self.include_prop, 'putative_ltg_id'].tail(1).values[0]
-        ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= self.include_prop, 'putative_ltg_id'].index[-1]
+        putative_ltg_df = pandas.DataFrame(
+            {
+                'putative_ltg_id': tax_lineage_df.apply(
+                    lambda x: x.value_counts().index[0],
+                    axis=0),
+                'putative_ltg_count': tax_lineage_df.apply(
+                    lambda x: x.value_counts().iloc[0],
+                    axis=0)})
+        putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / \
+            tax_lineage_df.shape[0] * 100
+        ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
+                                         self.include_prop, 'putative_ltg_id'].tail(1).values[0]
+        ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
+                                       self.include_prop, 'putative_ltg_id'].index[-1]
         return ltg_tax_id, ltg_rank
-
 
     def f07_blast_result_to_ltg_tax_id(self, variantid_identity_lineage_df):
         """
@@ -269,7 +331,8 @@ class TaxAssignRunner(object):
         """
         #
         list_variant_id_to_ltg = []
-        variant_id_list = sorted(variantid_identity_lineage_df.variant_id.unique().tolist())
+        variant_id_list = sorted(
+            variantid_identity_lineage_df.variant_id.unique().tolist())
         #
         for variant_id in variant_id_list:  #  Loop sorted each variant
             for identity in identity_list:  # For each variant, loop each decreasing identity
@@ -281,7 +344,8 @@ class TaxAssignRunner(object):
                 # If some hits at this identity level, enter analysis
                 #
                 ###########
-                if tax_lineage_by_variant_id_df.shape[0] > 0:  # If some hits at this identity, enter analysis
+                # If some hits at this identity, enter analysis
+                if tax_lineage_by_variant_id_df.shape[0] > 0:
                     ###########
                     #
                     # Carry out analysis if one of thise case
@@ -289,18 +353,21 @@ class TaxAssignRunner(object):
                     # Case 2: identity < ltg_rule_threshold and target_tax_id.unique.count > min_number_of_taxa
                     #
                     ###########
-                    if (identity < self.ltg_rule_threshold
-                        and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist()) >= self.min_number_of_taxa) \
-                            or (identity >= self.ltg_rule_threshold):
-                        # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
+                    if (identity < self.ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique(
+                    ).tolist()) >= self.min_number_of_taxa) or (identity >= self.ltg_rule_threshold):
+                        # sort columns of tax_lineage_by_variant_id_df based on
+                        # rank_hierarchy order
                         ltg_tax_id, ltg_rank = None, None
-                        lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
-                                                          value in rank_hierarchy]
-                        tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df[lineage_list_df_columns_sorted]
+                        lineage_list_df_columns_sorted = [
+                            value for value in tax_lineage_by_variant_id_df if value in rank_hierarchy]
+                        tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df[
+                            lineage_list_df_columns_sorted]
                         # drop column with NaN
-                        tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(axis='columns', how='all')
+                        tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(
+                            axis='columns', how='all')
                         #
-                        ltg_tax_id, ltg_rank = self.f06_select_ltg(tax_lineage_by_variant_id_df)
+                        ltg_tax_id, ltg_rank = self.f06_select_ltg(
+                            tax_lineage_by_variant_id_df)
                         # ltg_tax_id, ltg_rank = None, None
                         # if identity >= ltg_rule_threshold:
                         #     #
@@ -316,7 +383,7 @@ class TaxAssignRunner(object):
                         #     if tax_lineage_by_variant_id_df.target_tax_id.unique().count() >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
                         #         #
                         #         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
-                        if not ltg_tax_id is None:
+                        if ltg_tax_id is not None:
                             lineage_dic = {}
                             lineage_dic['variant_id'] = variant_id
                             lineage_dic['identity'] = identity
@@ -327,11 +394,22 @@ class TaxAssignRunner(object):
                             # dictionnary to list
                             list_variant_id_to_ltg.append(lineage_dic)
                             break  # Do not continue lower identities
-        ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg, columns=['variant_id', 'identity', 'ltg_tax_id', 'ltg_tax_name', 'ltg_rank'])
+        ltg_df = pandas.DataFrame(
+            data=list_variant_id_to_ltg,
+            columns=[
+                'variant_id',
+                'identity',
+                'ltg_tax_id',
+                'ltg_tax_name',
+                'ltg_rank'])
         return ltg_df
 
 
-def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_threshold, include_prop, min_number_of_taxa):
+def f07_blast_result_to_ltg_tax_id(
+        variantid_identity_lineage_df,
+        ltg_rule_threshold,
+        include_prop,
+        min_number_of_taxa):
     """
     Main function that takes blast result with variant_id, target_id, identity and tax_id and returns ltg_tax_id and ltg_rank
 
@@ -360,18 +438,20 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
     """
     #
     list_variant_id_to_ltg = []
-    variant_id_list = sorted(variantid_identity_lineage_df.variant_id.unique().tolist())
+    variant_id_list = sorted(
+        variantid_identity_lineage_df.variant_id.unique().tolist())
     #
     for variant_id in variant_id_list:  #  Loop sorted each variant
         for identity in identity_list:  # For each variant, loop each decreasing identity
-            tax_lineage_by_variant_id_df = variantid_identity_lineage_df.loc[
-                ((variantid_identity_lineage_df['variant_id'] == variant_id) & (variantid_identity_lineage_df['identity'] >= identity))].copy()
+            tax_lineage_by_variant_id_df = variantid_identity_lineage_df.loc[(
+                (variantid_identity_lineage_df['variant_id'] == variant_id) & (variantid_identity_lineage_df['identity'] >= identity))].copy()
             ###########
             #
             # If some hits at this identity level, enter analysis
             #
             ###########
-            if tax_lineage_by_variant_id_df.shape[0] > 0:  # If some hits at this identity, enter analysis
+            # If some hits at this identity, enter analysis
+            if tax_lineage_by_variant_id_df.shape[0] > 0:
                 ###########
                 #
                 # Carry out analysis if one of thise case
@@ -379,17 +459,21 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                 # Case 2: identity < ltg_rule_threshold and target_tax_id.unique.count > min_number_of_taxa
                 #
                 ###########
-                if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique().tolist())
-                    >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
-                    # sort columns of tax_lineage_by_variant_id_df based on rank_hierarchy order
+                if (identity < ltg_rule_threshold and len(tax_lineage_by_variant_id_df.target_tax_id.unique(
+                ).tolist()) >= min_number_of_taxa) or (identity >= ltg_rule_threshold):
+                    # sort columns of tax_lineage_by_variant_id_df based on
+                    # rank_hierarchy order
                     ltg_tax_id, ltg_rank = None, None
-                    lineage_list_df_columns_sorted = [value for value in tax_lineage_by_variant_id_df if
-                                                      value in rank_hierarchy]
-                    tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df[lineage_list_df_columns_sorted]
+                    lineage_list_df_columns_sorted = [
+                        value for value in tax_lineage_by_variant_id_df if value in rank_hierarchy]
+                    tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df[
+                        lineage_list_df_columns_sorted]
                     # drop column with NaN
-                    tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(axis='columns', how='all')
+                    tax_lineage_by_variant_id_df = tax_lineage_by_variant_id_df.dropna(
+                        axis='columns', how='all')
                     #
-                    ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
+                    ltg_tax_id, ltg_rank = f06_select_ltg(
+                        tax_lineage_by_variant_id_df, include_prop=include_prop)
                     # ltg_tax_id, ltg_rank = None, None
                     # if identity >= ltg_rule_threshold:
                     #     #
@@ -405,7 +489,7 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                     #     if tax_lineage_by_variant_id_df.target_tax_id.unique().count() >= min_number_of_taxa:  # More/equal rows than min_number_of_taxa
                     #         #
                     #         ltg_tax_id, ltg_rank = f06_select_ltg(tax_lineage_by_variant_id_df, include_prop=include_prop)
-                    if not ltg_tax_id is None:
+                    if ltg_tax_id is not None:
                         lineage_dic = {}
                         lineage_dic['variant_id'] = variant_id
                         lineage_dic['identity'] = identity
@@ -416,6 +500,7 @@ def f07_blast_result_to_ltg_tax_id(variantid_identity_lineage_df, ltg_rule_thres
                         break  # Do not continue lower identities
     ltg_df = pandas.DataFrame(data=list_variant_id_to_ltg)
     return ltg_df
+
 
 def f06_select_ltg(tax_lineage_df, include_prop):
     """
@@ -433,12 +518,23 @@ def f06_select_ltg(tax_lineage_df, include_prop):
 
     # Remove column if all values=NaN
     tax_lineage_df.dropna(axis='columns', how='all', inplace=True)
-    lineage_list_df_columns_sorted = list(filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy))
+    lineage_list_df_columns_sorted = list(
+        filter(
+            lambda x: x in tax_lineage_df.columns.tolist(),
+            rank_hierarchy))
     tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
-    putative_ltg_df = \
-        pandas.DataFrame({'putative_ltg_id': tax_lineage_df.apply(lambda x: x.value_counts().index[0], axis=0),
-                          'putative_ltg_count': tax_lineage_df.apply(lambda x: x.value_counts().iloc[0], axis=0)})
-    putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / tax_lineage_df.shape[0] * 100
-    ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].tail(1).values[0]
-    ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= include_prop, 'putative_ltg_id'].index[-1]
+    putative_ltg_df = pandas.DataFrame(
+        {
+            'putative_ltg_id': tax_lineage_df.apply(
+                lambda x: x.value_counts().index[0],
+                axis=0),
+            'putative_ltg_count': tax_lineage_df.apply(
+                lambda x: x.value_counts().iloc[0],
+                axis=0)})
+    putative_ltg_df['putative_ltg_percentage'] = putative_ltg_df.putative_ltg_count / \
+        tax_lineage_df.shape[0] * 100
+    ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
+                                     include_prop, 'putative_ltg_id'].tail(1).values[0]
+    ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
+                                   include_prop, 'putative_ltg_id'].index[-1]
     return ltg_tax_id, ltg_rank

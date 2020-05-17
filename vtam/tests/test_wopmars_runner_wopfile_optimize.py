@@ -18,9 +18,12 @@ class TestWorpmarsRunnerOptimize(TestCase):
         # Minimal merge command
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, package_path)
-        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), package_path)
-        foopaths['outdir'] = os.path.relpath(os.path.join(test_path, 'output'), package_path)
-        foopaths['blastdb'] = os.path.relpath(os.path.join(test_path, 'test_files', 'blastdb'), package_path)
+        foopaths['foodir'] = os.path.relpath(
+            os.path.dirname(__file__), package_path)
+        foopaths['outdir'] = os.path.relpath(
+            os.path.join(test_path, 'output'), package_path)
+        foopaths['blastdb'] = os.path.relpath(os.path.join(
+            test_path, 'test_files', 'blastdb'), package_path)
         foopaths['readinfo_tsv'] = "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv"
         foopaths['tsv_path'] = "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv"
         foopaths['known_occurrences'] = 'doc/data/dryad.f40v5_small/known_occurrences.tsv'
@@ -47,10 +50,15 @@ class TestWorpmarsRunnerOptimize(TestCase):
         # Test wopfile
         #
         ###############################################################
-        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
-                                    PathManager.get_package_path())
-        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
+        wopmars_runner = WopmarsRunner(
+            command='optimize', cli_args_dic=vars(args))
+        wopfile_path = os.path.relpath(
+            os.path.join(
+                PathManager.get_package_path(),
+                "tests/output/wopfile"),
+            PathManager.get_package_path())
+        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(
+            path=wopfile_path)
         wopfile_content_bak = """rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:

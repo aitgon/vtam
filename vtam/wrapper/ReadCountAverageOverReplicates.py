@@ -23,8 +23,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     # Output table
     __output_table_filter_consensus = "ReadCountAverageOverReplicates"
 
-
-
     def specify_input_file(self):
         return[
             ReadCountAverageOverReplicates.__input_file_readinfo,
@@ -40,7 +38,6 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         ]
 
-
     def specify_output_table(self):
         return [
             ReadCountAverageOverReplicates.__output_table_filter_consensus,
@@ -51,55 +48,59 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         return {
         }
 
-
-
     def run(self):
         session = self.session
         engine = session._session().get_bind()
         #
         # Input file output
-        input_file_readinfo = self.input_file(ReadCountAverageOverReplicates.__input_file_readinfo)
+        input_file_readinfo = self.input_file(
+            ReadCountAverageOverReplicates.__input_file_readinfo)
         #
         # Input table models
-        marker_model = self.input_table(ReadCountAverageOverReplicates.__input_table_marker)
-        run_model = self.input_table(ReadCountAverageOverReplicates.__input_table_run)
-        codon_stop_model = self.input_table(ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
-        biosample_model = self.input_table(ReadCountAverageOverReplicates.__input_table_biosample)
+        marker_model = self.input_table(
+            ReadCountAverageOverReplicates.__input_table_marker)
+        run_model = self.input_table(
+            ReadCountAverageOverReplicates.__input_table_run)
+        codon_stop_model = self.input_table(
+            ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
+        biosample_model = self.input_table(
+            ReadCountAverageOverReplicates.__input_table_biosample)
 
         #
         # Output table models
-        consensus_model = self.output_table(ReadCountAverageOverReplicates.__output_table_filter_consensus)
+        consensus_model = self.output_table(
+            ReadCountAverageOverReplicates.__output_table_filter_consensus)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         #
-        ################################################################################################################
+        #######################################################################
 
         # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-
-        ################################################################################################################
+        #######################################################################
         #
         # 2. Delete /run/markerbiosample/replicate from this filter table
         #
-        ################################################################################################################
+        #######################################################################
         # with engine.connect() as conn:
         #     # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         #     conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         #
         variant_read_count_like_utils = VariantReadCountLikeTable(
             variant_read_count_like_model=consensus_model, engine=engine)
-        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
-        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
+        sample_record_list = sample_info_tsv_obj.to_identifier_df(
+            engine=engine).to_dict('records')
+        variant_read_count_like_utils.delete_from_db(
+            sample_record_list=sample_record_list)
 
-
-        ################################################################################################################
+        #######################################################################
         #
         # 3. Select marker/run/biosample/replicate from variant_read_count_model
         #
-        ################################################################################################################
+        #######################################################################
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
             variant_read_count_like_model=codon_stop_model, filter_id=None)
@@ -108,40 +109,46 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         try:
             assert variant_read_count_df.shape[0] > 0
         except AssertionError:
-            sys.stderr.write("Error: No variants available for this filter: {}".format(os.path.basename(__file__)))
+            sys.stderr.write(
+                "Error: No variants available for this filter: {}".format(
+                    os.path.basename(__file__)))
             sys.exit(1)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 4. Run Filter
         #
-        ################################################################################################################
+        #######################################################################
 
         df_out = read_count_average_over_replicates(variant_read_count_df)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Write to DB
         #
-        ################################################################################################################
+        #######################################################################
 
-        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(df_out)
+        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
+            df_out)
         with engine.connect() as conn:
 
             # Insert new instances
             conn.execute(consensus_model.__table__.insert(), record_list)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Touch output tables, to update modification date
         #
-        ################################################################################################################
+        #######################################################################
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
-            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
-            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            obj = session.query(declarative_meta_i).order_by(
+                declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(
+                id=obj.id).update({'id': obj.id})
             session.commit()
+
 
 def read_count_average_over_replicates(variant_read_count_df):
     """
@@ -153,17 +160,26 @@ def read_count_average_over_replicates(variant_read_count_df):
     read_average_df = pandas.DataFrame(columns=read_average_columns)
 
     # sum of read_count over variant_id and biosample_id
-    read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    read_count_sum_over_variant_id_and_biosample_id_df.drop('replicate', axis=1, inplace=True)
-    read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(columns={'read_count': 'read_count'})
+    read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(
+        ['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
+    read_count_sum_over_variant_id_and_biosample_id_df.drop(
+        'replicate', axis=1, inplace=True)
+    read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(
+        columns={'read_count': 'read_count'})
 
     #  count of replicate number per variant_id and biosample_id
-    replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-    replicate_count_over_variant_id_and_biosample_id_df.drop('read_count', axis=1, inplace=True)
-    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(columns={'replicate': 'replicate_count'})
+    replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(
+        ['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
+    replicate_count_over_variant_id_and_biosample_id_df.drop(
+        'read_count', axis=1, inplace=True)
+    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(
+        columns={'replicate': 'replicate_count'})
 
     # merge
-    df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(replicate_count_over_variant_id_and_biosample_id_df, left_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'),right_on=('run_id', 'marker_id', 'variant_id', 'biosample_id'))
-    df_out['read_count_average'] = df_out.read_count/df_out.replicate_count
+    df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(
+        replicate_count_over_variant_id_and_biosample_id_df, left_on=(
+            'run_id', 'marker_id', 'variant_id', 'biosample_id'), right_on=(
+            'run_id', 'marker_id', 'variant_id', 'biosample_id'))
+    df_out['read_count_average'] = df_out.read_count / df_out.replicate_count
     #
     return df_out

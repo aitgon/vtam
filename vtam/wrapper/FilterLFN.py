@@ -56,48 +56,55 @@ class FilterLFN(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ################################################################################################################
+        #######################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ################################################################################################################
+        #######################################################################
 
         # Input file output
         fasta_info_tsv = self.input_file(FilterLFN.__input_file_readinfo)
 
         #
         # Input table models
-        input_variant_read_count_model = self.input_table(FilterLFN.__input_table_variant_read_count)
+        input_variant_read_count_model = self.input_table(
+            FilterLFN.__input_table_variant_read_count)
         #
         # Output table models
-        output_filter_lfn_model = self.output_table(FilterLFN.__output_table_filter_lfn)
+        output_filter_lfn_model = self.output_table(
+            FilterLFN.__output_table_filter_lfn)
         #
         # Options
         lfn_variant_threshold = self.option("lfn_variant_threshold")
-        lfn_variant_replicate_threshold = self.option("lfn_variant_replicate_threshold")
-        lfn_biosample_replicate_threshold = self.option("lfn_biosample_replicate_threshold")
+        lfn_variant_replicate_threshold = self.option(
+            "lfn_variant_replicate_threshold")
+        lfn_biosample_replicate_threshold = self.option(
+            "lfn_biosample_replicate_threshold")
         lfn_read_count_threshold = self.option("lfn_read_count_threshold")
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
-        ################################################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        sample_info_tsv_obj.delete_from_db(engine=engine, variant_read_count_like_model=output_filter_lfn_model)
+        sample_info_tsv_obj.delete_from_db(
+            engine=engine, variant_read_count_like_model=output_filter_lfn_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
-            variant_read_count_like_model=input_variant_read_count_model, engine=engine, filter_id=None)
+            variant_read_count_like_model=input_variant_read_count_model,
+            engine=engine,
+            filter_id=None)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Create filter object and run
         #
-        ################################################################################################################
+        #######################################################################
 
         variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
             lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold, lfn_read_count_threshold)
@@ -107,13 +114,17 @@ class FilterLFN(ToolWrapper):
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
-            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
-            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            obj = session.query(declarative_meta_i).order_by(
+                declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(
+                id=obj.id).update({'id': obj.id})
             session.commit()
 
-        if variant_read_count_delete_df.filter_delete.sum() == variant_read_count_delete_df.shape[0]:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
-                                                    "The analysis will stop here.".format(self.__class__.__name__)))
+        if variant_read_count_delete_df.filter_delete.sum(
+        ) == variant_read_count_delete_df.shape[0]:
+            Logger.instance().warning(
+                VTAMexception(
+                    "This filter has deleted all the variants: {}. "
+                    "The analysis will stop here.".format(
+                        self.__class__.__name__)))
             sys.exit(0)
-
-

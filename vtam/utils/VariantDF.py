@@ -24,8 +24,9 @@ class VariantDF:
         with open(fasta_path, "w") as fout:
             for row in self.__variant_df.itertuples():
                 fasta_line = ">{}".format(row.Index)
-                if not add_column is None:
-                    fasta_line += ";{}={}".format(add_column, getattr(row, add_column))
+                if add_column is not None:
+                    fasta_line += ";{}={}".format(add_column,
+                                                  getattr(row, add_column))
                 fasta_line += "\n"
                 fasta_line += "{}\n".format(row.sequence)
                 fout.write(fasta_line)
