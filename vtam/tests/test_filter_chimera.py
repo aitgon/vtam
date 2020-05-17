@@ -65,8 +65,8 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
         os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
 
     def test_filter_chimera_runner(self):
-        filter_chimera_runner = FilterChimeraRunner(variant_df=self.variant_df, variant_read_count_df=self.variant_read_count_df)
-        filter_output_df, filter_borderline_output_df = filter_chimera_runner.run(tmp_dir=self.this_tempdir, uchime3_denovo_abskew=16)
+        filter_chimera_runner = FilterChimeraRunner(variant_read_count_df=self.variant_read_count_df)
+        filter_output_df, filter_borderline_output_df = filter_chimera_runner.get_variant_read_count_delete_df(variant_df=self.variant_df, uchime3_denovo_abskew=16)
 
         filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
 0       1          1             1          1           1         650          False

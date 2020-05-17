@@ -7,7 +7,7 @@ from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.Variant import Variant
 from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
 
 
@@ -40,7 +40,7 @@ class AsvTableRunner(object):
     def run(self):
 
         # Aggregate replicates
-        variant_read_count_obj = VariantReadCountDF(self.variant_read_count_df)
+        variant_read_count_obj = VariantReadCountLikeDF(self.variant_read_count_df)
         N_ij_df = variant_read_count_obj.get_N_ij_df()
 
         asv_df = N_ij_df.merge(self.biosample_df, left_on='biosample_id', right_index=True)

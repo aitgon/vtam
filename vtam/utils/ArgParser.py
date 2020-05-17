@@ -29,47 +29,6 @@ class ArgParserChecker(object):
         else:
             return path
 
-    # @staticmethod
-    # def check_fastainfo(tsv_path):
-    #
-    #     """Checks if fastainfo exists, is not empty and it has a minimal set of columns
-    #
-    #     :param tsv_path: Valid non-empty TSV fastainfo tsv_path
-    #     :return: void
-    #
-    #     """
-    #
-    #     tsv_path = ArgParserChecker.check_file_exists_and_is_nonempty(tsv_path)
-    #     df = pandas.read_csv(tsv_path, sep='\t', header=0)
-    #     header_lower = {'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'run', 'marker', 'biosample', 'replicate',
-    #      'mergedfasta'}
-    #     df.columns = df.columns.str.lower()
-    #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-    #         return tsv_path
-    #     else:
-    #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(tsv_path, header_lower))
-
-    # @staticmethod
-    # def check_fastqinfo(tsv_path):
-    #
-    #     """Checks if tsv_path exists, is not empty
-    #
-    #     :param tsv_path: Valid non-empty TSV tsv_path tsv_path
-    #     :return: void
-    #
-    #     """
-    #
-    #     tsv_path = ArgParserChecker.check_file_exists_and_is_nonempty(tsv_path)
-    #     df = pandas.read_csv(tsv_path, sep='\t', header=0)
-    #     header_lower = {'replicate', 'primerrev', 'run', 'fastqfwd', 'tagrev', 'fastqrev',
-    #      'primerfwd', 'biosample', 'tagfwd', 'marker'}
-    #     df.columns = df.columns.str.lower()
-    #     if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-    #         return tsv_path
-    #     else:
-    #         raise argparse.ArgumentTypeError("The header of the file '{}' does not contain these fields: {}. Please fix it.".format(
-    #             tsv_path, header_lower))
-
     @staticmethod
     def check_file_exists_and_is_nonempty(path):
 
@@ -105,79 +64,6 @@ class ArgParserChecker(object):
                         "This parameter '{}' in the YML file '{}' is not recognized by VTAM. Please fix it.".format(params_k, path))
                 else:
                     return path
-
-    @classmethod
-    def check_parser_filter_arg_sampleselect(cls, path):
-
-        """Checks if file exists and is not empty
-
-        :param path: Path to the sampleselect TSV file
-        :return: void
-        """
-
-        path = cls.check_file_exists_and_is_nonempty(path)
-
-        df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = map(str.lower, df.columns) # variant_read_count_input_df columns to lower
-        if not 'run' in df.columns and not 'marker' in df.columns:
-            raise argparse.ArgumentTypeError("The TSV file '{}' does not contain columns with 'Run' and 'Marker' columns. Please fix it.".format(path))
-        else:
-            return path
-
-    @staticmethod
-    def check_parser_pool_arg_runmarker(path, error_message=None):
-
-        """Checks if file exists and is not empty
-
-        :param error_message: Optional message to help debug the problem
-        :return: void
-        """
-
-        try:
-            assert os.stat(path).st_size > 0
-            run_marker_df = pandas.read_csv(path, sep="\t", header=0)
-            assert ('marker_name' in run_marker_df.columns and 'run_name' in run_marker_df.columns)
-            assert run_marker_df.shape[0] > 0
-        except AssertionError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        except FileNotFoundError as err:
-            raise Logger.instance().error(VTAMexception("{}: {}".format(err, error_message)))
-        return path
-
-    @staticmethod
-    def check_pool_runmarker_tsv(path):
-
-        """Check runmarker_tsv format
-
-        :param path: Valid non-empty file tsv_path
-        :return: void
-
-        """
-        if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(path))
-        elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(path))
-        header_lower = {'run', 'marker'}
-        df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = df.columns.str.lower()
-        if set(df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
-        else:
-            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(path))
-
-    @staticmethod
-    def check_real_between_0_and_100(value):
-        fvalue = float(value)
-        if fvalue < 0 or fvalue > 100:
-            raise argparse.ArgumentTypeError("%s is an invalid real value between 0 and 100. Please fix it." % value)
-        return fvalue
-
-    @staticmethod
-    def check_real_positive(value):
-        fvalue = float(value)
-        if fvalue <= 0:
-            raise argparse.ArgumentTypeError("%s is an invalid positive real value. Please fix it." % value)
-        return fvalue
 
     @staticmethod
     def check_readinfo_tsv(path):

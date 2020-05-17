@@ -14,7 +14,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunMarkerFile import RunMarkerFile
 from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDFutils import VariantDFutils
+from vtam.utils.VariantDF import VariantDF
 from vtam.utils.VTAMexception import VTAMexception
 
 
@@ -84,7 +84,7 @@ class CommandPoolRunMarkers(object):
         variant_df.columns = ['id', 'sequence', 'size']
         variant_df.set_index('id', inplace=True)
         # Create fasta_path file from asv_table_df
-        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
         vsearch_output_centroid_fasta = os.path.join(self.tmp_dir, 'centroid.fa')

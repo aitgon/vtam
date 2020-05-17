@@ -1,6 +1,7 @@
 from vtam import Logger
 from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -74,27 +75,14 @@ class FilterRenkonen(ToolWrapper):
         ################################################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 3. Get variant_read_count_df input
         #
         ################################################################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        ################################################################################################################
-        #
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
-        #
-        ################################################################################################################
-
-        variant_read_count_like_utils = VariantReadCountLikeTable(
-            variant_read_count_like_model=output_filter_renkonen_model, engine=engine)
-        sample_record_list = sample_info_tsv_obj.to_identifier_df(engine=engine).to_dict('records')
-        variant_read_count_like_utils.delete_from_db(sample_record_list=sample_record_list)
-
-        ################################################################################################################
-        #
-        # variant_read_count_input_df
-        #
-        ################################################################################################################
+        sample_info_tsv_obj.delete_from_db(engine=engine, variant_read_count_like_model=output_filter_renkonen_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_chimera_model, engine=engine, filter_id=None)
@@ -105,7 +93,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ################################################################################################################
 
-        filter_output_df = pandas.DataFrame()
+        variant_read_count_delete_df = pandas.DataFrame()
         run_marker_df = variant_read_count_df[['run_id', 'marker_id']].drop_duplicates()
 
         for row in run_marker_df.itertuples():
@@ -117,31 +105,23 @@ class FilterRenkonen(ToolWrapper):
 
             if variant_read_count_per_run_marker_df.replicate.unique().shape[0] > 1:  # if more than one replicate
                 filter_renkonen_runner_obj = FilterRenkonenRunner(variant_read_count_per_run_marker_df)
-                filter_output_i_df = filter_renkonen_runner_obj.get_filter_output_df(renkonen_distance_quantile)
-                # filter_output_df = f12_filter_delete_renkonen(variant_read_count_df, renkonen_distance_quantile)
+                filter_output_i_df = filter_renkonen_runner_obj.get_variant_read_count_delete_df(renkonen_distance_quantile)
             else:  # Just one replicate
                 filter_output_i_df = variant_read_count_df.copy()
                 filter_output_i_df['filter_delete'] = False
 
-            filter_output_df = pandas.concat([filter_output_df, filter_output_i_df], axis=0)
+            variant_read_count_delete_df = pandas.concat([variant_read_count_delete_df, filter_output_i_df], axis=0)
 
         ################################################################################################################
         #
-        # Write to DB
+        # 5. Write to DB
+        # 6. Touch output tables, to update modification date
+        # 7. Exit vtam if all variants delete
         #
         ################################################################################################################
 
-        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(filter_output_df)
-        with engine.connect() as conn:
-
-            # Insert new instances
-            conn.execute(output_filter_renkonen_model.__table__.insert(), record_list)
-
-        ################################################################################################################
-        #
-        # Touch output tables, to update modification date
-        #
-        ################################################################################################################
+        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+            engine=engine, variant_read_count_like_model=output_filter_renkonen_model)
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
@@ -149,13 +129,7 @@ class FilterRenkonen(ToolWrapper):
             session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
             session.commit()
 
-        ##########################################################
-        #
-        # Exit vtam if all variants deleted
-        #
-        ################################################################################################################
-
-        if filter_output_df.filter_delete.sum() == filter_output_df.shape[0]:
+        if variant_read_count_delete_df.filter_delete.sum() == variant_read_count_delete_df.shape[0]:
             Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
                                                     "The analysis will stop here.".format(self.__class__.__name__)))
             sys.exit(0)

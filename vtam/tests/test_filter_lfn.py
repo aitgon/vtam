@@ -71,8 +71,9 @@ class TestFilterLFN(unittest.TestCase):
         # Occurrence is deleted if N_ijk < lfn_ read_count_threshold
         lfn_read_count_threshold = 10
 
-        filter_output_df = self.filter_lfn_runner.run(lfn_variant_threshold, lfn_variant_replicate_threshold,
-                                                      lfn_biosample_replicate_threshold, lfn_read_count_threshold)
+        filter_output_df = self.filter_lfn_runner.get_variant_read_count_delete_df(
+            lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
+            lfn_read_count_threshold)
         self.assertTrue(filter_output_df.filter_delete.tolist()[:12] == [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1])
 
     def test_mark_delete_lfn_per_Ni(self):

@@ -13,7 +13,7 @@ class FilterRenkonenRunner(object):
         """
         self.variant_read_count_df = variant_read_count_df
 
-    def get_filter_output_df(self, renkonen_distance_quantile):
+    def get_variant_read_count_delete_df(self, renkonen_distance_quantile):
 
         filter_out_df = self.variant_read_count_df.copy()
         filter_out_df['filter_delete'] = False
