@@ -5,8 +5,8 @@ import os
 import pandas
 
 from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantDF import VariantDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
 class FilterPCRerrorRunner(object):
@@ -24,6 +24,22 @@ class FilterPCRerrorRunner(object):
         self.__variant_unexpected_df = variant_unexpected_df
         self.__variant_read_count_df = variant_read_count_df
         self.__tmp_dir = tmp_dir
+
+    def get_variant_read_count_delete_df(self, pcr_error_var_prop):
+
+        variant_unexpected_to_expected_ratio_df = self.get_variant_unexpected_to_expected_ratio_df()
+
+        # Initiates filter_output_df
+        filter_output_df = self.__variant_read_count_df.copy()
+        filter_output_df['filter_delete'] = False
+
+        for row in variant_unexpected_to_expected_ratio_df.itertuples():
+            if float(getattr(row, 'N_ij_unexpected_to_expected_ratio')) < pcr_error_var_prop:
+                filter_output_df.loc[(filter_output_df['run_id'] == row.run_id)
+                                     & (filter_output_df['marker_id'] == row.marker_id)
+                                     & (filter_output_df['biosample_id'] == row.biosample_id)
+                                     & (filter_output_df['variant_id'] == row.variant_id_unexpected), 'filter_delete'] = True
+        return filter_output_df
 
     def get_vsearch_alignement_df(self):
         """
@@ -45,11 +61,11 @@ class FilterPCRerrorRunner(object):
         ###################################################################
 
         variant_expected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta'.format("variant_expected"))
-        variant_expected_df_utils_obj = VariantDFutils(variant_df=self.__variant_expected_df)
+        variant_expected_df_utils_obj = VariantDF(variant_df=self.__variant_expected_df)
         variant_expected_df_utils_obj.to_fasta(fasta_path=variant_expected_fasta_path)
 
         variant_unexpected_fasta_path = os.path.join(self.__tmp_dir, '{}.fasta'.format("variant_unexpected"))
-        variant_unexpected_df_utils_obj = VariantDFutils(variant_df=self.__variant_unexpected_df)
+        variant_unexpected_df_utils_obj = VariantDF(variant_df=self.__variant_unexpected_df)
         variant_unexpected_df_utils_obj.to_fasta(fasta_path=variant_unexpected_fasta_path)
 
         #
@@ -87,7 +103,7 @@ class FilterPCRerrorRunner(object):
 
         #
         # Aggregate by biosample
-        variant_read_count_lfn_instance = VariantReadCountDF(self.__variant_read_count_df)
+        variant_read_count_lfn_instance = VariantReadCountLikeDF(self.__variant_read_count_df)
         N_ij_df = variant_read_count_lfn_instance.get_N_ij_df()
 
         # Add up mismatch and gap
@@ -120,19 +136,3 @@ class FilterPCRerrorRunner(object):
         variant_unexpected_to_expected_ratio_df = variant_unexpected_to_expected_ratio_df[['run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected', 'variant_id_unexpected', 'N_ij_unexpected', 'N_ij_unexpected_to_expected_ratio']]
 
         return variant_unexpected_to_expected_ratio_df
-
-    def get_filter_output_df(self, pcr_error_var_prop):
-
-        variant_unexpected_to_expected_ratio_df = self.get_variant_unexpected_to_expected_ratio_df()
-
-        # Initiates filter_output_df
-        filter_output_df = self.__variant_read_count_df.copy()
-        filter_output_df['filter_delete'] = False
-
-        for row in variant_unexpected_to_expected_ratio_df.itertuples():
-            if float(getattr(row, 'N_ij_unexpected_to_expected_ratio')) < pcr_error_var_prop:
-                filter_output_df.loc[(filter_output_df['run_id'] == row.run_id)
-                                     & (filter_output_df['marker_id'] == row.marker_id)
-                                     & (filter_output_df['biosample_id'] == row.biosample_id)
-                                     & (filter_output_df['variant_id'] == row.variant_id_unexpected), 'filter_delete'] = True
-        return filter_output_df

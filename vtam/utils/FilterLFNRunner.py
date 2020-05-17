@@ -21,7 +21,7 @@ import pandas
 
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
 class FilterLFNrunner:
@@ -30,7 +30,7 @@ class FilterLFNrunner:
         self.variant_read_count_df = variant_read_count_df[
             ['marker_id', 'run_id', 'variant_id', 'biosample_id', 'replicate', 'read_count']]
         #  Instance for all the calculations N_i, N_ij, etc
-        self.variant_read_count_lfn_df = VariantReadCountDF(variant_read_count_df)
+        self.variant_read_count_lfn_df = VariantReadCountLikeDF(variant_read_count_df)
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception('Columns missing in the variant2sample2replicate2count data frame!')
@@ -48,8 +48,8 @@ class FilterLFNrunner:
                   'filter_delete': []},
             dtype='uint32')
 
-    def run(self, lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
-            lfn_read_count_threshold):
+    def get_variant_read_count_delete_df(self, lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold,
+                                         lfn_read_count_threshold):
 
         ################################################################################################################
         #

@@ -3,7 +3,7 @@ import sqlalchemy
 
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.models.Run import Run
@@ -73,7 +73,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         ################################################################################################################
         #
-        # Group and run this code by run/marker combination
+        # Group and run this genetic_code by run/marker combination
         # Loop by run/marker
         #
         ################################################################################################################
@@ -114,7 +114,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv_path)
             variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(VariantReadCount, engine=engine)
 
-            variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
+            variant_read_count_df_obj = VariantReadCountLikeDF(variant_read_count_df=variant_read_count_df)
             N_jk_df = variant_read_count_df_obj.get_N_jk_df()
 
             ############################################################################################################

@@ -8,7 +8,7 @@ from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
 class VariantReadCount(ToolWrapper):
@@ -92,7 +92,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete variants if below global_read_count_threshold
-        # 6. Insert into Variant and VariantReadCountDF tables
+        # 6. Insert into Variant and VariantReadCountLikeDF tables
         #
         ################################################################################################################
 
@@ -208,7 +208,7 @@ class VariantReadCount(ToolWrapper):
         #
         ################################################################################################################
 
-        variant_read_count_lfn = VariantReadCountDF(variant_read_count_df)
+        variant_read_count_lfn = VariantReadCountLikeDF(variant_read_count_df)
         Logger.instance().debug("file: {}; line: {}; Remove singletons".format(__file__, inspect.currentframe().f_lineno))
         variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_threshold(global_read_count_threshold)
         variant_read_count_df.rename(columns={'variant_id': 'variant_sequence'}, inplace=True)

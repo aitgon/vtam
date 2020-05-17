@@ -4,23 +4,23 @@ import pathlib
 from Bio import SeqIO
 
 from vtam.utils.Logger import Logger
-from vtam.utils.VariantDFutils import VariantDFutils
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
+from vtam.utils.PathManager import PathManager
+from vtam.utils.VariantDF import VariantDF
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from vtam.utils.VSearch import VSearch
 
 
 class FilterChimeraRunner(object):
 
-    def __init__(self, variant_df, variant_read_count_df):
+    def __init__(self, variant_read_count_df):
         """Carries out a chimera analysis"""
 
-        self.variant_df = variant_df
         self.variant_read_count_df = variant_read_count_df
 
-    def run(self, tmp_dir, uchime3_denovo_abskew):
+    def get_variant_read_count_delete_df(self, variant_df, uchime3_denovo_abskew):
 
-        this_step_tmp_dir = os.path.join(tmp_dir, os.path.basename(__name__))
-        pathlib.Path(this_step_tmp_dir).mkdir(exist_ok=True)
+        temp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        pathlib.Path(temp_dir).mkdir(exist_ok=True)
 
         filter_output_chimera_df = self.variant_read_count_df.copy()
         filter_output_chimera_df['filter_delete'] = False
@@ -38,10 +38,10 @@ class FilterChimeraRunner(object):
                                                                    & (self.variant_read_count_df.marker_id == marker_id)
                                                                    & (self.variant_read_count_df.biosample_id == biosample_id)]
 
-            variant_read_count_df_obj = VariantReadCountDF(variant_read_count_df=variant_read_count_df)
+            variant_read_count_df_obj = VariantReadCountLikeDF(variant_read_count_df=variant_read_count_df)
             N_i_df = variant_read_count_df_obj.get_N_i_df()
 
-            variant_size_df = self.variant_df.merge(N_i_df, left_index=True, right_on='variant_id')
+            variant_size_df = variant_df.merge(N_i_df, left_index=True, right_on='variant_id')
             variant_size_df = variant_size_df[['variant_id', 'sequence', 'N_i']]
             variant_size_df.rename(columns={'N_i': 'size'}, inplace=True)
             variant_size_df.set_index('variant_id', inplace=True)
@@ -54,10 +54,10 @@ class FilterChimeraRunner(object):
 
             variant_size_df.sort_values(by='size', ascending=False, inplace=True)
 
-            variant_df_utils_obj = VariantDFutils(variant_size_df)
+            variant_df_utils_obj = VariantDF(variant_size_df)
 
-            uchime_fasta_path = os.path.join(tmp_dir, os.path.basename(__name__), 'run_{}_marker_{}_biosample_{}.fasta'
-                                      .format(run_id, marker_id, biosample_id))
+            uchime_fasta_path = os.path.join(temp_dir, 'run_{}_marker_{}_biosample_{}.fasta'
+                                             .format(run_id, marker_id, biosample_id))
             variant_df_utils_obj.to_fasta(fasta_path=uchime_fasta_path, add_column="size")
 
             ###################################################################
@@ -66,13 +66,13 @@ class FilterChimeraRunner(object):
             #
             ###################################################################
 
-            uchime_borderline_fasta_path = os.path.join(this_step_tmp_dir,
+            uchime_borderline_fasta_path = os.path.join(temp_dir,
                                                      'run_{}_marker_{}_biosample_{}_borderline.fasta'
                                                          .format(run_id, marker_id, biosample_id))
-            uchime_nonchimeras_fasta_path = os.path.join(this_step_tmp_dir,
+            uchime_nonchimeras_fasta_path = os.path.join(temp_dir,
                                                       'run_{}_marker_{}_biosample_id_{}_nonchimeras.fasta'
                                                          .format(run_id, marker_id, biosample_id))
-            uchime_chimeras_fasta_path = os.path.join(this_step_tmp_dir,
+            uchime_chimeras_fasta_path = os.path.join(temp_dir,
                                                    'run_{}_marker_{}_biosample_{}_chimeras.fasta'
                                                          .format(run_id, marker_id, biosample_id))
 

@@ -8,7 +8,7 @@ import pandas
 from vtam.utils.PathManager import PathManager
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDFutils import VariantDFutils
+from vtam.utils.VariantDF import VariantDF
 
 
 class TestPoolMarkers(TestCase):
@@ -33,7 +33,7 @@ class TestPoolMarkers(TestCase):
         variant_df = asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from asv_table_df
-        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
         vsearch_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'centroid_out.fa')

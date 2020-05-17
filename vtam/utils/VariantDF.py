@@ -1,4 +1,4 @@
-class VariantDFutils:
+class VariantDF:
     """
     Functions to manipulate a variant_df
     """

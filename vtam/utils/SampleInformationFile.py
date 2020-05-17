@@ -23,6 +23,24 @@ class SampleInformationFile:
     def __init__(self, tsv_path):
         self.tsv_path = tsv_path
 
+    def delete_from_db(self, engine, variant_read_count_like_model):
+
+        """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
+
+        sample_information_df = self.to_identifier_df(engine=engine)
+        sample_record_list = sample_information_df.to_dict('records')
+        sample_column_list = sample_information_df.columns.tolist()
+
+        with engine.connect() as conn:
+            stmt = variant_read_count_like_model.__table__.delete()
+            stmt = stmt.where(variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
+            stmt = stmt.where(variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
+            if 'biosample_id' in sample_column_list:
+                stmt = stmt.where(variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+            if 'replicate' in sample_column_list and 'replicate' in [col.key for col in variant_read_count_like_model.__table__.columns]:
+                stmt = stmt.where(variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
+            conn.execute(stmt, sample_record_list)
+
     def get_variant_read_count_df(self, variant_read_count_like_model, engine, filter_id=None):
         """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
 
