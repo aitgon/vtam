@@ -36,27 +36,29 @@ class SampleInformation(ToolWrapper):
     def run(self):
         session = self.session
 
-        ################################################################################################################
+        #######################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ################################################################################################################
+        #######################################################################
 
         # input file paths
         csv_path = self.input_file(SampleInformation.__input_file_csv)
 
         SampleInformationFile(csv_path).to_sqlite(session=session)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Touch output tables, to update modification date
         #
-        ################################################################################################################
+        #######################################################################
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
-            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
-            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            obj = session.query(declarative_meta_i).order_by(
+                declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(
+                id=obj.id).update({'id': obj.id})
             session.commit()
 
     @staticmethod

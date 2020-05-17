@@ -28,20 +28,24 @@ class RunMarkerTSVreader():
         # run_marker_df = pandas.read_csv(run_marker_tsv_path, sep="\t", header=0)
         run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv_path)
 
-        engine = sqlalchemy.create_engine('sqlite:///{}'.format(db), echo=False)
+        engine = sqlalchemy.create_engine(
+            'sqlite:///{}'.format(db), echo=False)
         Base = automap_base()
         Base.prepare(engine, reflect=True)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Compute all variant_read_count_input_df required for ASV table
         #
-        ################################################################################################################
+        #######################################################################
 
         variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
             engine=engine, variant_read_count_like_model=FilterCodonStop)
 
-        asv_table_runner = AsvTableRunner(engine=engine, variant_read_count_df=variant_read_count_df, taxonomy_tsv=None)
+        asv_table_runner = AsvTableRunner(
+            engine=engine,
+            variant_read_count_df=variant_read_count_df,
+            taxonomy_tsv=None)
         self.asv_df_final = asv_table_runner.run()
 
 
@@ -51,15 +55,23 @@ class CommandPoolRunMarkers(object):
     def __init__(self, asv_table_df, run_marker_df=None):
 
         try:
-            assert asv_table_df.columns.tolist()[:5] == ['variant_id', 'marker', 'run', 'sequence_length',
-                                                         'read_count']
-            assert asv_table_df.columns.tolist()[-2:] == ['chimera_borderline', 'sequence']
-        except:
-            Logger.instance().error(VTAMexception("The ASV table structure is wrong. It is expected to start with these columns:"
-                                                  "'variant_id', 'marker', 'run', 'sequence_length', 'read_count'"
-                                                  " followed by biosample names and ending with"
-                                                  "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
-                                                  "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
+            assert asv_table_df.columns.tolist()[
+                   :5] == [
+                       'variant_id',
+                       'marker',
+                       'run',
+                       'sequence_length',
+                       'read_count']
+            assert asv_table_df.columns.tolist(
+            )[-2:] == ['chimera_borderline', 'sequence']
+        except BaseException:
+            Logger.instance().error(
+                VTAMexception(
+                    "The ASV table structure is wrong. It is expected to start with these columns:"
+                    "'variant_id', 'marker', 'run', 'sequence_length', 'read_count'"
+                    " followed by biosample names and ending with"
+                    "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
+                    "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
             sys.exit(1)
 
         self.biosample_names = asv_table_df.columns.tolist()[5:-2]
@@ -67,44 +79,48 @@ class CommandPoolRunMarkers(object):
         if run_marker_df is None:  # Default: pool all marker
             self.asv_table_df = asv_table_df
         else:  # if run_marker_df: pool only markers in this variant_read_count_input_df
-            self.asv_table_df = asv_table_df.merge(run_marker_df, on=['run', 'marker'])
+            self.asv_table_df = asv_table_df.merge(
+                run_marker_df, on=['run', 'marker'])
 
-        self.tmp_dir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        self.tmp_dir = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__))
         pathlib.Path(self.tmp_dir).mkdir(exist_ok=True)
 
-        self.cluster_path = None # returned by run_vsearch_to_cluster_sequences
+        self.cluster_path = None  # returned by run_vsearch_to_cluster_sequences
 
-        self.cluster_df = None # returned by get_vsearch_clusters_to_df
+        self.cluster_df = None  # returned by get_vsearch_clusters_to_df
 
     def run_vsearch_to_cluster_sequences(self):
         # Define fasta_path tsv_path
         fasta_path = os.path.join(self.tmp_dir, 'variants.fa')
         # Create variant variant_read_count_input_df
-        variant_df = self.asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
+        variant_df = self.asv_table_df[[
+            'variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         variant_df.set_index('id', inplace=True)
         # Create fasta_path file from asv_table_df
         variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
-        vsearch_output_centroid_fasta = os.path.join(self.tmp_dir, 'centroid.fa')
+        vsearch_output_centroid_fasta = os.path.join(
+            self.tmp_dir, 'centroid.fa')
         # Define cluster output tsv_path
         vsearch_output_cluster_path = os.path.join(self.tmp_dir, 'cluster.fa')
         #
         # Create object and run vsearch
         vsearch_parameters = {'cluster_size': fasta_path,
-                              'clusters':  vsearch_output_cluster_path,
+                              'clusters': vsearch_output_cluster_path,
                               'id': 1, 'sizein': None,
                               'centroids': vsearch_output_centroid_fasta,
                               "threads": int(os.getenv('VTAM_THREADS')),
                               }
-        vsearch_cluster = VSearch(parameters = vsearch_parameters)
+        vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
         self.cluster_path = vsearch_output_cluster_path
         return vsearch_output_centroid_fasta, vsearch_output_cluster_path
 
     def get_vsearch_clusters_to_df(self):
-
         """
         Analysis vsearch cluster output, which a tsv_path that corresponds to the same tsv_path with ticker 0, 1, 2
 
@@ -120,7 +136,8 @@ class CommandPoolRunMarkers(object):
         clusters_dir = os.path.dirname(self.cluster_path)
         clusters_basename = os.path.basename(self.cluster_path)
         cluster_i = 0
-        cluster_i_path = os.path.join(clusters_dir, clusters_basename + str(cluster_i))
+        cluster_i_path = os.path.join(
+            clusters_dir, clusters_basename + str(cluster_i))
         cluster_instance_list = []
         centroid = None
         while pathlib.Path(cluster_i_path).exists():
@@ -135,7 +152,8 @@ class CommandPoolRunMarkers(object):
                 seq_j += 1
                 cluster_instance_list.append(cluster_instance)
             cluster_i += 1
-            cluster_i_path = os.path.join(clusters_dir, clusters_basename + str(cluster_i))
+            cluster_i_path = os.path.join(
+                clusters_dir, clusters_basename + str(cluster_i))
         cluster_df = pandas.DataFrame(data=cluster_instance_list)
         cluster_df = cluster_df.astype(int)
         self.cluster_df = cluster_df
@@ -147,41 +165,53 @@ class CommandPoolRunMarkers(object):
             self.get_vsearch_clusters_to_df()
 
         # Merge cluster_df with asv_table
-        self.cluster_df = self.cluster_df.merge(self.asv_table_df, on='variant_id')
-        self.cluster_df.sort_values(by=self.cluster_df.columns.tolist(), inplace=True)
+        self.cluster_df = self.cluster_df.merge(
+            self.asv_table_df, on='variant_id')
+        self.cluster_df.sort_values(
+            by=self.cluster_df.columns.tolist(), inplace=True)
         #
-        # Information to keep about each centroid variant
-        centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id == self.cluster_df.variant_id,
-                                     ['centroid_variant_id']]
+        #  Information to keep about each centroid variant
+        centroid_df = self.cluster_df.loc[self.cluster_df.centroid_variant_id ==
+                                          self.cluster_df.variant_id, ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
 
-        # Centroid to aggregated variants and biosamples
+        #  Centroid to aggregated variants and biosamples
         self.cluster_df_col = self.cluster_df.columns
 
         # Drop some columns
-        are_reads = lambda x: int(sum(x)>0)
+        def are_reads(x):
+            return int(sum(x) > 0)
+
         agg_dic = {}
         for k in ['variant_id', 'run', 'marker']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
         for k in self.biosample_names:
             agg_dic[k] = are_reads
-        pooled_marker_df = self.cluster_df[['centroid_variant_id', 'variant_id', 'run', 'marker'] + self.biosample_names]
-        pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
-        pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
+        pooled_marker_df = self.cluster_df[[
+                                               'centroid_variant_id', 'variant_id', 'run',
+                                               'marker'] + self.biosample_names]
+        pooled_marker_df = pooled_marker_df.groupby(
+            'centroid_variant_id').agg(agg_dic).reset_index()
+        pooled_marker_df = pooled_marker_df.merge(
+            centroid_df, on='centroid_variant_id')
         pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']],
-                                                        left_on='centroid_variant_id', right_on='variant_id')
-        pooled_marker_df.rename({'variant_id_x': 'variant_id'}, axis=1, inplace=True)
-        pooled_marker_df.drop(labels = 'variant_id_y', axis=1, inplace=True)
+                                                  left_on='centroid_variant_id',
+                                                  right_on='variant_id')
+        pooled_marker_df.rename(
+            {'variant_id_x': 'variant_id'}, axis=1, inplace=True)
+        pooled_marker_df.drop(labels='variant_id_y', axis=1, inplace=True)
         return pooled_marker_df
 
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv):
-        run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv_path=run_marker_tsv)
+        run_marker_tsv_reader = RunMarkerTSVreader(
+            db=db, run_marker_tsv_path=run_marker_tsv)
         if not (run_marker_tsv is None):
             run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
         else:
             run_marker_df = None
-        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=run_marker_tsv_reader.asv_df_final,
-                                                   run_marker_df=run_marker_df)
+        pool_marker_runner = CommandPoolRunMarkers(
+            asv_table_df=run_marker_tsv_reader.asv_df_final,
+            run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

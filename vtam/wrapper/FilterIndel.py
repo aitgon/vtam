@@ -65,58 +65,69 @@ class FilterIndel(ToolWrapper):
         #
         # Input table models
         # Variant = self.input_table(FilterIndel.__input_table_Variant)
-        input_filter_renkonen_model = self.input_table(FilterIndel.__input_table_filter_renkonen)
+        input_filter_renkonen_model = self.input_table(
+            FilterIndel.__input_table_filter_renkonen)
         #
         # Options
         skip_filter_indel = bool(self.option("skip_filter_indel"))
         #
         # Output table models
-        output_filter_indel_model = self.output_table(FilterIndel.__output_table_filter_indel)
+        output_filter_indel_model = self.output_table(
+            FilterIndel.__output_table_filter_indel)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
-        ################################################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        sample_info_tsv_obj.delete_from_db(engine=engine, variant_read_count_like_model=output_filter_indel_model)
+        sample_info_tsv_obj.delete_from_db(
+            engine=engine, variant_read_count_like_model=output_filter_indel_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
-            variant_read_count_like_model=input_filter_renkonen_model, engine=engine, filter_id=None)
+            variant_read_count_like_model=input_filter_renkonen_model,
+            engine=engine,
+            filter_id=None)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 4. Run Filter
         #
-        ################################################################################################################
+        #######################################################################
 
-        variant_df = sample_info_tsv_obj.get_variant_df(variant_read_count_like_model=input_filter_renkonen_model, engine=engine)
-        variant_read_count_delete_df = FilterIndelRunner(variant_read_count_df).get_variant_read_count_delete_df(
-            variant_df, skip_filter_indel)
+        variant_df = sample_info_tsv_obj.get_variant_df(
+            variant_read_count_like_model=input_filter_renkonen_model, engine=engine)
+        variant_read_count_delete_df = FilterIndelRunner(
+            variant_read_count_df).get_variant_read_count_delete_df(variant_df, skip_filter_indel)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 5. Write to DB
         # 6. Touch output tables, to update modification date
         # 7. Exit vtam if all variants delete
         #
-        ################################################################################################################
+        #######################################################################
 
         VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_indel_model)
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
-            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
-            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            obj = session.query(declarative_meta_i).order_by(
+                declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(
+                id=obj.id).update({'id': obj.id})
             session.commit()
 
-        if variant_read_count_delete_df.filter_delete.sum() == variant_read_count_delete_df.shape[0]:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
-                                                    "The analysis will stop here.".format(self.__class__.__name__)))
+        if variant_read_count_delete_df.filter_delete.sum(
+        ) == variant_read_count_delete_df.shape[0]:
+            Logger.instance().warning(
+                VTAMexception(
+                    "This filter has deleted all the variants: {}. "
+                    "The analysis will stop here.".format(
+                        self.__class__.__name__)))
             sys.exit(0)
-

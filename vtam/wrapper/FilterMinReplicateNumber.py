@@ -10,7 +10,6 @@ import pandas
 import sys
 
 
-
 class FilterMinReplicateNumber(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "vtam.wrapper.FilterMinReplicateNumber"
@@ -41,8 +40,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_output_table(self):
         return [
-            FilterMinReplicateNumber.__output_table_filter_min_replicate_number,
-        ]
+            FilterMinReplicateNumber.__output_table_filter_min_replicate_number, ]
 
     def specify_params(self):
         return {
@@ -53,73 +51,85 @@ class FilterMinReplicateNumber(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ################################################################################################################
+        #######################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ################################################################################################################
+        #######################################################################
         #
         # Input files
-        fasta_info_tsv = self.input_file(FilterMinReplicateNumber.__input_file_readinfo)
+        fasta_info_tsv = self.input_file(
+            FilterMinReplicateNumber.__input_file_readinfo)
         #
         # Input tables
-        input_filter_lfn_model = self.input_table(FilterMinReplicateNumber.__input_table_variant_filter_lfn)
+        input_filter_lfn_model = self.input_table(
+            FilterMinReplicateNumber.__input_table_variant_filter_lfn)
         #
         # Options
         min_replicate_number = self.option("min_replicate_number")
         # input_filter_lfn = self.option("input_filter_lfn")
         #
         # Output tables
-        output_filter_min_replicate_model = self.output_table(FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
+        output_filter_min_replicate_model = self.output_table(
+            FilterMinReplicateNumber.__output_table_filter_min_replicate_number)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker/run/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
-        ################################################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        sample_info_tsv_obj.delete_from_db(engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
+        sample_info_tsv_obj.delete_from_db(
+            engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_lfn_model, engine=engine, filter_id=None)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 4. Run Filter
         #
-        ################################################################################################################
+        #######################################################################
 
-        variant_read_count_delete_df = FilterMinReplicateNumberRunner(variant_read_count_df)\
-            .get_variant_read_count_delete_df(min_replicate_number)
+        variant_read_count_delete_df = FilterMinReplicateNumberRunner(
+            variant_read_count_df) .get_variant_read_count_delete_df(min_replicate_number)
 
-        ################################################################################################################
+        #######################################################################
         #
         # 5. Write to DB
         # 6. Touch output tables, to update modification date
         # 7. Exit vtam if all variants delete
         #
-        ################################################################################################################
+        #######################################################################
 
         VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
 
         for output_table_i in self.specify_output_table():
             declarative_meta_i = self.output_table(output_table_i)
-            obj = session.query(declarative_meta_i).order_by(declarative_meta_i.id.desc()).first()
-            session.query(declarative_meta_i).filter_by(id=obj.id).update({'id': obj.id})
+            obj = session.query(declarative_meta_i).order_by(
+                declarative_meta_i.id.desc()).first()
+            session.query(declarative_meta_i).filter_by(
+                id=obj.id).update({'id': obj.id})
             session.commit()
 
-        if variant_read_count_delete_df.filter_delete.sum() == variant_read_count_delete_df.shape[0]:
-            Logger.instance().warning(VTAMexception("This filter has deleted all the variants: {}. "
-                                                    "The analysis will stop here.".format(self.__class__.__name__)))
+        if variant_read_count_delete_df.filter_delete.sum(
+        ) == variant_read_count_delete_df.shape[0]:
+            Logger.instance().warning(
+                VTAMexception(
+                    "This filter has deleted all the variants: {}. "
+                    "The analysis will stop here.".format(
+                        self.__class__.__name__)))
             sys.exit(0)
 
 
-def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2):
+def f9_delete_min_replicate_number(
+        variant_read_count_df,
+        min_replicate_number=2):
     """
     This filter deletes variants if present in less than min_replicate_number replicates
 
@@ -145,16 +155,29 @@ def f9_delete_min_replicate_number(variant_read_count_df, min_replicate_number=2
     :rtype: None
     """
     #
-    df_filter_output=variant_read_count_df.copy()
+    df_filter_output = variant_read_count_df.copy()
     # replicate count
-    df_grouped = variant_read_count_df.groupby(by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-    df_grouped = df_grouped[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate']] # keep columns
+    df_grouped = variant_read_count_df.groupby(
+        by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
+    df_grouped = df_grouped[['run_id',
+                             'marker_id',
+                             'variant_id',
+                             'biosample_id',
+                             'replicate']]  # keep columns
     df_grouped = df_grouped.rename(columns={'replicate': 'replicate_count'})
     #
     df_filter_output['filter_delete'] = False
-    df_filter_output = pandas.merge(df_filter_output, df_grouped, on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
-    df_filter_output.loc[df_filter_output.replicate_count < min_replicate_number, 'filter_delete'] = True
+    df_filter_output = pandas.merge(
+        df_filter_output, df_grouped, on=[
+            'run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
+    df_filter_output.loc[df_filter_output.replicate_count <
+                         min_replicate_number, 'filter_delete'] = True
     #
-    df_filter_output = df_filter_output[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count', 'filter_delete']]
+    df_filter_output = df_filter_output[['run_id',
+                                         'marker_id',
+                                         'variant_id',
+                                         'biosample_id',
+                                         'replicate',
+                                         'read_count',
+                                         'filter_delete']]
     return df_filter_output
-

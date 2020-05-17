@@ -1,11 +1,11 @@
 import multiprocessing
 import yaml
 
-########################################################################################################################
+##########################################################################
 #
 # Default VTAM parameters_numerical_default
 #
-########################################################################################################################
+##########################################################################
 
 params_default_str = """################################################################################
 # Parameters of the "merge" command
@@ -99,27 +99,62 @@ def get_dic_params_default():
     return params_default_dic
 
 
-########################################################################################################################
+##########################################################################
 #
 #  Header of these information files
 #  PairedFastq, MergedFasta, SortedReadFasta
 #
-########################################################################################################################
+##########################################################################
 
 header_paired_fastq = {'run', 'marker', 'biosample', 'replicate'}
-header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev', 'primerrev', 'mergedfasta'}
-header_sortedread_fasta = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
+header_merged_fasta = {
+    'run',
+    'marker',
+    'biosample',
+    'replicate',
+    'tagfwd',
+    'primerfwd',
+    'tagrev',
+    'primerrev',
+    'mergedfasta'}
+header_sortedread_fasta = {
+    'run',
+    'marker',
+    'biosample',
+    'replicate',
+    'sortedfasta'}
 
 
-########################################################################################################################
+##########################################################################
 #
 #  Tax_assign parameters_numerical_default
 #
-########################################################################################################################
+##########################################################################
 
-rank_hierarchy = ['no rank', 'phylum', 'superclass', 'class', 'subclass', 'infraclass', 'superorder', 'order',
-                  'suborder', 'infraorder', 'family', 'subfamily', 'genus', 'subgenus', 'species', 'subspecies']
-rank_hierarchy_asv_table = ['phylum', 'class', 'order', 'family', 'genus', 'species']
+rank_hierarchy = [
+    'no rank',
+    'phylum',
+    'superclass',
+    'class',
+    'subclass',
+    'infraclass',
+    'superorder',
+    'order',
+    'suborder',
+    'infraorder',
+    'family',
+    'subfamily',
+    'genus',
+    'subgenus',
+    'species',
+    'subspecies']
+rank_hierarchy_asv_table = [
+    'phylum',
+    'class',
+    'order',
+    'family',
+    'genus',
+    'species']
 
 # public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
 taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
@@ -129,11 +164,11 @@ sorted_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/sort
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
-########################################################################################################################
+##########################################################################
 #
 #  FilterLFNreference
 #
-########################################################################################################################
+##########################################################################
 
 FilterLFNreference_records = [
     {'filter_id': 2, 'filter_name': 'lfn_per_variant'},

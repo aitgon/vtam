@@ -15,16 +15,22 @@ class VariantReadCountLikeTable(object):
         """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id,
          marker_id, biosample_id, replicate"""
 
-        sample_column_list = pandas.DataFrame(sample_record_list).columns.tolist()
+        sample_column_list = pandas.DataFrame(
+            sample_record_list).columns.tolist()
 
         with self.engine.connect() as conn:
             stmt = self.variant_read_count_like_model.__table__.delete()
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
+            stmt = stmt.where(
+                self.variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
+            stmt = stmt.where(
+                self.variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
             if 'biosample_id' in sample_column_list:
-                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
-            if 'replicate' in sample_column_list and 'replicate' in [col.key for col in self.variant_read_count_like_model.__table__.columns]:
-                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
+                stmt = stmt.where(
+                    self.variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+            if 'replicate' in sample_column_list and 'replicate' in [
+                    col.key for col in self.variant_read_count_like_model.__table__.columns]:
+                stmt = stmt.where(
+                    self.variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
 
     ##########################################################
@@ -58,5 +64,3 @@ class VariantReadCountLikeTable(object):
     #             instance['read_count_average'] = row.read_count_average
     #         records.append(instance)
     #     return records
-
-

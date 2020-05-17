@@ -14,5 +14,6 @@ class Variant(Base):
     @validates('sequence')
     def validate_dna(self, key, value):
         """Validate that this string is a DNA sequence and returns the uppder case"""
-        assert str(Seq(value, IUPAC.unambiguous_dna).alphabet) == 'IUPACUnambiguousDNA()'
+        assert str(
+            Seq(value, IUPAC.unambiguous_dna).alphabet) == 'IUPACUnambiguousDNA()'
         return value.upper()
