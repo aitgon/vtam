@@ -19,22 +19,40 @@ class TestArgParser(unittest.TestCase):
         self.foopaths = {}
         self.foopaths['filedoesnotexist'] = "filedoesnotexist"
         self.foopaths['dirdoesnotexist'] = "dirdoesnotexist"
-        self.foopaths['fileisempty'] = os.path.join(test_path, "test_files/emptyfile")
+        self.foopaths['fileisempty'] = os.path.join(
+            test_path, "test_files/emptyfile")
         self.foopaths['filenottsv'] = __file__
-        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
-        self.foopaths['params_yml'] = os.path.join(package_path, 'doc/data/dryad.f40v5_small/params_mfzr.yml')
-        self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_files/params_wrong.yml")
-        self.foopaths['known_occurrences'] = os.path.join(package_path, 'doc/data/dryad.f40v5_small/known_occurrences.tsv')
-        self.foopaths['asvtable_tsv'] = os.path.join(test_path, "test_files_dryad.f40v5_small/asvtable_default.tsv")
-        self.foopaths['runmarker_tsv'] = os.path.join(package_path, 'doc/data/dryad.f40v5_small/pool_run_marker.tsv')
+        self.foopaths['readinfo_tsv'] = os.path.join(
+            package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
+        self.foopaths['params_yml'] = os.path.join(
+            package_path, 'doc/data/dryad.f40v5_small/params_mfzr.yml')
+        self.foopaths['params_wrong_yml'] = os.path.join(
+            test_path, "test_files/params_wrong.yml")
+        self.foopaths['known_occurrences'] = os.path.join(
+            package_path, 'doc/data/dryad.f40v5_small/known_occurrences.tsv')
+        self.foopaths['asvtable_tsv'] = os.path.join(
+            test_path, "test_files_dryad.f40v5_small/asvtable_default.tsv")
+        self.foopaths['runmarker_tsv'] = os.path.join(
+            package_path, 'doc/data/dryad.f40v5_small/pool_run_marker.tsv')
 
-        self.foopaths['taxonomy_tsv'] = os.path.join(PathManager.get_test_path(), "test_files_dryad.f40v5_small/taxonomy.tsv")
-        self.foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
+        self.foopaths['taxonomy_tsv'] = os.path.join(
+            PathManager.get_test_path(),
+            "test_files_dryad.f40v5_small/taxonomy.tsv")
+        self.foopaths['foodir'] = os.path.relpath(
+            os.path.dirname(__file__), PathManager.get_package_path())
         self.foopaths['outdir'] = outdir_path
         self.foopaths['emptydir'] = os.path.join(outdir_path, 'emptydir')
-        pathlib.Path(os.path.join(self.foopaths['emptydir'])).mkdir(parents=True, exist_ok=True)
-        self.foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
-                                              PathManager.get_package_path())
+        pathlib.Path(
+            os.path.join(
+                self.foopaths['emptydir'])).mkdir(
+            parents=True,
+            exist_ok=True)
+        self.foopaths['blastdb'] = os.path.relpath(
+            os.path.join(
+                PathManager.get_test_path(),
+                'test_files',
+                'blastdb'),
+            PathManager.get_package_path())
 
     def test_arg_parser_params(self):
 
@@ -50,32 +68,37 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_filter(self):
 
         # Ok
-        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv".format(**self.foopaths).split()
+        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv".format(
+            **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        ################################################################################################################
+        #######################################################################
         #
         # raises SystemExit
         #
-        ################################################################################################################
+        #######################################################################
 
         args = ["filter"]
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {filedoesnotexist} --readdir {foodir} --outdir {foodir}".format(**self.foopaths).split()
+        args = "filter --readinfo {filedoesnotexist} --readdir {foodir} --outdir {foodir}".format(
+            **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {filenottsv} --readdir {foodir} --outdir {foodir}".format(**self.foopaths).split()
+        args = "filter --readinfo {filenottsv} --readdir {foodir} --outdir {foodir}".format(
+            **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {emptydir} --outdir {foodir}".format(**self.foopaths).split()
+        args = "filter --readinfo {readinfo_tsv} --readdir {emptydir} --outdir {foodir}".format(
+            **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {dirdoesnotexist} --outdir {foodir}".format(**self.foopaths).split()
+        args = "filter --readinfo {readinfo_tsv} --readdir {dirdoesnotexist} --outdir {foodir}".format(
+            **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
@@ -86,11 +109,11 @@ class TestArgParser(unittest.TestCase):
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        ################################################################################################################
+        #######################################################################
         #
         # raises SystemExit
         #
-        ################################################################################################################
+        #######################################################################
 
         args = ["optimize"]
         with self.assertRaises(SystemExit):
@@ -113,11 +136,11 @@ class TestArgParser(unittest.TestCase):
                "--taxonomy  {taxonomy_tsv}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        ################################################################################################################
+        #######################################################################
         #
         # raises SystemExit
         #
-        ################################################################################################################
+        #######################################################################
 
         args = ["taxassign"]
         with self.assertRaises(SystemExit):
@@ -126,14 +149,15 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_pool_runmarker(self):
 
         # Ok
-        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(**self.foopaths).split()
+        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(
+            **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        ################################################################################################################
+        #######################################################################
         #
         # raises SystemExit
         #
-        ################################################################################################################
+        #######################################################################
 
         args = ["pool"]
         with self.assertRaises(SystemExit):

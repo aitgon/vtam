@@ -8,19 +8,26 @@ class FilterCodonStopRunner(object):
         self.variant_read_count_df = variant_read_count_df
         self.genetic_code = None
 
-    def get_variant_read_count_delete_df(self, variant_df, genetic_code, skip_filter_codon_stop):
+    def get_variant_read_count_delete_df(
+            self,
+            variant_df,
+            genetic_code,
+            skip_filter_codon_stop):
 
         variant_read_count_delete_df = self.variant_read_count_df.copy()
         variant_read_count_delete_df['filter_delete'] = False
 
         if not skip_filter_codon_stop:
 
-            variant_has_stop_codon_df = self.annotate_stop_codon_count(variant_df, genetic_code)
-            variants_with_stop_codons_list = variant_has_stop_codon_df.id[variant_has_stop_codon_df['has_stop_codon'] == 1].tolist()
+            variant_has_stop_codon_df = self.annotate_stop_codon_count(
+                variant_df, genetic_code)
+            variants_with_stop_codons_list = variant_has_stop_codon_df.id[variant_has_stop_codon_df['has_stop_codon'] == 1].tolist(
+            )
 
             variant_read_count_delete_df = self.variant_read_count_df.copy()
             variant_read_count_delete_df['filter_delete'] = False
-            variant_read_count_delete_df.loc[variant_read_count_delete_df.variant_id.isin(variants_with_stop_codons_list), 'filter_delete'] = True
+            variant_read_count_delete_df.loc[variant_read_count_delete_df.variant_id.isin(
+                variants_with_stop_codons_list), 'filter_delete'] = True
 
         return variant_read_count_delete_df
 
@@ -32,8 +39,8 @@ class FilterCodonStopRunner(object):
         pandas DF
             Columns are id, sequence, codon_stop_nb_frame1, codon_stop_nb_frame2, codon_stop_nb_frame3"""
 
-
-        variant_df['sequence'] = variant_df['sequence'].str.upper()  # For safety, convert to upper
+        # For safety, convert to upper
+        variant_df['sequence'] = variant_df['sequence'].str.upper()
 
         variant_has_stop_codon_df = variant_df.copy()
         variant_has_stop_codon_df['has_stop_codon'] = 0
@@ -42,12 +49,18 @@ class FilterCodonStopRunner(object):
             id = row[1].id
             sequence = row[1].sequence
             #
-            if self.seq_has_codon_stop(sequence=sequence, frame=1, genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id == id, 'has_stop_codon'] = 1
+            if self.seq_has_codon_stop(
+                    sequence=sequence,
+                    frame=1,
+                    genetic_code=genetic_code):
+                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
+                                              id, 'has_stop_codon'] = 1
             elif self.seq_has_codon_stop(sequence=sequence, frame=2, genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id == id, 'has_stop_codon'] = 1
+                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
+                                              id, 'has_stop_codon'] = 1
             elif self.seq_has_codon_stop(sequence=sequence, frame=3, genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id == id, 'has_stop_codon'] = 1
+                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
+                                              id, 'has_stop_codon'] = 1
 
         return variant_has_stop_codon_df
 
@@ -91,7 +104,10 @@ class FilterCodonStopRunner(object):
 
         """
         # genetic table number 5: 'stop_codons': ['TAA', 'UAA', 'TAG', 'UAG']
-        stop_codon_list = Bio.Data.CodonTable.generic_by_id[genetic_code].__dict__['stop_codons']
-        codon_list = [sequence[i:i + 3] for i in range(frame - 1, len(sequence), 3)]
-        codon_stop_count = sum([codon_list.count(stop_codon) for stop_codon in stop_codon_list])
+        stop_codon_list = Bio.Data.CodonTable.generic_by_id[genetic_code].__dict__[
+            'stop_codons']
+        codon_list = [sequence[i:i + 3]
+                      for i in range(frame - 1, len(sequence), 3)]
+        codon_stop_count = sum([codon_list.count(stop_codon)
+                                for stop_codon in stop_codon_list])
         return codon_stop_count

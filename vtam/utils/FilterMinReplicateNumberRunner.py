@@ -38,15 +38,22 @@ class FilterMinReplicateNumberRunner:
         # replicate count
         df_grouped = self.variant_read_count_df.groupby(
             by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-        df_grouped = df_grouped[['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate']]  # keep columns
-        df_grouped = df_grouped.rename(columns={'replicate': 'replicate_count'})
+        df_grouped = df_grouped[['run_id',
+                                 'marker_id',
+                                 'variant_id',
+                                 'biosample_id',
+                                 'replicate']]  # keep columns
+        df_grouped = df_grouped.rename(
+            columns={'replicate': 'replicate_count'})
         #
         variant_read_count_delete_df['filter_delete'] = False
-        variant_read_count_delete_df = pandas.merge(variant_read_count_delete_df, df_grouped,
-                                        on=['run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
-        variant_read_count_delete_df.loc[variant_read_count_delete_df.replicate_count < min_replicate_number, 'filter_delete'] = True
+        variant_read_count_delete_df = pandas.merge(
+            variant_read_count_delete_df, df_grouped, on=[
+                'run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
+        variant_read_count_delete_df.loc[variant_read_count_delete_df.replicate_count <
+                                         min_replicate_number, 'filter_delete'] = True
         #
-        variant_read_count_delete_df = variant_read_count_delete_df[
-            ['run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count', 'filter_delete']]
+        variant_read_count_delete_df = variant_read_count_delete_df[[
+            'run_id', 'marker_id', 'variant_id', 'biosample_id', 'replicate', 'read_count', 'filter_delete']]
 
         return variant_read_count_delete_df

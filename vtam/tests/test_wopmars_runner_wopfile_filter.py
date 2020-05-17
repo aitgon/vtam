@@ -15,13 +15,24 @@ class TestWorpmarsRunnerFilter(TestCase):
         package_path = PathManager.get_package_path()
 
         foopaths = {}
-        foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
-        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(),
-                                                                             'output'), PathManager.get_package_path())
-        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
-                                              PathManager.get_package_path())
-        foopaths['readinfo_tsv'] = os.path.join(package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
+        foopaths['foofile'] = os.path.relpath(
+            __file__, PathManager.get_package_path())
+        foopaths['foodir'] = os.path.relpath(
+            os.path.dirname(__file__),
+            PathManager.get_package_path())
+        foopaths['outdir'] = os.path.relpath(
+            os.path.join(
+                PathManager.get_test_path(),
+                'output'),
+            PathManager.get_package_path())
+        foopaths['blastdb'] = os.path.relpath(
+            os.path.join(
+                PathManager.get_test_path(),
+                'test_files',
+                'blastdb'),
+            PathManager.get_package_path())
+        foopaths['readinfo_tsv'] = os.path.join(
+            package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
         cls.foopaths = foopaths
 
         cls.minseqlength_value_32 = 32
@@ -35,7 +46,8 @@ class TestWorpmarsRunnerFilter(TestCase):
 
     def test_wopmars_runner_filter(self):
         #
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
+        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(
+            **self.foopaths)
         parser = ArgParser.get_main_arg_parser()
         args = parser.parse_args(args_str.split())
 
@@ -50,7 +62,8 @@ class TestWorpmarsRunnerFilter(TestCase):
         # Test wopfile
         #
         ###############################################################
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
+        wopmars_runner = WopmarsRunner(
+            command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
         wopfile_content_bak = """rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
@@ -290,13 +303,18 @@ rule MakeAsvTable:
         #
         ###############################################################
 
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
-                                    PathManager.get_package_path())
-        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
+        wopmars_runner = WopmarsRunner(
+            command='filter', cli_args_dic=vars(args))
+        wopfile_path = os.path.relpath(
+            os.path.join(
+                PathManager.get_package_path(),
+                "tests/output/wopfile"),
+            PathManager.get_package_path())
+        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(
+            path=wopfile_path)
 
-        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['input']['file']['threshold_specific']
-                        == self.foopaths['foofile'])
+        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)[
+                        'rule FilterLFN']['input']['file']['threshold_specific'] == self.foopaths['foofile'])
 
     def test_wopmars_runner_asv_with_lfn_variant_replicate(self):
 
@@ -306,7 +324,8 @@ rule MakeAsvTable:
         #
         #####################
 
-        params_yml_str = "lfn_variant_replicate_threshold: {}".format(self.lfn_variant_replicate_threshold)
+        params_yml_str = "lfn_variant_replicate_threshold: {}".format(
+            self.lfn_variant_replicate_threshold)
         params_yml_path = os.path.join(self.tempdir, "params_wrong.yml")
         with open(params_yml_path, "w") as fout:
             fout.write(params_yml_str)
@@ -333,12 +352,21 @@ rule MakeAsvTable:
         #
         ###############################################################
 
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
-                                    PathManager.get_package_path())
-        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
+        wopmars_runner = WopmarsRunner(
+            command='filter', cli_args_dic=vars(args))
+        wopfile_path = os.path.relpath(
+            os.path.join(
+                PathManager.get_package_path(),
+                "tests/output/wopfile"),
+            PathManager.get_package_path())
+        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(
+            path=wopfile_path)
 
-        self.assertTrue('lfn_variant_replicate_threshold' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
-        self.assertFalse('lfn_variant_threshold' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
-        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params']['lfn_variant_replicate_threshold']
-                        == self.lfn_variant_replicate_threshold)
+        self.assertTrue('lfn_variant_replicate_threshold' in yaml.load(
+            wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
+        self.assertFalse(
+            'lfn_variant_threshold' in yaml.load(
+                wopfile_content,
+                Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
+        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)[
+                        'rule FilterLFN']['params']['lfn_variant_replicate_threshold'] == self.lfn_variant_replicate_threshold)

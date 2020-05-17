@@ -24,7 +24,6 @@ class SampleInformationFile:
         self.tsv_path = tsv_path
 
     def delete_from_db(self, engine, variant_read_count_like_model):
-
         """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
 
         sample_information_df = self.to_identifier_df(engine=engine)
@@ -33,15 +32,24 @@ class SampleInformationFile:
 
         with engine.connect() as conn:
             stmt = variant_read_count_like_model.__table__.delete()
-            stmt = stmt.where(variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
-            stmt = stmt.where(variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
+            stmt = stmt.where(
+                variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
+            stmt = stmt.where(
+                variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
             if 'biosample_id' in sample_column_list:
-                stmt = stmt.where(variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
-            if 'replicate' in sample_column_list and 'replicate' in [col.key for col in variant_read_count_like_model.__table__.columns]:
-                stmt = stmt.where(variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
+                stmt = stmt.where(
+                    variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+            if 'replicate' in sample_column_list and 'replicate' in [
+                    col.key for col in variant_read_count_like_model.__table__.columns]:
+                stmt = stmt.where(
+                    variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
 
-    def get_variant_read_count_df(self, variant_read_count_like_model, engine, filter_id=None):
+    def get_variant_read_count_df(
+            self,
+            variant_read_count_like_model,
+            engine,
+            filter_id=None):
         """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
 
         :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
@@ -53,36 +61,57 @@ class SampleInformationFile:
 
         variant_read_count_list = []
         # for sample_instance in self.get_fasta_information_record_list():
-        for sample_instance_row in self.to_identifier_df(engine=engine).itertuples():
+        for sample_instance_row in self.to_identifier_df(
+                engine=engine).itertuples():
             run_id = sample_instance_row.run_id
             marker_id = sample_instance_row.marker_id
             biosample_id = sample_instance_row.biosample_id
             replicate = sample_instance_row.replicate
-            stmt_select = sqlalchemy.select([
-                variant_read_count_like_table.c.run_id, variant_read_count_like_table.c.marker_id,
-                variant_read_count_like_table.c.biosample_id, variant_read_count_like_table.c.replicate,
-                variant_read_count_like_table.c.variant_id, variant_read_count_like_table.c.read_count]).distinct()\
-                .where(variant_read_count_like_table.c.run_id == run_id).where(variant_read_count_like_table.c.marker_id == marker_id)\
-                .where(variant_read_count_like_table.c.biosample_id == biosample_id).where(variant_read_count_like_table.c.replicate == replicate)
+            stmt_select = sqlalchemy.select(
+                [
+                    variant_read_count_like_table.c.run_id,
+                    variant_read_count_like_table.c.marker_id,
+                    variant_read_count_like_table.c.biosample_id,
+                    variant_read_count_like_table.c.replicate,
+                    variant_read_count_like_table.c.variant_id,
+                    variant_read_count_like_table.c.read_count]).distinct() .where(
+                variant_read_count_like_table.c.run_id == run_id).where(
+                variant_read_count_like_table.c.marker_id == marker_id) .where(
+                    variant_read_count_like_table.c.biosample_id == biosample_id).where(
+                        variant_read_count_like_table.c.replicate == replicate)
             # Used for filters tables where filter_delete attribute exists
-            if 'filter_delete' in [column.key for column in variant_read_count_like_table.columns]:
-                stmt_select = stmt_select.where(variant_read_count_like_table.c.filter_delete == 0)
-            # used for filter lfn where filter_id = 8 is necessary (do not pass all filters)
-            if not filter_id is None:
-                stmt_select = stmt_select.where(variant_read_count_like_table.c.filter_id == filter_id)
+            if 'filter_delete' in [
+                    column.key for column in variant_read_count_like_table.columns]:
+                stmt_select = stmt_select.where(
+                    variant_read_count_like_table.c.filter_delete == 0)
+            # used for filter lfn where filter_id = 8 is necessary (do not pass
+            # all filters)
+            if filter_id is not None:
+                stmt_select = stmt_select.where(
+                    variant_read_count_like_table.c.filter_id == filter_id)
             with engine.connect() as conn2:
                 for row in conn2.execute(stmt_select).fetchall():
                     variant_read_count_list.append(row)
         #
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count'])
+        variant_read_count_df = pandas.DataFrame.from_records(
+            variant_read_count_list,
+            columns=[
+                'run_id',
+                'marker_id',
+                'biosample_id',
+                'replicate',
+                'variant_id',
+                'read_count'])
 
         # Exit if no variants for analysis
         try:
             assert variant_read_count_df.shape[0] > 0
         except AssertionError:
-            Logger.instance().warning(VTAMexception("No variants available after this filter. "
-                                                    "The pipeline will stop here.".format(self.__class__.__name__)))
+            Logger.instance().warning(
+                VTAMexception(
+                    "No variants available after this filter. "
+                    "The pipeline will stop here.".format(
+                        self.__class__.__name__)))
             sys.exit(0)
         return variant_read_count_df
 
@@ -107,14 +136,18 @@ class SampleInformationFile:
                 biosample_name = row.biosample
                 replicate = int(row.replicate)
                 # get run_id ###########
-                stmt_select_run_id = sqlalchemy.select([Run.__table__.c.id]).where(Run.__table__.c.name == run_name)
+                stmt_select_run_id = sqlalchemy.select(
+                    [Run.__table__.c.id]).where(Run.__table__.c.name == run_name)
                 run_id = conn.execute(stmt_select_run_id).first()[0]
                 # get marker_id ###########
-                stmt_select_marker_id = sqlalchemy.select([Marker.__table__.c.id]).where(Marker.__table__.c.name == marker_name)
+                stmt_select_marker_id = sqlalchemy.select([Marker.__table__.c.id]).where(
+                    Marker.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
                 # get biosample_id ###########
-                stmt_select_biosample_id = sqlalchemy.select([Biosample.__table__.c.id]).where(Biosample.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(stmt_select_biosample_id).first()[0]
+                stmt_select_biosample_id = sqlalchemy.select([Biosample.__table__.c.id]).where(
+                    Biosample.__table__.c.name == biosample_name)
+                biosample_id = conn.execute(
+                    stmt_select_biosample_id).first()[0]
                 new_row_dic = dict(row)
                 new_row_dic['run_id'] = run_id
                 new_row_dic['marker_id'] = marker_id
@@ -124,7 +157,8 @@ class SampleInformationFile:
                 del new_row_dic["marker"]
                 del new_row_dic["biosample"]
 
-                sample_info_df = sample_info_df.append(pandas.DataFrame(new_row_dic, index=[0]), sort=False)
+                sample_info_df = sample_info_df.append(
+                    pandas.DataFrame(new_row_dic, index=[0]), sort=False)
 
         sample_info_df.columns = sample_info_df.columns.str.lower()
         return sample_info_df
@@ -172,16 +206,20 @@ class SampleInformationFile:
         """
 
         if not os.path.isfile(self.tsv_path):
-            raise argparse.ArgumentTypeError("The file '{}' does not exist. Please fix it.".format(
-                self.tsv_path))
+            raise argparse.ArgumentTypeError(
+                "The file '{}' does not exist. Please fix it.".format(
+                    self.tsv_path))
         elif not os.stat(self.tsv_path).st_size > 0:
-            raise argparse.ArgumentTypeError("The file '{}' is empty!".format(self.tsv_path))
+            raise argparse.ArgumentTypeError(
+                "The file '{}' is empty!".format(self.tsv_path))
         sample_info_df = self.read_tsv_into_df()
-        if set(sample_info_df.columns) >= header:  # contains at least the 'header_lower' columns
+        if set(
+                sample_info_df.columns) >= header:  # contains at least the 'header_lower' columns
             return self.tsv_path  # return the tsv_path
         else:
-            raise argparse.ArgumentTypeError("The format of file '{}' is wrong. Please fix it.".format(
-                self.tsv_path))
+            raise argparse.ArgumentTypeError(
+                "The format of file '{}' is wrong. Please fix it.".format(
+                    self.tsv_path))
 
     def to_sqlite(self, session):
         """Takes the sample information df and replaces names with ids
@@ -202,45 +240,60 @@ class SampleInformationFile:
             #
             # Insert run
             run_obj = {'name': run_name}
-            run_instance = SampleInformationFile.get_or_create(session, Run, **run_obj)
+            run_instance = SampleInformationFile.get_or_create(
+                session, Run, **run_obj)
             run_id = run_instance.id
             #
             # Insert marker_id
             marker_obj = {'name': marker_name}
-            marker_instance = SampleInformationFile.get_or_create(session, Marker, **marker_obj)
+            marker_instance = SampleInformationFile.get_or_create(
+                session, Marker, **marker_obj)
             marker_id = marker_instance.id
             #
             # Insert Biosamples
             biosample_obj = {'name': biosample_name}
-            biosample_instance = SampleInformationFile.get_or_create(session, Biosample, **biosample_obj)
+            biosample_instance = SampleInformationFile.get_or_create(
+                session, Biosample, **biosample_obj)
             biosample_id = biosample_instance.id
             #
             # Insert file output
             fasta_obj = {'name': sorted_read_file, 'run_id': run_id}
-            fasta_instance = SampleInformationFile.get_or_create(session, SortedReadFile, **fasta_obj)
+            fasta_instance = SampleInformationFile.get_or_create(
+                session, SortedReadFile, **fasta_obj)
             fasta_id = fasta_instance.id
 
             # Insert sample_information
-            sample_information_obj = {'biosample_id': biosample_id, 'replicate': replicate, 'run_id': run_id}
+            sample_information_obj = {
+                'biosample_id': biosample_id,
+                'replicate': replicate,
+                'run_id': run_id}
             sample_information_obj['sortedreadfile_id'] = fasta_id
             sample_information_obj['marker_id'] = marker_id
-            SampleInformationFile.get_or_create(session, SampleInformation, **sample_information_obj)
+            SampleInformationFile.get_or_create(
+                session, SampleInformation, **sample_information_obj)
 
-    def get_variant_df(self, variant_read_count_like_model, engine, filter_id=None):
+    def get_variant_df(
+            self,
+            variant_read_count_like_model,
+            engine,
+            filter_id=None):
         """Based on the SortedReadFile information TSV and variant_model, returns the variant_df
 
         :return: DataFrame with columns: index, sequence
         """
 
-        variant_read_count_like_df = self.get_variant_read_count_df(variant_read_count_like_model, engine, filter_id)
+        variant_read_count_like_df = self.get_variant_read_count_df(
+            variant_read_count_like_model, engine, filter_id)
 
         record_list = []
         variant_model_table = Variant.__table__
         for variant_id in variant_read_count_like_df.variant_id.unique().tolist():
             with engine.connect() as conn:
-                stmt_select = sqlalchemy.select([variant_model_table.c.sequence]).where(variant_model_table.c.id == variant_id)
+                stmt_select = sqlalchemy.select([variant_model_table.c.sequence]).where(
+                    variant_model_table.c.id == variant_id)
                 for sequence in conn.execute(stmt_select).first():
-                    record_list.append({'id': variant_id, 'sequence': sequence})
+                    record_list.append(
+                        {'id': variant_id, 'sequence': sequence})
 
         variant_df = pandas.DataFrame.from_records(record_list, index='id')
 
