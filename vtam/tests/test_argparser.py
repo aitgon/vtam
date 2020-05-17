@@ -23,17 +23,17 @@ class TestArgParser(unittest.TestCase):
             test_path, "test_files/emptyfile")
         self.foopaths['filenottsv'] = __file__
         self.foopaths['readinfo_tsv'] = os.path.join(
-            package_path, "doc/data/dryad.f40v5_small/readinfo_mfzr.tsv")
+            package_path, "doc/data/readinfo_mfzr.tsv")
         self.foopaths['params_yml'] = os.path.join(
-            package_path, 'doc/data/dryad.f40v5_small/params_mfzr.yml')
+            package_path, 'doc/data/params_mfzr.yml')
         self.foopaths['params_wrong_yml'] = os.path.join(
             test_path, "test_files/params_wrong.yml")
         self.foopaths['known_occurrences'] = os.path.join(
-            package_path, 'doc/data/dryad.f40v5_small/known_occurrences.tsv')
+            package_path, 'doc/data/known_occurrences.tsv')
         self.foopaths['asvtable_tsv'] = os.path.join(
             test_path, "test_files_dryad.f40v5_small/asvtable_default.tsv")
         self.foopaths['runmarker_tsv'] = os.path.join(
-            package_path, 'doc/data/dryad.f40v5_small/pool_run_marker.tsv')
+            package_path, 'doc/data/pool_run_marker.tsv')
 
         self.foopaths['taxonomy_tsv'] = os.path.join(
             PathManager.get_test_path(),

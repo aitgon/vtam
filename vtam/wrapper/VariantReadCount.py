@@ -172,7 +172,7 @@ class VariantReadCount(ToolWrapper):
         # sample_info_ids_df = fasta_info_obj.get_ids_df()
         sample_info_tsv_obj = SampleInformationFile(
             tsv_path=input_file_readinfo)
-        sample_info_ids_df = sample_info_tsv_obj.to_identifier_df()
+        sample_info_ids_df = sample_info_tsv_obj.to_identifier_df(engine=engine)
 
         Logger.instance().debug(
             "file: {}; line: {}; Read demultiplexed FASTA files".format(
