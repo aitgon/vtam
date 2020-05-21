@@ -3,10 +3,10 @@ import os
 import pathlib
 
 import pandas
-
 from unittest import TestCase
-from vtam.utils.PathManager import PathManager
+
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
+from vtam.utils.PathManager import PathManager
 
 
 class TestFilterPCRError(TestCase):
@@ -15,27 +15,34 @@ class TestFilterPCRError(TestCase):
         os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
 
         # Input from min_replicate_number
-        self.variant_expected_df = pandas.DataFrame({
+        self.variant_df = pandas.DataFrame({
             'sequence': [
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTG',
+                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
+                'TGTTCTTTATTTATTATTTGATGGTTTTGCTGGTGTTTTAGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
+                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTCGCTGTAACTTTATCATTATTAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
+                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTGGTGTTTTCGCTGTAACTTTATCATTATCAATTAGATTACAATTAGTTGCTACTGGGTATGGATGATTAGCTTTGAATTATCAATTTTATAACACTATTGTAACTGCTCATGGATTATTAATAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATTATTAGTTGG',
             ],
-        }, index=[1])
-        # Input from min_replicate_number
-        self.variant_unexpected_df = pandas.DataFrame({
-            'sequence': [
-                'TGTTCTTTATTTATTATTTGCTGGTTTTGCTT',
-            ],
-        }, index=[2])
+        }, index=list(range(1, 5)))
         #
         self.variant_read_count_df = pandas.DataFrame({
-            'run_id': [1] * 4,
-            'marker_id': [1] * 4,
-            'biosample_id': [1] * 4,
-            'replicate': [1, 2] * 2,
-            'variant_id': [1] * 2 + [2] * 2,
+            'run_id': [1] * 8,
+            'marker_id': [1] * 8,
+            'biosample_id': [1] * 8,
+            'replicate': [1, 2] * 4,
+            'variant_id': [1] * 2 + [2] * 2 + [3] * 2 + [4] * 2,
             'read_count': [
-                100, 100, 1, 1,
+                350, 300, 300, 220, 60, 0, 2, 0,
             ],
+        })
+        #
+        # Output of vsearch
+        self.pcr_error_vsearch_output_df = pandas.DataFrame({
+            'query': [3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 1, 1],
+            'target': [3, 1, 4, 2, 2, 1, 3, 4, 4, 3, 1, 2, 1, 2],
+            'alnlen': [300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],
+            'ids': [300, 299, 299, 298, 300, 299, 298, 297, 300, 299, 298, 297, 300, 299],
+            'mism': [0, 1, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1],
+            'gaps': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         })
 
         self.this_tempdir = os.path.join(
@@ -44,63 +51,38 @@ class TestFilterPCRError(TestCase):
         pathlib.Path(self.this_tempdir).mkdir(parents=True, exist_ok=True)
 
     def test_get_vsearch_alignement_df(self):
+
         filter_pcr_error_runner = FilterPCRerrorRunner(
-            variant_expected_df=self.variant_expected_df,
-            variant_unexpected_df=self.variant_unexpected_df,
-            variant_read_count_df=self.variant_read_count_df,
-            tmp_dir=self.this_tempdir)
+            variant_expected_df=self.variant_df,
+            variant_unexpected_df=self.variant_df,
+            variant_read_count_df=self.variant_read_count_df)
         vsearch_alignement_df = filter_pcr_error_runner.get_vsearch_alignement_df()
-
-        vsearch_alignement_df_bak_str = """   variant_id_unexpected  variant_id_expected  alnlen  ids  mism  gaps
-0                      2                    1      32   31     1     0"""
-        self.assertTrue(vsearch_alignement_df_bak_str ==
-                        vsearch_alignement_df.to_string())
-
-    def test_get_filter_pcr_error_df(self):
-
-        filter_pcr_error_runner = FilterPCRerrorRunner(
-            variant_expected_df=self.variant_expected_df,
-            variant_unexpected_df=self.variant_unexpected_df,
-            variant_read_count_df=self.variant_read_count_df,
-            tmp_dir=self.this_tempdir)
-        variant_unexpected_to_expected_ratio_df = filter_pcr_error_runner.get_variant_unexpected_to_expected_ratio_df()
-
-        variant_unexpected_to_expected_ratio_df_bak = pandas.DataFrame({
-            'run_id': [1],
-            'marker_id': [1],
-            'biosample_id': [1],
-            'variant_id_expected': [1],
-            'N_ij_expected': [200],
-            'variant_id_unexpected': [2],
-            'N_ij_unexpected': [2],
-            'N_ij_unexpected_to_expected_ratio': [0.01],
-        })
-        #
-        pandas.testing.assert_frame_equal(
-            variant_unexpected_to_expected_ratio_df,
-            variant_unexpected_to_expected_ratio_df_bak)
+        self.assertTrue(
+            sorted(
+                vsearch_alignement_df.ids.unique().tolist()) == [
+                297,
+                298,
+                299,
+                300])
 
     def test_get_filter_output_df(self):
 
         filter_pcr_error_runner = FilterPCRerrorRunner(
-            variant_expected_df=self.variant_expected_df,
-            variant_unexpected_df=self.variant_unexpected_df,
-            variant_read_count_df=self.variant_read_count_df,
-            tmp_dir=self.this_tempdir)
+            variant_expected_df=self.variant_df,
+            variant_unexpected_df=self.variant_df,
+            variant_read_count_df=self.variant_read_count_df)
+        #
         pcr_error_var_prop = 0.05
-
         filter_output_df = filter_pcr_error_runner.get_variant_read_count_delete_df(
             pcr_error_var_prop)
-
-        filter_output_df_bak = pandas.DataFrame({
-            'run_id': [1] * 4,
-            'marker_id': [1] * 4,
-            'biosample_id': [1] * 4,
-            'replicate': [1, 2] * 2,
-            'variant_id': [1] * 2 + [2] * 2,
-            'read_count': [100, 100, 1, 1, ],
-            'filter_delete': [False, False, True, True],
-        })
-        #
-        pandas.testing.assert_frame_equal(
-            filter_output_df, filter_output_df_bak)
+        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
+0       1          1             1          1           1         350          False
+1       1          1             1          2           1         300          False
+2       1          1             1          1           2         300          False
+3       1          1             1          2           2         220          False
+4       1          1             1          1           3          60          False
+5       1          1             1          2           3           0          False
+6       1          1             1          1           4           2           True
+7       1          1             1          2           4           0           True"""
+        self.assertTrue(filter_output_df_bak_str ==
+                        filter_output_df.to_string())

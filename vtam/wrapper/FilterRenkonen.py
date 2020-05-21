@@ -1,13 +1,12 @@
-from vtam import Logger
-from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
-from vtam.utils.VTAMexception import VTAMexception
-from wopmars.models.ToolWrapper import ToolWrapper
-
 import pandas
 import sys
+
+from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
+from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from wopmars.models.ToolWrapper import ToolWrapper
 
 
 class FilterRenkonen(ToolWrapper):
@@ -53,12 +52,12 @@ class FilterRenkonen(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        #######################################################################
+        ############################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        #######################################################################
-        #
+        ############################################################################################
+
         # Input file
         fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_readinfo)
         #
@@ -75,13 +74,13 @@ class FilterRenkonen(ToolWrapper):
         output_filter_renkonen_model = self.output_table(
             FilterRenkonen.__output_table_filter_renkonen)
 
-        #######################################################################
+        ############################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
-        #######################################################################
+        ############################################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
@@ -91,11 +90,11 @@ class FilterRenkonen(ToolWrapper):
         variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
             variant_read_count_like_model=input_filter_chimera_model, engine=engine, filter_id=None)
 
-        #######################################################################
+        ############################################################################################
         #
         # Run per run_id, marker_id
         #
-        #######################################################################
+        ############################################################################################
 
         variant_read_count_delete_df = pandas.DataFrame()
         run_marker_df = variant_read_count_df[[
@@ -121,13 +120,13 @@ class FilterRenkonen(ToolWrapper):
             variant_read_count_delete_df = pandas.concat(
                 [variant_read_count_delete_df, filter_output_i_df], axis=0)
 
-        #######################################################################
+        ############################################################################################
         #
         # 5. Write to DB
         # 6. Touch output tables, to update modification date
         # 7. Exit vtam if all variants delete
         #
-        #######################################################################
+        ############################################################################################
 
         VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_renkonen_model)

@@ -86,7 +86,7 @@ class FilterChimeraRunner(object):
                     run_id, marker_id, biosample_id))
 
             #
-            # Create object and run vsearch
+            # Create object and run_name vsearch
             vsearch_parameters = {'uchime3_denovo': uchime_fasta_path,
                                   'borderline': uchime_borderline_fasta_path,
                                   'nonchimeras': uchime_nonchimeras_fasta_path,

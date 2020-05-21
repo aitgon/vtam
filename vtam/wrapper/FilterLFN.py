@@ -85,7 +85,7 @@ class FilterLFN(ToolWrapper):
         #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
         #######################################################################
@@ -102,7 +102,7 @@ class FilterLFN(ToolWrapper):
 
         #######################################################################
         #
-        # Create filter object and run
+        # Create filter object and run_name
         #
         #######################################################################
 

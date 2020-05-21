@@ -7,7 +7,7 @@ import yaml
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
-from vtam.utils.constants import header_merged_fasta, header_paired_fastq
+from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta
 
 
 class ArgParserChecker(object):
@@ -66,35 +66,6 @@ class ArgParserChecker(object):
                             params_k, path))
                 else:
                     return path
-
-    @staticmethod
-    def check_readinfo_tsv(path):
-        """Check read_info_tsv format
-
-        :param path: Valid non-empty file tsv_path
-        :return: void
-
-        """
-        if not os.path.isfile(path):
-            raise argparse.ArgumentTypeError(
-                "The file '{}' does not exist!".format(path))
-        elif not os.stat(path).st_size > 0:
-            raise argparse.ArgumentTypeError(
-                "The file '{}' is empty!".format(path))
-        header_lower = {
-            'run',
-            'marker',
-            'biosample',
-            'replicate',
-            'sortedfasta'}
-        df = pandas.read_csv(path, sep="\t", header=0)
-        df.columns = df.columns.str.lower()
-        if set(
-                df.columns) >= header_lower:  # contains at least the 'header_lower' columns
-            return path
-        else:
-            raise argparse.ArgumentTypeError(
-                "The format of file '{}' is wrong. Please fix it.".format(path))
 
     @staticmethod
     def check_taxassign_taxonomy(path):
@@ -321,7 +292,6 @@ class ArgParser:
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_merged_fasta))
-        # required=True, type=ArgParserChecker.check_fastainfo)
         parser_vtam_sortreads.add_argument(
             '--fastadir',
             action='store',
@@ -348,13 +318,16 @@ class ArgParser:
             action='store',
             help="REQUIRED: TSV file with information of sorted read files",
             required=True,
-            type=ArgParserChecker.check_readinfo_tsv)
+            type=lambda x: SampleInformationFile(x).check_args(
+                header=header_sortedread_fasta)
+        )
         parser_vtam_filter.add_argument(
             '--readdir',
             action='store',
             help="REQUIRED: TSV file with information of sorted read files",
             required=True,
-            type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+            type=ArgParserChecker.check_dir_exists_and_is_nonempty
+        )
         parser_vtam_filter .add_argument(
             '--asvtable',
             action='store',
@@ -377,7 +350,7 @@ class ArgParser:
 
         parser_vtam_filter.add_argument('--db', **cls.args_db)
         parser_vtam_filter.add_argument(
-            '--dry-run',
+            '--dry-run_name',
             '-n',
             dest='dryrun',
             action='store_true',
@@ -420,7 +393,8 @@ class ArgParser:
             action='store',
             help="REQUIRED: TSV file with information of sorted read files",
             required=True,
-            type=ArgParserChecker.check_readinfo_tsv)
+            type=lambda x: SampleInformationFile(x).check_args(
+                header=header_sortedread_fasta))
         parser_vtam_optimize.add_argument(
             '--readdir',
             action='store',
@@ -438,7 +412,7 @@ class ArgParser:
             action='store',
             help="TSV file with known variants",
             required=True,
-            type=KnownOccurrences.check_known_occurrences_tsv)
+            type=lambda x: KnownOccurrences(x).check_format_known_occurrences_tsv())
 
         #######################################################################
         #
@@ -448,7 +422,7 @@ class ArgParser:
 
         parser_vtam_optimize.add_argument('--db', **cls.args_db)
         parser_vtam_optimize.add_argument(
-            '--dry-run',
+            '--dry-run_name',
             '-n',
             dest='dryrun',
             action='store_true',
@@ -522,7 +496,7 @@ class ArgParser:
             action='store',
             help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
             required=True,
-            type=lambda x: ArgParserChecker .check_taxassign_variants(x))
+            type=lambda x: ArgParserChecker.check_taxassign_variants(x))
         parser_vtam_taxassign .add_argument(
             '--output',
             action='store',

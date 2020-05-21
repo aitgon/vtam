@@ -8,7 +8,7 @@ class FilterMinReplicateNumberRunner:
 
         self.variant_read_count_df = variant_read_count_df
 
-    def get_variant_read_count_delete_df(self, min_replicate_number=2):
+    def get_variant_read_count_delete_df(self, min_replicate_number):
         """
         This filter deletes variants if present in less than min_replicate_number replicates
 

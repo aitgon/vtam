@@ -15,7 +15,7 @@ class VSearch(object):
         self.parameters = parameters
 
     def create_command(self):
-        """Create the vsearch command that will be run
+        """Create the vsearch command that will be run_name
 
         :return: void
         """

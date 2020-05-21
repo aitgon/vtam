@@ -10,7 +10,7 @@ import yaml
 params_default_str = """################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
-# For a description of these parameters run "vsearch --help"
+# For a description of these parameters run_name "vsearch --help"
 fastq_ascii: 33
 fastq_maxee: 1
 fastq_maxmergelen: 500
@@ -23,14 +23,14 @@ fastq_truncqual: 10
 ################################################################################
 # Parameters of the "sortreads" command
 # These parameters correspond to the corresponding parametes by cutadapt that underlies the "vtam sortreads" command
-# For a description of these parameters run "cutadapt --help"
+# For a description of these parameters run_name "cutadapt --help"
 cutadapt_error_rate: 0.1 # -e in cutadapt
 cutadapt_minimum_length: 50 # -m in cutadapt
 cutadapt_maximum_length: 500 # -M in cutadapt
 
 ################################################################################
 # Parameters of the "filter" command
-# This parameter sets the minimal number of reads of a variant in the whole run
+# This parameter sets the minimal number of reads of a variant in the whole run_name
 global_read_count_threshold: 2
 
 ################################################################################
@@ -59,7 +59,7 @@ pcr_error_var_prop: 0.1
 ################################################################################
 # Parameter of the "FilterChimera" filter in the "filter" command
 # This parameter corresponds to the abskew parameter in the vsearch --uchime3_denovo tool that underlies the vtam FilterChimera
-# For a description of this parameter run "vsearch --help"
+# For a description of this parameter run_name "vsearch --help"
 uchime3_denovo_abskew: 16.0
 
 ################################################################################
@@ -123,6 +123,14 @@ header_sortedread_fasta = {
     'biosample',
     'replicate',
     'sortedfasta'}
+header_known_occurrences = {
+    'run',
+    'marker',
+    'biosample',
+    'mock',
+    'variant',
+    'action',
+    'sequence'}
 
 
 ##########################################################################

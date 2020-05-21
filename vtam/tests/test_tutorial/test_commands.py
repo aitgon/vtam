@@ -1,4 +1,3 @@
-# TODO fix it Mai 9, 2020
 # -*- coding: utf-8 -*-
 import shlex
 import sys
