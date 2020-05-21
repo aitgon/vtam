@@ -8,9 +8,11 @@ from Bio import SeqIO
 
 from sqlalchemy.ext.automap import automap_base
 
+from vtam.models.Biosample import Biosample
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.Logger import Logger
+from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunMarkerFile import RunMarkerFile
 from vtam.utils.VSearch import VSearch
@@ -18,69 +20,26 @@ from vtam.utils.VariantDF import VariantDF
 from vtam.utils.VTAMexception import VTAMexception
 
 
-class RunMarkerTSVreader():
-    """Prepares different DFs: engine, variant_read_count_input_df, variant_df, run_df, marker_df, biosample_df,
-                                          variant_to_chimera_borderline_df based on run_marker_tsv_path and db"""
-
-    def __init__(self, db, run_marker_tsv_path):
-        self.__db = db
-
-        # run_marker_df = pandas.read_csv(run_marker_tsv_path, sep="\t", header=0)
-        run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv_path)
-
-        engine = sqlalchemy.create_engine(
-            'sqlite:///{}'.format(db), echo=False)
-        Base = automap_base()
-        Base.prepare(engine, reflect=True)
-
-        #######################################################################
-        #
-        # Compute all variant_read_count_input_df required for ASV table
-        #
-        #######################################################################
-
-        variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
-            engine=engine, variant_read_count_like_model=FilterCodonStop)
-
-        asv_table_runner = AsvTableRunner(
-            engine=engine,
-            variant_read_count_df=variant_read_count_df,
-            taxonomy_tsv=None)
-        self.asv_df_final = asv_table_runner.run()
-
-
 class CommandPoolRunMarkers(object):
     """Class for the Pool Marker wrapper"""
 
     def __init__(self, asv_table_df, run_marker_df=None):
 
-        try:
-            assert asv_table_df.columns.tolist()[
-                   :5] == [
-                       'variant_id',
-                       'marker',
-                       'run',
-                       'sequence_length',
-                       'read_count']
-            assert asv_table_df.columns.tolist(
-            )[-2:] == ['chimera_borderline', 'sequence']
-        except BaseException:
+        header = {'run_name', 'marker_name', 'variant_id', 'sequence_length', 'read_count'}
+        if not set(asv_table_df.columns) >= header:  # contains at least the 'header_lower' columns
             Logger.instance().error(
                 VTAMexception(
-                    "The ASV table structure is wrong. It is expected to start with these columns:"
-                    "'variant_id', 'marker', 'run', 'sequence_length', 'read_count'"
-                    " followed by biosample names and ending with"
-                    "'phylum', 'class', 'order', 'family', 'genus', 'species', 'ltg_tax_id', "
-                    "'ltg_tax_name', 'identity', 'ltg_rank', 'chimera_borderline', 'sequence'."))
+                    "The ASV table structure is wrong. It is expected to contain these columns: "
+                    "run_name, marker_name, variant_id, sequence_length, read_count"))
             sys.exit(1)
 
         self.biosample_names = asv_table_df.columns.tolist()[5:-2]
 
-        if run_marker_df is None:  # Default: pool all marker
+        if run_marker_df is None:  # Default: pool all marker_name
             self.asv_table_df = asv_table_df
         else:  # if run_marker_df: pool only markers in this variant_read_count_input_df
             self.asv_table_df = asv_table_df.merge(
-                run_marker_df, on=['run', 'marker'])
+                run_marker_df, on=['run_name', 'marker_name'])
 
         self.tmp_dir = os.path.join(
             PathManager.instance().get_tempdir(),
@@ -108,7 +67,7 @@ class CommandPoolRunMarkers(object):
         # Define cluster output tsv_path
         vsearch_output_cluster_path = os.path.join(self.tmp_dir, 'cluster.fa')
         #
-        # Create object and run vsearch
+        # Create object and run_name vsearch
         vsearch_parameters = {'cluster_size': fasta_path,
                               'clusters': vsearch_output_cluster_path,
                               'id': 1, 'sizein': None,
@@ -183,13 +142,13 @@ class CommandPoolRunMarkers(object):
             return int(sum(x) > 0)
 
         agg_dic = {}
-        for k in ['variant_id', 'run', 'marker']:
+        for k in ['variant_id', 'run_name', 'marker_name']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
         for k in self.biosample_names:
             agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
-                                               'centroid_variant_id', 'variant_id', 'run',
-                                               'marker'] + self.biosample_names]
+                                               'centroid_variant_id', 'variant_id', 'run_name',
+                                               'marker_name'] + self.biosample_names]
         pooled_marker_df = pooled_marker_df.groupby(
             'centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(
@@ -200,18 +159,48 @@ class CommandPoolRunMarkers(object):
         pooled_marker_df.rename(
             {'variant_id_x': 'variant_id'}, axis=1, inplace=True)
         pooled_marker_df.drop(labels='variant_id_y', axis=1, inplace=True)
+        pooled_marker_df.rename(
+            {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'centroid_variant',
+             'variant_id': 'variants'}, axis=1, inplace=True)
         return pooled_marker_df
 
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv):
-        run_marker_tsv_reader = RunMarkerTSVreader(
-            db=db, run_marker_tsv_path=run_marker_tsv)
+
+        # import pdb; pdb.set_trace()
+
+        run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv)
+
+        # run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv_path=run_marker_tsv)
         if not (run_marker_tsv is None):
-            run_marker_df = pandas.read_csv(run_marker_tsv, sep="\t", header=0)
+            run_marker_df = run_marker_file_obj.read_tsv_into_df()
         else:
             run_marker_df = None
+
+        engine = sqlalchemy.create_engine(
+            'sqlite:///{}'.format(db), echo=False)
+        Base = automap_base()
+        Base.prepare(engine, reflect=True)
+
+        biosample_list = run_marker_file_obj.get_biosample_ids(engine)
+        biosample_list = NameIdConverter(id_name_or_sequence_list=biosample_list, engine=engine).to_names(Biosample)
+
+        #######################################################################
+        #
+        # Compute all variant_read_count_input_df required for ASV table
+        #
+        #######################################################################
+
+        variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
+            engine=engine, variant_read_count_like_model=FilterCodonStop)
+
+        asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
+                                          engine=engine, biosample_list=biosample_list)
+        asv_table_df = asv_table_runner.get_asvtable_df()
+        asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
+
         pool_marker_runner = CommandPoolRunMarkers(
-            asv_table_df=run_marker_tsv_reader.asv_df_final,
+            asv_table_df=asv_table_df,
             run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

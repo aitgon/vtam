@@ -1,11 +1,13 @@
 import argparse
-
 import pandas
 import sqlalchemy
 
+from vtam.models.Biosample import Biosample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
+from vtam.models.SampleInformation import SampleInformation
 from vtam.utils.ArgParser import ArgParserChecker
+from vtam.utils.NameIdConverter import NameIdConverter
 
 
 class RunMarkerFile(object):
@@ -22,6 +24,22 @@ class RunMarkerFile(object):
                                         prerun	MFZR
                                         prerun	ZFZR"""
 
+    def get_biosample_ids(self, engine):
+
+        biosample_lst = []
+
+        record_list = [*self.to_identifier_df(engine).T.to_dict().values()]
+        declarative_meta_table = SampleInformation.__table__
+        stmt = sqlalchemy.select([declarative_meta_table.c.biosample_id]).where(
+            declarative_meta_table.c.run_id == sqlalchemy.bindparam('run_id')).where(
+            declarative_meta_table.c.marker_id == sqlalchemy.bindparam('marker_id')).distinct()
+
+        with engine.connect() as conn:
+            for record in record_list:
+                biosample_lst = biosample_lst + [i[0] for i in conn.execute(stmt, record).fetchall()]
+
+        return [*set(biosample_lst)]
+
     def read_tsv_into_df(self):
         """
         Updated: Mai 10, 2020
@@ -37,15 +55,17 @@ class RunMarkerFile(object):
 
         run_marker_df = pandas.read_csv(self.tsv_path, sep='\t', header=0)
         run_marker_df.columns = run_marker_df.columns.str.lower()
+        run_marker_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
         return run_marker_df
 
     def to_identifier_df(self, engine):
-        """Takes this file and creates a DF with identifiers
+        """Takes this file and creates a DF with identifiers.
+        Updated: Mai 21, 2020
 
         Parameters
         ----------
-        engine sqlalchemy engine
+        sqlalchemy engine
 
         Returns
         -------
@@ -54,32 +74,11 @@ class RunMarkerFile(object):
 
         """
 
-        sample_info_df = pandas.DataFrame()
-        sample_info_df['run_id'] = None
-        sample_info_df['marker_id'] = None
-        with engine.connect() as conn:
-            for k, row in self.read_tsv_into_df().iterrows():
-                marker_name = row.marker
-                run_name = row.run
-                # get run_id ###########
-                stmt_select_run_id = sqlalchemy.select(
-                    [Run.__table__.c.id]).where(Run.__table__.c.name == run_name)
-                run_id = conn.execute(stmt_select_run_id).first()[0]
-                # get marker_id ###########
-                stmt_select_marker_id = sqlalchemy.select([Marker.__table__.c.id]).where(
-                    Marker.__table__.c.name == marker_name)
-                marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                new_row_dic = dict(row)
-                new_row_dic['run_id'] = run_id
-                new_row_dic['marker_id'] = marker_id
-                del new_row_dic["run"]
-                del new_row_dic["marker"]
-
-                sample_info_df = sample_info_df.append(
-                    pandas.DataFrame(new_row_dic, index=[0]), sort=False)
-
-        sample_info_df.columns = sample_info_df.columns.str.lower()
-        return sample_info_df
+        run_marker_ids_df = self.read_tsv_into_df().copy()
+        run_marker_ids_df['run'] = NameIdConverter(self.read_tsv_into_df().run_name, engine).to_ids(Run)
+        run_marker_ids_df['marker'] = NameIdConverter(self.read_tsv_into_df().marker_name, engine).to_ids(Marker)
+        run_marker_ids_df.rename({'run': 'run_id', 'marker': 'marker_id'}, axis=1, inplace=True)
+        return run_marker_ids_df
 
     def get_variant_read_count_df(
             self,

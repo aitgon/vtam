@@ -31,7 +31,7 @@ class TestArgParser(unittest.TestCase):
         self.foopaths['known_occurrences'] = os.path.join(
             package_path, 'doc/data/known_occurrences.tsv')
         self.foopaths['asvtable_tsv'] = os.path.join(
-            test_path, "test_files_dryad.f40v5_small/asvtable_default.tsv")
+            test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
         self.foopaths['runmarker_tsv'] = os.path.join(
             package_path, 'doc/data/pool_run_marker.tsv')
 

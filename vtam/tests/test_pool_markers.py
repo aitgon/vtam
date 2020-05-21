@@ -1,20 +1,19 @@
 import io
 import os
-import pathlib
-from unittest import TestCase
-
 import pandas
+import pathlib
+import unittest
 
-from vtam.utils.PathManager import PathManager
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
+from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDF import VariantDF
 
 
-class TestPoolMarkers(TestCase):
+class TestPoolMarkers(unittest.TestCase):
 
     def setUp(self):
-        asv_table_str = """variant_id	marker	run	sequence_length	read_count	sample1	sample2	sample3	chimera_borderline	sequence
+        asv_table_str = """variant_id	marker_name	run_name	sequence_length	read_count	sample1	sample2	sample3	chimera_borderline	sequence
 3	MFZR	prerun	176	9713	9712	1	0	FALSE	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 33	MFZR	prerun	174	9713	9703	10	0	FALSE	CTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 333	ZFZR	prerun	157	10000	9900	10	0	FALSE	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
@@ -53,7 +52,7 @@ class TestPoolMarkers(TestCase):
             os.path.basename(__file__),
             'cluster.fa')
         #
-        # Create object and run vsearch
+        # Create object and run_name vsearch
         os.environ["VTAM_THREADS"] = "1"
         vsearch_parameters = {'--cluster_size': fasta_path,
                               '--clusters': vsearch_cluster_output_path,
@@ -111,7 +110,7 @@ ATACCTATTATAATT
         # tests get_pooled_marker_df
         #
         ####################################################################
-        pooled_marker_bak_str = """centroid_variant_id	variant_id	run	marker	sample1	sample2	sample3	sequence
+        pooled_marker_bak_str = """centroid_variant	variants	run	marker	sample1	sample2	sample3	sequence
 333	3,33,333	prerun	MFZR,ZFZR	1	1	0	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 836	836,8368	prerun	MFZR,ZFZR	1	1	1	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 83683	83683	prerun	MFZR	0	1	1	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT

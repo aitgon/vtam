@@ -40,12 +40,12 @@ class TestKnownOccurrences(TestCase):
         # df = pandas.read_csv(readinfo_tsv, sep="\t", header=0)
         #
         # for run_name in df.Run.unique().tolist():
-        #     run = Run(name=run_name)
-        #     self.session.add(run)
+        #     run_name = Run(name=run_name)
+        #     self.session.add(run_name)
         #
         # for marker_name in df.Marker.unique().tolist():
-        #     marker = Marker(name=marker_name)
-        #     self.session.add(marker)
+        #     marker_name = Marker(name=marker_name)
+        #     self.session.add(marker_name)
         #
         # for biosample_name in df.Biosample.unique().tolist():
         #     biosample = Biosample(name=biosample_name)

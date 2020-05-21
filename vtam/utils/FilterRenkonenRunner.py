@@ -3,7 +3,7 @@ import pandas
 
 
 class FilterRenkonenRunner(object):
-    """Has attributes and methods to run the Renkonen error Filter"""
+    """Has attributes and methods to run_name the Renkonen error Filter"""
 
     def __init__(self, variant_read_count_df):
         """
@@ -58,7 +58,7 @@ class FilterRenkonenRunner(object):
 
     def get_renkonen_distance_for_one_replicate_pair(
             self, run_marker_biosample_df, replicate_left, replicate_right):
-        """ Given run, marker, biosample and left and right replicates computes renkonen distance
+        """ Given run_name, marker_name, biosample and left and right replicates computes renkonen distance
 
         :type
         """

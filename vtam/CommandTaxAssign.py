@@ -5,10 +5,8 @@ import pandas
 import pathlib
 import sqlalchemy
 
-from sqlalchemy import create_engine, select
-
-from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
-from vtam.models.Variant import Variant as variant_declarative
+from vtam.models.TaxAssign import TaxAssign
+from vtam.models.Variant import Variant
 from vtam.utils import constants
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
@@ -85,11 +83,11 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        engine = create_engine('sqlite:///{}'.format(db), echo=False)
+        engine = sqlalchemy.create_engine('sqlite:///{}'.format(db), echo=False)
 
-        variant_declarative_table = variant_declarative.__table__
+        variant_declarative_table = Variant.__table__
         variant_declarative_table.create(bind=engine, checkfirst=True)
-        tax_assign_declarative_table = tax_assign_declarative.__table__
+        tax_assign_declarative_table = TaxAssign.__table__
         tax_assign_declarative_table.create(bind=engine, checkfirst=True)
 
         if mode == 'reset':
@@ -122,7 +120,7 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        stmt_variant_tax_assign = select([
+        stmt_variant_tax_assign = sqlalchemy.select([
             tax_assign_declarative_table.c.variant_id,
             tax_assign_declarative_table.c.identity,
             tax_assign_declarative_table.c.ltg_rank,
@@ -162,7 +160,7 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        stmt_variant = select([variant_declarative_table.c.id, variant_declarative_table.c.sequence]) \
+        stmt_variant = sqlalchemy.select([variant_declarative_table.c.id, variant_declarative_table.c.sequence]) \
             .where(variant_declarative_table.c.sequence.in_(variant_sequence_list)) \
 
         if ltg_db_df.shape[0] > 0:
@@ -183,39 +181,15 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        variant_to_blast_df = pandas.DataFrame()
+        blast_variant_df = pandas.DataFrame()
         ltg_blast_df = pandas.DataFrame()
 
-        if len(
-                variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
+        if len(variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
 
-            variant_to_blast_df = pandas.DataFrame.from_records(
-                variant_not_tax_assigned, index='id')
-
-            taxonomy_df = pandas.read_csv(
-                taxonomy_tsv,
-                sep="\t",
-                header=0,
-                dtype={
-                    'tax_id': 'int',
-                    'parent_tax_id': 'int',
-                    'old_tax_id': 'float'},
-                index_col='tax_id',
-                usecols=[
-                    'tax_id',
-                    'parent_tax_id',
-                    'rank',
-                    'name_txt',
-                    'old_tax_id'])
-            taxonomy_df = taxonomy_df[[
-                'parent_tax_id', 'rank', 'name_txt', 'old_tax_id']].drop_duplicates()
-
-            # taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0,
-            #                               dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'},
-            #                               index_col='tax_id', usecols=['tax_id', 'parent_tax_id', 'rank', 'name_txt'])
-            # taxonomy_df = taxonomy_df[['parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
-
-            sequence_list = variant_to_blast_df.sequence.tolist()
+            blast_variant_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
+            taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
+            taxonomy_df.set_index('tax_id', drop=True, inplace=True)
+            sequence_list = blast_variant_df.sequence.tolist()
             tax_assign_runner = TaxAssignRunner(
                 sequence_list=sequence_list,
                 taxonomy_df=taxonomy_df,
@@ -238,7 +212,7 @@ class CommandTaxAssign(object):
             ltg_blast_df.rename({'variant_id': 'sequence'},
                                 inplace=True, axis=1)
 
-            ltg_blast_df = variant_to_blast_df.merge(
+            ltg_blast_df = blast_variant_df.merge(
                 ltg_blast_df, on='sequence', how='outer')
 
             ltg_blast_df['blast_db'] = blastdbname_str
@@ -284,7 +258,7 @@ class CommandTaxAssign(object):
                     variant_declarative_table.c.sequence == variant_sequence)).first()[0]
                 select_row = conn.execute(
                     sqlalchemy.select(
-                        [tax_assign_declarative]) .where(
+                        [TaxAssign]) .where(
                         tax_assign_declarative_table.c.variant_id == variant_id)).first()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
                     ltg_row_dic = ltg_row._asdict()
@@ -321,11 +295,11 @@ class CommandTaxAssign(object):
                 select_row = conn.execute(
                     sqlalchemy.select(
                         [
-                            tax_assign_declarative.ltg_tax_id,
-                            tax_assign_declarative.ltg_tax_name,
-                            tax_assign_declarative.ltg_rank,
-                            tax_assign_declarative.identity,
-                            tax_assign_declarative.blast_db,
+                            TaxAssign.ltg_tax_id,
+                            TaxAssign.ltg_tax_name,
+                            TaxAssign.ltg_rank,
+                            TaxAssign.identity,
+                            TaxAssign.blast_db,
                         ]) .where(
                         tax_assign_declarative_table.c.variant_id == variant_id)).first()
             tax_assign_dict = dict(zip(
@@ -359,5 +333,4 @@ class CommandTaxAssign(object):
             variant_df_columns.pop(
                 variant_df_columns.index('sequence')))
         variant_output_df = variant_output_df[variant_df_columns]
-
         variant_output_df.to_csv(output, sep='\t', index=False, header=True)

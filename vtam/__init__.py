@@ -83,12 +83,6 @@ class VTAM(object):
 
             ###################################################################
             #
-            # Filter and optimize CLI arguments and numerical parameters
-            #
-            ###################################################################
-
-            ###################################################################
-            #
             # Create FilterLFNreference table and fill it
             #
             ###################################################################
@@ -119,9 +113,15 @@ class VTAM(object):
                 cli_args_dic=arg_parser_dic)
             wopmars_command = wopmars_runner.get_wopmars_command()
 
+            ########################################################################################
+            #
+            # If optimize, verify that fastainfo, known_occurrences and sqilite are coherent
+            #
+            ########################################################################################
+
             ###################################################################
             #
-            # Create wopmars command and implicitely wopfile
+            # Run wopmars
             #
             ###################################################################
 
@@ -239,16 +239,16 @@ class VTAM(object):
 
         ###############################################################
         #
-        # Else: run usage message
+        # Else: run_name usage message
         #
         ###############################################################
 
         else:
-            Logger.instance().error(VTAMexception(message=VTAM.usage_message))
+            print(VTAM.usage_message)
 
 
 def main():
     if sys.argv[1:] == []:  # No arguments
-        Logger.instance().error(VTAMexception(message=VTAM.usage_message))
+        print(VTAM.usage_message)
         sys.exit(1)
     VTAM(sys.argv[1:])
