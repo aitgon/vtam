@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """LFN Filters
 
-This module will store and run these LFNFilters:
+This module will store and run_name these LFNFilters:
 
 - LFN_var, 2, f2_f4_lfn_delete_variant
 - LFN var replicate series, 3, f3_f5_lfn_delete_variant_replicate
@@ -70,11 +70,11 @@ class FilterLFNrunner:
         #
         #######################################################################
 
-        if lfn_variant_replicate_threshold is None:  # run lfn_variant
+        if lfn_variant_replicate_threshold is None:  # run_name lfn_variant
             # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
                 lfn_denominator='N_i', threshold=lfn_variant_threshold)
-        else:  # run lfn_variant_replicate
+        else:  # run_name lfn_variant_replicate
             # self.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
                 lfn_denominator='N_ik', threshold=lfn_variant_replicate_threshold)

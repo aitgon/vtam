@@ -213,8 +213,7 @@ class SampleInformationFile:
             raise argparse.ArgumentTypeError(
                 "The file '{}' is empty!".format(self.tsv_path))
         sample_info_df = self.read_tsv_into_df()
-        if set(
-                sample_info_df.columns) >= header:  # contains at least the 'header_lower' columns
+        if set(sample_info_df.columns) >= header:  # contains at least the 'header_lower' columns
             return self.tsv_path  # return the tsv_path
         else:
             raise argparse.ArgumentTypeError(
@@ -238,7 +237,7 @@ class SampleInformationFile:
             replicate = row.replicate
             sorted_read_file = row.sortedfasta
             #
-            # Insert run
+            # Insert run_name
             run_obj = {'name': run_name}
             run_instance = SampleInformationFile.get_or_create(
                 session, Run, **run_obj)

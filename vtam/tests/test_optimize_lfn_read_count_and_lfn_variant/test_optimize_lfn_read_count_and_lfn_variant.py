@@ -13,8 +13,8 @@ class TestOptimizeLFNreadCountAndLFNvariant(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # cls.outdir_path = os.path.join(PathManager.get_test_path(), 'outdir')
-        # pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
+        # self.outdir_path = os.path.join(PathManager.get_test_path(), 'outdir')
+        # pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
         pass
 
 

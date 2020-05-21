@@ -93,7 +93,7 @@ class VariantReadCount(ToolWrapper):
         #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete variants if below global_read_count_threshold
@@ -142,12 +142,12 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         #
         #######################################################################
 
         Logger.instance().debug(
-            "file: {}; line: {}; Delete marker/run/biosample/replicate".format(
+            "file: {}; line: {}; Delete marker_name/run_name/biosample/replicate".format(
                 __file__, inspect.currentframe().f_lineno))
 
         with engine.connect() as conn:
@@ -223,7 +223,7 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 4. Group by read sequence to variant_read_count with run_id, marker, ...
+        # 4. Group by read sequence to variant_read_count with run_id, marker_name, ...
         #
         #######################################################################
 
@@ -241,7 +241,7 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 5. Remove variants with read count across all run, markers, biosamples and replicates lower than
+        # 5. Remove variants with read count across all run_name, markers, biosamples and replicates lower than
         # global_read_count_threshold parameter
         #
         #######################################################################

@@ -73,7 +73,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # #######################################################################
         # #
-        # # 2. Delete /run/markerbiosample/replicate from this filter table
+        # # 2. Delete /run_name/markerbiosample/replicate from this filter table
         # #
         # #######################################################################
         # # with engine.connect() as conn:
@@ -89,7 +89,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # #######################################################################
         # #
-        # # 3. Select marker/run/biosample/replicate from variant_read_count_model
+        # # 3. Select marker_name/run_name/biosample/replicate from variant_read_count_model
         # #
         # #######################################################################
         #
@@ -108,7 +108,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #######################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
         #######################################################################

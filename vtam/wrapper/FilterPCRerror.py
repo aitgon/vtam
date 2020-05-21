@@ -63,11 +63,11 @@ class FilterPCRerror(ToolWrapper):
             os.path.basename(__file__))
         pathlib.Path(this_temp_dir).mkdir(exist_ok=True)
 
-        #######################################################################
+        ############################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        #######################################################################
+        ############################################################################################
         #
         # Input file output
         fasta_info_tsv = self.input_file(FilterPCRerror.__input_file_readinfo)
@@ -83,13 +83,13 @@ class FilterPCRerror(ToolWrapper):
         output_filter_pcr_error_model = self.output_table(
             FilterPCRerror.__output_table_filter_pcr_error)
 
-        #######################################################################
+        ############################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker/run/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Get variant_read_count_df input
         #
-        #######################################################################
+        ############################################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
@@ -101,11 +101,11 @@ class FilterPCRerror(ToolWrapper):
             engine=engine,
             filter_id=None)
 
-        #######################################################################
+        ############################################################################################
         #
         # Run per biosample_id
         #
-        #######################################################################
+        ############################################################################################
 
         variant_df = sample_info_tsv_obj.get_variant_df(
             variant_read_count_like_model=input_filter_min_replicate_model, engine=engine)
@@ -129,25 +129,24 @@ class FilterPCRerror(ToolWrapper):
                     run_id, marker_id, biosample_id))
             pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
 
-            ###################################################################
+            ########################################################################################
             #
             # Run vsearch and get alignement variant_read_count_input_df
             #
-            ###################################################################
+            ########################################################################################
 
             filter_pcr_error_runner = FilterPCRerrorRunner(
                 variant_expected_df=variant_per_biosample_df,
                 variant_unexpected_df=variant_per_biosample_df,
-                variant_read_count_df=variant_read_count_per_biosample_df,
-                tmp_dir=this_step_tmp_per_biosample_dir)
+                variant_read_count_df=variant_read_count_per_biosample_df)
             filter_output_per_biosample_df = filter_pcr_error_runner.get_variant_read_count_delete_df(
                 pcr_error_var_prop)
 
-            ###################################################################
+            ########################################################################################
             #
             # Per biosample add to record list
             #
-            ###################################################################
+            ########################################################################################
 
             record_per_biosample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
                 filter_output_per_biosample_df)
@@ -156,7 +155,7 @@ class FilterPCRerror(ToolWrapper):
         variant_read_count_delete_df = pandas.DataFrame.from_records(
             data=record_list)
 
-        #######################################################################
+        ############################################################################################
         #
         # 5. Write to DB
         # 6. Touch output tables, to update modification date

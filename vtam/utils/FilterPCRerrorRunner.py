@@ -1,23 +1,23 @@
 import math
 import multiprocessing
 import os
-
 import pandas
+import pathlib
 
+from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDF import VariantDF
 from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
 class FilterPCRerrorRunner(object):
-    """Has attributes and methods to run the PCR error Filter"""
+    """Has attributes and methods to run_name the PCR error Filter"""
 
     def __init__(
             self,
             variant_expected_df,
             variant_unexpected_df,
-            variant_read_count_df,
-            tmp_dir):
+            variant_read_count_df):
         """
         Initiates object for the PCR error filter
 
@@ -28,7 +28,8 @@ class FilterPCRerrorRunner(object):
         self.__variant_expected_df = variant_expected_df
         self.__variant_unexpected_df = variant_unexpected_df
         self.__variant_read_count_df = variant_read_count_df
-        self.__tmp_dir = tmp_dir
+        self.__tmp_dir = os.path.join(PathManager.instance().get_tempdir(), self.__class__.__name__)
+        pathlib.Path(self.__tmp_dir).mkdir(parents=True, exist_ok=True)
 
     def get_variant_read_count_delete_df(self, pcr_error_var_prop):
 
@@ -81,7 +82,7 @@ class FilterPCRerrorRunner(object):
             fasta_path=variant_unexpected_fasta_path)
 
         #
-        # Create object and run vsearch
+        # Create object and run_name vsearch
         if os.getenv('VTAM_THREADS') is None:
             num_threads = multiprocessing.cpu_count()
         else:
