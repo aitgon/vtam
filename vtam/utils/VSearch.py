@@ -15,8 +15,7 @@ class VSearch(object):
         self.parameters = parameters
 
     def create_command(self):
-
-        """Create the vsearch command that will be run
+        """Create the vsearch command that will be run_name
 
         :return: void
         """
@@ -32,7 +31,6 @@ class VSearch(object):
         return command
 
     def run(self):
-
         """Run the vsearch
 
         :return: void
@@ -41,4 +39,3 @@ class VSearch(object):
         run_result = subprocess.run(shlex.split(command), capture_output=True)
         Logger.instance().info(run_result.stdout.decode())
         Logger.instance().info(run_result.stderr.decode())
-

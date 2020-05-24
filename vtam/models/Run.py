@@ -1,6 +1,7 @@
 from wopmars.Base import Base
 from sqlalchemy import Column, String, Integer
 
+
 class Run(Base):
     __tablename__ = __qualname__
 
