@@ -6,6 +6,7 @@ dependencies:
   - biopython
   - blast
   - coverage
+  - cutadapt
   - jinja2
   - pandas
   - pygments

@@ -120,41 +120,32 @@ class Logger(Singleton):
             self.__logger.addHandler(self.__file_handler_stderr)
 
     def debug(self, msg):
-        formatter_stream = logging.Formatter(
-            colored(self.formatter_str, 'cyan', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.debug(msg)
 
     def info(self, msg):
-        formatter_stream = logging.Formatter(
-            colored(self.formatter_str, 'blue', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'green', attrs=['dark']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.info(msg)
 
     def warning(self, msg):
-        formatter_stream = logging.Formatter(
-            colored(self.formatter_str, 'magenta', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'yellow', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.warning(msg)
 
     def error(self, msg):
         formatter_stream = logging.Formatter(
-            colored(self.formatter_str, 'red', attrs=['bold']))
+            colored(self.formatter_str, 'red', attrs=[]))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.error(msg)
 
     def critical(self, msg):
-        formatter_stream = logging.Formatter(
-            colored(
-                self.formatter_str,
-                'red',
-                attrs=[
-                    'bold',
-                    'reverse']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'yellow', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.critical(msg)

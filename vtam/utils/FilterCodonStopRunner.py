@@ -37,7 +37,7 @@ class FilterCodonStopRunner(object):
         Returns
         -------
         pandas DF
-            Columns are id, sequence, codon_stop_nb_frame1, codon_stop_nb_frame2, codon_stop_nb_frame3"""
+            VariantReadCountLikeModel are id, sequence, codon_stop_nb_frame1, codon_stop_nb_frame2, codon_stop_nb_frame3"""
 
         # For safety, convert to upper
         variant_df['sequence'] = variant_df['sequence'].str.upper()

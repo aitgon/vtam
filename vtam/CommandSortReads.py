@@ -23,11 +23,11 @@ class CommandSortReads(object):
     def main(cls, fastainfo, fastadir, outdir, params=None,
              num_threads=multiprocessing.cpu_count()):
 
-        #######################################################################
+        ############################################################################################
         #
         # Parameters
         #
-        #######################################################################
+        ############################################################################################
 
         params_default = constants.get_dic_params_default()
 
@@ -43,11 +43,11 @@ class CommandSortReads(object):
             if 'cutadapt_maximum_length' in params:
                 cutadapt_maximum_length = params_default['cutadapt_maximum_length']
 
-        #######################################################################
+        ############################################################################################
         #
         # Loop over tag and primer pairs to demultiplex and trim reads
         #
-        #######################################################################
+        ############################################################################################
 
         # fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
         # fastainfo_df.columns = fastainfo_df.columns.str.lower()
@@ -73,7 +73,7 @@ class CommandSortReads(object):
             fasta_info_df_i = fasta_info_series.to_frame().T
             in_raw_fasta_path = os.path.join(fastadir, in_fasta_basename)
 
-            ###################################################################
+            ########################################################################################
             #
             # Cut adapt tag of forward reads
             # cutadapt --cores=8 --no-indels --error-rate 0 --trimmed-only
@@ -81,7 +81,7 @@ class CommandSortReads(object):
             # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_000.fasta
             # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
-            ###################################################################
+            ########################################################################################
 
             tag_rev_rc = str(Seq(tag_rev, generic_dna).reverse_complement())
             out_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
@@ -106,7 +106,7 @@ class CommandSortReads(object):
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 
-            ###################################################################
+            ########################################################################################
             #
             # Trim primers from output
             # cutadapt --cores=8 --no-indels --error-rate 0.1 --minimum-length 50 --maximum-length 500 --trimmed-only
@@ -114,7 +114,7 @@ class CommandSortReads(object):
             # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_trimmed_000.fasta
             # /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_000.fasta
             #
-            ###################################################################
+            ########################################################################################
 
             primer_rev_rc = str(
                 Seq(primer_rev, generic_dna).reverse_complement())
@@ -147,7 +147,7 @@ class CommandSortReads(object):
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 
-            ###################################################################
+            ########################################################################################
             #
             # Cut adapt tag of reverse-complement reads
             # cutadapt --cores=8 --no-indels --error-rate 0 --trimmed-only
@@ -155,7 +155,7 @@ class CommandSortReads(object):
             # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_000.fasta
             # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
-            ###################################################################
+            ########################################################################################
 
             tag_fwd_rc = str(Seq(tag_fwd, generic_dna).reverse_complement())
             out_rc_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
