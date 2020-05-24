@@ -7,11 +7,11 @@ class TaxLineage(object):
     """This class construct a TaxLineage for a given tax_id and based on the taxonomic_tsv file"""
 
     def __init__(self, taxonomic_tsv_path):
-        self.taxonomy_df = pandas.read_csv(taxonomic_tsv_path, sep="\t", header=0,
-                                      dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
+        self.taxonomy_df = pandas.read_csv(
+            taxonomic_tsv_path, sep="\t", header=0, dtype={
+                'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
 
     def create_lineage_from_one_tax_id(self, tax_id, tax_name=False):
-
         """
         Takes tax_id and creates a dictionary with the taxonomy lineage
 
@@ -39,10 +39,10 @@ class TaxLineage(object):
         tax_lineage_dic['tax_id'] = tax_id
         while tax_id != 1:
             # try to use taxonomy_df.tax_id
-            tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.tax_id == tax_id,]
+            tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.tax_id == tax_id, ]
             # if row empty, try to use old_tax_id
             if tax_id_row.shape[0] == 0:
-                tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id,]
+                tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id, ]
                 # if row still empty, return None
                 if tax_id_row.shape[0] == 0:
                     return None
@@ -50,7 +50,7 @@ class TaxLineage(object):
             rank = tax_id_row['rank'].values[0]
             parent_tax_id = tax_id_row['parent_tax_id'].values[0]
             tax_lineage_dic[rank] = tax_id
-            if tax_name: # return tax_name instead of tax_id
+            if tax_name:  # return tax_name instead of tax_id
                 tax_name = tax_id_row['name_txt'].values[0]
                 tax_lineage_dic[rank] = tax_name
             tax_id = parent_tax_id
@@ -58,7 +58,6 @@ class TaxLineage(object):
         return tax_lineage_dic
 
     def create_lineage_from_tax_id_list(self, tax_id_list, tax_name=False):
-
         """
         Takes tax_id and creates a dictionary with the taxonomy lineage
 
@@ -79,7 +78,8 @@ class TaxLineage(object):
 
             # if not math.isnan(tax_id):
             # tax_lineage = TaxLineage(taxonomic_tsv_path=taxonomy_tsv_path)
-            tax_lineage_dic = self.create_lineage_from_one_tax_id(tax_id=tax_id, tax_name=tax_name)
+            tax_lineage_dic = self.create_lineage_from_one_tax_id(
+                tax_id=tax_id, tax_name=tax_name)
             # tax_lineage_dic = create_lineage_from_one_tax_id(tax_id, taxonomy_df, tax_name=True)
             if not (tax_lineage_dic is None):
                 taxa_lineage_list.append(tax_lineage_dic)
@@ -91,9 +91,13 @@ class TaxLineage(object):
         # lineage_df = lineage_df[lineage_list_df_columns_sorted]
 
         lineage_list_df_columns_sorted = list(
-            filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
-        lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
+            filter(
+                lambda x: x in tax_lineage_df.columns.tolist(),
+                rank_hierarchy_asv_table))
+        lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + \
+            ['tax_id']
         tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
-        tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})  # do not move. required because sometimes tax_id is none
+        # do not move. required because sometimes tax_id is none
+        tax_lineage_df = tax_lineage_df.astype({'tax_id': 'object'})
 
         return tax_lineage_df

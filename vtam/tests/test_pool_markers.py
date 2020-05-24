@@ -1,20 +1,19 @@
 import io
 import os
-import pathlib
-from unittest import TestCase
-
 import pandas
+import pathlib
+import unittest
 
-from vtam.utils.PathManager import PathManager
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
+from vtam.utils.PathManager import PathManager
 from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDFutils import VariantDFutils
+from vtam.utils.VariantDF import VariantDF
 
 
-class TestPoolMarkers(TestCase):
+class TestPoolMarkers(unittest.TestCase):
 
     def setUp(self):
-        asv_table_str = """variant_id	marker	run	sequence_length	read_count	sample1	sample2	sample3	chimera_borderline	sequence
+        asv_table_str = """variant_id	marker_name	run_name	sequence_length	read_count	sample1	sample2	sample3	chimera_borderline	sequence
 3	MFZR	prerun	176	9713	9712	1	0	FALSE	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 33	MFZR	prerun	174	9713	9703	10	0	FALSE	CTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 333	ZFZR	prerun	157	10000	9900	10	0	FALSE	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
@@ -22,33 +21,46 @@ class TestPoolMarkers(TestCase):
 8368	ZFZR	prerun	157	545	500	0	45	FALSE	TGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 83683	MFZR	prerun	175	484	0	28	456	FALSE	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 """
-        asv_table_df = pandas.read_csv(io.StringIO(asv_table_str), sep="\t", header=0)
+        asv_table_df = pandas.read_csv(
+            io.StringIO(asv_table_str), sep="\t", header=0)
         self.asv_table_df = asv_table_df
         # Create this_tempdir
-        this_tempdir = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__))
+        this_tempdir = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
-        # Define fasta_path path
-        fasta_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'variants.fa')
+        # Define fasta_path tsv_path
+        fasta_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'variants.fa')
         # Create variant variant_read_count_input_df
-        variant_df = asv_table_df[['variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
+        variant_df = asv_table_df[[
+            'variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from asv_table_df
-        variant_df_utils = VariantDFutils(variant_df)
+        variant_df_utils = VariantDF(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
-        # Define vsearch output path
-        vsearch_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'centroid_out.fa')
-        # Define cluster output path
-        vsearch_cluster_output_path = os.path.join(PathManager.instance().get_tempdir(), os.path.basename(__file__), 'cluster.fa')
+        # Define vsearch output tsv_path
+        vsearch_output_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'centroid_out.fa')
+        # Define cluster output tsv_path
+        vsearch_cluster_output_path = os.path.join(
+            PathManager.instance().get_tempdir(),
+            os.path.basename(__file__),
+            'cluster.fa')
         #
-        # Create object and run vsearch
+        # Create object and run_name vsearch
         os.environ["VTAM_THREADS"] = "1"
         vsearch_parameters = {'--cluster_size': fasta_path,
-                              '--clusters':  vsearch_cluster_output_path,
+                              '--clusters': vsearch_cluster_output_path,
                               '--id': 1, '--sizein': None,
                               '--centroids': vsearch_output_path,
                               "--threads": int(os.getenv('VTAM_THREADS')),
                               }
-        vsearch_cluster = VSearch(parameters = vsearch_parameters)
+        vsearch_cluster = VSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
     def test_cluster_sequences_with_vsearch(self):
@@ -89,7 +101,8 @@ ATACCTATTATAATT
 333	33
 333	3
 83683	83683"""
-        cluster_df_bak = pandas.read_csv(io.StringIO(cluster_str_bak), sep="\t", header=0)
+        cluster_df_bak = pandas.read_csv(
+            io.StringIO(cluster_str_bak), sep="\t", header=0)
         pandas.testing.assert_frame_equal(cluster_df, cluster_df_bak)
 
         ####################################################################
@@ -97,14 +110,14 @@ ATACCTATTATAATT
         # tests get_pooled_marker_df
         #
         ####################################################################
-        pooled_marker_bak_str = """centroid_variant_id	variant_id	run	marker	sample1	sample2	sample3	sequence
+        pooled_marker_bak_str = """centroid_variant	variants	run	marker	sample1	sample2	sample3	sequence
 333	3,33,333	prerun	MFZR,ZFZR	1	1	0	TGCTTGGGCAGGTATGGTAGGTACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCTCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 836	836,8368	prerun	MFZR,ZFZR	1	1	1	TCTATATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 83683	83683	prerun	MFZR	0	1	1	TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACCCGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGATTTTTTTTATAGTGATACCTATTATAATT
 """
-        pooled_marker_bak_df = pandas.read_csv(io.StringIO(pooled_marker_bak_str), sep="\t", header=0)
+        pooled_marker_bak_df = pandas.read_csv(
+            io.StringIO(pooled_marker_bak_str), sep="\t", header=0)
 
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
-        pandas.testing.assert_frame_equal(pooled_marker_df, pooled_marker_bak_df)
-
-
+        pandas.testing.assert_frame_equal(
+            pooled_marker_df, pooled_marker_bak_df)
