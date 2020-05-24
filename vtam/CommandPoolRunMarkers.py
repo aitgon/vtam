@@ -135,7 +135,7 @@ class CommandPoolRunMarkers(object):
         centroid_df.drop_duplicates(inplace=True)
 
         #  Centroid to aggregated variants and biosamples
-        self.cluster_df_col = self.cluster_df.columns
+        # self.cluster_df_col = self.cluster_df.columns
 
         # Drop some columns
         def are_reads(x):

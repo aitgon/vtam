@@ -52,7 +52,7 @@ class VariantReadCountLikeDF(object):
         variant_read_count_df = self.variant_read_count_df.merge(
             N_i_df, on=['run_id', 'marker_id', 'variant_id'])
         variant_read_count_df.drop('N_i', axis=1, inplace=True)
-        # variant_read_count_df.drop_duplicates(inplace=True)
+        # nijk_df.drop_duplicates(inplace=True)
         return variant_read_count_df
 
     def get_N_i_df(self):

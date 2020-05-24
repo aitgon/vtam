@@ -16,7 +16,7 @@ from urllib import request
 
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
-                 "Test requires online connection!")
+                 "This test requires an internet connection!")
 class TestTutorialCommands(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -28,9 +28,11 @@ class TestTutorialCommands(unittest.TestCase):
         subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
                         '--upgrade'])
 
-        cls.test_outdir_path = os.path.join(PathManager.get_test_path(), 'outdir')
-        shutil.rmtree(cls.test_outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
-        pathlib.Path(cls.test_outdir_path).mkdir(parents=True, exist_ok=True)
+        cls.test_path = os.path.join(PathManager.get_test_path())
+        cls.outdir_path = os.path.join(cls.test_path, 'outdir')
+        cls.package_path = os.path.join(PathManager.get_package_path())
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
+        pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
         ################################################################################################################
         #
@@ -38,25 +40,25 @@ class TestTutorialCommands(unittest.TestCase):
         #
         ################################################################################################################
 
-        fastq_tar_path = os.path.join(cls.test_outdir_path, "fastq.tar.gz")
+        fastq_tar_path = os.path.join(cls.outdir_path, "fastq.tar.gz")
         if not os.path.isfile(fastq_tar_path):
             urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
-        tar.extractall(path=cls.test_outdir_path)
+        tar.extractall(path=cls.outdir_path)
         tar.close()
 
         # Set test paths
         cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
-        cls.fastqdir_path = os.path.join(cls.test_outdir_path, "fastq")
-        cls.fastainfo_path = os.path.join(cls.test_outdir_path, "fastainfo.tsv")
-        cls.fastadir_path = os.path.join(cls.test_outdir_path, "merged")
+        cls.fastqdir_path = os.path.join(cls.outdir_path, "fastq")
+        cls.fastainfo_path = os.path.join(cls.outdir_path, "fastainfo.tsv")
+        cls.fastadir_path = os.path.join(cls.outdir_path, "merged")
 
-        cls.sorted_dir_path = os.path.join(cls.test_outdir_path, "sorted")
+        cls.sorted_dir_path = os.path.join(cls.outdir_path, "sorted")
         cls.sortedreadinfo_path = os.path.join(cls.sorted_dir_path, "readinfo.tsv")
 
-        cls.log_path = os.path.join(cls.test_outdir_path, "vtam.log")
+        cls.log_path = os.path.join(cls.outdir_path, "vtam.log")
 
-        cls.asvtable_path = os.path.join(cls.test_outdir_path, "asvtable_default.tsv")
+        cls.asvtable_path = os.path.join(cls.outdir_path, "asvtable_default.tsv")
 
         cls.args = {}
         cls.args['fastqinfo'] = cls.fastqinfo_path
@@ -64,7 +66,7 @@ class TestTutorialCommands(unittest.TestCase):
         cls.args['fastainfo'] = cls.fastainfo_path
         cls.args['fastadir'] = cls.fastadir_path
         cls.args['sorted'] = cls.sorted_dir_path
-        cls.args['db'] = os.path.join(cls.test_outdir_path, "db.sqlite")
+        cls.args['db'] = os.path.join(cls.outdir_path, "db.sqlite")
         cls.args['readinfo'] = cls.sortedreadinfo_path
         cls.args['readdir'] = cls.sorted_dir_path
         cls.args['asvtable'] = cls.asvtable_path
@@ -82,7 +84,7 @@ class TestTutorialCommands(unittest.TestCase):
               "-v --log {log}".format(**self.args)
         subprocess.run(shlex.split(cmd_merge))
 
-        self.fastainfo_path_bak = os.path.join(os.path.dirname(__file__), "fastainfo.tsv")
+        self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/fastainfo.tsv")
         self.fastadir_path_bak = os.path.join(os.path.dirname(__file__), "merge")
         self.assertTrue(filecmp.cmp(self.fastainfo_path, self.fastainfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) >= 11608260)
@@ -90,7 +92,7 @@ class TestTutorialCommands(unittest.TestCase):
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) >= 11658700)
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) <= 11658710)
 
-    def test_step02_sort_reads(self):
+    def test_step02_sortreads(self):
 
         ################################################################################################################
         #
@@ -102,7 +104,7 @@ class TestTutorialCommands(unittest.TestCase):
               "-v --log {log}".format(**self.args)
         subprocess.run(shlex.split(cmd))
 
-        self.sortedreadinfo_path_bak = os.path.join(os.path.dirname(__file__), "sortedreadinfo.tsv")
+        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/sortedreadinfo.tsv")
         self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, self.sortedreadinfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5131900)
@@ -113,5 +115,5 @@ class TestTutorialCommands(unittest.TestCase):
     def tearDownClass(cls):
 
         subprocess.run([sys.executable, '-m', 'pip', 'uninstall', 'vtam', '-y'])
-        shutil.rmtree(cls.test_outdir_path, ignore_errors=True)
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)
 

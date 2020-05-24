@@ -79,7 +79,7 @@ class MakeAsvTable(ToolWrapper):
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
-        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             FilterCodonStop, engine=engine)
 
         ############################################################################################
@@ -88,7 +88,7 @@ class MakeAsvTable(ToolWrapper):
         #
         ############################################################################################
 
-        # asv_table_runner = AsvTableRunner(variant_read_count_df).get_asvtable_biosamples(engine=engine)
+        # asv_table_runner = AsvTableRunner(nijk_df).get_asvtable_biosamples(engine=engine)
         # asv_df_final = asv_table_runner.run()
         #
         # asv_df_final.to_csv(

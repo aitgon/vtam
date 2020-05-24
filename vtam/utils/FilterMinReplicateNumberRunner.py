@@ -24,8 +24,8 @@ class FilterMinReplicateNumberRunner:
         Updated:
         Jan 5, 2020
 
-        :param variant_read_count_df: Variant read count dataframe
-        :type variant_read_count_df: pandas.DataFrame
+        :param nijk_df: Variant read count dataframe
+        :type nijk_df: pandas.DataFrame
 
         :param min_replicate_number: Minimal number of replicates
         :type variant_read_count_input_df: int

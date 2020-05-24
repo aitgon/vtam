@@ -13,11 +13,6 @@ class TestFilterLFN(unittest.TestCase):
     def setUp(self):
 
         self.__testdir_path = os.path.join(PathManager.get_test_path())
-        self.lfn_var_threshold_specific = os.path.join(
-            PathManager.get_test_path(),
-            self.__testdir_path,
-            "test_files",
-            "lfn_var_threshold_specific.tsv")
 
         #
         self.variant_df = pandas.DataFrame({

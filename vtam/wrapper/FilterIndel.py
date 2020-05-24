@@ -79,7 +79,7 @@ class FilterIndel(ToolWrapper):
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
-        # 3. Get variant_read_count_df input
+        # 3. Get nijk_df input
         #
         #######################################################################
 
@@ -88,7 +88,7 @@ class FilterIndel(ToolWrapper):
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_indel_model)
 
-        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             variant_read_count_like_model=input_filter_renkonen_model,
             engine=engine,
             filter_id=None)

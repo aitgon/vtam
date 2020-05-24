@@ -35,7 +35,7 @@ class FilterLFNrunner:
         #
         if self.variant_read_count_df.shape[1] != 6:
             raise Exception(
-                'Columns missing in the variant2sample2replicate2count data frame!')
+                'VariantReadCountLikeModel missing in the variant2sample2replicate2count data frame!')
 
         #######################################################################
         #
@@ -202,23 +202,23 @@ class FilterLFNrunner:
 
     def mark_delete_lfn_absolute_read_count(self, lfn_read_count_threshold):
         """
-        Low frequency noise filter (LFN_readcount) with a single threshold lfn_read_count_threshold.
+        Low frequency noise filter (LFN_readcount) with a single threshold lfn_nijk_cutoff.
         Function calculating the Low Frequency Noise per users defined minimal readcount
         Function IDs: 7 (LFN_readcount)
 
         This function implements filter mark_delete_lfn_absolute_read_count (LFN_readcount)
-        lfn_read_count_threshold = 10
+        lfn_nijk_cutoff = 10
 
 
         This filters deletes the variant if the read count N_ijk of variant i in biosample j
-        and replicate k is below threshold lfn_read_count_threshold.
-        The deletion condition is: N_ijk < lfn_read_count_threshold .
+        and replicate k is below threshold lfn_nijk_cutoff.
+        The deletion condition is: N_ijk < lfn_nijk_cutoff .
 
 
         Pseudo-algorithm of this function:
 
            1. Set variant/biosample/replicate for deletion if read_count N_ijk = 0
-           2. Set variant/biosample/replicate for deletion if N_ijk < lfn_read_count_threshold
+           2. Set variant/biosample/replicate for deletion if N_ijk < lfn_nijk_cutoff
 
 
 
@@ -240,10 +240,10 @@ class FilterLFNrunner:
         filter_df = self.variant_read_count_df.copy()
 
         # do_not_pass_variant_id_list = self.variant_read_count_input_df.loc[
-        #     self.variant_read_count_input_df['read_count'] < lfn_read_count_threshold].variant_id.tolist()
+        #     self.variant_read_count_input_df['read_count'] < lfn_nijk_cutoff].variant_id.tolist()
         # do_not_pass_replicate_list = self.variant_read_count_input_df.loc[
         # self.variant_read_count_input_df['read_count'] <
-        # lfn_read_count_threshold].replicate.tolist()
+        # lfn_nijk_cutoff].replicate.tolist()
 
         filter_df['filter_id'] = this_filter_id  #  set this filter
         filter_df['filter_delete'] = False

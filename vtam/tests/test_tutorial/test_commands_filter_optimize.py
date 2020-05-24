@@ -11,8 +11,10 @@ import urllib
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import sorted_tar_gz_url
+from urllib import request
 
-
+@unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
+                 "This test requires an internet connection!")
 class TestCommands(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -78,18 +80,6 @@ class TestCommands(unittest.TestCase):
               "--asvtable {asvtable} -v --log {log} --until VariantReadCount".format(**cls.args)
         subprocess.run(shlex.split(cmd))
 
-    def test_00_optimize_lfn_read_count_variant(self):
-
-        cmd = "vtam optimize --db {db} --readinfo {readinfo} --readdir {readdir} " \
-              "--known_occurrences {known_occurrences} --outdir {outdir} --until OptimizeLFNreadCountAndLFNvariant " \
-              "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd))
-
-        optimize_lfn_read_count_variant_path = os.path.join(self.outdir_path,
-                                                                "optimize_lfn_read_count_and_lfn_variant.tsv")
-        optimize_lfn_read_count_variant_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_read_count_and_lfn_variant.tsv")
-        self.assertTrue(filecmp.cmp(optimize_lfn_read_count_variant_path, optimize_lfn_read_count_variant_bak_path, shallow=False))
-
     def test_01_filter(self):
 
         ################################################################################################################
@@ -126,6 +116,24 @@ class TestCommands(unittest.TestCase):
         optimize_pcr_error_path = os.path.join(self.outdir_path, "optimize_pcr_error.tsv")
         optimize_pcr_error_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_pcr_error.tsv")
         self.assertTrue(filecmp.cmp(optimize_pcr_error_path, optimize_pcr_error_bak_path, shallow=False))
+
+    def test_04_optimize_lfn_read_count_variant(self):
+
+        cmd = "vtam optimize --db {db} --readinfo {readinfo} --readdir {readdir} " \
+              "--known_occurrences {known_occurrences} --outdir {outdir} --until OptimizeLFNreadCountAndLFNvariant " \
+              "-v --log {log}".format(**self.args)
+        subprocess.run(shlex.split(cmd))
+
+        optimize_lfn_read_count_variant_path = os.path.join(self.outdir_path,
+                                                                "optimize_lfn_read_count_and_lfn_variant.tsv")
+        optimize_lfn_read_count_variant_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_read_count_and_lfn_variant.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_read_count_variant_path, optimize_lfn_read_count_variant_bak_path, shallow=False))
+
+        optimize_lfn_variant_specific_path = os.path.join(self.outdir_path,
+                                                                "optimize_lfn_variant_specific.tsv")
+        optimize_lfn_variant_specific_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_variant_specific_path, optimize_lfn_variant_specific_bak_path, shallow=False))
+
 
     @classmethod
     def tearDownClass(cls):
