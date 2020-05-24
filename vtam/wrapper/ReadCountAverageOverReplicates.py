@@ -93,12 +93,12 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # #
         # #######################################################################
         #
-        # variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        # nijk_df = sample_info_tsv_obj.get_nijk_df(
         #     variant_read_count_like_model=codon_stop_model, filter_id=None)
         #
         # # Exit if no variants for analysis
         # try:
-        #     assert variant_read_count_df.shape[0] > 0
+        #     assert nijk_df.shape[0] > 0
         # except AssertionError:
         #     sys.stderr.write(
         #         "Error: No variants available for this filter: {}".format(
@@ -109,7 +109,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
-        # 3. Get variant_read_count_df input
+        # 3. Get nijk_df input
         #
         #######################################################################
 
@@ -118,7 +118,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=consensus_model)
 
-        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             variant_read_count_like_model=codon_stop_model,
             engine=engine,
             filter_id=None)

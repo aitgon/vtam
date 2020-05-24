@@ -45,7 +45,7 @@ class SampleInformationFile:
                     variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
 
-    def get_variant_read_count_df(
+    def get_nijk_df(
             self,
             variant_read_count_like_model,
             engine,
@@ -281,7 +281,7 @@ class SampleInformationFile:
         :return: DataFrame with columns: index, sequence
         """
 
-        variant_read_count_like_df = self.get_variant_read_count_df(
+        variant_read_count_like_df = self.get_nijk_df(
             variant_read_count_like_model, engine, filter_id)
 
         record_list = []

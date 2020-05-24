@@ -142,8 +142,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
             optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
     params:
-        is_optimize_lfn_variant_replicate: 0
-        lfn_variant_or_variant_replicate_threshold: 0.001
+        lfn_variant_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
         min_replicate_number: 2"""

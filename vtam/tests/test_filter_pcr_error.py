@@ -34,16 +34,6 @@ class TestFilterPCRError(TestCase):
                 350, 300, 300, 220, 60, 0, 2, 0,
             ],
         })
-        #
-        # Output of vsearch
-        self.pcr_error_vsearch_output_df = pandas.DataFrame({
-            'query': [3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4, 1, 1],
-            'target': [3, 1, 4, 2, 2, 1, 3, 4, 4, 3, 1, 2, 1, 2],
-            'alnlen': [300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],
-            'ids': [300, 299, 299, 298, 300, 299, 298, 297, 300, 299, 298, 297, 300, 299],
-            'mism': [0, 1, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1],
-            'gaps': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        })
 
         self.this_tempdir = os.path.join(
             PathManager.instance().get_tempdir(),

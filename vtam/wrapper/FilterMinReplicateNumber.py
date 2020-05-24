@@ -77,7 +77,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
-        # 3. Get variant_read_count_df input
+        # 3. Get nijk_df input
         #
         #######################################################################
 
@@ -86,7 +86,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
 
-        variant_read_count_df = sample_info_tsv_obj.get_variant_read_count_df(
+        variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             variant_read_count_like_model=input_filter_lfn_model, engine=engine, filter_id=None)
 
         #######################################################################
@@ -125,59 +125,3 @@ class FilterMinReplicateNumber(ToolWrapper):
                     "The analysis will stop here.".format(
                         self.__class__.__name__)))
             sys.exit(0)
-
-
-def f9_delete_min_replicate_number(
-        variant_read_count_df,
-        min_replicate_number=2):
-    """
-    This filter deletes variants if present in less than min_replicate_number replicates
-
-    This filters deletes the variant if the count of the combinaison variant i and biosample j
-    is low then the min_replicate_number.
-    The deletion condition is: count(comb (N_ij) < min_replicate_number.
-
-    Pseudo-algorithm of this function:
-
-    1. Compute count(comb (N_ij)
-    2. Set variant/biosample/replicate for deletion if count  column is low the min_replicate_number
-
-    Updated:
-    Jan 5, 2020
-
-    :param variant_read_count_df: Variant read count dataframe
-    :type variant_read_count_df: pandas.DataFrame
-
-    :param min_replicate_number: Minimal number of replicates
-    :type variant_read_count_input_df: int
-
-    :return: The output of this filter is added to the 'self.variant_read_count_filter_delete_df' with 'filter_delete'=1 or 0
-    :rtype: None
-    """
-    #
-    df_filter_output = variant_read_count_df.copy()
-    # replicate count
-    df_grouped = variant_read_count_df.groupby(
-        by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-    df_grouped = df_grouped[['run_id',
-                             'marker_id',
-                             'variant_id',
-                             'biosample_id',
-                             'replicate']]  # keep columns
-    df_grouped = df_grouped.rename(columns={'replicate': 'replicate_count'})
-    #
-    df_filter_output['filter_delete'] = False
-    df_filter_output = pandas.merge(
-        df_filter_output, df_grouped, on=[
-            'run_id', 'marker_id', 'variant_id', 'biosample_id'], how='inner')
-    df_filter_output.loc[df_filter_output.replicate_count <
-                         min_replicate_number, 'filter_delete'] = True
-    #
-    df_filter_output = df_filter_output[['run_id',
-                                         'marker_id',
-                                         'variant_id',
-                                         'biosample_id',
-                                         'replicate',
-                                         'read_count',
-                                         'filter_delete']]
-    return df_filter_output
