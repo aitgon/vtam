@@ -1,8 +1,5 @@
-from sqlalchemy import select, bindparam
-from vtam import Logger, VTAMexception
-
 import pandas
-import sys
+import sqlalchemy
 
 
 class VariantReadCountLikeTable(object):
@@ -18,77 +15,30 @@ class VariantReadCountLikeTable(object):
         """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id,
          marker_id, biosample_id, replicate"""
 
-        sample_column_list = pandas.DataFrame(sample_record_list).columns.tolist()
+        sample_column_list = pandas.DataFrame(
+            sample_record_list).columns.tolist()
+
         with self.engine.connect() as conn:
             stmt = self.variant_read_count_like_model.__table__.delete()
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.run_id == bindparam('run_id'))
-            stmt = stmt.where(self.variant_read_count_like_model.__table__.c.marker_id == bindparam('marker_id'))
+            stmt = stmt.where(
+                self.variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
+            stmt = stmt.where(
+                self.variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
             if 'biosample_id' in sample_column_list:
-                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.biosample_id == bindparam('biosample_id'))
-            if 'replicate' in sample_column_list and 'replicate' in [col.key for col in self.variant_read_count_like_model.__table__.columns]:
-                stmt = stmt.where(self.variant_read_count_like_model.__table__.c.replicate == bindparam('replicate'))
+                stmt = stmt.where(
+                    self.variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+            if 'replicate' in sample_column_list and 'replicate' in [
+                    col.key for col in self.variant_read_count_like_model.__table__.columns]:
+                stmt = stmt.where(
+                    self.variant_read_count_like_model.__table__.c.replicate == sqlalchemy.bindparam('replicate'))
             conn.execute(stmt, sample_record_list)
-
-    def get_variant_read_count_df(self, fastainfo_instance_list, filter_id=None):
-        """Get variant_read_count variant_read_count_input_df from input filter models
-
-        :param readinfo_tsv: TSV file with the fasta_path information
-        :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
-        """
-        filter_min_replicate_number_table = self.input_variant_read_count_like_model.__table__
-
-        variant_read_count_list = []
-        for sample_instance in fastainfo_instance_list:
-            run_id = sample_instance['run_id']
-            marker_id = sample_instance['marker_id']
-            biosample_id = sample_instance['biosample_id']
-            replicate = sample_instance['replicate']
-            if filter_id is None:
-                stmt_select = select([filter_min_replicate_number_table.c.run_id,
-                                      filter_min_replicate_number_table.c.marker_id,
-                                      filter_min_replicate_number_table.c.biosample_id,
-                                      filter_min_replicate_number_table.c.replicate,
-                                      filter_min_replicate_number_table.c.variant_id,
-                                      filter_min_replicate_number_table.c.read_count]).distinct()\
-                                        .where(filter_min_replicate_number_table.c.run_id == run_id)\
-                                        .where(filter_min_replicate_number_table.c.marker_id == marker_id)\
-                                        .where(filter_min_replicate_number_table.c.biosample_id == biosample_id)\
-                                        .where(filter_min_replicate_number_table.c.replicate == replicate)\
-                                        .where(filter_min_replicate_number_table.c.filter_delete == 0)
-            else:
-                stmt_select = select([filter_min_replicate_number_table.c.run_id,
-                                      filter_min_replicate_number_table.c.marker_id,
-                                      filter_min_replicate_number_table.c.biosample_id,
-                                      filter_min_replicate_number_table.c.replicate,
-                                      filter_min_replicate_number_table.c.variant_id,
-                                      filter_min_replicate_number_table.c.read_count]).distinct()\
-                                        .where(filter_min_replicate_number_table.c.run_id == run_id)\
-                                        .where(filter_min_replicate_number_table.c.marker_id == marker_id)\
-                                        .where(filter_min_replicate_number_table.c.biosample_id == biosample_id)\
-                                        .where(filter_min_replicate_number_table.c.replicate == replicate)\
-                                        .where(filter_min_replicate_number_table.c.filter_id == filter_id)\
-                                        .where(filter_min_replicate_number_table.c.filter_delete == 0)
-            with self.engine.connect() as conn:
-                for row2 in conn.execute(stmt_select).fetchall():
-                    variant_read_count_list.append(row2)
-        #
-        variant_read_count_df = pandas.DataFrame.from_records(variant_read_count_list,
-            columns=['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id', 'read_count'])
-
-        # Exit if no variants for analysis
-        try:
-            assert variant_read_count_df.shape[0] > 0
-        except AssertionError:
-            Logger.instance().warning(VTAMexception("No variants available for this Filter: {}. "
-                                                    "The analysis will stop here.".format(self.__class__.__name__)))
-            sys.exit(0)
-        return variant_read_count_df
 
     ##########################################################
     #
     # Convert DF to list of dictionaries to use in an sqlalchemy core insert
     #
     ##########################################################
+
     @staticmethod
     def filter_delete_df_to_dict(filter_df):
         """Convert DF to list of dictionaries to use in an sqlalchemy core insert"""
@@ -114,5 +64,3 @@ class VariantReadCountLikeTable(object):
                 instance['read_count_average'] = row.read_count_average
             records.append(instance)
         return records
-
-
