@@ -22,6 +22,14 @@ Marker MFZR: pipeline
 snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa
 ~~~
 
+~~~
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_mfzr.yml --until optimize -n
+~~~
+
+~~~
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_mfzr.yml --until asvtable_optimized_taxa -n
+~~~
+
 Marker ZFZR: data
 
 ~~~
@@ -32,6 +40,20 @@ Marker ZFZR: pipeline
 
 ~~~
 snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_zfzr.yml --until asvtable_taxa
+~~~
+
+~~~
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_zfzr.yml --until optimize
+~~~
+
+~~~
+snakemake -p --resources db=1 --snakefile doc/data/snakefile.yml --cores 4 -d out --configfile out/asper1/user_input/snakeconfig_zfzr.yml --until asvtable_optimized_taxa
+~~~
+
+Pooled both markers
+
+~~~
+vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --output asper1/asvtable_pooled_mfzr_zfzr.tsv --log asper1/vtam.log -v
 ~~~
 
 ## Two marker analysis

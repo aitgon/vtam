@@ -6,14 +6,16 @@ from vtam.utils.Singleton import Singleton
 
 from termcolor import colored
 
+
 class LessThanFilter(logging.Filter):
     def __init__(self, exclusive_maximum, name=""):
         super(LessThanFilter, self).__init__(name)
         self.max_level = exclusive_maximum
 
     def filter(self, record):
-        #non-zero return means we log this message
+        # non-zero return means we log this message
         return 1 if record.levelno < self.max_level else 0
+
 
 class LoggerArguments(dict, Singleton):
     """
@@ -44,11 +46,11 @@ class Logger(Singleton):
         formatter = logging.Formatter(self.formatter_str)
         self.__logger.setLevel(logging.DEBUG)  # set root's level
 
-        ################################################################################################################
+        #######################################################################
         #
-        # Get verbosity and log file path
+        # Get verbosity and log file tsv_path
         #
-        ################################################################################################################
+        #######################################################################
 
         if 'log_verbosity' in LoggerArguments.instance():
             verbosity = int(LoggerArguments.instance()['log_verbosity'])
@@ -64,22 +66,22 @@ class Logger(Singleton):
         else:
             log_file_path = None
 
-        ################################################################################################################
+        #######################################################################
         #
         # Stream stderr
         #
-        ################################################################################################################
+        #######################################################################
 
         self.stream_handler_stderr = logging.StreamHandler(stream=sys.stderr)
         self.stream_handler_stderr.setFormatter(formatter)
         self.stream_handler_stderr.setLevel(logging.WARNING)
         self.__logger.addHandler(self.stream_handler_stderr)
 
-        ################################################################################################################
+        #######################################################################
         #
         # Stream stdout
         #
-        ################################################################################################################
+        #######################################################################
 
         self.stream_handler_stdout = logging.StreamHandler(stream=sys.stdout)
         self.stream_handler_stdout.setFormatter(formatter)
@@ -92,11 +94,13 @@ class Logger(Singleton):
         self.stream_handler_stdout.addFilter(LessThanFilter(logging.WARNING))
         self.__logger.addHandler(self.stream_handler_stdout)
 
-        if not log_file_path is None and not log_file_path == 'None':
+        if log_file_path is not None and not log_file_path == 'None':
 
             # log file in append mode of size 1 Mo and 1 backup
-            # handler equivalent to stream_handler in term of logging level but write in .log file
-            self.__file_handler_stdout = RotatingFileHandler(log_file_path, 'a', 1000000, 1)
+            # handler equivalent to stream_handler in term of logging level but
+            # write in .log file
+            self.__file_handler_stdout = RotatingFileHandler(
+                log_file_path, 'a', 1000000, 1)
             self.__file_handler_stdout.setFormatter(formatter)
             if verbosity <= 0:
                 self.__file_handler_stdout.setLevel(logging.WARNING)
@@ -116,32 +120,32 @@ class Logger(Singleton):
             self.__logger.addHandler(self.__file_handler_stderr)
 
     def debug(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'cyan', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.debug(msg)
 
     def info(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'blue', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'green', attrs=['dark']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.info(msg)
 
     def warning(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'magenta', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'yellow', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.warning(msg)
 
     def error(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold']))
+        formatter_stream = logging.Formatter(
+            colored(self.formatter_str, 'red', attrs=[]))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.error(msg)
 
     def critical(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=['bold', 'reverse']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'yellow', attrs=['bold']))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.critical(msg)
-
