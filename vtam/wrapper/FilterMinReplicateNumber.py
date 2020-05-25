@@ -85,9 +85,11 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
-
+        filter_id = None
+        if input_filter_lfn_model.__tablename__ == "FilterLFN":
+            filter_id = 8  # Variant pass all filters LFN
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
-            variant_read_count_like_model=input_filter_lfn_model, engine=engine, filter_id=None)
+            variant_read_count_like_model=input_filter_lfn_model, engine=engine, filter_id=filter_id)
 
         #######################################################################
         #
