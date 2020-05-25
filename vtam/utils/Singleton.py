@@ -1,4 +1,4 @@
-# Based on wopmars code
+# Based on wopmars genetic_code
 class Singleton(object):
     __instance = None
 
