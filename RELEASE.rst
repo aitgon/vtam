@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.1.2 (Mai 25, 2020)
+--------------------------------------------------
+
+- Bug FilterMinReplicateNumber fixed
+
 CHANGES IN VERSION 0.1.1 (Mai 24, 2020)
 --------------------------------------------------
 
