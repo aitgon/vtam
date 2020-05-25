@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.1.1 (Mai 24, 2020)
+--------------------------------------------------
+
+- Added tests
+- Refactored code
+- Change optimization based on explicit 'keep' and 'delete' variants
+
 CHANGES IN VERSION 0.1.0 (April 30, 2020)
 --------------------------------------------------
 
