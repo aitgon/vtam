@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 __author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
-__copyright__ = "Since 2018, Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
+__copyright__ = "Copyright 2018-2020, Aitor Gonzalez, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
 
@@ -12,13 +12,13 @@ import os
 import sys
 
 install_requires = [
-    'Jinja2>=2.10',
-    'PyYAML>=5.1.2',
-    'SQLAlchemy>=1.3.0',
-    'biopython>=1.14.2',
-    'pandas==0.23.3',
-    'termcolor>=1.1.0',
-    'wopmars>=0.0.10',
+    'Jinja2>=2.11',
+    'PyYAML>=5.3',
+    'SQLAlchemy>=1.3',
+    'biopython>=1.76',
+    'pandas>=1.0',
+    'termcolor>=1.1',
+    'wopmars>=0.0.13',
 ]
 
 if sys.version_info < (3, 7):
@@ -64,7 +64,8 @@ setup(
     url='https://tagc.univ-amu.fr/en/users/gonzalez-aitor, http://net.imbe.fr/~emeglecz/',
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
-    package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*", "tests/output/*"]},
+    package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*",
+                           "tests/output/*"]},
     data_files = [],
     install_requires=install_requires,
     entry_points={

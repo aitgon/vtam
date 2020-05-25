@@ -3,7 +3,6 @@ import shutil
 from unittest import TestCase
 from vtam.utils.ArgParser import ArgParser
 
-# from vtam.utils.CLIargumentDict import CLIargumentDict
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.PathManager import PathManager
 
@@ -11,22 +10,27 @@ from vtam.utils.PathManager import PathManager
 class TestWorpmarsRunnerOptimize(TestCase):
 
     def setUp(self):
+
+        package_path = PathManager.get_package_path()
+        test_path = PathManager.get_test_path()
+        outdir_path = os.path.join(test_path, "outdir")
+
         # Minimal merge command
         foopaths = {}
-        foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
-        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(),
-                                                                             'output'), PathManager.get_package_path())
-        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
-                                              PathManager.get_package_path())
-        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
-                                                                "readinfo.tsv"), PathManager.get_package_path())
-        foopaths['known_occurrences_tsv'] = os.path.relpath(os.path.join(PathManager.get_test_path(), "test_files",
-                                                                "known_occurrences.tsv"), PathManager.get_package_path())
+        foopaths['foofile'] = os.path.relpath(__file__, package_path)
+        foopaths['foodir'] = os.path.relpath(
+            os.path.dirname(__file__), package_path)
+        foopaths['outdir'] = os.path.relpath(
+            os.path.join(test_path, 'output'), package_path)
+        foopaths['blastdb'] = os.path.relpath(os.path.join(
+            test_path, 'test_files', 'blastdb'), package_path)
+        foopaths['readinfo_tsv'] = "doc/data/readinfo_mfzr.tsv"
+        foopaths['tsv_path'] = "doc/data/readinfo_mfzr.tsv"
+        foopaths['known_occurrences'] = 'doc/data/known_occurrences.tsv'
         self.foopaths = foopaths
 
     def test_wopmars_runner_optimize(self):
-        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences_tsv} --outdir {outdir}'\
+        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
             .format(**self.foopaths)
         parser = ArgParser.get_main_arg_parser()
 
@@ -46,15 +50,20 @@ class TestWorpmarsRunnerOptimize(TestCase):
         # Test wopfile
         #
         ###############################################################
-        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
-        wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"),
-                                    PathManager.get_package_path())
-        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
+        wopmars_runner = WopmarsRunner(
+            command='optimize', cli_args_dic=vars(args))
+        wopfile_path = os.path.relpath(
+            os.path.join(
+                PathManager.get_package_path(),
+                "tests/output/wopfile"),
+            PathManager.get_package_path())
+        wopfile_path, wopfile_content = wopmars_runner.create_wopfile(
+            path=wopfile_path)
         wopfile_content_bak = """rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -68,7 +77,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -92,8 +101,8 @@ rule OptimizeLFNbiosampleReplicate:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
-            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_lfn_biosample_replicate: vtam/tests/output/optimize_lfn_biosample_replicate.tsv
@@ -109,8 +118,8 @@ rule OptimizePCRerror:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
-            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_pcr_error: vtam/tests/output/optimize_pcr_error.tsv
@@ -126,15 +135,14 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: vtam/tests/test_files/readinfo.tsv
-            known_occurrences: vtam/tests/test_files/known_occurrences.tsv
+            readinfo: doc/data/readinfo_mfzr.tsv
+            known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
             optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
     params:
-        is_optimize_lfn_variant_replicate: 0
-        lfn_variant_or_variant_replicate_threshold: 0.001
+        lfn_variant_threshold: 0.001
         lfn_biosample_replicate_threshold: 0.001
         lfn_read_count_threshold: 10
         min_replicate_number: 2"""

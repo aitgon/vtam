@@ -1,188 +1,96 @@
-import pandas
-import sqlalchemy
-
-from vtam.utils.TaxLineage import TaxLineage
-from vtam.utils.VariantReadCountDF import VariantReadCountDF
-from vtam.models.TaxAssign import TaxAssign as tax_assign_declarative
+from vtam.models.Biosample import Biosample
+from vtam.models.Marker import Marker
+from vtam.models.Run import Run
+from vtam.utils.NameIdConverter import NameIdConverter
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
 class AsvTableRunner(object):
 
-    def __init__(self, engine, variant_read_count_df, variant_df, run_df, marker_df, biosample_df, variant_to_chimera_borderline_df,
-                 taxonomy_tsv=None):
+    def __init__(self, variant_read_count_df, engine, biosample_list):
 
-        self.engine = engine
         self.variant_read_count_df = variant_read_count_df
-        self.variant_df = variant_df
-        self.run_df = run_df
-        self.marker_df = marker_df
-        self.biosample_df = biosample_df
-        self.variant_to_chimera_borderline_df = variant_to_chimera_borderline_df
-        # self.tax_assign_model = tax_assign_model
-        self.taxonomy_tsv = taxonomy_tsv
+        self.engine = engine
+        self.biosample_list = biosample_list
 
-    def run(self):
+    def to_tsv(self, asvtable_path):
 
-        # Aggregate replicates
-        variant_read_count_obj = VariantReadCountDF(self.variant_read_count_df)
-        N_ij_df = variant_read_count_obj.get_N_ij_df()
+        asvtable_df = self.get_asvtable_df()
+        asvtable_df.to_csv(asvtable_path, sep="\t", header=True, index=False)
 
-        asv_df = N_ij_df.merge(self.biosample_df, left_on='biosample_id', right_index=True)
-        asv_df.rename({'name': 'biosample_name'}, axis=1, inplace=True)
-        asv_df.drop('biosample_id', axis=1, inplace=True)
-        asv_df = asv_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_name', values='N_ij',
-                                     fill_value=0).reset_index()
+    def get_asvtable_df(self):
 
-        ################################################################################################################
+        asvtable_variants_df = self.get_asvtable_variants()
+        asvtable_biosamples_df = self.get_asvtable_biosamples()
+
+        ############################################################################################
         #
-        # Asv_df2: biosamples
+        # Merge variant and biosample sides of asvtables
         #
-        ################################################################################################################
+        ############################################################################################
 
-        asv_df2 = asv_df[['run_id', 'marker_id', 'variant_id']].copy()
-        for biosample_name in self.biosample_df.name.tolist():
-            if biosample_name in asv_df.columns:  # biosample with read counts
-                asv_df2[biosample_name] = asv_df[biosample_name].tolist()
+        asvtable_df = asvtable_variants_df.merge(asvtable_biosamples_df, on=['run_id', 'marker_id', 'variant_id'])
+        asvtable_df.run_id = NameIdConverter(id_name_or_sequence_list=asvtable_df.run_id.tolist(), engine=self.engine) \
+            .to_names(Run)
+        asvtable_df.marker_id = NameIdConverter(id_name_or_sequence_list=asvtable_df.marker_id.tolist(), engine=self.engine) \
+            .to_names(Marker)
+        asvtable_df.rename({'run_id': 'run', 'marker_id': 'marker', 'variant_id': 'variant'}, axis=1, inplace=True)
+
+        ############################################################################################
+        #
+        # Reorder columns
+        #
+        ############################################################################################
+
+        column_list = asvtable_df.columns.tolist()
+        column_list.remove("chimera_borderline")
+        column_list.remove("sequence")
+        column_list = column_list + ['chimera_borderline', 'sequence']
+
+        column_list.remove("sequence_length")
+        column_list.remove("read_count")
+        column_list.insert(3, "sequence_length")
+        column_list.insert(4, "read_count")
+        asvtable_df = asvtable_df[column_list]
+
+        return asvtable_df
+
+    def get_asvtable_variants(self):
+
+        asvtable_1st_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_i_df()
+        asvtable_1st_df.rename({'N_i': 'read_count'}, axis=1, inplace=True)
+
+        asvtable_1st_df['sequence'] = NameIdConverter(
+            id_name_or_sequence_list=asvtable_1st_df.variant_id.tolist(), engine=self.engine)\
+            .variant_id_to_sequence()
+
+        asvtable_1st_df['sequence_length'] = asvtable_1st_df.sequence.apply(len)
+
+        asvtable_1st_df['chimera_borderline'] = NameIdConverter(
+            id_name_or_sequence_list=asvtable_1st_df.variant_id.tolist(), engine=self.engine)\
+            .variant_id_is_chimera_borderline()
+
+        return asvtable_1st_df
+
+    def get_asvtable_biosamples(self):
+
+        asvtable_2nd_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_ij_df()
+        asvtable_2nd_df.biosample_id = NameIdConverter(id_name_or_sequence_list=asvtable_2nd_df.biosample_id.tolist(), engine=self.engine)\
+            .to_names(Biosample)
+        asvtable_2nd_df.rename({'biosample_id': 'biosample'}, axis=1, inplace=True)
+        asvtable_2nd_df = asvtable_2nd_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample',
+                            values='N_ij', fill_value=0).reset_index()
+
+        ############################################################################################
+        #
+        # Set order and fill 0-read count biosamples with Zeros
+        #
+        ############################################################################################
+
+        asvtable_2nd_2_df = (asvtable_2nd_df.copy())[['run_id', 'marker_id', 'variant_id']]
+        for biosample_name in self.biosample_list:
+            if biosample_name in asvtable_2nd_df.columns:  # biosample with read counts
+                asvtable_2nd_2_df[biosample_name] = asvtable_2nd_df[biosample_name].tolist()
             else:  # biosample without read counts
-                asv_df2[biosample_name] = [0]*asv_df2.shape[0]
-            # biosample_name_list = self.biosample_df.name.tolist()
-            # asv_df2_columns = ['variant_id', 'marker_id', 'run_id'] + [col for col in biosample_name_list if col in asv_df2.iloc[:, 3:].columns.tolist()]
-            # asv_df2 = asv_df2[asv_df2_columns]
-
-        ################################################################################################################
-        #
-        # Asv_df1: First part
-        #
-        ################################################################################################################
-
-        asv_df1 = asv_df
-        asv_df1['read_count'] = asv_df1.iloc[:, 3:].apply(sum, axis=1)
-
-        # Add marker_name
-        asv_df1 = asv_df1.merge(self.marker_df, left_on = 'marker_id', right_index=True)
-        asv_df1.rename({'name': 'marker_name'}, axis=1, inplace=True)
-        # asv_df1.drop('marker_id', axis=1, inplace=True)
-
-        # Add run_name
-        asv_df1 = asv_df1.merge(self.run_df, left_on='run_id', right_index=True)
-        asv_df1.rename({'name': 'run_name'}, axis=1, inplace=True)
-        # asv_df1.drop('run_id', axis=1, inplace=True)
-
-        # Add sequence
-        asv_df1 = asv_df1.merge(self.variant_df, left_on='variant_id', right_index=True, validate='one_to_one')
-        asv_df1['sequence_length'] = asv_df1.sequence.apply(lambda x: len(x))
-
-        asv_df1 = asv_df1[['variant_id', 'marker_id', 'run_id', 'marker_name', 'run_name', 'sequence_length', 'read_count']]
-
-        ################################################################################################################
-        #
-        # Asv_df3: Last part
-        #
-        ################################################################################################################
-
-        asv_df3 = asv_df[['variant_id', 'marker_id', 'run_id']]
-
-        # variant_to_chimera_borderline_df = self.get_chimera_borderline_df()
-        asv_df3 = asv_df3.merge(self.variant_to_chimera_borderline_df, on=['run_id', 'marker_id', 'variant_id'])
-
-        ################################################################################################################
-        #
-        # Asv_df3: If self.taxonomy_tsv, then there is taxonomic assignation
-        #
-        ################################################################################################################
-
-        if not (self.taxonomy_tsv is None):
-
-            #####
-            #
-            # taxonomy_db to variant_read_count_input_df
-            #
-            #####from vtam.utils.TaxAssignRunner import tax_id_to_taxonomy_lineage
-
-            taxonomy_df = pandas.read_csv(self.taxonomy_tsv, sep="\t", header=0,
-                                             dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'})
-            # taxonomy_df = f01_taxonomy_tsv_to_df(taxonomy_tsv_path)
-
-            #####
-            #
-            # ltg_tax_assign
-            #
-            #####
-
-            # Select to DataFrame
-            tax_assign_list = []
-            # tax_assign_model_table = self.tax_assign_model.__table__
-            tax_assign_model_table = tax_assign_declarative.__table__
-            with self.engine.connect() as conn:
-                for df_row in self.variant_df.itertuples():
-                    variant_id = df_row.Index
-                    stmt_ltg_tax_assign = sqlalchemy.select([tax_assign_model_table.c.variant_id,
-                                                             tax_assign_model_table.c.identity,
-                                                             tax_assign_model_table.c.ltg_rank,
-                                                             tax_assign_model_table.c.ltg_tax_id,
-                                                             tax_assign_model_table.c.blast_db])\
-                        .where(tax_assign_model_table.c.variant_id == variant_id)
-
-                    try:
-                        variant_id, identity, ltg_rank, ltg_tax_id, blast_db = conn.execute(stmt_ltg_tax_assign).first()
-                        tax_assign_list.append({'variant_id': variant_id, 'identity': identity, 'ltg_rank': ltg_rank,
-                                                'ltg_tax_id': ltg_tax_id, 'blast_db': blast_db})
-                    except TypeError: # no result
-                        pass
-            ltg_tax_assign_df = pandas.DataFrame.from_records(tax_assign_list, index='variant_id')
-            #
-            ltg_tax_assign_df = ltg_tax_assign_df.reset_index().merge(taxonomy_df,
-                                                                      left_on='ltg_tax_id', right_on='tax_id',
-                                                                      how="left").set_index('variant_id')
-            ltg_tax_assign_df.drop(['tax_id', 'parent_tax_id', 'rank', 'old_tax_id'], axis=1, inplace=True)
-            ltg_tax_assign_df = ltg_tax_assign_df.rename(columns={'name_txt': 'ltg_tax_name'})
-
-            # Merge ltg tax assign results
-            asv_df = asv_df.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-
-            ############################################################################################################
-            #
-            # Create lineage variant_read_count_input_df given taxonomy_df
-            # Returns: lineage_df for each tax_id
-            #
-            ############################################################################################################
-
-            tax_id_list = asv_df['ltg_tax_id'].unique().tolist() # unique list of tax ids
-            tax_lineage = TaxLineage(taxonomic_tsv_path=self.taxonomy_tsv)
-            tax_lineage_df = tax_lineage.create_lineage_from_tax_id_list(tax_id_list=tax_id_list, tax_name=True)
-
-            # lineage_list_df_columns_sorted = list(
-            #     filter(lambda x: x in tax_lineage_df.columns.tolist(), rank_hierarchy_asv_table))
-            # lineage_list_df_columns_sorted = lineage_list_df_columns_sorted + ['tax_id']
-            # tax_lineage_df = tax_lineage_df[lineage_list_df_columns_sorted]
-
-            asv_df3 = asv_df3.merge(ltg_tax_assign_df, left_on='variant_id', right_index=True, how='left').drop_duplicates(inplace=False)
-            asv_df3 = asv_df3.merge(tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left').drop_duplicates(inplace=False)
-            asv_df3.drop('tax_id', axis=1, inplace=True)
-
-        # Add sequence
-        asv_df3 = asv_df3.merge(self.variant_df, left_on='variant_id', right_index=True)
-
-        # Column order
-        if not (self.taxonomy_tsv is None):
-            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'phylum', 'class', 'order', 'family', 'genus',
-                               'species', 'ltg_tax_id', 'ltg_tax_name', 'identity', 'blast_db', 'ltg_rank',
-                               'chimera_borderline', 'sequence']
-        else:
-            asv_df3_columns = ['variant_id', 'marker_id', 'run_id', 'chimera_borderline', 'sequence']
-
-        asv_df3 = asv_df3[asv_df3_columns]
-
-        ################################################################################################################
-        #
-        # Asv_df: Final merge
-        #
-        ################################################################################################################
-
-        asv_df_final = asv_df1.merge(asv_df2, on=['variant_id', 'marker_id', 'run_id'])
-        asv_df_final = asv_df_final.merge(asv_df3, on=['variant_id', 'marker_id', 'run_id'])
-        asv_df_final.drop('marker_id', axis=1, inplace=True)
-        asv_df_final.drop('run_id', axis=1, inplace=True)
-        asv_df_final.rename({'run_name': 'run', 'marker_name': 'marker'}, axis=1, inplace=True)
-
-        return asv_df_final
+                asvtable_2nd_2_df[biosample_name] = [0] * asvtable_2nd_df.shape[0]
+        return asvtable_2nd_2_df
