@@ -50,11 +50,11 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        ##########################################################
+        ############################################################################################
         #
         # Wrapper inputs, outputs and parameters
         #
-        ##########################################################
+        ############################################################################################
 
         # Input file output
         known_occurrences_tsv = self.input_file(
@@ -77,7 +77,7 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
             VariantReadCount, engine=engine)
         known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
         known_occurrences_df = known_occurrences_df.loc[
-            (known_occurrences_df.mock) & (known_occurrences_df.action == 'keep'), ]
+            (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
 
         ############################################################################################
         #

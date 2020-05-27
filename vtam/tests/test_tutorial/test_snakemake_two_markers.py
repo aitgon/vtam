@@ -1,3 +1,4 @@
+import filecmp
 import os
 import pathlib
 import shlex
@@ -29,7 +30,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
-        shutil.rmtree(cls.outdir_path, ignore_errors=True)
+        # shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
         cls.snakefile_tuto_data = os.path.join(cls.package_path, "tools/snake.tuto.data.yml")
@@ -76,6 +77,10 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper2/user_input/snakeconfig.yml --until optimize"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        optimize_pcr_error = os.path.join(self.outdir_path, "asper2/run1/optimize_pcr_error.tsv")
+        optimize_pcr_error_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_pcr_error.tsv")
+        self.assertTrue(filecmp.cmp(optimize_pcr_error, optimize_pcr_error_bak, shallow=False))
 
     def test_03_mfzr_filter_optimized(self):
 
