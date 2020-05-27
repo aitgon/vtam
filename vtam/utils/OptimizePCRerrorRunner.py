@@ -1,20 +1,26 @@
 import pandas
-import sqlalchemy
 
 from vtam.models.Biosample import Biosample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
-from vtam.models.Variant import Variant
 from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
 from vtam.utils.NameIdConverter import NameIdConverter
 
 
 class OptimizePCRerrorRunner:
+    """Algorithm:
+
+    1. Run algorithm per run-marker-biosample
+    2. Take 'keep' variants in 'mock' biosamples: N_i(expected)j
+    3. Take all non-'keep' variants with one single nucleotide difference to the keep variants in the same 'mock' biosamples: N_i(unexpected)j
+    3. Compute ratio: N_i(unexpected)j/N_i(expected)j"""
 
     def __init__(self, variant_read_count_df, known_occurrences_df):
 
         self.variant_read_count_df = variant_read_count_df
-        self.known_occurrences_df = known_occurrences_df
+        # works only with mock biosamples
+        self.known_occurrences_df = known_occurrences_df.loc[
+            (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
 
     def get_optimize_df(self, engine):
 
@@ -27,39 +33,41 @@ class OptimizePCRerrorRunner:
 
         optimize_df = pandas.DataFrame()
 
-        variant_df = pandas.read_sql(sqlalchemy.select([
-            Variant.__table__.c.id, Variant.__table__.c.sequence]), con=engine.connect(),
-            index_col='id')
+        # variant_df = pandas.read_sql(sqlalchemy.select([
+        #     Variant.__table__.c.id, Variant.__table__.c.sequence]), con=engine.connect(),
+        #     index_col='id')
 
-        known_occurrences_grouped = self.known_occurrences_df.groupby(
-            by=['run_id', 'marker_id', 'biosample_id'])
-        for run_marker_biosample_group in known_occurrences_grouped.groups:
-            run_marker_biosample_df = self.known_occurrences_df.loc[
-                known_occurrences_grouped.groups[run_marker_biosample_group],
-                ['run_id', 'marker_id', 'biosample_id']]
-            run_marker_biosample_df.drop_duplicates(inplace=True)
+        known_occurrences_df = self.known_occurrences_df.loc[self.known_occurrences_df.mock==1, ]
 
-            variant_read_count_biosample_df = self.variant_read_count_df.merge(run_marker_biosample_df,
-                                                                          on=['run_id', 'marker_id',
-                                                                              'biosample_id'])
+        known_occurrences_run_marker_biosample_df = self.known_occurrences_df[
+            ['run_id', 'marker_id', 'biosample_id']].drop_duplicates()
+        for row in known_occurrences_run_marker_biosample_df.itertuples():
 
-            ########################################################################################
-            #
-            # Get variant_expected_df, variant_unexpected_df
-            #
-            ########################################################################################
+            run_id = row.run_id
+            marker_id = row.marker_id
+            biosample_id = row.biosample_id
 
-            variant_expected_df = (self.known_occurrences_df.merge(run_marker_biosample_df))[
-                ['variant_id', 'variant_sequence']].drop_duplicates()
-            variant_expected_df = pandas.DataFrame(
-                {'sequence': variant_expected_df.variant_sequence.tolist()},
-                index=variant_expected_df.variant_id.tolist())
+            sequence_expected = known_occurrences_df.loc[(known_occurrences_df.run_id == run_id) & (
+                        known_occurrences_df.marker_id == marker_id) & (
+                                         known_occurrences_df.biosample_id == biosample_id) & (
+                                         known_occurrences_df.action == 'keep'), 'variant_sequence']
 
-            variant_unexpected_df = self.variant_read_count_df.merge(run_marker_biosample_df)[
-                'variant_id'].drop_duplicates()
-            variant_unexpected_df = variant_unexpected_df.loc[
-                ~variant_unexpected_df.isin(variant_expected_df.index)]
-            variant_unexpected_df = variant_df.loc[variant_unexpected_df.tolist(), :]
+            variant_expected = NameIdConverter(id_name_or_sequence_list=sequence_expected,
+                                               engine=engine).variant_sequence_to_id()
+
+            variant_expected_df = pandas.DataFrame({'sequence': sequence_expected.tolist()}, index=variant_expected)
+
+            variant_read_count_per_biosample_df = self.variant_read_count_df.loc[
+                (self.variant_read_count_df.run_id == run_id) & (
+                        self.variant_read_count_df.marker_id == marker_id) & (
+                            self.variant_read_count_df.biosample_id == biosample_id)]
+
+            variant_unexpected = variant_read_count_per_biosample_df.variant_id[~variant_read_count_per_biosample_df.variant_id.isin(variant_expected)].unique()
+
+            sequence_unexpected = NameIdConverter(id_name_or_sequence_list=variant_unexpected.tolist(),
+                                               engine=engine).variant_id_to_sequence()
+
+            variant_unexpected_df = pandas.DataFrame({'sequence': sequence_unexpected}, index=variant_unexpected)
 
             ########################################################################################
             #
@@ -69,7 +77,7 @@ class OptimizePCRerrorRunner:
 
             filter_pcr_error_runner = FilterPCRerrorRunner(
                 variant_expected_df=variant_expected_df, variant_unexpected_df=variant_unexpected_df,
-                variant_read_count_df=variant_read_count_biosample_df)
+                variant_read_count_df=variant_read_count_per_biosample_df)
 
             pcr_error_df = filter_pcr_error_runner.get_variant_unexpected_to_expected_ratio_df()
 

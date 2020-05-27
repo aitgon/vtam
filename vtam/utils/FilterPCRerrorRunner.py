@@ -120,52 +120,49 @@ class FilterPCRerrorRunner(object):
 
         """
 
-        # Run vsearch and get alignement
-        vsearch_output_df = self.get_vsearch_alignement_df()
-
+        ############################################################################################
         #
-        # Aggregate by biosample
-        variant_read_count_lfn_instance = VariantReadCountLikeDF(
-            self.__variant_read_count_df)
+        # Get variant pairs with 1 sequence difference (mism and/or gaps)
+        #
+        #############################################################################################
+
+        pcr_error_df = self.get_vsearch_alignement_df()
+        # Add up mismatch and gap
+        pcr_error_df[
+            'sum_mism_gaps'] = pcr_error_df.mism + pcr_error_df.gaps
+        pcr_error_df = pcr_error_df.loc[
+            pcr_error_df.sum_mism_gaps == 1, ['variant_id_expected', 'variant_id_unexpected']]
+
+        ############################################################################################
+        #
+        # Append N_ij_expected and N_ij_unexpected
+        #
+        ############################################################################################
+
+        variant_read_count_lfn_instance = VariantReadCountLikeDF(self.__variant_read_count_df)
         N_ij_df = variant_read_count_lfn_instance.get_N_ij_df()
 
-        # Add up mismatch and gap
-        vsearch_output_df[
-            'sum_mism_gaps'] = vsearch_output_df.mism + vsearch_output_df.gaps
+        pcr_error_df = pcr_error_df.merge(N_ij_df, left_on=['variant_id_expected'], right_on=['variant_id'])
+        pcr_error_df.rename(columns={'N_ij': 'N_ij_expected'}, inplace=True)
+        pcr_error_df.drop('variant_id', axis=1, inplace=True)
 
-        # Keep alignment when mismatch plus gap equals 1
-        """(Pdb) check_read_count_df
-   variant_id_expected  variant_id_unexpected
-0                    1                      2"""
-        variant_unexpected_to_expected_ratio_df = vsearch_output_df.loc[
-            vsearch_output_df.sum_mism_gaps == 1, ['variant_id_expected', 'variant_id_unexpected']]
+        pcr_error_df = pcr_error_df.merge(N_ij_df, left_on=[
+            'run_id', 'marker_id', 'biosample_id', 'variant_id_unexpected'], right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+        pcr_error_df.rename(columns={'N_ij': 'N_ij_unexpected'}, inplace=True)
+        pcr_error_df.drop('variant_id', axis=1, inplace=True)
 
-        # Annotate variants (expected and unexpected) with run_id, marker_id, biosample_id, replicate and read_count
-        # Add two colum the first for the variant id sequence query and the
-        # second for the target sequance variant id
-        variant_unexpected_to_expected_ratio_df = N_ij_df.merge(
-            variant_unexpected_to_expected_ratio_df,
-            left_on=['variant_id'],
-            right_on=['variant_id_expected'])
-        variant_unexpected_to_expected_ratio_df.rename(
-            columns={'N_ij': 'N_ij_expected'}, inplace=True)
-        variant_unexpected_to_expected_ratio_df.drop(
-            'variant_id', axis=1, inplace=True)
-
-        variant_unexpected_to_expected_ratio_df = variant_unexpected_to_expected_ratio_df.merge(
-            N_ij_df, left_on=[
-                'run_id', 'marker_id', 'biosample_id', 'variant_id_unexpected'], right_on=[
-                'run_id', 'marker_id', 'biosample_id', 'variant_id'])
-        variant_unexpected_to_expected_ratio_df.rename(
-            columns={'N_ij': 'N_ij_unexpected'}, inplace=True)
-        variant_unexpected_to_expected_ratio_df.drop(
-            'variant_id', axis=1, inplace=True)
+        ############################################################################################
+        #
+        # Ratio variant_unexpected_to_expected_ratio_df
+        #
+        ############################################################################################
 
         # Add two column for the two expected ratio cases ratio 1 and ratio 2
-        variant_unexpected_to_expected_ratio_df['N_ij_unexpected_to_expected_ratio'] = variant_unexpected_to_expected_ratio_df[
-            'N_ij_unexpected'] / variant_unexpected_to_expected_ratio_df['N_ij_expected']
-        # reorder column
-        variant_unexpected_to_expected_ratio_df = variant_unexpected_to_expected_ratio_df[[
-            'run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected', 'variant_id_unexpected', 'N_ij_unexpected', 'N_ij_unexpected_to_expected_ratio']]
+        pcr_error_df['N_ij_unexpected_to_expected_ratio'] = pcr_error_df['N_ij_unexpected'] \
+                                                            / pcr_error_df['N_ij_expected']
+        # reorder columns
+        pcr_error_df = pcr_error_df[[
+            'run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected',
+            'variant_id_unexpected', 'N_ij_unexpected', 'N_ij_unexpected_to_expected_ratio']]
 
-        return variant_unexpected_to_expected_ratio_df
+        return pcr_error_df
