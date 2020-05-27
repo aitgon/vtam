@@ -87,7 +87,6 @@ class OptimizePCRerror(ToolWrapper):
             VariantReadCount, engine=engine)
 
         known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
-        known_occurrences_df = known_occurrences_df.loc[known_occurrences_df.mock, ]
 
         ############################################################################################
         #
