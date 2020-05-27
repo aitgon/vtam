@@ -1,18 +1,10 @@
 import argparse
-import math
 import os
 import pandas
-import sqlalchemy
-import sys
 
 from vtam.models.Biosample import Biosample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
-from vtam.models.Variant import Variant
-from vtam.models.VariantReadCount import VariantReadCount
-from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.constants import header_known_occurrences
 
 from vtam.utils.NameIdConverter import NameIdConverter

@@ -80,7 +80,6 @@ class OptimizeLFNbiosampleReplicateRunner:
 
         optimize_df = optimize_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
-        def round_down_4_decimals(x): return int(x * 10 ** 4) / 10 ** 4
         optimize_df['round_down'] = optimize_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
 
         ############################################################################################
