@@ -51,7 +51,7 @@ rule all_one_marker:
 
 rule snakefile:
     input:
-        snakefile=os.path.join(PACKAGE_PATH, 'doc/data', 'snakefile.yml'),
+        snakefile=os.path.join(PACKAGE_PATH, 'snakefile.yml'),
     output:
         snakefile="snakefile.yml",
     shell:
