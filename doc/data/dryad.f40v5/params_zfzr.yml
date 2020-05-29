@@ -1,6 +1,6 @@
-lfn_variant_replicate_threshold: 0.0025
-lfn_biosample_replicate_threshold: 0.003
-lfn_read_count_threshold: 53
+lfn_variant_replicate_cutoff: 0.0025
+lfn_biosample_replicate_cutoff: 0.003
+lfn_read_count_cutoff: 53
 
 pcr_error_var_prop: 0.2
 renkonen_distance_quantile: 0.9
