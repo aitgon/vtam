@@ -7,7 +7,7 @@ import yaml
 #
 ##########################################################################
 
-# TODO rename threshold as cutoff
+# TODO rename cutoff as cutoff
 params_default_str = """################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
@@ -32,20 +32,20 @@ cutadapt_maximum_length: 500 # -M in cutadapt
 ################################################################################
 # Parameters of the "filter" command
 # This parameter sets the minimal number of reads of a variant in the whole run_name
-global_read_count_threshold: 2
+global_read_count_cutoff: 2
 
 ################################################################################
 # Parameters of the "FilterLFN" filter in the "filter" command
-# These parameters set the thresholds for the low frequency noise (LFN) filters
-# Occurrence is deleted if N_ijk/N_i < lfn_variant_threshold
-lfn_variant_threshold: 0.001
-# Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_threshold
-# If this parameter is set (Not None), then the lfn_variant_replicate_threshold instead of lfn_variant_threshold is used
-lfn_variant_replicate_threshold: None
-# Occurrence is deleted if N_ijk/N_jk < lfn_ biosample _replicate_threshold
-lfn_njk_cutoff: 0.001
-# Occurrence is deleted if N_ijk < lfn_ read_count_threshold
-lfn_nijk_cutoff: 10
+# These parameters set the cutoffs for the low frequency noise (LFN) filters
+# Occurrence is deleted if N_ijk/N_i < lfn_variant_cutoff
+lfn_variant_cutoff: 0.001
+# Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_cutoff
+# If this parameter is set (Not None), then the lfn_variant_replicate_cutoff instead of lfn_variant_cutoff is used
+lfn_variant_replicate_cutoff: None
+# Occurrence is deleted if N_ijk/N_jk < lfn_ biosample lfn_biosample_replicate_cutoff
+lfn_biosample_replicate_cutoff: 0.001
+# Occurrence is deleted if N_ijk < lfn_ lfn_read_count_cutoff
+lfn_read_count_cutoff: 10
 
 ################################################################################
 # Parameters of the "FilterMinReplicateNumber" filter in the "filter" command
@@ -96,7 +96,7 @@ ltg_rule_threshold: 97"""
 def get_dic_params_default():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
     params_default_dic['threads'] = multiprocessing.cpu_count()
-    params_default_dic['lfn_variant_replicate_threshold'] = None
+    params_default_dic['lfn_variant_replicate_cutoff'] = None
     return params_default_dic
 
 
@@ -170,6 +170,7 @@ taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy
 coi_blast_db_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz"
 fastq_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
 sorted_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/sorted.tar.gz"
+sorted_dryad_f40v5_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/dryad.f40v5_sorted.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

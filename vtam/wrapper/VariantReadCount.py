@@ -55,7 +55,7 @@ class VariantReadCount(ToolWrapper):
         """
         return {
             "read_dir": "str",
-            "global_read_count_threshold": "int",
+            "global_read_count_cutoff": "int",
         }
 
     def run(self):
@@ -87,8 +87,8 @@ class VariantReadCount(ToolWrapper):
             VariantReadCount.__output_table_variant_read_count)
         # Options
         read_dir = self.option("read_dir")
-        global_read_count_threshold = self.option(
-            "global_read_count_threshold")
+        global_read_count_cutoff = self.option(
+            "global_read_count_cutoff")
 
         #######################################################################
         #
@@ -96,7 +96,7 @@ class VariantReadCount(ToolWrapper):
         # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
-        # 5. Delete variants if below global_read_count_threshold
+        # 5. Delete variants if below global_read_count_cutoff
         # 6. Insert into Variant and VariantReadCountLikeDF tables
         #
         #######################################################################
@@ -242,7 +242,7 @@ class VariantReadCount(ToolWrapper):
         #######################################################################
         #
         # 5. Remove variants with read count across all run_name, markers, biosamples and replicates lower than
-        # global_read_count_threshold parameter
+        # global_read_count_cutoff parameter
         #
         #######################################################################
 
@@ -250,8 +250,8 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug(
             "file: {}; line: {}; Remove singletons".format(
                 __file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_threshold(
-            global_read_count_threshold)
+        variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_cutoff(
+            global_read_count_cutoff=global_read_count_cutoff)
         variant_read_count_df.rename(
             columns={
                 'variant_id': 'variant_sequence'},
