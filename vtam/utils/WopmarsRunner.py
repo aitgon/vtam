@@ -106,7 +106,6 @@ class WopmarsRunner(Singleton):
             #
             template = jinja2_env.get_template('wopfile_optimize.yml')
             wopfile_path = os.path.join(self.tempdir, 'wopfile_optimize.yml')
-
         wopfile_content = template.render(self.cli_args_and_numerical_params)
 
         #######################################################################
@@ -120,6 +119,7 @@ class WopmarsRunner(Singleton):
             parents=True, exist_ok=True)
         with open(wopfile_path, "w") as fout:
             fout.write(wopfile_content)
+
         return wopfile_path, wopfile_content
 
     def get_wopmars_command(self):

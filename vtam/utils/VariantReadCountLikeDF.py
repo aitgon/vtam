@@ -39,16 +39,16 @@ class VariantReadCountLikeDF(object):
 
         self.variant_read_count_df = variant_read_count_df
 
-    def filter_out_below_global_read_count_threshold(
-            self, global_read_count_threshold):
-        """ Returns variants with read_count across all samples with read_count above global_read_count_threshold
+    def filter_out_below_global_read_count_cutoff(
+            self, global_read_count_cutoff):
+        """ Returns variants with read_count across all samples with read_count above global_read_count_cutoff
 
-        :param global_read_count_threshold: Threshold to get variants. Default throws singletons global_read_count_threshold=2
+        :param global_read_count_cutoff: Threshold to get variants. Default throws singletons global_read_count_cutoff=2
         :return variant_read_count_input_df: DataFrame without singletons
         """
         N_i_df = self.get_N_i_df()
-        #  get equal or above global_read_count_threshold
-        N_i_df = N_i_df.loc[N_i_df.N_i >= global_read_count_threshold]
+        #  get equal or above global_read_count_cutoff
+        N_i_df = N_i_df.loc[N_i_df.N_i >= global_read_count_cutoff]
         variant_read_count_df = self.variant_read_count_df.merge(
             N_i_df, on=['run_id', 'marker_id', 'variant_id'])
         variant_read_count_df.drop('N_i', axis=1, inplace=True)

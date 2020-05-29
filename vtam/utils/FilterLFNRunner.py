@@ -57,10 +57,10 @@ class FilterLFNrunner:
 
     def get_variant_read_count_delete_df(
             self,
-            lfn_variant_threshold,
-            lfn_variant_replicate_threshold,
-            lfn_biosample_replicate_threshold,
-            lfn_read_count_threshold):
+            lfn_variant_cutoff,
+            lfn_variant_replicate_cutoff,
+            lfn_biosample_replicate_cutoff,
+            lfn_read_count_cutoff):
 
         #######################################################################
         #
@@ -70,14 +70,14 @@ class FilterLFNrunner:
         #
         #######################################################################
 
-        if lfn_variant_replicate_threshold is None:  # run_name lfn_variant
-            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_threshold)
+        if lfn_variant_replicate_cutoff is None:  # run_name lfn_variant
+            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_cutoff)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-                lfn_denominator='N_i', threshold=lfn_variant_threshold)
+                lfn_denominator='N_i', cutoff=lfn_variant_cutoff)
         else:  # run_name lfn_variant_replicate
-            # self.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_threshold)
+            # self.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_cutoff)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-                lfn_denominator='N_ik', threshold=lfn_variant_replicate_threshold)
+                lfn_denominator='N_ik', cutoff=lfn_variant_replicate_cutoff)
 
         #######################################################################
         #
@@ -87,7 +87,7 @@ class FilterLFNrunner:
 
         self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
             lfn_denominator='N_jk',
-            threshold=lfn_biosample_replicate_threshold)
+            cutoff=lfn_biosample_replicate_cutoff)
 
         #######################################################################
         #
@@ -95,7 +95,7 @@ class FilterLFNrunner:
         #
         #######################################################################
 
-        self.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
+        self.mark_delete_lfn_absolute_read_count(lfn_read_count_cutoff)
 
         #######################################################################
         #
@@ -110,17 +110,17 @@ class FilterLFNrunner:
     def mark_delete_lfn_per_Ni_or_Nik_or_Njk(
             self,
             lfn_denominator,
-            threshold,
-            threshold_specific_df=None):
+            cutoff,
+            cutoff_specific_df=None):
         """
 
         :param lfn_denominator: string that takes values either: 'N_i', 'N_ik' or 'N_jk'
-        :param threshold: float with general threshold
-        :param threshold_specific_df: DataFrame with either variant-specific (N_i) or variant-replicate-specific
-        deletion threshold
+        :param cutoff: float with general cutoff
+        :param cutoff_specific_df: DataFrame with either variant-specific (N_i) or variant-replicate-specific
+        deletion cutoff
         :return: None: The output of this filter is added to the 'self.variant_read_count_filter_delete_df'
-            with filter_id=2 and 'filter_delete'=1 or 0 (General threshold)
-            and with filter_id=4 and 'filter_delete'=1 or 0 (Variant-specific threshold)
+            with filter_id=2 and 'filter_delete'=1 or 0 (General cutoff)
+            and with filter_id=4 and 'filter_delete'=1 or 0 (Variant-specific cutoff)
         """
         if lfn_denominator == 'N_i':  # variant
             this_filter_id = 2
@@ -131,15 +131,15 @@ class FilterLFNrunner:
                     'run_id', 'marker_id', 'variant_id'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_i
             filter_df['filter_id'] = this_filter_id
-            filter_df['threshold'] = threshold
-            if threshold_specific_df is not None:
+            filter_df['cutoff'] = cutoff
+            if cutoff_specific_df is not None:
                 this_filter_id = 4
-                for rowtuple in threshold_specific_df.itertuples():
+                for rowtuple in cutoff_specific_df.itertuples():
                     variant_id = rowtuple.variant_id
-                    threshold = rowtuple.threshold
+                    cutoff = rowtuple.cutoff
                     filter_df['filter_id'] = this_filter_id
                     filter_df.loc[(filter_df.variant_id ==
-                                   variant_id), 'threshold'] = threshold
+                                   variant_id), 'cutoff'] = cutoff
         elif lfn_denominator == 'N_ik':  # variant_replicate
             this_filter_id = 3
             N_df = self.variant_read_count_lfn_df.get_N_ik_df()  #  Compute N_ik_df
@@ -149,16 +149,16 @@ class FilterLFNrunner:
                     'run_id', 'marker_id', 'variant_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
             filter_df['filter_id'] = this_filter_id
-            filter_df['threshold'] = threshold
-            if threshold_specific_df is not None:
+            filter_df['cutoff'] = cutoff
+            if cutoff_specific_df is not None:
                 this_filter_id = 5
-                for rowtuple in threshold_specific_df.itertuples():
+                for rowtuple in cutoff_specific_df.itertuples():
                     variant_id = rowtuple.variant_id
                     replicate = rowtuple.replicate
-                    threshold = rowtuple.threshold
+                    cutoff = rowtuple.cutoff
                     filter_df['filter_id'] = this_filter_id
                     filter_df.loc[(filter_df.variant_id == variant_id) & (
-                        filter_df.replicate == replicate), 'threshold'] = threshold
+                        filter_df.replicate == replicate), 'cutoff'] = cutoff
         elif lfn_denominator == 'N_jk':  # biosample_replicate
             this_filter_id = 6
             N_df = self.variant_read_count_lfn_df.get_N_jk_df()  #  Compute N_jk_df
@@ -168,7 +168,7 @@ class FilterLFNrunner:
                     'run_id', 'marker_id', 'biosample_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_jk
             filter_df['filter_id'] = this_filter_id
-            filter_df['threshold'] = threshold
+            filter_df['cutoff'] = cutoff
         else:
             Logger.instance().critical(VTAMexception("Internal error. VTAM will exit."))
             sys.exit(0)
@@ -180,9 +180,9 @@ class FilterLFNrunner:
         filter_df.loc[
             filter_df.read_count == 0, 'filter_delete'] = True
         #
-        # Mark for deletion all filters with 'lfn_ratio'<lfn_variant_threshold
+        # Mark for deletion all filters with 'lfn_ratio'<lfn_variant_cutoff
         filter_df.loc[filter_df['lfn_ratio'] <
-                      filter_df['threshold'], 'filter_delete'] = True
+                      filter_df['cutoff'], 'filter_delete'] = True
 
         #
         #  Keep important columns
@@ -200,9 +200,9 @@ class FilterLFNrunner:
         self.variant_read_count_filter_delete_df = pandas.concat(
             [self.variant_read_count_filter_delete_df, filter_df], sort=False, axis=0)
 
-    def mark_delete_lfn_absolute_read_count(self, lfn_read_count_threshold):
+    def mark_delete_lfn_absolute_read_count(self, lfn_read_count_cutoff):
         """
-        Low frequency noise filter (LFN_readcount) with a single threshold lfn_nijk_cutoff.
+        Low frequency noise filter (LFN_readcount) with a single cutoff lfn_nijk_cutoff.
         Function calculating the Low Frequency Noise per users defined minimal readcount
         Function IDs: 7 (LFN_readcount)
 
@@ -211,7 +211,7 @@ class FilterLFNrunner:
 
 
         This filters deletes the variant if the read count N_ijk of variant i in biosample j
-        and replicate k is below threshold lfn_nijk_cutoff.
+        and replicate k is below cutoff lfn_nijk_cutoff.
         The deletion condition is: N_ijk < lfn_nijk_cutoff .
 
 
@@ -226,7 +226,7 @@ class FilterLFNrunner:
            February 24, 2019
 
         Args:
-           lfn_read_count_threshold (float): Default deletion threshold
+           lfn_read_count_cutoff (float): Default deletion cutoff
 
 
         Returns:
@@ -249,7 +249,7 @@ class FilterLFNrunner:
         filter_df['filter_delete'] = False
 
         filter_df.loc[filter_df.read_count <
-                      lfn_read_count_threshold, 'filter_delete'] = True
+                      lfn_read_count_cutoff, 'filter_delete'] = True
         filter_df = filter_df[['run_id',
                                'marker_id',
                                'variant_id',

@@ -59,23 +59,23 @@ class TestFilterLFN(unittest.TestCase):
         self.filter_lfn_runner = FilterLFNrunner(self.variant_read_count_df)
 
     def test_filter_lfn_runner_run(self):
-        lfn_variant_threshold = 0.001
-        # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_threshold
+        lfn_variant_cutoff = 0.001
+        # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_cutoff
         # If this parameter is set (Not None), then the
-        # lfn_variant_replicate_threshold instead of lfn_variant_threshold is
+        # lfn_variant_replicate_cutoff instead of lfn_variant_cutoff is
         # used
-        lfn_variant_replicate_threshold = None
+        lfn_variant_replicate_cutoff = None
         # Occurrence is deleted if N_ijk/N_jk < lfn_ biosample
-        # _replicate_threshold
-        lfn_biosample_replicate_threshold = 0.001
-        # Occurrence is deleted if N_ijk < lfn_ read_count_threshold
-        lfn_read_count_threshold = 10
+        # lfn_biosample_replicate_cutoff
+        lfn_biosample_replicate_cutoff = 0.001
+        # Occurrence is deleted if N_ijk < lfn_ lfn_read_count_cutoff
+        lfn_read_count_cutoff = 10
 
         filter_output_df = self.filter_lfn_runner.get_variant_read_count_delete_df(
-            lfn_variant_threshold,
-            lfn_variant_replicate_threshold,
-            lfn_biosample_replicate_threshold,
-            lfn_read_count_threshold)
+            lfn_variant_cutoff,
+            lfn_variant_replicate_cutoff,
+            lfn_biosample_replicate_cutoff,
+            lfn_read_count_cutoff)
         self.assertTrue(
             filter_output_df.filter_delete.tolist()[
                 :12] == [
@@ -83,10 +83,10 @@ class TestFilterLFN(unittest.TestCase):
 
     def test_mark_delete_lfn_per_Ni(self):
 
-        lfn_per_variant_threshold = 0.001
+        lfn_per_variant_cutoff = 0.001
 
         self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_i', threshold=lfn_per_variant_threshold)
+            lfn_denominator='N_i', cutoff=lfn_per_variant_cutoff)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 22)
@@ -110,7 +110,7 @@ class TestFilterLFN(unittest.TestCase):
     def test_mark_delete_lfn_per_Nik(self):
 
         self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_ik', threshold=0.005)
+            lfn_denominator='N_ik', cutoff=0.005)
         #
         self.assertTrue(self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
             (self.filter_lfn_runner.variant_read_count_filter_delete_df.variant_id == 12)
@@ -151,7 +151,7 @@ class TestFilterLFN(unittest.TestCase):
     def test_mark_delete_lfn_per_Njk(self):
 
         self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_jk', threshold=0.001)
+            lfn_denominator='N_jk', cutoff=0.001)
         #
         self.assertTrue(
             not self.filter_lfn_runner.variant_read_count_filter_delete_df.loc[
@@ -189,10 +189,10 @@ class TestFilterLFN(unittest.TestCase):
 
     def test_mark_delete_lfn_do_not_pass_all_filters(self):
         self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_i', threshold=0.001)
+            lfn_denominator='N_i', cutoff=0.001)
 
         self.filter_lfn_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_ik', threshold=0.005)
+            lfn_denominator='N_ik', cutoff=0.005)
 
         self.filter_lfn_runner.mark_delete_lfn_do_not_pass_all_filters()
 
