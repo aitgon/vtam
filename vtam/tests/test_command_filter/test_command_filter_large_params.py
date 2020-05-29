@@ -47,28 +47,26 @@ class TestCommandsFilterParams(unittest.TestCase):
         tar.extractall(path=cls.outdir_path)
         tar.close()
 
+        cls.args = {}
+        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params.yml")
+
         ############################################################################################
         #
-        # Paths
+        # Run 'vtam taxonomy'
         #
         ############################################################################################
 
-        # cls.sorted_dir_path = os.path.join(cls.outdir_path, "sorted")
-        # cls.sortedreadinfo_path = os.path.join(cls.sorted_dir_path, "readinfo.tsv")
-        # cls.asvtable_path = os.path.join(cls.outdir_path, "asvtable_default.tsv")
+        command = "vtam taxonomy --output taxonomy.tsv --precomputed"
+        subprocess.run(shlex.split(command), check=True, cwd=cls.outdir_path)
+
+        ############################################################################################
         #
-        # cls.known_occurrences = os.path.join(cls.package_path, "doc/data/known_occurrences.tsv")
+        # Run 'vtam coi_blast_db'
         #
-        # cls.log_path = os.path.join(cls.outdir_path, "vtam.log")
-        #
-        cls.args = {}
-        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params.yml")
-        # cls.args['readinfo'] = cls.sortedreadinfo_path
-        # cls.args['readdir'] = cls.sorted_dir_path
-        # cls.args['known_occurrences'] = cls.known_occurrences
-        # cls.args['outdir'] = cls.outdir_path
-        # cls.args['log'] = cls.log_path
-        # cls.args['asvtable'] = cls.asvtable_path
+        ############################################################################################
+
+        command = "vtam coi_blast_db --coi_blast_db_dir coi_blast_db_dir"
+        subprocess.run(shlex.split(command), check=True, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
@@ -80,7 +78,26 @@ class TestCommandsFilterParams(unittest.TestCase):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv --params {params}".format(**self.args)
         subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-        import pdb; pdb.set_trace()
 
-        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default2.tsv")
-        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
+        asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default.tsv")
+        self.assertTrue(filecmp.cmp(asvtable_path, asvtable_bak_path, shallow=False))
+
+    def test_02_taxasign(self):
+
+        ################################################################################################################
+        #
+        # Command Filter
+        #
+        ################################################################################################################
+
+        command = "vtam taxassign --variants asvtable_default.tsv --output asvtable_default_taxa.tsv --db db.sqlite --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db --taxonomy taxonomy.tsv"
+        subprocess.run(shlex.split(command), cwd=self.outdir_path, check=True)
+
+        asvtable_path = os.path.join(self.outdir_path, "asvtable_default_taxa.tsv")
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default_taxa.tsv")
+        self.assertTrue(filecmp.cmp(asvtable_path, asvtable_bak_path, shallow=False))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)

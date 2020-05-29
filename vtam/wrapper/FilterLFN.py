@@ -45,10 +45,10 @@ class FilterLFN(ToolWrapper):
 
     def specify_params(self):
         return {
-            "lfn_variant_threshold": "float",
-            "lfn_variant_replicate_threshold": "float",
-            "lfn_biosample_replicate_threshold": "required|float",
-            "lfn_read_count_threshold": "required|float",
+            "lfn_variant_cutoff": "float",
+            "lfn_variant_replicate_cutoff": "float",
+            "lfn_biosample_replicate_cutoff": "required|float",
+            "lfn_read_count_cutoff": "required|float",
         }
 
     def run(self):
@@ -75,12 +75,10 @@ class FilterLFN(ToolWrapper):
             FilterLFN.__output_table_filter_lfn)
         #
         # Options
-        lfn_variant_threshold = self.option("lfn_variant_threshold")
-        lfn_variant_replicate_threshold = self.option(
-            "lfn_variant_replicate_threshold")
-        lfn_biosample_replicate_threshold = self.option(
-            "lfn_biosample_replicate_threshold")
-        lfn_read_count_threshold = self.option("lfn_read_count_threshold")
+        lfn_variant_cutoff = self.option("lfn_variant_cutoff")
+        lfn_variant_replicate_cutoff = self.option("lfn_variant_replicate_cutoff")
+        lfn_biosample_replicate_cutoff = self.option("lfn_biosample_replicate_cutoff")
+        lfn_read_count_cutoff = self.option("lfn_read_count_cutoff")
 
         #######################################################################
         #
@@ -107,7 +105,10 @@ class FilterLFN(ToolWrapper):
         #######################################################################
 
         variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
-            lfn_variant_threshold, lfn_variant_replicate_threshold, lfn_biosample_replicate_threshold, lfn_read_count_threshold)
+            lfn_variant_cutoff=lfn_variant_cutoff,
+            lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
+            lfn_biosample_replicate_cutoff=lfn_biosample_replicate_cutoff,
+            lfn_read_count_cutoff=lfn_read_count_cutoff)
 
         VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_lfn_model)

@@ -1,4 +1,4 @@
-{% from 'macros.yml' import input_file_threshold_specific, input_lfn_variant_replicate_threshold %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% from 'macros.yml' import input_file_cutoff_specific, input_lfn_variant_replicate_cutoff %}{% extends "block_wopfile_asv_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
@@ -8,13 +8,13 @@
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: {{readinfo}}{{ input_file_threshold_specific(threshold_specific) }}
+            readinfo: {{readinfo}}{{ input_file_cutoff_specific(cutoff_specific) }}
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
-    params:{{ input_lfn_variant_replicate_threshold(lfn_variant_threshold, lfn_variant_replicate_threshold) }}
-        lfn_biosample_replicate_threshold: {{lfn_njk_cutoff}}
-        lfn_read_count_threshold: {{lfn_nijk_cutoff}}
+    params:{{ input_lfn_variant_replicate_cutoff(lfn_variant_cutoff, lfn_variant_replicate_cutoff) }}
+        lfn_biosample_replicate_cutoff: {{lfn_biosample_replicate_cutoff}}
+        lfn_read_count_cutoff: {{lfn_biosample_replicate_cutoff}}
 
 
 rule FilterMinReplicateNumber:
