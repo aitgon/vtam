@@ -26,11 +26,11 @@ class FilterRenkonenRunner(object):
 
         renkonen_distance_df = self.get_renkonen_distance_df_for_all_biosample_replicates()
 
-        renkonen_distance_threshold = renkonen_distance_df.renkonen_distance.quantile(
+        renkonen_distance_cutoff = renkonen_distance_df.renkonen_distance.quantile(
             renkonen_distance_quantile, interpolation='lower')
 
         renkonen_distance_df[
-            'above_renkonen_distance_quantile'] = renkonen_distance_df.renkonen_distance > renkonen_distance_threshold
+            'above_renkonen_distance_quantile'] = renkonen_distance_df.renkonen_distance > renkonen_distance_cutoff
         for run_marker_biosample_replicate_row_i, run_marker_biosample_replicate_row in self.variant_read_count_df[[
                 'run_id', 'marker_id', 'biosample_id', 'replicate']].drop_duplicates().iterrows():
             run_id = run_marker_biosample_replicate_row.run_id
