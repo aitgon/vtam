@@ -1,16 +1,11 @@
-import pandas
-
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.VariantReadCount import VariantReadCount
-from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
 from vtam.utils.KnownOccurrences import KnownOccurrences
-from vtam.utils.Logger import Logger
 from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.OptimizeLFNreadCountAndLFNvariantRunner import \
     OptimizeLFNreadCountAndLFNvariantRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from wopmars.models.ToolWrapper import ToolWrapper
 
 
@@ -55,10 +50,10 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
     def specify_params(self):
         return {
-            "lfn_variant_threshold": "float",
-            "lfn_variant_replicate_threshold": "float",
-            "lfn_biosample_replicate_threshold": "required|float",
-            "lfn_read_count_threshold": "required|float",
+            "lfn_variant_cutoff": "float",
+            "lfn_variant_replicate_cutoff": "float",
+            "lfn_biosample_replicate_cutoff": "required|float",
+            "lfn_read_count_cutoff": "required|float",
             "min_replicate_number": "required|int",
         }
 
@@ -70,13 +65,13 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         2. Control if user variants and sequence are consistent in the database
         3. Get variant_read_count of this run_name-marker_name-biosample-replicate experiment
         5. Compute maximal lfn_nijk_cutoff that keeps all 'keep' variants with the 'run_lfn_read_count_and_lfn_variant' algorithm
-        6. Compute maximal lfn_variant_threshold that keeps all 'keep' variants with the 'run_lfn_read_count_and_lfn_variant' algorithm (See below)
+        6. Compute maximal lfn_variant_cutoff that keeps all 'keep' variants with the 'run_lfn_read_count_and_lfn_variant' algorithm (See below)
         7. Loop between default and lfn_nijk_cutoff and run_lfn_read_count_and_lfn_variant parameters
             7.1 Compute number of keep variants. Should be always maximal.
             7.2 Compute number of delete variants Should decrease.
-        8. Compute variant(-replicate) specific threshold for delete variants
+        8. Compute variant(-replicate) specific cutoff for delete variants
             8.1 For each variant i (Or variant-replicate i-k ),
-                get N_ijk_max and use it to computer variant specific threshold
+                get N_ijk_max and use it to computer variant specific cutoff
 
         Description of the 'run_lfn_read_count_and_lfn_variant' algorithm
 
@@ -103,15 +98,15 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         # Output file output
         output_file_optimize_lfn_tsv = self.output_file(
             OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_read_count_and_lfn_variant)
-        output_file_lfn_variant_specific_threshold_tsv = self.output_file(
+        output_file_lfn_variant_specific_cutoff_tsv = self.output_file(
             OptimizeLFNreadCountAndLFNvariant.__output_file_optimize_lfn_variant_specific)
 
         # Options
-        lfn_ni_cutoff = self.option("lfn_variant_threshold")
-        lfn_nik_cutoff = self.option("lfn_variant_replicate_threshold")
+        lfn_ni_cutoff = self.option("lfn_variant_cutoff")
+        lfn_nik_cutoff = self.option("lfn_variant_replicate_cutoff")
         min_replicate_number = self.option("min_replicate_number")
-        lfn_njk_cutoff = self.option("lfn_biosample_replicate_threshold")
-        lfn_nijk_cutoff = int(self.option("lfn_read_count_threshold"))
+        lfn_njk_cutoff = self.option("lfn_biosample_replicate_cutoff")
+        lfn_nijk_cutoff = int(self.option("lfn_read_count_cutoff"))
 
         filter_kwargs = {"lfn_ni_cutoff": lfn_ni_cutoff,
                          "lfn_nik_cutoff": lfn_nik_cutoff,
@@ -165,7 +160,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         out_optimize2_df['action'] = 'delete'
         out_optimize2_df['sequence'] = NameIdConverter(out_optimize2_df.variant_id, engine=engine).variant_id_to_sequence()
         out_optimize2_df.rename({'run_id': 'run', 'marker_id': 'marker', 'variant_id': 'variant', 'read_count': 'read_count_max'}, axis=1, inplace=True)
-        out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_threshold', 'sequence']]
+        out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_cutoff', 'sequence']]
 
         out_optimize2_df.to_csv(
-            output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False)
+            output_file_lfn_variant_specific_cutoff_tsv, header=True, sep='\t', index=False)

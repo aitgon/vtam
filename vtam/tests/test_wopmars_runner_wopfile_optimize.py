@@ -88,7 +88,7 @@ rule VariantReadCount:
             VariantReadCount: vtam.models.VariantReadCount
     params:
         read_dir: vtam/tests
-        global_read_count_threshold: 2
+        global_read_count_cutoff: 2
 
 
 rule OptimizeLFNbiosampleReplicate:
@@ -142,9 +142,9 @@ rule OptimizeLFNreadCountAndLFNvariant:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
             optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
     params:
-        lfn_variant_threshold: 0.001
-        lfn_biosample_replicate_threshold: 0.001
-        lfn_read_count_threshold: 10
+        lfn_variant_cutoff: 0.001
+        lfn_biosample_replicate_cutoff: 0.001
+        lfn_read_count_cutoff: 10
         min_replicate_number: 2"""
         self.assertTrue(wopfile_content == wopfile_content_bak)
 

@@ -22,11 +22,11 @@ class FilterLFNreplicateRemainRunner:
 
         if lfn_nik_cutoff is None:  # optimize lfn variant
 
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_ni_cutoff)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', cutoff=lfn_ni_cutoff)
 
         else:  # optimize lfn variant replicate
 
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_nik_cutoff)
+            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', cutoff=lfn_nik_cutoff)
 
         ############################################################################################
         #
@@ -35,7 +35,7 @@ class FilterLFNreplicateRemainRunner:
         ############################################################################################
 
         lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk',
-                                                               threshold=lfn_njk_cutoff)
+                                                               cutoff=lfn_njk_cutoff)
 
         ############################################################################################
         #
@@ -44,7 +44,7 @@ class FilterLFNreplicateRemainRunner:
         ############################################################################################
 
         lfn_filter_runner.mark_delete_lfn_absolute_read_count(
-            lfn_read_count_threshold=lfn_nijk_cutoff)
+            lfn_read_count_cutoff=lfn_nijk_cutoff)
 
         ############################################################################################
         #
