@@ -334,12 +334,12 @@ class ArgParser:
             help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
             required=True)
         parser_vtam_filter.add_argument(
-            '--threshold_specific',
+            '--cutoff_specific',
             default=None,
             action='store',
             required=False,
-            help="TSV file with variant (col1: variant; col2: threshold) or variant-replicate "
-            "(col1: variant; col2: replicate; col3: threshold)specific thresholds.Header expected.",
+            help="TSV file with variant (col1: variant; col2: cutoff) or variant-replicate "
+            "(col1: variant; col2: replicate; col3: cutoff)specific cutoffs.",
             type=ArgParserChecker.check_file_exists_and_is_nonempty)
 
         #######################################################################

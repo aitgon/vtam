@@ -1,6 +1,6 @@
 import pandas
-from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
 
+from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
 from vtam.utils.FilterLFNRunner import FilterLFNrunner
 from vtam.utils.FilterMinReplicateNumberRunner import FilterMinReplicateNumberRunner
 from vtam.utils.Logger import Logger
@@ -114,7 +114,7 @@ class OptimizeLFNreadCountAndLFNvariantRunner:
             ########################################################################################
 
             Logger.instance().debug(
-                "Searching upper limit of lfn_variant_threshold or lfn_variant_replicate_threshold")
+                "Searching upper limit of lfn_variant_cutoff or lfn_variant_replicate_cutoff")
 
             lfn_ni_njk_cutoff_global_max = 0.05  # max value
             filter_kwargs_local = filter_kwargs.copy()
@@ -241,10 +241,10 @@ class OptimizeLFNreadCountAndLFNvariantRunner:
             # Rename columns depending on whether this is optimize_lfn_variant or is_optimize_lfn_variant_replicate
             if lfn_nik_cutoff is None:  # optimize lfn variant
                 out_optimize_run_marker_df = out_optimize_run_marker_df \
-                    .rename(columns={'lfn_ni_nik_cutoff': 'lfn_variant_threshold'})
+                    .rename(columns={'lfn_ni_nik_cutoff': 'lfn_variant_cutoff'})
             else:  # optimize lfn variant replicate
                 out_optimize_run_marker_df = out_optimize_run_marker_df \
-                    .rename(columns={'lfn_ni_nik_cutoff': 'lfn_variant_replicate_threshold'})
+                    .rename(columns={'lfn_ni_nik_cutoff': 'lfn_variant_replicate_cutoff'})
 
             ########################################################################################
             #
@@ -258,7 +258,7 @@ class OptimizeLFNreadCountAndLFNvariantRunner:
 
             ########################################################################################
             #
-            # Variant delete-specific thresholds
+            # Variant delete-specific cutoffs
             #
             ########################################################################################
 
@@ -270,160 +270,40 @@ class OptimizeLFNreadCountAndLFNvariantRunner:
             if lfn_nik_cutoff is None:  # optimize lfn variant
                 N_i_df = nijk_df_i_obj.get_N_i_df()
 
-                lfn_ni_or_nik_specific_threshold_df = nijk_run_marker_delete_df.merge(
+                lfn_ni_or_nik_specific_cutoff_df = nijk_run_marker_delete_df.merge(
                     N_i_df, on=['run_id', 'marker_id', 'variant_id'])
-                lfn_ni_or_nik_specific_threshold_df[
-                    'lfn_variant_threshold'] = lfn_ni_or_nik_specific_threshold_df.read_count \
-                                               / lfn_ni_or_nik_specific_threshold_df.N_i
-                lfn_ni_or_nik_specific_threshold_df.sort_values(by='lfn_variant_threshold',
+                lfn_ni_or_nik_specific_cutoff_df[
+                    'lfn_variant_cutoff'] = lfn_ni_or_nik_specific_cutoff_df.read_count \
+                                               / lfn_ni_or_nik_specific_cutoff_df.N_i
+                lfn_ni_or_nik_specific_cutoff_df.sort_values(by='lfn_variant_cutoff',
                                                                 ascending=False, inplace=True)
-                lfn_ni_or_nik_specific_threshold_df.drop_duplicates('variant_id', keep='first',
+                lfn_ni_or_nik_specific_cutoff_df.drop_duplicates('variant_id', keep='first',
                                                                     inplace=True)
-                lfn_ni_or_nik_specific_threshold_df = (
-                    lfn_ni_or_nik_specific_threshold_df[
+                lfn_ni_or_nik_specific_cutoff_df = (
+                    lfn_ni_or_nik_specific_cutoff_df[
                         ['run_id', 'marker_id', 'variant_id', 'read_count', 'N_i',
-                         'lfn_variant_threshold']]).drop_duplicates(
+                         'lfn_variant_cutoff']]).drop_duplicates(
                     inplace=False)
             else:  # optimize lfn variant replicate
                 N_ik_df = nijk_df_i_obj.get_N_ik_df()
-                lfn_ni_or_nik_specific_threshold_df = nijk_run_marker_delete_df.merge(N_ik_df,
+                lfn_ni_or_nik_specific_cutoff_df = nijk_run_marker_delete_df.merge(N_ik_df,
                                                                                       on=['run_id',
                                                                                           'marker_id',
                                                                                           'variant_id',
                                                                                           'replicate'])
-                lfn_ni_or_nik_specific_threshold_df[
-                    'lfn_variant_replicate_threshold'] = lfn_ni_or_nik_specific_threshold_df.read_count \
-                                                         / lfn_ni_or_nik_specific_threshold_df.N_ik
-                lfn_ni_or_nik_specific_threshold_df.sort_values(
-                    by='lfn_variant_replicate_threshold',
+                lfn_ni_or_nik_specific_cutoff_df[
+                    'lfn_variant_replicate_cutoff'] = lfn_ni_or_nik_specific_cutoff_df.read_count \
+                                                         / lfn_ni_or_nik_specific_cutoff_df.N_ik
+                lfn_ni_or_nik_specific_cutoff_df.sort_values(
+                    by='lfn_variant_replicate_cutoff',
                     ascending=False, inplace=True)
-                lfn_ni_or_nik_specific_threshold_df.drop_duplicates(['variant_id', 'replicate'],
+                lfn_ni_or_nik_specific_cutoff_df.drop_duplicates(['variant_id', 'replicate'],
                                                                     keep='first', inplace=True)
-                lfn_ni_or_nik_specific_threshold_df = (lfn_ni_or_nik_specific_threshold_df[
+                lfn_ni_or_nik_specific_cutoff_df = (lfn_ni_or_nik_specific_cutoff_df[
                     ['run_id', 'marker_id', 'variant_id', 'replicate', 'read_count', 'N_ik',
-                     'lfn_variant_replicate_threshold']]).drop_duplicates(inplace=False)
+                     'lfn_variant_replicate_cutoff']]).drop_duplicates(inplace=False)
 
             out_optimize2_df = pandas.concat(
-                [out_optimize2_df, lfn_ni_or_nik_specific_threshold_df], axis=0)
+                [out_optimize2_df, lfn_ni_or_nik_specific_cutoff_df], axis=0)
 
         return out_optimize_df, out_optimize2_df
-
-    # def to_tsv(self, optimize_path, engine):
-    #
-    #     ##########################################################################################
-    #     #
-    #     # out_optimize_df: Format and write
-    #     #
-    #     ##########################################################################################
-    #
-    #     out_optimize_df.marker_id = NameIdConverter(out_optimize_df.marker_id,
-    #                                                 engine=engine).to_names(Marker)
-    #     out_optimize_df.run_id = NameIdConverter(out_optimize_df.run_id, engine=engine).to_names(
-    #         Run)
-    #     out_optimize_df.rename({'run_id': 'run', 'marker_id': 'marker'}, axis=1, inplace=True)
-    #     out_optimize_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False)
-    #
-    #     ##########################################################################################
-    #     #
-    #     # out_optimize_df: Format and write
-    #     #
-    #     ##########################################################################################
-    #
-    #     out_optimize2_df.marker_id = NameIdConverter(out_optimize2_df.marker_id,
-    #                                                  engine=engine).to_names(Marker)
-    #     out_optimize2_df.run_id = NameIdConverter(out_optimize2_df.run_id, engine=engine).to_names(
-    #         Run)
-    #     out_optimize2_df['action'] = 'delete'
-    #     out_optimize2_df['sequence'] = NameIdConverter(out_optimize2_df.variant_id,
-    #                                                    engine=engine).variant_id_to_sequence()
-    #     out_optimize2_df.rename({'run_id': 'run', 'marker_id': 'marker', 'variant_id': 'variant',
-    #                              'read_count': 'read_count_max'}, axis=1, inplace=True)
-    #     out_optimize2_df = out_optimize2_df[
-    #         ['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_threshold',
-    #          'sequence']]
-    #
-    #     out_optimize2_df.to_csv(
-    #         output_file_lfn_variant_specific_threshold_tsv, header=True, sep='\t', index=False)
-
-    def run_various_filters(self, is_optimize_lfn_variant_replicate,
-                            lfn_biosample_replicate_threshold,
-                            lfn_read_count_threshold, min_replicate_number,
-                            lfn_variant_or_variant_replicate_threshold):
-
-        lfn_filter_runner = FilterLFNrunner(self.nijk_df)
-
-        ############################################################################################
-        #
-        # Filter lfn_variant
-        #
-        ############################################################################################
-
-        if not is_optimize_lfn_variant_replicate:  # optimize lfn variant replicate
-
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_i', threshold=lfn_variant_or_variant_replicate_threshold)
-
-        else:  # optimize lfn variant replicate
-
-            lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_ik', threshold=lfn_variant_or_variant_replicate_threshold)
-
-        ############################################################################################
-        #
-        # Filter lfn_biosample_replicate
-        #
-        ############################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', threshold=lfn_biosample_replicate_threshold)
-
-        ############################################################################################
-        #
-        # Filter absolute read count
-        #
-        ############################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_absolute_read_count(lfn_read_count_threshold)
-
-        ############################################################################################
-        #
-        # mark_delete_lfn_do_not_pass_all_filters
-        #
-        ############################################################################################
-
-        lfn_filter_runner.mark_delete_lfn_do_not_pass_all_filters()
-
-        variant_read_count_remained_df = lfn_filter_runner.variant_read_count_filter_delete_df
-
-        variant_read_count_remained_df = variant_read_count_remained_df.loc[
-            (variant_read_count_remained_df.filter_id == 8) &
-            (variant_read_count_remained_df.filter_delete == 0)]
-        variant_read_count_remained_df.drop(['filter_id', 'filter_delete'], axis=1, inplace=True)
-        del (lfn_filter_runner)
-
-        ############################################################################################
-        #
-        # FilterMinReplicateNumberRunner
-        #
-        ############################################################################################
-
-        variant_read_count_remained_df = FilterMinReplicateNumberRunner(
-            variant_read_count_remained_df).get_variant_read_count_delete_df(min_replicate_number)
-
-        variant_read_count_remained_df = variant_read_count_remained_df.loc[
-            variant_read_count_remained_df.filter_delete == 0]
-        variant_read_count_remained_df.drop('filter_delete', axis=1, inplace=True)
-
-        ############################################################################################
-        #
-        # Count keep
-        #
-        ############################################################################################
-
-        # variant_read_count_remained_df.drop_duplicates(inplace=True)
-
-        # variant_read_count_remained_keep_df = variant_read_count_remained_df.merge(variant_keep_df,
-        #                                                                            on=['run_id', 'marker_id',
-        #                                                                                'biosample_id', 'variant_id'])
-        # variant_read_count_remained_keep_df = variant_read_count_remained_keep_df[
-        #     ['run_id', 'marker_id', 'variant_id', 'biosample_id']].drop_duplicates()
-        # count_keep = variant_read_count_remained_keep_df.shape[0]
-
-        return variant_read_count_remained_df[['run_id', 'marker_id', 'biosample_id', 'variant_id']].drop_duplicates(inplace=False)
