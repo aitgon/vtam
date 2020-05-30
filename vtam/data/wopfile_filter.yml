@@ -14,7 +14,7 @@
             FilterLFN: vtam.models.FilterLFN
     params:{{ input_lfn_variant_replicate_cutoff(lfn_variant_cutoff, lfn_variant_replicate_cutoff) }}
         lfn_biosample_replicate_cutoff: {{lfn_biosample_replicate_cutoff}}
-        lfn_read_count_cutoff: {{lfn_biosample_replicate_cutoff}}
+        lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
 
 
 rule FilterMinReplicateNumber:
