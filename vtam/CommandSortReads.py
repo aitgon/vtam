@@ -49,10 +49,7 @@ class CommandSortReads(object):
         #
         ############################################################################################
 
-        # fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
-        # fastainfo_df.columns = fastainfo_df.columns.str.lower()
-        merged_fastainfo_df = SampleInformationFile(
-            fastainfo).read_tsv_into_df()
+        merged_fastainfo_df = SampleInformationFile(fastainfo).read_tsv_into_df()
 
         pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
