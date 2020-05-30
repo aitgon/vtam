@@ -55,12 +55,8 @@ class FilterLFNrunner:
                 'filter_delete': []},
             dtype='uint32')
 
-    def get_variant_read_count_delete_df(
-            self,
-            lfn_variant_cutoff,
-            lfn_variant_replicate_cutoff,
-            lfn_biosample_replicate_cutoff,
-            lfn_read_count_cutoff):
+    def get_variant_read_count_delete_df(self, lfn_variant_cutoff, lfn_variant_replicate_cutoff, 
+                                         lfn_biosample_replicate_cutoff, lfn_read_count_cutoff):
 
         #######################################################################
         #
@@ -85,9 +81,7 @@ class FilterLFNrunner:
         #
         #######################################################################
 
-        self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            lfn_denominator='N_jk',
-            cutoff=lfn_biosample_replicate_cutoff)
+        self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', cutoff=lfn_biosample_replicate_cutoff)
 
         #######################################################################
         #
