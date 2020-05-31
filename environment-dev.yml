@@ -11,6 +11,7 @@ dependencies:
   - pandas
   - pygments
   - pyyaml
+  - snakemake
   - sphinx
   - sphinx_rtd_theme
   - sqlalchemy

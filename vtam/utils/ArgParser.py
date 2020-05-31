@@ -5,6 +5,7 @@ import pandas
 import yaml
 
 from vtam.utils.KnownOccurrences import KnownOccurrences
+from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta
@@ -59,7 +60,7 @@ class ArgParserChecker(object):
         with open(path, 'r') as fin:
             params_user = yaml.load(fin, Loader=yaml.SafeLoader)
             for params_k in params_user:
-                if not (params_k in constants.get_dic_params_default()):
+                if not (params_k in constants.get_params_default_dic()):
                     raise argparse.ArgumentTypeError(
                         "This parameter '{}' in the YML file '{}' is not recognized by VTAM. "
                         "Please fix it.".format(
@@ -157,7 +158,7 @@ class ArgParser:
             default=None,
             help="YML file with parameter values",
             required=False,
-            type=ArgParserChecker.check_params_yml)
+            type=lambda x: ParamsFile(params_path=x).argparse_checker_params_file())
         parser_vtam_main.add_argument('--log', **cls.args_log_file)
         parser_vtam_main.add_argument('--threads', action='store',
                                       help="Number of threads",
@@ -180,9 +181,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_sortreads(
-            subparsers=subparsers,
-            parent_parser=parser_vtam_main)
+        cls.create_sortreads(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -190,9 +189,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_filter(
-            subparsers=subparsers,
-            parent_parser=parser_vtam_main)
+        cls.create_filter(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -200,9 +197,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_optimize(
-            subparsers=subparsers,
-            parent_parser=parser_vtam_main)
+        cls.create_optimize( subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -218,9 +213,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_taxassign(
-            subparsers=subparsers,
-            parent_parser=parser_vtam_main)
+        cls.create_taxassign(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -228,9 +221,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_taxonomy(
-            subparsers=subparsers,
-            parent_parser=parser_vtam_main)
+        cls.create_taxonomy(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -245,36 +236,35 @@ class ArgParser:
     @classmethod
     def create_merge(cls, subparsers, parent_parser):
 
-        parser_vtam_merge = subparsers.add_parser(
-            'merge',
-            add_help=True,
+        parser_vtam_merge = subparsers.add_parser('merge', add_help=True,
             formatter_class=argparse.RawTextHelpFormatter,
             parents=[parent_parser])
 
-        parser_vtam_merge.add_argument(
-            '--fastqinfo',
-            action='store',
+        parser_vtam_merge.add_argument('--fastqinfo', action='store',
             help="TSV file with FASTQ sample information",
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_paired_fastq))
-        parser_vtam_merge .add_argument(
-            '--fastainfo',
+
+        parser_vtam_merge .add_argument( '--fastainfo',
             action='store',
             help="REQUIRED: Output TSV file for FASTA sample information",
             required=True)
+
         parser_vtam_merge.add_argument(
             '--fastqdir',
             action='store',
             help="Directory with FASTQ files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+
         parser_vtam_merge.add_argument(
             '--fastadir',
             action='store',
             help="Directory with FASTA files",
             required=True)
         # This attribute will trigger the good command
+
         parser_vtam_merge.set_defaults(command='merge')
 
     @classmethod
@@ -285,6 +275,7 @@ class ArgParser:
             add_help=True,
             formatter_class=argparse.RawTextHelpFormatter,
             parents=[parent_parser])
+
         parser_vtam_sortreads .add_argument(
             '--fastainfo',
             action='store',
@@ -292,12 +283,14 @@ class ArgParser:
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_merged_fasta))
+
         parser_vtam_sortreads.add_argument(
             '--fastadir',
             action='store',
             help="REQUIRED: Directory with FASTA files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+
         parser_vtam_sortreads.add_argument(
             '--outdir',
             action='store',
@@ -305,6 +298,7 @@ class ArgParser:
             default="out",
             required=True)
         # This attribute will trigger the good command
+
         parser_vtam_sortreads.set_defaults(command='sortreads')
 
     @classmethod
@@ -333,6 +327,7 @@ class ArgParser:
             action='store',
             help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
             required=True)
+
         parser_vtam_filter.add_argument(
             '--cutoff_specific',
             default=None,
@@ -349,6 +344,7 @@ class ArgParser:
         #######################################################################
 
         parser_vtam_filter.add_argument('--db', **cls.args_db)
+
         parser_vtam_filter.add_argument(
             '--dry-run_name',
             '-n',
@@ -356,6 +352,7 @@ class ArgParser:
             action='store_true',
             required=False,
             help="Only display what would have been done.")
+
         parser_vtam_filter.add_argument(
             '-F',
             '--forceall',
@@ -363,6 +360,7 @@ class ArgParser:
             action='store_true',
             help="Force argument of WopMars",
             required=False)
+
         parser_vtam_filter.add_argument(
             '-U',
             '--until',
@@ -371,6 +369,7 @@ class ArgParser:
             default=None,
             help="Execute the workflow until the given target RULE: SampleInformation, ...",
             required=False)
+
         parser_vtam_filter.add_argument(
             '-S',
             '--since',
@@ -388,6 +387,7 @@ class ArgParser:
 
         parser_vtam_optimize = subparsers.add_parser(
             'optimize', add_help=True, parents=[parent_parser])
+
         parser_vtam_optimize .add_argument(
             '--readinfo',
             action='store',
@@ -395,24 +395,27 @@ class ArgParser:
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_sortedread_fasta))
+
         parser_vtam_optimize.add_argument(
             '--readdir',
             action='store',
             help="REQUIRED: Directory with sorted read files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+
         parser_vtam_optimize.add_argument(
             '--outdir',
             action='store',
             help="Directory for output",
             default="out",
             required=True)
+
         parser_vtam_optimize.add_argument(
             '--known_occurrences',
             action='store',
             help="TSV file with known variants",
             required=True,
-            type=lambda x: KnownOccurrences(x).check_format_known_occurrences_tsv())
+            type=lambda x: KnownOccurrences(x).argparse_checker_known_occurrences())
 
         #######################################################################
         #
@@ -421,6 +424,7 @@ class ArgParser:
         #######################################################################
 
         parser_vtam_optimize.add_argument('--db', **cls.args_db)
+
         parser_vtam_optimize.add_argument(
             '--dry-run_name',
             '-n',
@@ -428,6 +432,7 @@ class ArgParser:
             action='store_true',
             required=False,
             help="Only display what would have been done.")
+
         parser_vtam_optimize.add_argument(
             '-F',
             '--forceall',
@@ -435,6 +440,7 @@ class ArgParser:
             action='store_true',
             help="Force argument of WopMars",
             required=False)
+
         parser_vtam_optimize.add_argument(
             '-U',
             '--until',

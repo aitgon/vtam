@@ -114,6 +114,5 @@ class TestTutorialCommands(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
 
-        subprocess.run([sys.executable, '-m', 'pip', 'uninstall', 'vtam', '-y'])
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
 
