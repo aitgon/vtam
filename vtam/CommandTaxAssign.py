@@ -9,26 +9,19 @@ from vtam.models.TaxAssign import TaxAssign
 from vtam.models.Variant import Variant
 from vtam.utils import constants
 from vtam.utils.Logger import Logger
+from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.TaxAssignRunner import TaxAssignRunner
 from vtam.utils.TaxLineage import TaxLineage
+
 
 
 class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(
-            cls,
-            db,
-            mode,
-            variants_tsv,
-            output,
-            taxonomy_tsv,
-            blasdb_dir_path,
-            blastdbname_str,
-            num_threads=multiprocessing.cpu_count(),
-            params=None):
+    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blastdb_dir_path, blastdbname_str,
+             num_threads=multiprocessing.cpu_count(), params=None):
         """
 
         Parameters
@@ -39,7 +32,7 @@ class CommandTaxAssign(object):
         variants_tsv
         output
         taxonomy_tsv
-        blasdb_dir_path
+        blastdb_dir_path
         blastdbname_str
         num_threads
         params
@@ -60,22 +53,13 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        params_default = constants.get_dic_params_default()
+        # params_dic = constants.get_params_default_dic()
+        params_dic = ParamsFile(params).get_params_dic()
 
-        ltg_rule_threshold = params_default['ltg_rule_threshold']
-        include_prop = params_default['include_prop']
-        min_number_of_taxa = params_default['min_number_of_taxa']
-        qcov_hsp_perc = params_default['qcov_hsp_perc']
-
-        if not (params is None):
-            if 'ltg_rule_threshold' in params:
-                ltg_rule_threshold = params_default['ltg_rule_threshold']
-            if 'include_prop' in params:
-                include_prop = params_default['include_prop']
-            if 'min_number_of_taxa' in params:
-                min_number_of_taxa = params_default['min_number_of_taxa']
-            if 'qcov_hsp_perc' in params:
-                qcov_hsp_perc = params_default['qcov_hsp_perc']
+        ltg_rule_threshold = params_dic['ltg_rule_threshold']
+        include_prop = params_dic['include_prop']
+        min_number_of_taxa = params_dic['min_number_of_taxa']
+        qcov_hsp_perc = params_dic['qcov_hsp_perc']
 
         #######################################################################
         #
@@ -193,7 +177,7 @@ class CommandTaxAssign(object):
             tax_assign_runner = TaxAssignRunner(
                 sequence_list=sequence_list,
                 taxonomy_df=taxonomy_df,
-                blast_db_dir=blasdb_dir_path,
+                blast_db_dir=blastdb_dir_path,
                 blast_db_name=blastdbname_str,
                 ltg_rule_threshold=ltg_rule_threshold,
                 include_prop=include_prop,

@@ -42,7 +42,7 @@ class KnownOccurrences(object):
                                     inplace=True)
         return known_occurrences_df
 
-    def check_format_known_occurrences_tsv(self):
+    def argparse_checker_known_occurrences(self):
         """
         Used by the argparser to check whether the file is in the correct path
         Updated: Mai 17, 2020
