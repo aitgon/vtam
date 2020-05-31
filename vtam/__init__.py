@@ -1,8 +1,7 @@
 import os
-import sqlalchemy
-import subprocess
 import sys
 
+from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
@@ -70,8 +69,8 @@ class VTAM(object):
         #######################################################################
 
         # Some arguments will be passed through environmental variables
-        if 'threads' in vars(self.args):
-            os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
+        if 'threads' in arg_parser_dic:
+            os.environ['VTAM_THREADS'] = str(arg_parser_dic['threads'])
 
         ###############################################################
         #
@@ -79,106 +78,63 @@ class VTAM(object):
         #
         ###############################################################
 
-        if vars(self.args)['command'] in ['filter', 'optimize']:
+        if arg_parser_dic['command'] in ['filter', 'optimize']:
 
-            ###################################################################
-            #
-            # Create FilterLFNreference table and fill it
-            #
-            ###################################################################
+            CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
 
-            engine = sqlalchemy.create_engine(
-                'sqlite:///{}'.format(str(vars(self.args)['db'])), echo=False)
-            meta = sqlalchemy.MetaData()
-            filter_lfn_reference = sqlalchemy.Table(
-                'FilterLFNreference', meta,
-                sqlalchemy.Column('filter_id', sqlalchemy.Integer, primary_key=True),
-                sqlalchemy.Column('filter_name', sqlalchemy.String),
-            )
-            meta.create_all(engine)
-
-            with engine.connect() as conn:
-                for filter_rec in FilterLFNreference_records:
-                    filter_name = filter_rec['filter_name']
-                    select_row = conn.execute(sqlalchemy.select([filter_lfn_reference.c.filter_id]) .where(
-                        filter_lfn_reference.c.filter_name == filter_name)).first()
-                    if select_row is None:  # variant_sequence IS NOT in the database, so INSERT it
-                        conn.execute(
-                            filter_lfn_reference.insert().values(
-                                **filter_rec))
-
-            wopmars_runner = WopmarsRunner(
-                command=vars(
-                    self.args)['command'],
-                cli_args_dic=arg_parser_dic)
-            wopmars_command = wopmars_runner.get_wopmars_command()
-
-            ########################################################################################
-            #
-            # If optimize, verify that fastainfo, known_occurrences and sqilite are coherent
-            #
-            ########################################################################################
-
-            ###################################################################
-            #
-            # Run wopmars
-            #
-            ###################################################################
-
-            # Some arguments will be passed through environmental variables
-            if 'threads' in vars(self.args):
-                os.environ['VTAM_THREADS'] = str(vars(self.args)['threads'])
-            Logger.instance().info(wopmars_command)
-            run_result = subprocess.run(wopmars_command, shell=True)
-            sys.exit(run_result.returncode)
-
-        ###############################################################
+        ############################################################################################
         #
         # Subcommand: merge
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'merge':
+        elif arg_parser_dic['command'] == 'merge':
             fastqinfo = arg_parser_dic['fastqinfo']
             fastqdir = arg_parser_dic['fastqdir']
             fastainfo = arg_parser_dic['fastainfo']
             fastadir = arg_parser_dic['fastadir']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
-            CommandMerge.main(
-                fastqinfo=fastqinfo,
-                fastqdir=fastqdir,
-                fastainfo=fastainfo,
-                fastadir=fastadir,
-                params=params,
-                num_threads=num_threads)
+            CommandMerge.main(fastqinfo=fastqinfo, fastqdir=fastqdir, fastainfo=fastainfo,
+                              fastadir=fastadir, params=params, num_threads=num_threads)
 
-        ###############################################################
+        ############################################################################################
         #
         # Subcommand: sortreads
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'sortreads':
+        elif arg_parser_dic['command'] == 'sortreads':
             fastadir = arg_parser_dic['fastadir']
             fastainfo = arg_parser_dic['fastainfo']
             outdir = arg_parser_dic['outdir']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
-            CommandSortReads.main(
-                fastainfo=fastainfo,
-                fastadir=fastadir,
-                params=params,
-                num_threads=num_threads,
-                outdir=outdir)
+            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
+                                  num_threads=num_threads, outdir=outdir)
 
-        ###############################################################
+        ############################################################################################
+        #
+        # Subcommand: filter
+        #
+        ############################################################################################
+
+        elif arg_parser_dic['command'] == 'sortreads':
+            fastadir = arg_parser_dic['fastadir']
+            fastainfo = arg_parser_dic['fastainfo']
+            outdir = arg_parser_dic['outdir']
+            num_threads = arg_parser_dic['threads']
+            params = arg_parser_dic['params']
+            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
+                                  num_threads=num_threads, outdir=outdir)
+
+        ############################################################################################
         #
         # Subcommand: taxassign
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'taxassign':
+        elif arg_parser_dic['command'] == 'taxassign':
             db = arg_parser_dic['db']
             variants_tsv = arg_parser_dic['variants']
             output = arg_parser_dic['output']
@@ -188,60 +144,51 @@ class VTAM(object):
             blastdbname_str = arg_parser_dic['blastdbname']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
-            CommandTaxAssign.main(
-                db=db,
-                mode=mode,
-                variants_tsv=variants_tsv,
-                output=output,
-                taxonomy_tsv=taxonomy_tsv,
-                blasdb_dir_path=blasdb_dir_path,
-                blastdbname_str=blastdbname_str,
-                params=params,
-                num_threads=num_threads)
+            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output,
+                taxonomy_tsv=taxonomy_tsv, blastdb_dir_path=blasdb_dir_path,
+                blastdbname_str=blastdbname_str, params=params, num_threads=num_threads)
 
-        ###############################################################
+        ############################################################################################
         #
         # Subcommand: pool
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'pool':
+        elif arg_parser_dic['command'] == 'pool':
             db = arg_parser_dic['db']
             run_marker_tsv = arg_parser_dic['runmarker']
             pooled_marker_tsv = arg_parser_dic['output']
-            CommandPoolRunMarkers.main(
-                db=db,
-                pooled_marker_tsv=pooled_marker_tsv,
+            CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv,
                 run_marker_tsv=run_marker_tsv)
 
-        ###############################################################
+        ############################################################################################
         #
         # Subcommand: taxonomy
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'taxonomy':
+        elif arg_parser_dic['command'] == 'taxonomy':
             taxonomy_tsv = arg_parser_dic['output']
             precomputed = arg_parser_dic['precomputed']
             taxonomy = CommandTaxonomy(taxonomy_tsv=taxonomy_tsv)
             taxonomy.main(precomputed=precomputed)
 
-        ###############################################################
+        ############################################################################################
         #
         # Subcommand: coi blast
         #
-        ###############################################################
+        ############################################################################################
 
-        elif vars(self.args)['command'] == 'coi_blast_db':
+        elif arg_parser_dic['command'] == 'coi_blast_db':
             coi_blast_db_dir = arg_parser_dic['coi_blast_db_dir']
             coi_blast_db = CommandBlastCOI(coi_blast_db_dir=coi_blast_db_dir)
             coi_blast_db.download()
 
-        ###############################################################
+        ############################################################################################
         #
         # Else: run_name usage message
         #
-        ###############################################################
+        ############################################################################################
 
         else:
             print(VTAM.usage_message)

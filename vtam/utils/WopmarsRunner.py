@@ -5,6 +5,7 @@ import tempfile
 import jinja2
 import yaml
 
+from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
 from vtam.utils import constants
@@ -18,24 +19,15 @@ class WopmarsRunner(Singleton):
         :param command: takes one of two values: filter or optimize
         :param cli_args_dic: dictionnary (CLIargumentDict.instance()) with command
         """
+
         self.command = command
         self.cli_args_and_numerical_params = {}
         self.cli_args_and_numerical_params.update(cli_args_dic)
 
-        #######################################################################
-        #
-        # Load default numerical cli_args_dic and overwrite with custom cli_args_dic
-        #
-        #######################################################################
+        # Add user params.yml parameters
+        params_dic = ParamsFile(cli_args_dic['params']).get_params_dic()
+        self.cli_args_and_numerical_params.update(params_dic)
 
-        num_params_default_dic = constants.get_dic_params_default()
-        self.cli_args_and_numerical_params.update(num_params_default_dic)
-
-        if not (cli_args_dic['params'] is None):
-            with open(cli_args_dic['params']) as fin:
-                num_params_user_dic = yaml.load(fin, Loader=yaml.SafeLoader)
-                self.cli_args_and_numerical_params.update(num_params_user_dic)
-        #
         self.wopfile_path = None
         self.tempdir = PathManager.instance().get_tempdir()
 

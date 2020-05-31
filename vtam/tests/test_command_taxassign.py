@@ -88,7 +88,7 @@ class TestCommandTaxAssign(unittest.TestCase):
 
         # CommandTaxAssign.main(db=self.db_path, mode='unassigned', variants_tsv=self.asvtable,
         #                       output=self.asvtable_taxa, taxonomy_tsv=self.taxonomy_tsv,
-        #                       blasdb_dir_path=self.coi_blast_db_dir, blastdbname_str='coi_blast_db')
+        #                       blastdb_dir_path=self.coi_blast_db_dir, blastdbname_str='coi_blast_db')
 
         ############################################################################################
         #

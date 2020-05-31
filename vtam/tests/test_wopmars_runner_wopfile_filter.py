@@ -103,7 +103,7 @@ rule FilterLFN:
     params:
         lfn_variant_cutoff: 0.001
         lfn_biosample_replicate_cutoff: 0.001
-        lfn_read_count_cutoff: 0.001
+        lfn_read_count_cutoff: 10
 
 
 rule FilterMinReplicateNumber:
@@ -278,6 +278,7 @@ rule MakeAsvTable:
     output:
         file:
             ASVTable: asvtableoutput.tsv"""
+
         self.assertTrue(wopfile_content == wopfile_content_bak)
 
     def test_wopmars_runner_filter_with_cutoff_specific(self):
