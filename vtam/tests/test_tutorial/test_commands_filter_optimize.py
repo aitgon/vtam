@@ -92,7 +92,7 @@ class TestCommands(unittest.TestCase):
               "-v --log {log}".format(**self.args)
         subprocess.run(shlex.split(cmd))
 
-        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default2.tsv")
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
     def test_02_optimize_lfn_biosample_replicate(self):

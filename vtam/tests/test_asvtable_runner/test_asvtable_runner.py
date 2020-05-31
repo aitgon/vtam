@@ -59,12 +59,10 @@ class TestAsvtableRunner(unittest.TestCase):
     def test_asvtable(self):
 
         asvtable_default_path = os.path.join(self.outdir_path, 'asvtable_default.tsv')
-        asvtable_default_bak_path = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
+        asvtable_default_bak_path = os.path.join(os.path.dirname(__file__), "asvtable_default.tsv")
         asvtable_runner = AsvTableRunner(variant_read_count_df=self.filter_codon_stop_df,
                                          engine=self.engine, biosample_list=self.biosample_list)
         asvtable_runner.to_tsv(asvtable_default_path)
-
         self.assertTrue(filecmp.cmp(asvtable_default_path, asvtable_default_bak_path, shallow=True))
 
     def tearDown(self):

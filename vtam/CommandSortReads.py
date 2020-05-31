@@ -1,47 +1,36 @@
 import multiprocessing
 import os
+import pandas
+import pathlib
 import shlex
 import shutil
 import subprocess
 
-import pandas
-import pathlib
-
-from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
-
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.PathManager import PathManager
+from Bio.Seq import Seq
 from vtam.utils.Logger import Logger
-from vtam.utils import constants
+from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.PathManager import PathManager
+from vtam.utils.SampleInformationFile import SampleInformationFile
 
 
 class CommandSortReads(object):
     """Class for the Merge command"""
 
-    @classmethod
-    def main(cls, fastainfo, fastadir, outdir, params=None,
-             num_threads=multiprocessing.cpu_count()):
+    @staticmethod
+    def main(fastainfo, fastadir, outdir, params=None, num_threads=multiprocessing.cpu_count()):
 
         ############################################################################################
         #
-        # Parameters
+        # params.yml parameters
         #
         ############################################################################################
 
-        params_default = constants.get_dic_params_default()
+        params_dic = ParamsFile(params).get_params_dic()
 
-        cutadapt_error_rate = params_default['cutadapt_error_rate']
-        cutadapt_minimum_length = params_default['cutadapt_minimum_length']
-        cutadapt_maximum_length = params_default['cutadapt_maximum_length']
-
-        if not (params is None):
-            if 'cutadapt_error_rate' in params:
-                cutadapt_error_rate = params_default['cutadapt_error_rate']
-            if 'cutadapt_minimum_length' in params:
-                cutadapt_minimum_length = params_default['cutadapt_minimum_length']
-            if 'cutadapt_maximum_length' in params:
-                cutadapt_maximum_length = params_default['cutadapt_maximum_length']
+        cutadapt_error_rate = params_dic['cutadapt_error_rate']
+        cutadapt_minimum_length = params_dic['cutadapt_minimum_length']
+        cutadapt_maximum_length = params_dic['cutadapt_maximum_length']
 
         ############################################################################################
         #
@@ -49,10 +38,7 @@ class CommandSortReads(object):
         #
         ############################################################################################
 
-        # fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
-        # fastainfo_df.columns = fastainfo_df.columns.str.lower()
-        merged_fastainfo_df = SampleInformationFile(
-            fastainfo).read_tsv_into_df()
+        merged_fastainfo_df = SampleInformationFile(fastainfo).read_tsv_into_df()
 
         pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
