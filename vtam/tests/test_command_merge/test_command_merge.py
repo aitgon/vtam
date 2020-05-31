@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
+import filecmp
+import os
 import shutil
-from unittest import TestCase
+import unittest
 
 from vtam import CommandMerge
 from vtam.utils.PathManager import PathManager
 
-import os
-import filecmp
 
-
-class TestCommandMerge(TestCase):
+class TestCommandMerge(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

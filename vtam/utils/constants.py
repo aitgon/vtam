@@ -93,7 +93,7 @@ min_number_of_taxa: 3
 ltg_rule_threshold: 97"""
 
 
-def get_dic_params_default():
+def get_params_default_dic():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
     params_default_dic['threads'] = multiprocessing.cpu_count()
     params_default_dic['lfn_variant_replicate_cutoff'] = None
