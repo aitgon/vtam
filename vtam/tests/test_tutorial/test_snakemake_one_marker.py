@@ -111,7 +111,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         cmd = "vtam taxassign --db asper1/db.sqlite --variants asper1/asvtable_pooled_mfzr_zfzr.tsv --output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db --log asper1/vtam.log -v"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #
-    #     shutil.rmtree(cls.outdir_path, ignore_errors=True)
+    @classmethod
+    def tearDownClass(cls):
+
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)
