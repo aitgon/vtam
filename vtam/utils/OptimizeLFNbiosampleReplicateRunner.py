@@ -18,23 +18,19 @@ class OptimizeLFNbiosampleReplicateRunner:
 
         ############################################################################################
         #
-        # OptimizeLFNbiosampleReplicateRunner
-        #
-        ############################################################################################
-
-        variant_read_count_df = self.variant_read_count_df.merge(self.known_occurrences_df, on=['run_id', 'marker_id', 'biosample_id',
-                                                              'variant_id']).drop_duplicates()
-
-        ############################################################################################
-        #
         # Compute ratio per_sum_biosample_replicate: N_ijk / N_jk
         #
         ############################################################################################
 
-        N_jk_df = VariantReadCountLikeDF(variant_read_count_df).get_N_jk_df()
+        N_jk_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_jk_df()
 
-        optimize_df = variant_read_count_df.merge(N_jk_df, on=[
-            'run_id', 'marker_id', 'biosample_id', 'replicate'])
+        # Append N_jk
+        optimize_df = self.variant_read_count_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
+
+        # Keep only 'keep' variants for output
+        optimize_df = optimize_df.merge(
+            self.known_occurrences_df, on=['run_id', 'marker_id', 'biosample_id', 'variant_id']).drop_duplicates()
+
         optimize_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
         optimize_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_df['N_ijk'] / \
             optimize_df['N_jk']
