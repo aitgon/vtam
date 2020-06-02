@@ -40,8 +40,8 @@ global_read_count_cutoff: 2
 # Occurrence is deleted if N_ijk/N_i < lfn_variant_cutoff
 lfn_variant_cutoff: 0.001
 # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_cutoff
-# If this parameter is set (Not None), then the lfn_variant_replicate_cutoff instead of lfn_variant_cutoff is used
-lfn_variant_replicate_cutoff: None
+# This parameter is used if the --lfn_variant_replicate option is set in "vtam filter" or "vtam optimize"
+lfn_variant_replicate_cutoff: 0.001
 # Occurrence is deleted if N_ijk/N_jk < lfn_ biosample lfn_biosample_replicate_cutoff
 lfn_biosample_replicate_cutoff: 0.001
 # Occurrence is deleted if N_ijk < lfn_ lfn_read_count_cutoff
@@ -96,7 +96,6 @@ ltg_rule_threshold: 97"""
 def get_params_default_dic():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
     params_default_dic['threads'] = multiprocessing.cpu_count()
-    params_default_dic['lfn_variant_replicate_cutoff'] = None
     return params_default_dic
 
 

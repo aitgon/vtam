@@ -80,7 +80,7 @@ class TestCommands(unittest.TestCase):
               "--asvtable {asvtable} -v --log {log} --until VariantReadCount".format(**cls.args)
         subprocess.run(shlex.split(cmd))
 
-    def test_01_filter(self):
+    def test_01_filter_lfn_variant(self):
 
         ################################################################################################################
         #
@@ -93,6 +93,21 @@ class TestCommands(unittest.TestCase):
         subprocess.run(shlex.split(cmd))
 
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
+        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
+
+    def test_01_filter_lfn_variant_replicate(self):
+
+        ################################################################################################################
+        #
+        # Command Filter
+        #
+        ################################################################################################################
+
+        cmd = "vtam filter --db {db} --readinfo {readinfo} --readdir {readdir} --asvtable {asvtable} --lfn_variant_replicate " \
+              "-v --log {log}".format(**self.args)
+        subprocess.run(shlex.split(cmd))
+
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_replicate.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
     def test_02_optimize_lfn_biosample_replicate(self):
@@ -133,6 +148,23 @@ class TestCommands(unittest.TestCase):
                                                                 "optimize_lfn_variant_specific.tsv")
         optimize_lfn_variant_specific_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
         self.assertTrue(filecmp.cmp(optimize_lfn_variant_specific_path, optimize_lfn_variant_specific_bak_path, shallow=False))
+
+    def test_05_optimize_lfn_read_count_variant_replicate(self):
+
+        cmd = "vtam optimize --db {db} --readinfo {readinfo} --readdir {readdir} " \
+              "--known_occurrences {known_occurrences} --outdir {outdir} --until OptimizeLFNreadCountAndLFNvariant --lfn_variant_replicate " \
+              "-v --log {log}".format(**self.args)
+        subprocess.run(shlex.split(cmd))
+
+        optimize_lfn_read_count_variant_replicate_path = os.path.join(self.outdir_path,
+                                                                "optimize_lfn_read_count_and_lfn_variant_replicate.tsv")
+        optimize_lfn_read_count_variant_replicate_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_read_count_and_lfn_variant_replicate.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_read_count_variant_replicate_path, optimize_lfn_read_count_variant_replicate_bak_path, shallow=False))
+
+        optimize_lfn_variant_replicate_specific_path = os.path.join(self.outdir_path,
+                                                                "optimize_lfn_variant_replicate_specific.tsv")
+        optimize_lfn_variant_replicate_specific_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_replicate_specific.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_variant_replicate_specific_path, optimize_lfn_variant_replicate_specific_bak_path, shallow=False))
 
 
     @classmethod
