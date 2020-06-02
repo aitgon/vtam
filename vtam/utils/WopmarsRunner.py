@@ -80,6 +80,14 @@ class WopmarsRunner(Singleton):
             # Create wopfile
             wopfile_path = os.path.join(self.tempdir, 'wopfile_filter.yml')
 
+            if not self.cli_args_and_numerical_params['lfn_variant_replicate']:  # lfn_variant algorithm
+
+                self.cli_args_and_numerical_params['lfn_variant_specific_cutoff'] = self.cli_args_and_numerical_params['cutoff_specific']
+
+            else:  # lfn_variant_replicate algorithm
+
+                self.cli_args_and_numerical_params['lfn_variant_replicate_specific_cutoff'] = self.cli_args_and_numerical_params['cutoff_specific']
+
         ############################################################################################
         #
         # Optimize command
