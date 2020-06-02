@@ -46,7 +46,8 @@ class FilterLFN(ToolWrapper):
     def specify_params(self):
         return {
             "lfn_variant_cutoff": "float",
-            "lfn_variant_replicate_cutoff": "float",
+            "lfn_variant_specific_cutoff": "str",
+            "lfn_variant_replicate_specific_cutoff": "str",
             "lfn_biosample_replicate_cutoff": "required|float",
             "lfn_read_count_cutoff": "required|float",
         }
