@@ -1,4 +1,4 @@
-{% from 'macros.yml' import input_file_cutoff_specific, input_lfn_variant_replicate_cutoff %}{% extends "block_wopfile_asv_optimize.yml" %}
+{% extends "block_wopfile_filter_optimize.yml" %}
 {% block wopfile_asv %}rule FilterLFN:
     tool: vtam.wrapper.FilterLFN
     input:
@@ -8,11 +8,20 @@
             Biosample: vtam.models.Biosample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: {{readinfo}}{{ input_file_cutoff_specific(cutoff_specific) }}
+            readinfo: {{readinfo}}
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
-    params:{{ input_lfn_variant_replicate_cutoff(lfn_variant_cutoff, lfn_variant_replicate_cutoff) }}
+    params:
+        {% if lfn_variant_replicate_cutoff is none %}lfn_variant_cutoff: {{lfn_variant_cutoff}}
+        {%- if not (lfn_variant_specific_cutoff is none) %}
+        lfn_variant_specific_cutoff: {{lfn_variant_specific_cutoff}}
+        {% endif %}
+        {%- else %}
+        lfn_variant_replicate_cutoff: {{lfn_variant_replicate_cutoff}}
+        {%- if not (lfn_variant_replicate_specific_cutoff is none) %}
+        lfn_variant_replicate_specific_cutoff: {{lfn_variant_replicate_specific_cutoff}}{% endif %}
+        {%- endif %}
         lfn_biosample_replicate_cutoff: {{lfn_biosample_replicate_cutoff}}
         lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
 

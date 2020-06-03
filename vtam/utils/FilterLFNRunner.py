@@ -55,7 +55,7 @@ class FilterLFNrunner:
                 'filter_delete': []},
             dtype='uint32')
 
-    def get_variant_read_count_delete_df(self, lfn_variant_cutoff, lfn_variant_replicate_cutoff, 
+    def get_variant_read_count_delete_df(self, lfn_variant_cutoff, lfn_variant_specific_cutoff, lfn_variant_replicate_cutoff, lfn_variant_replicate_specific_cutoff,
                                          lfn_biosample_replicate_cutoff, lfn_read_count_cutoff):
 
         #######################################################################
