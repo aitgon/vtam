@@ -110,8 +110,8 @@ header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'pri
     'primerrev', 'mergedfasta'}
 header_sortedread_fasta = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
 header_known_occurrences = {'run', 'marker', 'biosample', 'mock', 'variant', 'action', 'sequence'}
-header_cutoff_specific_variant_replicate = {'run', 'marker', 'variant', 'n_ik'}
-header_cutoff_specific_variant = {'run', 'marker', 'variant', 'n_i'}
+header_cutoff_specific_variant_replicate = {'run', 'marker', 'variant', 'lfn_variant_replicate_cutoff'}
+header_cutoff_specific_variant = {'run', 'marker', 'variant', 'lfn_variant_cutoff'}
 
 
 ##########################################################################
