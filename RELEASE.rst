@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.1.6 (Jun 3, 2020)
+--------------------------------------------------
+
+- BUG 0002609 Fixed lfn_variant(_replicate) cutoff specific
+- BUG Various bugs
+
 CHANGES IN VERSION 0.1.5 (Mai 31, 2020)
 --------------------------------------------------
 

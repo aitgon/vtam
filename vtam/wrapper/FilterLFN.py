@@ -1,3 +1,5 @@
+from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
+
 from vtam.utils.FilterLFNRunner import FilterLFNrunner
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationFile import SampleInformationFile
@@ -46,7 +48,9 @@ class FilterLFN(ToolWrapper):
     def specify_params(self):
         return {
             "lfn_variant_cutoff": "float",
+            "lfn_variant_specific_cutoff": "str",
             "lfn_variant_replicate_cutoff": "float",
+            "lfn_variant_replicate_specific_cutoff": "str",
             "lfn_biosample_replicate_cutoff": "required|float",
             "lfn_read_count_cutoff": "required|float",
         }
@@ -56,11 +60,12 @@ class FilterLFN(ToolWrapper):
         session = self.session
         engine = session._session().get_bind()
 
-        #######################################################################
+        ############################################################################################
+
         #
         # Wrapper inputs, outputs and parameters
         #
-        #######################################################################
+        ############################################################################################
 
         # Input file output
         fasta_info_tsv = self.input_file(FilterLFN.__input_file_readinfo)
@@ -76,17 +81,19 @@ class FilterLFN(ToolWrapper):
         #
         # Options
         lfn_variant_cutoff = self.option("lfn_variant_cutoff")
+        lfn_variant_specific_cutoff = self.option("lfn_variant_specific_cutoff")
         lfn_variant_replicate_cutoff = self.option("lfn_variant_replicate_cutoff")
+        lfn_variant_replicate_specific_cutoff = self.option("lfn_variant_replicate_specific_cutoff")
         lfn_biosample_replicate_cutoff = self.option("lfn_biosample_replicate_cutoff")
         lfn_read_count_cutoff = self.option("lfn_read_count_cutoff")
 
-        #######################################################################
+        ############################################################################################
         #
         # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
-        #######################################################################
+        ############################################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
@@ -94,19 +101,27 @@ class FilterLFN(ToolWrapper):
             engine=engine, variant_read_count_like_model=output_filter_lfn_model)
 
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
-            variant_read_count_like_model=input_variant_read_count_model,
-            engine=engine,
-            filter_id=None)
+            variant_read_count_like_model=input_variant_read_count_model, engine=engine, filter_id=None)
 
-        #######################################################################
+        lfn_variant_specific_cutoff_df = None
+        if (not (lfn_variant_cutoff is None)) and (not (lfn_variant_specific_cutoff is None)):
+            lfn_variant_specific_cutoff_df = CutoffSpecificFile(lfn_variant_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=False)
+
+        lfn_variant_replicate_specific_cutoff_df = None
+        if (not (lfn_variant_replicate_cutoff is None)) and (not (lfn_variant_replicate_specific_cutoff is None)):
+            lfn_variant_replicate_specific_cutoff_df = CutoffSpecificFile(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=True)
+
+        ############################################################################################
         #
         # Create filter object and run_name
         #
-        #######################################################################
+        ############################################################################################
 
         variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
             lfn_variant_cutoff=lfn_variant_cutoff,
+            lfn_variant_specific_cutoff=lfn_variant_specific_cutoff_df,
             lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
+            lfn_variant_replicate_specific_cutoff=lfn_variant_replicate_specific_cutoff_df,
             lfn_biosample_replicate_cutoff=lfn_biosample_replicate_cutoff,
             lfn_read_count_cutoff=lfn_read_count_cutoff)
 
