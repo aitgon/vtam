@@ -105,11 +105,11 @@ class FilterLFN(ToolWrapper):
 
         lfn_variant_specific_cutoff_df = None
         if (not (lfn_variant_cutoff is None)) and (not (lfn_variant_specific_cutoff is None)):
-            lfn_variant_specific_cutoff_df = CutoffSpecificFile(lfn_variant_specific_cutoff).to_identifier_df(engine=engine)
+            lfn_variant_specific_cutoff_df = CutoffSpecificFile(lfn_variant_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=False)
 
         lfn_variant_replicate_specific_cutoff_df = None
         if (not (lfn_variant_replicate_cutoff is None)) and (not (lfn_variant_replicate_specific_cutoff is None)):
-            lfn_variant_replicate_specific_cutoff_df = CutoffSpecificFile(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine)
+            lfn_variant_replicate_specific_cutoff_df = CutoffSpecificFile(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=True)
 
         ############################################################################################
         #
