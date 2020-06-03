@@ -1,4 +1,4 @@
-occurrence_nb_keep	occurrence_nb_delete	lfn_nijk_cutoff	lfn_variant_cutoff	run	marker
+occurrence_nb_keep	occurrence_nb_delete	lfn_nijk_cutoff	lfn_variant_replicate_cutoff	run	marker
 6	0	10	0.001	run1	MFZR
 6	0	10	0.006	run1	MFZR
 6	0	10	0.011	run1	MFZR

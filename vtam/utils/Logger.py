@@ -138,14 +138,13 @@ class Logger(Singleton):
         self.__logger.warning(msg)
 
     def error(self, msg):
-        formatter_stream = logging.Formatter(
-            colored(self.formatter_str, 'red', attrs=[]))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=[]))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.error(msg)
 
     def critical(self, msg):
-        formatter_stream = logging.Formatter(colored(self.formatter_str, 'yellow', attrs=['bold']))
+        formatter_stream = logging.Formatter(colored(self.formatter_str, 'red', attrs=[]))
         self.stream_handler_stderr.setFormatter(formatter_stream)
         self.stream_handler_stdout.setFormatter(formatter_stream)
         self.__logger.critical(msg)
