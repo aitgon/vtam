@@ -58,28 +58,26 @@ class FilterLFNrunner:
     def get_variant_read_count_delete_df(self, lfn_variant_cutoff, lfn_variant_specific_cutoff, lfn_variant_replicate_cutoff, lfn_variant_replicate_specific_cutoff,
                                          lfn_biosample_replicate_cutoff, lfn_read_count_cutoff):
 
-        #######################################################################
+        ############################################################################################
         #
         # Filter 2: f2_f4_lfn_delete_variant
         # Or
         # Filter  3: f3_f5_lfn_delete_variant_replicate
         #
-        #######################################################################
+        ############################################################################################
 
         if lfn_variant_replicate_cutoff is None:  # run_name lfn_variant
-            # lfn_filter_runner.f2_f4_lfn_delete_variant(lfn_variant_cutoff)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-                lfn_denominator='N_i', cutoff=lfn_variant_cutoff)
+                lfn_denominator='N_i', cutoff=lfn_variant_cutoff, cutoff_specific_df=lfn_variant_specific_cutoff)
         else:  # run_name lfn_variant_replicate
-            # self.f3_f5_lfn_delete_variant_replicate(lfn_variant_replicate_cutoff)
             self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-                lfn_denominator='N_ik', cutoff=lfn_variant_replicate_cutoff)
+                lfn_denominator='N_ik', cutoff=lfn_variant_replicate_cutoff, cutoff_specific_df=lfn_variant_replicate_specific_cutoff)
 
-        #######################################################################
+        ############################################################################################
         #
         # Filter 6:  f6_lfn_delete_biosample_replicate_delete
         #
-        #######################################################################
+        ############################################################################################
 
         self.mark_delete_lfn_per_Ni_or_Nik_or_Njk(lfn_denominator='N_jk', cutoff=lfn_biosample_replicate_cutoff)
 
@@ -101,11 +99,7 @@ class FilterLFNrunner:
 
         return self.variant_read_count_filter_delete_df
 
-    def mark_delete_lfn_per_Ni_or_Nik_or_Njk(
-            self,
-            lfn_denominator,
-            cutoff,
-            cutoff_specific_df=None):
+    def mark_delete_lfn_per_Ni_or_Nik_or_Njk(self, lfn_denominator, cutoff, cutoff_specific_df=None,):
         """
 
         :param lfn_denominator: string that takes values either: 'N_i', 'N_ik' or 'N_jk'
@@ -116,43 +110,50 @@ class FilterLFNrunner:
             with filter_id=2 and 'filter_delete'=1 or 0 (General cutoff)
             and with filter_id=4 and 'filter_delete'=1 or 0 (Variant-specific cutoff)
         """
+
+        if not (cutoff_specific_df is None):
+            cutoff_specific_df.drop(['variant_sequence'], axis=1, inplace=True)
+
         if lfn_denominator == 'N_i':  # variant
             this_filter_id = 2
             N_df = self.variant_read_count_lfn_df.get_N_i_df()  #  Compute N_i_df
-            filter_df = self.variant_read_count_df.merge(
-                N_df, left_on=[
-                    'run_id', 'marker_id', 'variant_id'], right_on=[
-                    'run_id', 'marker_id', 'variant_id'])
-            filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_i
+            filter_df = self.variant_read_count_df.merge(N_df, on=['run_id', 'marker_id', 'variant_id'])
             filter_df['filter_id'] = this_filter_id
             filter_df['cutoff'] = cutoff
-            if cutoff_specific_df is not None:
+
+            filter_cutoff_specific_df = None
+            if not (cutoff_specific_df is None):
                 this_filter_id = 4
-                for rowtuple in cutoff_specific_df.itertuples():
-                    variant_id = rowtuple.variant_id
-                    cutoff = rowtuple.cutoff
-                    filter_df['filter_id'] = this_filter_id
-                    filter_df.loc[(filter_df.variant_id ==
-                                   variant_id), 'cutoff'] = cutoff
+                filter_cutoff_specific_df = filter_df.copy()
+                filter_cutoff_specific_df.drop('cutoff', axis=1, inplace=True)
+                filter_cutoff_specific_df = filter_cutoff_specific_df.merge(cutoff_specific_df,
+                                                on=['run_id', 'marker_id', 'variant_id'])
+                filter_cutoff_specific_df['filter_id'] = this_filter_id
+
+            filter_df = pandas.concat([filter_df, filter_cutoff_specific_df], axis=0)
+            filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_i
+
         elif lfn_denominator == 'N_ik':  # variant_replicate
             this_filter_id = 3
             N_df = self.variant_read_count_lfn_df.get_N_ik_df()  #  Compute N_ik_df
             filter_df = self.variant_read_count_df.merge(
-                N_df, left_on=[
-                    'run_id', 'marker_id', 'variant_id', 'replicate'], right_on=[
-                    'run_id', 'marker_id', 'variant_id', 'replicate'])
+                N_df, on=['run_id', 'marker_id', 'variant_id', 'replicate'])
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
             filter_df['filter_id'] = this_filter_id
             filter_df['cutoff'] = cutoff
-            if cutoff_specific_df is not None:
+
+            filter_cutoff_specific_df = None
+            if not (cutoff_specific_df is None):
                 this_filter_id = 5
-                for rowtuple in cutoff_specific_df.itertuples():
-                    variant_id = rowtuple.variant_id
-                    replicate = rowtuple.replicate
-                    cutoff = rowtuple.cutoff
-                    filter_df['filter_id'] = this_filter_id
-                    filter_df.loc[(filter_df.variant_id == variant_id) & (
-                        filter_df.replicate == replicate), 'cutoff'] = cutoff
+                filter_cutoff_specific_df = filter_df.copy()
+                filter_cutoff_specific_df.drop('cutoff', axis=1, inplace=True)
+                filter_cutoff_specific_df.merge(cutoff_specific_df,
+                                                on=['run_id', 'marker_id', 'variant_id'])
+                filter_df['filter_id'] = this_filter_id
+
+            filter_df = pandas.concat([filter_df, filter_cutoff_specific_df], axis=0)
+            filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
+
         elif lfn_denominator == 'N_jk':  # biosample_replicate
             this_filter_id = 6
             N_df = self.variant_read_count_lfn_df.get_N_jk_df()  #  Compute N_jk_df
@@ -163,13 +164,14 @@ class FilterLFNrunner:
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_jk
             filter_df['filter_id'] = this_filter_id
             filter_df['cutoff'] = cutoff
+
         else:
             Logger.instance().critical(VTAMexception("Internal error. VTAM will exit."))
-            sys.exit(0)
-        #
+            sys.exit(1)
+
         # Initialize filter: Keep everything
         filter_df['filter_delete'] = False
-        #
+
         # Mark for deletion all variants with read_count=0
         filter_df.loc[
             filter_df.read_count == 0, 'filter_delete'] = True
@@ -178,17 +180,10 @@ class FilterLFNrunner:
         filter_df.loc[filter_df['lfn_ratio'] <
                       filter_df['cutoff'], 'filter_delete'] = True
 
-        #
         #  Keep important columns
-        filter_df = filter_df[['run_id',
-                               'marker_id',
-                               'biosample_id',
-                               'replicate',
-                               'variant_id',
-                               'read_count',
-                               'filter_id',
-                               'filter_delete']]
-        #
+        filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id',
+                               'read_count', 'filter_id', 'filter_delete']]
+
         # Prepare output variant_read_count_input_df and concatenate vertically output variant_read_count_input_df
         # to self.variant_read_count_filter_delete_df
         self.variant_read_count_filter_delete_df = pandas.concat(
