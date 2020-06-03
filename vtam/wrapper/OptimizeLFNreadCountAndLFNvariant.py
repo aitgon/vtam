@@ -164,7 +164,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         if self.option("lfn_variant_replicate_cutoff") is None:
             out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_cutoff', 'sequence']]
         else:
-            out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_ik', 'lfn_variant_replicate_cutoff', 'sequence']]
+            out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'replicate', 'action', 'read_count_max', 'N_ik', 'lfn_variant_replicate_cutoff', 'sequence']]
 
         out_optimize2_df.to_csv(
             output_file_lfn_variant_specific_cutoff_tsv, header=True, sep='\t', index=False)

@@ -57,12 +57,13 @@ class CutoffSpecificFile(object):
                     .format(self.cutoff_specific_tsv, header_cutoff_specific_variant,
                             header_cutoff_specific_variant_replicate))
 
-    def read_tsv_into_df(self):
+    def read_tsv_into_df(self, is_lfn_variant_replicate):
         """Read into df
         Updated: June 3, 2020
 
         Parameters
         ----------
+        is_lfn_variant_replicate: Booleand that tells if algorithm is lfn_variant_replicate or not
 
         Returns
         -------
@@ -73,7 +74,10 @@ class CutoffSpecificFile(object):
         df = pandas.read_csv(self.cutoff_specific_tsv, sep="\t", header=0)
         df.columns = df.columns.str.lower()
         df.rename({'lfn_variant_cutoff': 'cutoff', 'lfn_variant_replicate_cutoff': 'cutoff'}, inplace=True, axis=1)
-        if 'cutoff' in df:
+
+        if is_lfn_variant_replicate and set(df.columns.tolist()) >= {'run', 'marker', 'variant', 'replicate', 'cutoff', 'sequence'}:
+            df = df[['run', 'marker', 'variant', 'replicate', 'cutoff', 'sequence']]
+        elif not is_lfn_variant_replicate and set(df.columns.tolist()) >= {'run', 'marker', 'variant', 'cutoff', 'sequence'}:
             df = df[['run', 'marker', 'variant', 'cutoff', 'sequence']]
         else:
             Logger.instance().critical(VTAMexception("The format of file '{}' is wrong. Columns 'lfn_variant_cutoff' or 'lfn_variant_replicate_cutoff' are required."
@@ -81,15 +85,16 @@ class CutoffSpecificFile(object):
             sys.exit(1)
 
         df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id', 'sequence': 'variant_sequence'}, axis=1, inplace=True)
+
         return df
 
-    def to_identifier_df(self, engine):
+    def to_identifier_df(self, engine, is_lfn_variant_replicate):
         """Returns a list of dictionnaries with run_id, marker_id, biosample_id entries (See return)
 
         :return: pandas.DataFrame: with columns run_id, marker_id, ...
         """
 
-        df = self.read_tsv_into_df()
+        df = self.read_tsv_into_df(is_lfn_variant_replicate)
 
         df.run_name = NameIdConverter(df.run_name.tolist(), engine).to_ids(Run)
         df.marker_name = NameIdConverter(df.marker_name.tolist(), engine).to_ids(Marker)

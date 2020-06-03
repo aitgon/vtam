@@ -100,6 +100,7 @@ class FilterLFNrunner:
         return self.variant_read_count_filter_delete_df
 
     def mark_delete_lfn_per_Ni_or_Nik_or_Njk(self, lfn_denominator, cutoff, cutoff_specific_df=None,):
+
         """
 
         :param lfn_denominator: string that takes values either: 'N_i', 'N_ik' or 'N_jk'
@@ -147,9 +148,9 @@ class FilterLFNrunner:
                 this_filter_id = 5
                 filter_cutoff_specific_df = filter_df.copy()
                 filter_cutoff_specific_df.drop('cutoff', axis=1, inplace=True)
-                filter_cutoff_specific_df.merge(cutoff_specific_df,
-                                                on=['run_id', 'marker_id', 'variant_id'])
-                filter_df['filter_id'] = this_filter_id
+                filter_cutoff_specific_df = filter_cutoff_specific_df.merge(cutoff_specific_df,
+                                                on=['run_id', 'marker_id', 'variant_id', 'replicate'])
+                filter_cutoff_specific_df['filter_id'] = this_filter_id
 
             filter_df = pandas.concat([filter_df, filter_cutoff_specific_df], axis=0)
             filter_df['lfn_ratio'] = filter_df.read_count / filter_df.N_ik
@@ -173,12 +174,10 @@ class FilterLFNrunner:
         filter_df['filter_delete'] = False
 
         # Mark for deletion all variants with read_count=0
-        filter_df.loc[
-            filter_df.read_count == 0, 'filter_delete'] = True
-        #
-        # Mark for deletion all filters with 'lfn_ratio'<lfn_variant_cutoff
-        filter_df.loc[filter_df['lfn_ratio'] <
-                      filter_df['cutoff'], 'filter_delete'] = True
+        filter_df.loc[filter_df.read_count == 0, 'filter_delete'] = True
+
+        # Mark for deletion all filters with 'lfn_ratio'<=lfn_variant_cutoff
+        filter_df.loc[filter_df['lfn_ratio'] <= filter_df['cutoff'], 'filter_delete'] = True
 
         #  Keep important columns
         filter_df = filter_df[['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id',
