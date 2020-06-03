@@ -1,8 +1,6 @@
 import pandas
 
 from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
-from vtam.utils.FilterLFNRunner import FilterLFNrunner
-from vtam.utils.FilterMinReplicateNumberRunner import FilterMinReplicateNumberRunner
 from vtam.utils.Logger import Logger
 from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
@@ -158,12 +156,14 @@ class OptimizeLFNreadCountAndLFNvariantRunner:
             out_lfn_variant_list = []
 
             nb_points = 10
+
             lfn_nijk_cutoff_list = [*range(lfn_nijk_cutoff, lfn_nijk_cutoff_local_max + 1, int(
                 (lfn_nijk_cutoff_local_max - lfn_nijk_cutoff) / nb_points))]
-            lfn_ni_nik_cutoff_list = [i / 1000 for i in range(int(
-                lfn_ni_nik_cutoff * 1000), int(
-                lfn_ni_njk_cutoff_local_max * 1000) + 1, int(
-                (lfn_ni_njk_cutoff_local_max * 1000 - lfn_ni_nik_cutoff * 1000) / nb_points))]
+
+            lfn_ni_nik_cutoff_list = [i / 1000 for i in range(
+                int(lfn_ni_nik_cutoff * 1000),
+                int(lfn_ni_njk_cutoff_local_max * 1000) + 1,
+                int(((lfn_ni_njk_cutoff_local_max - lfn_ni_nik_cutoff) * 1000 + 1) / nb_points))]
 
             filter_kwargs_local = filter_kwargs.copy()
 

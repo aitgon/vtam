@@ -12,11 +12,7 @@ class CommandBlastCOI(object):
     def __init__(self, coi_blast_db_dir):
         self.coi_blast_db_dir = coi_blast_db_dir
         self.tempdir = PathManager.instance().get_tempdir()
-        pathlib.Path(
-            os.path.join(
-                self.tempdir)).mkdir(
-            exist_ok=True,
-            parents=True)
+        pathlib.Path(os.path.join(self.tempdir)).mkdir(exist_ok=True, parents=True)
 
     ##########################################################
     #
@@ -32,21 +28,20 @@ class CommandBlastCOI(object):
         Otherwise the COI Blast database will be downloaded from the VTAM public data dir to the VTAM local data directory
 
             Updated:
-                Apr 25, 2020
+                Jun 03, 2020
 
             Returns:
                 String: The output to the taxonomy.sqlite database
         """
 
-        coi_blast_db_gz_path = os.path.join(
-            self.tempdir, "coi_blast_db.tar.gz")
+        coi_blast_db_gz_path = os.path.join(self.tempdir, "coi_blast_db.tar.gz")
 
-        nhr_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nhr")
-        nin_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nin")
-        nog_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nog")
-        nsd_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nsd")
-        nsi_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nsi")
-        nsq_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db_dir.nsq")
+        nhr_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nhr")
+        nin_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nin")
+        nog_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nog")
+        nsd_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsd")
+        nsi_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsi")
+        nsq_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsq")
 
         if not os.path.isfile(nhr_path) \
                 or not os.path.isfile(nin_path) \

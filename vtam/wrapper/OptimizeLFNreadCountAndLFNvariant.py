@@ -138,29 +138,33 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
             nijk_df=nijk_df, known_occurrences_df=known_occurrences_df)
         out_optimize_df, out_optimize2_df = optim_lfn_readcount_variant_runner.get_optimize_df(**filter_kwargs)
 
-        ################################################################################################################
+        ############################################################################################
         #
         # out_optimize_df: Format and write
         #
-        ################################################################################################################
+        ############################################################################################
 
         out_optimize_df.marker_id = NameIdConverter(out_optimize_df.marker_id, engine=engine).to_names(Marker)
         out_optimize_df.run_id = NameIdConverter(out_optimize_df.run_id, engine=engine).to_names(Run)
         out_optimize_df.rename({'run_id': 'run', 'marker_id': 'marker'}, axis=1, inplace=True)
         out_optimize_df.to_csv(output_file_optimize_lfn_tsv, header=True, sep='\t', index=False)
 
-        ################################################################################################################
+        ############################################################################################
         #
         # out_optimize_df: Format and write
         #
-        ################################################################################################################
+        ############################################################################################
 
         out_optimize2_df.marker_id = NameIdConverter(out_optimize2_df.marker_id, engine=engine).to_names(Marker)
         out_optimize2_df.run_id = NameIdConverter(out_optimize2_df.run_id, engine=engine).to_names(Run)
         out_optimize2_df['action'] = 'delete'
         out_optimize2_df['sequence'] = NameIdConverter(out_optimize2_df.variant_id, engine=engine).variant_id_to_sequence()
         out_optimize2_df.rename({'run_id': 'run', 'marker_id': 'marker', 'variant_id': 'variant', 'read_count': 'read_count_max'}, axis=1, inplace=True)
-        out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_cutoff', 'sequence']]
+
+        if self.option("lfn_variant_replicate_cutoff") is None:
+            out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'action', 'read_count_max', 'N_i', 'lfn_variant_cutoff', 'sequence']]
+        else:
+            out_optimize2_df = out_optimize2_df[['run', 'marker', 'variant', 'replicate', 'action', 'read_count_max', 'N_ik', 'lfn_variant_replicate_cutoff', 'sequence']]
 
         out_optimize2_df.to_csv(
             output_file_lfn_variant_specific_cutoff_tsv, header=True, sep='\t', index=False)
