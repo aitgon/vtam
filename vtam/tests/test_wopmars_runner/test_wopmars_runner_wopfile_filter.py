@@ -25,6 +25,8 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
             PathManager.get_package_path())
         foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(package_path, "doc/data/readinfo_mfzr.tsv"),
             PathManager.get_package_path())
+        foopaths['optimize_lfn_variant_specific'] = os.path.relpath(os.path.join(package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"),
+            PathManager.get_package_path())
         cls.foopaths = foopaths
 
         cls.minseqlength_value_32 = 32
@@ -46,7 +48,6 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
         with open(os.path.join(os.path.dirname(__file__), "wopfile_filter.yml")) as fin:
             wopfile_content_bak = fin.read()
-
         self.assertTrue(wopfile_content == wopfile_content_bak.strip())
         self.assertTrue('lfn_variant_cutoff' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
 
@@ -65,11 +66,11 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
     def test_wopmars_runner_filter_with_cutoff_specific(self):
 
         args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
-                   ' --cutoff_specific {foofile}'.format(**self.foopaths)
+                   ' --cutoff_specific {optimize_lfn_variant_specific}'.format(**self.foopaths)
         args = ArgParser.get_main_arg_parser().parse_args(args_str.split())
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"), PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
-        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['input']['file']['cutoff_specific'] == self.foopaths['foofile'])
+        self.assertTrue(yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params']['lfn_variant_specific_cutoff'] == self.foopaths['optimize_lfn_variant_specific'])

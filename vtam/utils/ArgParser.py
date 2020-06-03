@@ -4,6 +4,7 @@ import os
 import pandas
 import yaml
 
+from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.SampleInformationFile import SampleInformationFile
@@ -330,12 +331,13 @@ class ArgParser:
 
         parser_vtam_filter.add_argument(
             '--cutoff_specific',
+            dest='cutoff_specific',
             default=None,
             action='store',
             required=False,
             help="TSV file with variant (col1: variant; col2: cutoff) or variant-replicate "
             "(col1: variant; col2: replicate; col3: cutoff)specific cutoffs.",
-            type=ArgParserChecker.check_file_exists_and_is_nonempty)
+            type=lambda x: CutoffSpecificFile(x).argparse_checker())
 
         parser_vtam_filter.add_argument(
             '--lfn_variant_replicate',

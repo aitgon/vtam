@@ -47,6 +47,7 @@ class FilterLFN(ToolWrapper):
         return {
             "lfn_variant_cutoff": "float",
             "lfn_variant_specific_cutoff": "str",
+            "lfn_variant_replicate_cutoff": "float",
             "lfn_variant_replicate_specific_cutoff": "str",
             "lfn_biosample_replicate_cutoff": "required|float",
             "lfn_read_count_cutoff": "required|float",
@@ -77,7 +78,9 @@ class FilterLFN(ToolWrapper):
         #
         # Options
         lfn_variant_cutoff = self.option("lfn_variant_cutoff")
+        lfn_variant_specific_cutoff = self.option("lfn_variant_specific_cutoff")
         lfn_variant_replicate_cutoff = self.option("lfn_variant_replicate_cutoff")
+        lfn_variant_replicate_specific_cutoff = self.option("lfn_variant_replicate_specific_cutoff")
         lfn_biosample_replicate_cutoff = self.option("lfn_biosample_replicate_cutoff")
         lfn_read_count_cutoff = self.option("lfn_read_count_cutoff")
 
@@ -107,7 +110,9 @@ class FilterLFN(ToolWrapper):
 
         variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
             lfn_variant_cutoff=lfn_variant_cutoff,
+            lfn_variant_specific_cutoff=lfn_variant_specific_cutoff,
             lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
+            lfn_variant_replicate_specific_cutoff=lfn_variant_replicate_specific_cutoff,
             lfn_biosample_replicate_cutoff=lfn_biosample_replicate_cutoff,
             lfn_read_count_cutoff=lfn_read_count_cutoff)
 

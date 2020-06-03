@@ -9,6 +9,7 @@ from vtam.utils.constants import header_known_occurrences
 
 from vtam.utils.NameIdConverter import NameIdConverter
 
+
 class KnownOccurrences(object):
 
     def __init__(self, known_occurrences_tsv):
@@ -43,19 +44,13 @@ class KnownOccurrences(object):
         return known_occurrences_df
 
     def argparse_checker_known_occurrences(self):
-        """
-        Used by the argparser to check whether the file is in the correct path
-        Updated: Mai 17, 2020
-
-        Parameters
-        ----------
-        known_occurrences_tsv_path: str
-            Path to the known_occurrences files in TSV format
-
-        Returns
-        -------
 
         """
+        Used by the argparser to check whether the file is in the correct format
+        Updated: June 2, 2020
+
+        """
+
         if not os.path.isfile(self.known_occurrences_tsv):
             raise argparse.ArgumentTypeError(
                 "The file '{}' does not exist. Please fix it.".format(self.known_occurrences_tsv))

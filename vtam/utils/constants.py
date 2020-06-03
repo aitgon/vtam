@@ -7,7 +7,6 @@ import yaml
 #
 ##########################################################################
 
-# TODO rename cutoff as cutoff
 params_default_str = """################################################################################
 # Parameters of the "merge" command
 # These parameters are used by the vsearch --fastq_mergepairs tool that underlies the "vtam merge" command
@@ -107,30 +106,12 @@ def get_params_default_dic():
 ##########################################################################
 
 header_paired_fastq = {'run', 'marker', 'biosample', 'replicate'}
-header_merged_fasta = {
-    'run',
-    'marker',
-    'biosample',
-    'replicate',
-    'tagfwd',
-    'primerfwd',
-    'tagrev',
-    'primerrev',
-    'mergedfasta'}
-header_sortedread_fasta = {
-    'run',
-    'marker',
-    'biosample',
-    'replicate',
-    'sortedfasta'}
-header_known_occurrences = {
-    'run',
-    'marker',
-    'biosample',
-    'mock',
-    'variant',
-    'action',
-    'sequence'}
+header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev',
+    'primerrev', 'mergedfasta'}
+header_sortedread_fasta = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
+header_known_occurrences = {'run', 'marker', 'biosample', 'mock', 'variant', 'action', 'sequence'}
+header_cutoff_specific_variant_replicate = {'run', 'marker', 'variant', 'n_ik'}
+header_cutoff_specific_variant = {'run', 'marker', 'variant', 'n_i'}
 
 
 ##########################################################################

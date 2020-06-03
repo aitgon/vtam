@@ -1,14 +1,3 @@
-{% macro input_file_cutoff_specific(cutoff_specific) -%}
-{% if not (cutoff_specific is none) %}
-            cutoff_specific: {{cutoff_specific}}{% endif %}
-{%- endmacro%}
-
-{% macro input_lfn_variant_replicate_cutoff(lfn_variant_cutoff, lfn_variant_replicate_cutoff) -%}
-{% if not (lfn_variant_replicate_cutoff is none) %}
-        lfn_variant_replicate_cutoff: {{lfn_variant_replicate_cutoff}}{% else %}
-        lfn_variant_cutoff: {{lfn_variant_cutoff}}{% endif %}
-{%- endmacro%}
-
 {% macro rule_optimize_lfn_readcount_and_lfn_variant_replicate(lfn_variant_cutoff, lfn_variant_replicate_cutoff, readinfo, known_occurrences, lfn_biosample_replicate_cutoff, lfn_read_count_cutoff, min_replicate_number, optimize_lfn_read_count_and_lfn_variant, optimize_lfn_variant_specific, optimize_lfn_read_count_and_lfn_variant_replicate, optimize_lfn_variant_replicate_specific) -%}
 rule OptimizeLFNreadCountAndLFNvariant:
     tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant

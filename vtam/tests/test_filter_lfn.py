@@ -70,12 +70,13 @@ class TestFilterLFN(unittest.TestCase):
         lfn_biosample_replicate_cutoff = 0.001
         # Occurrence is deleted if N_ijk < lfn_ lfn_read_count_cutoff
         lfn_read_count_cutoff = 10
-
         filter_output_df = self.filter_lfn_runner.get_variant_read_count_delete_df(
-            lfn_variant_cutoff,
-            lfn_variant_replicate_cutoff,
-            lfn_biosample_replicate_cutoff,
-            lfn_read_count_cutoff)
+            lfn_variant_cutoff=lfn_variant_cutoff,
+            lfn_variant_specific_cutoff=None,
+            lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
+            lfn_variant_replicate_specific_cutoff=None,
+            lfn_biosample_replicate_cutoff=lfn_biosample_replicate_cutoff,
+            lfn_read_count_cutoff=lfn_read_count_cutoff)
         self.assertTrue(
             filter_output_df.filter_delete.tolist()[
                 :12] == [
