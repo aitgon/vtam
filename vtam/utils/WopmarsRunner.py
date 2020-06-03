@@ -83,8 +83,11 @@ class WopmarsRunner(Singleton):
             if self.cli_args_and_numerical_params['lfn_variant_replicate']:  # lfn_variant replicate algorithm
                 self.cli_args_and_numerical_params['lfn_variant_cutoff'] = None
                 self.cli_args_and_numerical_params['lfn_variant_specific_cutoff'] = None
-                if not (self.cli_args_and_numerical_params['cutoff_specific'] is None):
+                if self.cli_args_and_numerical_params['cutoff_specific'] is None:
+                    self.cli_args_and_numerical_params['lfn_variant_replicate_specific_cutoff'] = None
+                else:
                     self.cli_args_and_numerical_params['lfn_variant_replicate_specific_cutoff'] = self.cli_args_and_numerical_params['cutoff_specific']
+
 
             else:  # lfn_variant algorithm
                 self.cli_args_and_numerical_params['lfn_variant_replicate_cutoff'] = None
