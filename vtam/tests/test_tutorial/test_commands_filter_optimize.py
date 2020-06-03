@@ -88,14 +88,14 @@ class TestCommands(unittest.TestCase):
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_replicate.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
-    # def test_03_filter_lfn_variant_cutoff_specific(self):
-    #
-    #     cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
-    #           "-v --log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
-    #     subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-    #
-    #     asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_replicate.tsv")
-    #     self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
+    def test_03_filter_lfn_variant_cutoff_specific(self):
+
+        cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
+              "-v --log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
+        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_cutoff_specific.tsv")
+        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
     def test_04_optimize_lfn_biosample_replicate(self):
 

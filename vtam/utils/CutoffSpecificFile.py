@@ -1,7 +1,19 @@
 import argparse
 import os
+import sys
 
 import pandas
+from vtam.utils.Logger import Logger
+
+from vtam.utils.VTAMexception import VTAMexception
+
+from vtam.models.Biosample import Biosample
+
+from vtam.models.Marker import Marker
+
+from vtam.models.Run import Run
+
+from vtam.utils.NameIdConverter import NameIdConverter
 
 from vtam.utils.constants import header_cutoff_specific_variant_replicate, \
     header_cutoff_specific_variant
@@ -44,3 +56,49 @@ class CutoffSpecificFile(object):
                 "header{} or {}. Please look at the example in the VTAM  documentation."
                     .format(self.cutoff_specific_tsv, header_cutoff_specific_variant,
                             header_cutoff_specific_variant_replicate))
+
+    def read_tsv_into_df(self):
+        """Read into df
+        Updated: June 3, 2020
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        pandas.DataFrame
+
+        """
+
+        df = pandas.read_csv(self.cutoff_specific_tsv, sep="\t", header=0)
+        df.columns = df.columns.str.lower()
+        df.rename({'lfn_variant_cutoff': 'cutoff', 'lfn_variant_replicate_cutoff': 'cutoff'}, inplace=True, axis=1)
+        if 'cutoff' in df:
+            df = df[['run', 'marker', 'variant', 'cutoff', 'sequence']]
+        else:
+            Logger.instance().critical(VTAMexception("The format of file '{}' is wrong. Columns 'lfn_variant_cutoff' or 'lfn_variant_replicate_cutoff' are required."
+                    .format(self.cutoff_specific_tsv)))
+            sys.exit(1)
+
+        df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id', 'sequence': 'variant_sequence'}, axis=1, inplace=True)
+        return df
+
+    def to_identifier_df(self, engine):
+        """Returns a list of dictionnaries with run_id, marker_id, biosample_id entries (See return)
+
+        :return: pandas.DataFrame: with columns run_id, marker_id, ...
+        """
+
+        df = self.read_tsv_into_df()
+
+        df.run_name = NameIdConverter(df.run_name.tolist(), engine).to_ids(Run)
+        df.marker_name = NameIdConverter(df.marker_name.tolist(), engine).to_ids(Marker)
+
+        variant_id_user_lst = df.variant_id.tolist()
+        df['variant_id'] = NameIdConverter(df.variant_sequence.tolist(), engine).variant_sequence_to_id()
+        if not df.variant_id.tolist() == variant_id_user_lst:
+            Logger.instance().warning(VTAMexception("Some variant IDs and sequences do not agree in the --cutoff_specific file and in the database."))
+
+        df.rename({'run_name': 'run_id', 'marker_name': 'marker_id'}, axis=1, inplace=True)
+
+        return df
