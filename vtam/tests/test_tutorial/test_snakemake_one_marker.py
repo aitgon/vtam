@@ -64,7 +64,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         ############################################################################################
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=mfzr " \
-                  "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
+              "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
         subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
@@ -108,7 +108,9 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_08_pool_taxa(self):
 
-        cmd = "vtam taxassign --db asper1/db.sqlite --variants asper1/asvtable_pooled_mfzr_zfzr.tsv --output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db --log asper1/vtam.log -v"
+        cmd = "vtam taxassign --db asper1/db.sqlite --variants asper1/asvtable_pooled_mfzr_zfzr.tsv " \
+              "--output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
+              "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 --log asper1/vtam.log -v"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     @classmethod
