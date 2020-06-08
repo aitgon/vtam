@@ -6,5 +6,5 @@ fastqdir: fastq
 known_occurrences: asper2/user_input/known_occurrences.tsv
 params: asper2/user_input/params.yml
 blastdbdir: vtam_db/coi_blast_db
-blastdbname: coi_blast_db
+blastdbname: coi_blast_db_20191211
 taxonomy: vtam_db/taxonomy.tsv

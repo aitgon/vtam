@@ -1,7 +1,8 @@
+import argparse
 import os
 import pathlib
 import tarfile
-import urllib.request
+from urllib import request
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import coi_blast_db_gz_url
@@ -9,18 +10,26 @@ from vtam.utils.constants import coi_blast_db_gz_url
 
 class CommandBlastCOI(object):
 
-    def __init__(self, coi_blast_db_dir):
-        self.coi_blast_db_dir = coi_blast_db_dir
+    def __init__(self, blastdbname='coi_blast_db'):
+
+        self.blastdbname = blastdbname
+
         self.tempdir = PathManager.instance().get_tempdir()
         pathlib.Path(os.path.join(self.tempdir)).mkdir(exist_ok=True, parents=True)
 
-    ##########################################################
-    #
-    # Define/create map_taxids and coi_blast_db_dir
-    #
-    ##########################################################
+        self.coi_blast_db_gz_url = os.path.join(os.path.dirname(coi_blast_db_gz_url), '{}.tar.gz'.format(self.blastdbname))
+        self.coi_blast_db_gz_path = os.path.join(self.tempdir, '{}.tar.gz'.format(self.blastdbname))
 
-    def download(self):
+    def argparse_checker_blast_coi_blastdbname(self):
+
+        try:
+            request.urlretrieve(self.coi_blast_db_gz_url, self.blastdbname)
+            return self.blastdbname
+        except :
+            raise argparse.ArgumentTypeError(
+                "There is not this COI Blast DB name '{}'. Please check available versions here: '{}'".format(self.blastdbname, os.path.dirname(coi_blast_db_gz_url)))
+
+    def download(self, blastdbdir):
         """
         These function is used to define and return the output of the COI Blast database directory.
 
@@ -34,26 +43,10 @@ class CommandBlastCOI(object):
                 String: The output to the taxonomy.sqlite database
         """
 
-        coi_blast_db_gz_path = os.path.join(self.tempdir, "coi_blast_db.tar.gz")
+        if not os.path.isfile(self.coi_blast_db_gz_path):
+            request.urlretrieve(self.coi_blast_db_gz_url, self.coi_blast_db_gz_path)
 
-        nhr_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nhr")
-        nin_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nin")
-        nog_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nog")
-        nsd_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsd")
-        nsi_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsi")
-        nsq_path = os.path.join(self.coi_blast_db_dir, "coi_blast_db.nsq")
-
-        if not os.path.isfile(nhr_path) \
-                or not os.path.isfile(nin_path) \
-                or not os.path.isfile(nog_path) \
-                or not os.path.isfile(nsd_path) \
-                or not os.path.isfile(nsi_path) \
-                or not os.path.isfile(nsq_path):
-            urllib.request.urlretrieve(
-                coi_blast_db_gz_url, coi_blast_db_gz_path)
-
-            pathlib.Path(os.path.join(self.coi_blast_db_dir)).mkdir(exist_ok=True, parents=True)
-
-            tar = tarfile.open(coi_blast_db_gz_path)
-            tar.extractall(self.coi_blast_db_dir)
-            tar.close()
+        tar = tarfile.open(self.coi_blast_db_gz_path)
+        pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)
+        tar.extractall(blastdbdir)
+        tar.close()
