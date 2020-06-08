@@ -180,9 +180,10 @@ class VTAM(object):
         ############################################################################################
 
         elif arg_parser_dic['command'] == 'coi_blast_db':
-            coi_blast_db_dir = arg_parser_dic['coi_blast_db_dir']
-            coi_blast_db = CommandBlastCOI(coi_blast_db_dir=coi_blast_db_dir)
-            coi_blast_db.download()
+            blastdbdir = arg_parser_dic['blastdbdir']
+            blastdbname = arg_parser_dic['blastdbname']
+            coi_blast_db = CommandBlastCOI(blastdbname=blastdbname)
+            coi_blast_db.download(blastdbdir=blastdbdir)
 
         ############################################################################################
         #

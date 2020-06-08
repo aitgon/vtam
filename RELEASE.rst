@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.1.7 (Jun 8, 2020)
+--------------------------------------------------
+
+- RFR vtam coi_blast_db refactor/added --blastdbdir BLASTDBDIR and --blastdbname BLASTDBNAME arguments
+
 CHANGES IN VERSION 0.1.6 (Jun 3, 2020)
 --------------------------------------------------
 

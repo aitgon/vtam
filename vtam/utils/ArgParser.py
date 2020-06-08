@@ -4,12 +4,14 @@ import os
 import pandas
 import yaml
 
+from vtam import CommandBlastCOI
 from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
-from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta
+from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
+    coi_blast_db_gz_url
 
 
 class ArgParserChecker(object):
@@ -593,10 +595,19 @@ class ArgParser:
         parser_vtam_coi_blast_db = subparsers.add_parser(
             'coi_blast_db', add_help=True)
         parser_vtam_coi_blast_db.add_argument(
-            '--coi_blast_db_dir',
-            dest='coi_blast_db_dir',
+            '--blastdbdir',
+            dest='blastdbdir',
             action='store',
             help="Path COI Blast DB",
             required=True)
+        parser_vtam_coi_blast_db.add_argument(
+            '--blastdbname',
+            dest='blastdbname',
+            action='store',
+            help="COI Blast DB name, eg coi_blast_db_20191211, coi_blast_db_20200420. Versions can be found as basename here: {}".format(os.path.dirname(coi_blast_db_gz_url)),
+            required=False,
+            default='coi_blast_db',
+            type=lambda x: CommandBlastCOI(x).argparse_checker_blast_coi_blastdbname(),
+        )
         # This attribute will trigger the good command
         parser_vtam_coi_blast_db.set_defaults(command='coi_blast_db')
