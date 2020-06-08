@@ -89,17 +89,23 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_03_mfzr_taxassign_optimized(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_mfzr.tsv --output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db -v --log asper2/vtam.log"
+        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_mfzr.tsv " \
+              "--output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
+              "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 -v --log asper2/vtam.log"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     def test_04_zfzr_filter_optimized(self):
 
-        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv --readdir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml --asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log"
+        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv " \
+              "--readdir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml " \
+              "--asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     def test_05_zfzr_taxassign_optimized(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_zfzr.tsv --output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db -v --log asper2/vtam.log"
+        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_zfzr.tsv " \
+              "--output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
+              "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 -v --log asper2/vtam.log"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     def test_07_pool(self):
@@ -109,7 +115,9 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_08_pool_taxa(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/asvtable_pooled_mfzr_zfzr.tsv --output asper2/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db --log asper2/vtam.log -v"
+        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/asvtable_pooled_mfzr_zfzr.tsv " \
+              "--output asper2/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
+              "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 --log asper2/vtam.log -v"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     @classmethod
