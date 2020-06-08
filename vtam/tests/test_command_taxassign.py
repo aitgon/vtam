@@ -45,7 +45,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam coi_blast_db --coi_blast_db_dir {coi_blast_db_dir}".format(**cls.args)
+        command = "vtam coi_blast_db --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 ".format(**cls.args)
         subprocess.run(shlex.split(command), check=True)
 
     def setUp(self):
@@ -78,11 +78,11 @@ class TestCommandTaxAssign(unittest.TestCase):
 
     def test_02_command_coi_blast_db(self):
 
-        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db.nsi')) >= 536510)
-        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db.nsi')) <= 536520)
+        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20191211.nsi')) >= 536510)
+        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20191211.nsi')) <= 536520)
         self.assertTrue(set(os.listdir(self.args['coi_blast_db_dir'])) >= {
-            'coi_blast_db.nsd', 'coi_blast_db.nhr', 'coi_blast_db.nsq', 'coi_blast_db.nin', 'coi_blast_db.nog',
-            'coi_blast_db.nsi'})
+            'coi_blast_db_20191211.nsd', 'coi_blast_db_20191211.nhr', 'coi_blast_db_20191211.nsq', 'coi_blast_db_20191211.nin', 'coi_blast_db_20191211.nog',
+            'coi_blast_db_20191211.nsi'})
 
     def test_03_taxassign(self):
 
@@ -96,7 +96,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam taxassign --variants {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db --taxonomy {taxonomy}".format(**self.args)
+        command = "vtam taxassign --variants {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 --taxonomy {taxonomy}".format(**self.args)
         subprocess.run(shlex.split(command), check=True)
 
         self.assertTrue(filecmp.cmp(self.asvtable_taxa, self.asvtable_taxa_bak, shallow=True))
