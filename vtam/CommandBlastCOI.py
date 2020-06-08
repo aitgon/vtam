@@ -52,11 +52,7 @@ class CommandBlastCOI(object):
             urllib.request.urlretrieve(
                 coi_blast_db_gz_url, coi_blast_db_gz_path)
 
-            pathlib.Path(
-                os.path.join(
-                    self.coi_blast_db_dir)).mkdir(
-                exist_ok=True,
-                parents=True)
+            pathlib.Path(os.path.join(self.coi_blast_db_dir)).mkdir(exist_ok=True, parents=True)
 
             tar = tarfile.open(coi_blast_db_gz_path)
             tar.extractall(self.coi_blast_db_dir)
