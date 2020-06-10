@@ -6,7 +6,22 @@ from urllib import request
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import coi_blast_db_gz_url
+import progressbar
 
+class MyProgressBar():
+    def __init__(self):
+        self.pbar = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if not self.pbar:
+            self.pbar=progressbar.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
 
 class CommandBlastCOI(object):
 
@@ -23,7 +38,7 @@ class CommandBlastCOI(object):
     def argparse_checker_blast_coi_blastdbname(self):
 
         try:
-            request.urlretrieve(self.coi_blast_db_gz_url, self.blastdbname)
+            request.urlopen(self.coi_blast_db_gz_url)
             return self.blastdbname
         except :
             raise argparse.ArgumentTypeError(
@@ -44,7 +59,7 @@ class CommandBlastCOI(object):
         """
 
         if not os.path.isfile(self.coi_blast_db_gz_path):
-            request.urlretrieve(self.coi_blast_db_gz_url, self.coi_blast_db_gz_path)
+            request.urlretrieve(self.coi_blast_db_gz_url, self.coi_blast_db_gz_path, MyProgressBar())
 
         tar = tarfile.open(self.coi_blast_db_gz_path)
         pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)
