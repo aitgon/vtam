@@ -8,6 +8,7 @@ from vtam import CommandBlastCOI
 from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.PathManager import PathManager
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
@@ -162,6 +163,7 @@ class ArgParser:
             help="YML file with parameter values",
             required=False,
             type=lambda x: ParamsFile(params_path=x).argparse_checker_params_file())
+
         parser_vtam_main.add_argument('--log', **cls.args_log_file)
         parser_vtam_main.add_argument('--threads', action='store',
                                       help="Number of threads",

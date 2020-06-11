@@ -15,6 +15,18 @@ class PathManager(Singleton):
     def __init__(self):
         self.tempdir = None
 
+    def get_configdir(self):
+        """
+        Find the ~/.config/vtam dir
+
+        :return: ~/.config/vtam
+        """
+
+        vtam_config_dir = os.path.join(str(pathlib.Path.home()), '.config', 'vtam')
+        pathlib.Path(vtam_config_dir).mkdir(parents=True, exist_ok=True)
+
+        return vtam_config_dir
+
     def get_tempdir(self):
         """
         Find the Src directory of the project

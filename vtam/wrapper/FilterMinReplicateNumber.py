@@ -27,7 +27,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterMinReplicateNumber.__input_file_readinfo,
+            "readinfo", "params",
         ]
 
     def specify_input_table(self):
