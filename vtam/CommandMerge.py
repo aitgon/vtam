@@ -6,6 +6,7 @@ import sys
 
 from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.SummaryFile import SummaryFileMerge
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
@@ -27,7 +28,7 @@ class CommandMerge(object):
 
         ############################################################################################
         #
-        # Read fastq information into df
+        # Read fastq information into stats_df
         #
         ############################################################################################
 
@@ -47,16 +48,19 @@ class CommandMerge(object):
         #
         ############################################################################################
 
+        # File with analysis stats data
+        stats_df = pandas.DataFrame({'FastqFwd': [], 'FastqRev': [], 'NbReadsFwd': [], 'NbReadsRev': [], 'FastaMerged': [], 'NbMergedReads': []})
+
         for fastqfwd, fastqrev in fastqinfo_df[[
                 'fastqfwd', 'fastqrev']].drop_duplicates().values:
 
-            # fastq_info_series = fastqinfo_df.loc[]
-            # fastq_info_df_i = fastq_info_series.to_frame().T
             fastq_info_df_i = fastqinfo_df.loc[(fastqinfo_df.fastqfwd == fastqfwd) & (
                 fastqinfo_df.fastqrev == fastqrev)]
 
             fastq_fw_abspath = os.path.join(fastqdir, fastqfwd)
+            fastq_fw_linecount = int(sum(1 for i in open(fastq_fw_abspath, 'rb'))/4)
             fastq_rv_abspath = os.path.join(fastqdir, fastqrev)
+            fastq_rv_linecount = int(sum(1 for i in open(fastq_rv_abspath, 'rb'))/4)
 
             Logger.instance().debug(
                 "Analysing FASTQ files: {} and ".format(
@@ -77,7 +81,6 @@ class CommandMerge(object):
                         "VTAMexception: This FASTQ file was not found: {}.".format(fastq_rv_abspath)))
                 sys.exit(1)
 
-            # fasta_merged_basename = '.'.join(os.tsv_path.basename(fastq_fw_abspath).split('.')[0:-1]) + '_merged.fasta'
             fasta_merged_basename = os.path.basename(
                 fastq_fw_abspath).replace('.fastq', '.fasta')
             out_fasta_path = os.path.join(fastadir, fasta_merged_basename)
@@ -113,4 +116,18 @@ class CommandMerge(object):
             fastainfo_df = pandas.concat(
                 [fastainfo_df, fastq_info_df_i], axis=0)
 
+            fasta_merged_linecount = int(sum(1 for i in open(out_fasta_path, 'rb')) / 4)
+
+            ########################################################################################
+            #
+            # Summary file
+            #
+            ########################################################################################
+
+            stats_df = pandas.concat([stats_df, pandas.DataFrame({
+                'FastqFwd': [fastq_fw_abspath], 'FastqRev': [fastq_fw_linecount],
+                'NbReadsFwd': [fastq_rv_abspath], 'NbReadsRev': [fastq_rv_linecount], 'FastaMerged': [out_fasta_path], 'NbMergedReads': [fasta_merged_linecount]})])
+
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
+        SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
+
