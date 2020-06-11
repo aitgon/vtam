@@ -48,6 +48,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
         with open(os.path.join(os.path.dirname(__file__), "wopfile_filter.yml")) as fin:
             wopfile_content_bak = fin.read()
+
         self.assertTrue(wopfile_content == wopfile_content_bak.strip())
         self.assertTrue('lfn_variant_cutoff' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
 

@@ -27,7 +27,7 @@ class FilterCodonStop(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterCodonStop.__input_file_readinfo,
+            "readinfo", "params",
         ]
 
     def specify_input_table(self):

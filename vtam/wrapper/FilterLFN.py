@@ -29,7 +29,7 @@ class FilterLFN(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterLFN.__input_file_readinfo,
+            "readinfo", "params",
         ]
 
     def specify_input_table(self):
