@@ -21,7 +21,7 @@ class KnownOccurrences(object):
         self.known_occurrences_tsv = known_occurrences_tsv
 
     def read_tsv_into_df(self):
-        """Read into df
+        """Read into stats_df
         Updated: Mai 17, 2020
 
         Parameters

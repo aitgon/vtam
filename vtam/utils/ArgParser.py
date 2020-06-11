@@ -599,7 +599,8 @@ class ArgParser:
             dest='blastdbdir',
             action='store',
             help="Path COI Blast DB",
-            required=True)
+            required=False,
+            default='.')
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbname',
             dest='blastdbname',
