@@ -76,6 +76,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
             known_occurrences: doc/data/known_occurrences.tsv
+            params: None
     output:
         file:
             optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
