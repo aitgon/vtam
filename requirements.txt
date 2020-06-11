@@ -1,0 +1,9 @@
+biopython
+jinja2
+pandas
+pygments
+pyyaml
+sqlalchemy
+snakemake
+termcolor
+wopmars==0.0.13
