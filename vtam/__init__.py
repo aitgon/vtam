@@ -1,4 +1,5 @@
 import os
+import pathlib
 import sys
 
 from vtam.CommandFilterOptimize import CommandFilterOptimize
@@ -11,6 +12,7 @@ from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.Logger import Logger
 from vtam.utils.Logger import LoggerArguments
+from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.constants import FilterLFNreference_records
@@ -47,6 +49,11 @@ class VTAM(object):
         self.args = parser.parse_args(sys_argv)
 
         arg_parser_dic = vars(self.args)
+
+        if arg_parser_dic['params'] is None:
+            params_yml = os.path.join(PathManager.instance().get_configdir(), "params.yml")
+            pathlib.Path(params_yml).touch()
+            arg_parser_dic['params'] = params_yml
 
         #######################################################################
         #
