@@ -116,7 +116,7 @@ class SampleInformationFile:
         return variant_read_count_df
 
     def to_identifier_df(self, engine):
-        """Takes the sample information df and replaces names with ids
+        """Takes the sample information stats_df and replaces names with ids
 
         Returns
         -------
@@ -221,7 +221,7 @@ class SampleInformationFile:
                     self.tsv_path))
 
     def to_sqlite(self, session):
-        """Takes the sample information df and replaces names with ids
+        """Takes the sample information stats_df and replaces names with ids
 
         Returns
         -------

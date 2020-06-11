@@ -32,7 +32,7 @@ class FilterCodonStopRunner(object):
         return variant_read_count_delete_df
 
     def annotate_stop_codon_count(self, variant_df, genetic_code):
-        """Takes a df of variants and add the number of stop codons for each open reading frame
+        """Takes a stats_df of variants and add the number of stop codons for each open reading frame
 
         Returns
         -------
