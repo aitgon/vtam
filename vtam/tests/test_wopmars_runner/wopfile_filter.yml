@@ -40,6 +40,7 @@ rule FilterLFN:
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
@@ -59,6 +60,7 @@ rule FilterMinReplicateNumber:
             FilterLFN: vtam.models.FilterLFN
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
@@ -77,6 +79,7 @@ rule FilterPCRerror:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterPCRerror: vtam.models.FilterPCRerror
@@ -95,6 +98,7 @@ rule FilterChimera:
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterChimera: vtam.models.FilterChimera
@@ -113,6 +117,7 @@ rule FilterMinReplicateNumber2:
             FilterLFN: vtam.models.FilterChimera
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
@@ -130,6 +135,7 @@ rule FilterRenkonen:
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterRenkonen: vtam.models.FilterRenkonen
@@ -147,6 +153,7 @@ rule FilterMinReplicateNumber3:
             FilterLFN: vtam.models.FilterRenkonen
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
@@ -165,6 +172,7 @@ rule FilterIndel:
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterIndel: vtam.models.FilterIndel
@@ -183,6 +191,7 @@ rule FilterCodonStop:
             FilterIndel: vtam.models.FilterIndel
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
+            params: None
     output:
         table:
             FilterCodonStop: vtam.models.FilterCodonStop
