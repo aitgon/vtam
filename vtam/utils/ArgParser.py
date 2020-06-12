@@ -126,7 +126,6 @@ class ArgParserChecker(object):
 
 
 class ArgParser:
-
     args_db = {
         'dest': 'db',
         'action': 'store',
@@ -156,17 +155,12 @@ class ArgParser:
         # create the top-level parser
         parser_vtam_main = argparse.ArgumentParser(add_help=False)
         parser_vtam_main.add_argument(
-            '--params',
-            action='store',
-            default=None,
-            help="YML file with parameter values",
-            required=False,
-            type=lambda x: ParamsFile(params_path=x).argparse_checker_params_file())
+            '--params', action='store', default=None, help="YML file with parameter values",
+            required=False, type=lambda x: ParamsFile(
+                params_path=x).argparse_checker_params_file())
         parser_vtam_main.add_argument('--log', **cls.args_log_file)
-        parser_vtam_main.add_argument('--threads', action='store',
-                                      help="Number of threads",
-                                      required=False,
-                                      default=multiprocessing.cpu_count())
+        parser_vtam_main.add_argument('--threads', action='store', help="Number of threads",
+                                      required=False, default=multiprocessing.cpu_count())
         parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
         subparsers = parser_vtam_main.add_subparsers()
 
@@ -200,7 +194,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_optimize( subparsers=subparsers, parent_parser=parser_vtam_main)
+        cls.create_optimize(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         #######################################################################
         #
@@ -238,21 +232,20 @@ class ArgParser:
 
     @classmethod
     def create_merge(cls, subparsers, parent_parser):
-
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True,
-            formatter_class=argparse.RawTextHelpFormatter,
-            parents=[parent_parser])
+                                                  formatter_class=argparse.RawTextHelpFormatter,
+                                                  parents=[parent_parser])
 
         parser_vtam_merge.add_argument('--fastqinfo', action='store',
-            help="TSV file with FASTQ sample information",
-            required=True,
-            type=lambda x: SampleInformationFile(x).check_args(
-                header=header_paired_fastq))
+                                       help="TSV file with FASTQ sample information",
+                                       required=True,
+                                       type=lambda x: SampleInformationFile(x).check_args(
+                                           header=header_paired_fastq))
 
-        parser_vtam_merge .add_argument( '--fastainfo',
-            action='store',
-            help="REQUIRED: Output TSV file for FASTA sample information",
-            required=True)
+        parser_vtam_merge.add_argument('--fastainfo',
+                                       action='store',
+                                       help="REQUIRED: Output TSV file for FASTA sample information",
+                                       required=True)
 
         parser_vtam_merge.add_argument(
             '--fastqdir',
@@ -272,14 +265,13 @@ class ArgParser:
 
     @classmethod
     def create_sortreads(cls, subparsers, parent_parser):
-
         parser_vtam_sortreads = subparsers.add_parser(
             'sortreads',
             add_help=True,
             formatter_class=argparse.RawTextHelpFormatter,
             parents=[parent_parser])
 
-        parser_vtam_sortreads .add_argument(
+        parser_vtam_sortreads.add_argument(
             '--fastainfo',
             action='store',
             help="REQUIRED: TSV file with FASTA information",
@@ -306,11 +298,10 @@ class ArgParser:
 
     @classmethod
     def create_filter(cls, subparsers, parent_parser):
-
         parser_vtam_filter = subparsers.add_parser(
             'filter', add_help=True, parents=[parent_parser])
 
-        parser_vtam_filter .add_argument(
+        parser_vtam_filter.add_argument(
             '--readinfo',
             action='store',
             help="REQUIRED: TSV file with information of sorted read files",
@@ -325,21 +316,18 @@ class ArgParser:
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty
         )
-        parser_vtam_filter .add_argument(
+        parser_vtam_filter.add_argument(
             '--asvtable',
             action='store',
             help="REQUIRED: Output TSV file for the amplicon sequence variants (ASV) table",
             required=True)
 
-        parser_vtam_filter.add_argument(
-            '--cutoff_specific',
-            dest='cutoff_specific',
-            default=None,
-            action='store',
-            required=False,
-            help="TSV file with variant (col1: variant; col2: cutoff) or variant-replicate "
-            "(col1: variant; col2: replicate; col3: cutoff)specific cutoffs.",
-            type=lambda x: CutoffSpecificFile(x).argparse_checker())
+        parser_vtam_filter.add_argument('--cutoff_specific', dest='cutoff_specific', default=None,
+                                        action='store',
+                                        required=False,
+                                        help="TSV file with variant (col1: variant; col2: cutoff) or variant-replicate "
+                                             "(col1: variant; col2: replicate; col3: cutoff)specific cutoffs.",
+                                        type=lambda x: CutoffSpecificFile(x).argparse_checker())
 
         parser_vtam_filter.add_argument(
             '--lfn_variant_replicate',
@@ -395,11 +383,10 @@ class ArgParser:
 
     @classmethod
     def create_optimize(cls, subparsers, parent_parser):
-
         parser_vtam_optimize = subparsers.add_parser(
             'optimize', add_help=True, parents=[parent_parser])
 
-        parser_vtam_optimize .add_argument(
+        parser_vtam_optimize.add_argument(
             '--readinfo',
             action='store',
             help="REQUIRED: TSV file with information of sorted read files",
@@ -481,7 +468,6 @@ class ArgParser:
 
     @classmethod
     def create_pool(cls, subparsers, parent_parser):
-
         parser_vtam_pool_markers = subparsers.add_parser(
             'pool',
             add_help=True,
@@ -508,20 +494,19 @@ class ArgParser:
 
     @classmethod
     def create_taxassign(cls, subparsers, parent_parser):
-
         parser_vtam_taxassign = subparsers.add_parser(
             'taxassign',
             add_help=True,
             formatter_class=argparse.RawTextHelpFormatter,
             parents=[parent_parser])
 
-        parser_vtam_taxassign .add_argument(
+        parser_vtam_taxassign.add_argument(
             '--variants',
             action='store',
             help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
             required=True,
             type=lambda x: ArgParserChecker.check_taxassign_variants(x))
-        parser_vtam_taxassign .add_argument(
+        parser_vtam_taxassign.add_argument(
             '--output',
             action='store',
             help="REQUIRED: TSV file where the taxon assignation has beeen added.",
@@ -536,8 +521,8 @@ class ArgParser:
                 'unassigned',
                 'reset'],
             help="The default 'unassigned' mode will only assign 'unassigned' variants."
-            "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
-            "input variants.")
+                 "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
+                 "input variants.")
         parser_vtam_taxassign.add_argument('--db', **cls.args_db)
         parser_vtam_taxassign.add_argument(
             '--blastdbdir',
@@ -549,7 +534,7 @@ class ArgParser:
             '--blastdbname',
             action='store',
             help="REQUIRED: Blast DB name. It corresponds to file name (without suffix)"
-            "of blast DB files.",
+                 "of blast DB files.",
             required=True)
         parser_vtam_taxassign.add_argument(
             '--taxonomy',
@@ -568,7 +553,6 @@ class ArgParser:
 
     @classmethod
     def create_taxonomy(cls, subparsers, parent_parser):
-
         parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
                                                      parents=[parent_parser])
         parser_vtam_taxonomy.add_argument(
@@ -591,7 +575,6 @@ class ArgParser:
 
     @classmethod
     def create_coiblastdb(cls, subparsers):
-
         parser_vtam_coi_blast_db = subparsers.add_parser(
             'coi_blast_db', add_help=True)
         parser_vtam_coi_blast_db.add_argument(
@@ -599,12 +582,14 @@ class ArgParser:
             dest='blastdbdir',
             action='store',
             help="Path COI Blast DB",
-            required=True)
+            required=False,
+            default='.')
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbname',
             dest='blastdbname',
             action='store',
-            help="COI Blast DB name, eg coi_blast_db_20191211, coi_blast_db_20200420. Versions can be found as basename here: {}".format(os.path.dirname(coi_blast_db_gz_url)),
+            help="COI Blast DB name, eg coi_blast_db_20191211, coi_blast_db_20200420. Versions can be found as basename here: {}".format(
+                os.path.dirname(coi_blast_db_gz_url)),
             required=False,
             default='coi_blast_db',
             type=lambda x: CommandBlastCOI(x).argparse_checker_blast_coi_blastdbname(),

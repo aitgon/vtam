@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.1.8 (Jun 12, 2020)
+--------------------------------------------------
+
+- BUG Fixed that vtam must run again if --params file is updated (Mantis issues 0002620, 0002621) 
+- ENH vtam coi_blast_db progressbar
+
 CHANGES IN VERSION 0.1.7 (Jun 8, 2020)
 --------------------------------------------------
 

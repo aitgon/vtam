@@ -1,3 +1,5 @@
+import pathlib
+
 from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 
 from vtam.utils.FilterLFNRunner import FilterLFNrunner
@@ -29,7 +31,7 @@ class FilterLFN(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            FilterLFN.__input_file_readinfo,
+            "readinfo", "params", "cutoff_specific"
         ]
 
     def specify_input_table(self):
@@ -104,11 +106,11 @@ class FilterLFN(ToolWrapper):
             variant_read_count_like_model=input_variant_read_count_model, engine=engine, filter_id=None)
 
         lfn_variant_specific_cutoff_df = None
-        if (not (lfn_variant_cutoff is None)) and (not (lfn_variant_specific_cutoff is None)):
+        if (not (lfn_variant_cutoff is None)) and pathlib.Path(lfn_variant_specific_cutoff).stat().st_size > 0:
             lfn_variant_specific_cutoff_df = CutoffSpecificFile(lfn_variant_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=False)
 
         lfn_variant_replicate_specific_cutoff_df = None
-        if (not (lfn_variant_replicate_cutoff is None)) and (not (lfn_variant_replicate_specific_cutoff is None)):
+        if (not (lfn_variant_replicate_cutoff is None)) and pathlib.Path(lfn_variant_replicate_specific_cutoff).stat().st_size > 0:
             lfn_variant_replicate_specific_cutoff_df = CutoffSpecificFile(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=True)
 
         ############################################################################################

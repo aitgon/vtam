@@ -1,4 +1,5 @@
 import os
+import pathlib
 import sys
 
 from vtam.CommandFilterOptimize import CommandFilterOptimize
@@ -11,6 +12,7 @@ from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.Logger import Logger
 from vtam.utils.Logger import LoggerArguments
+from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.constants import FilterLFNreference_records
@@ -34,11 +36,11 @@ class VTAM(object):
 
     def __init__(self, sys_argv):
 
-        #######################################################################
+        ############################################################################################
         #
         # Parse arguments
         #
-        #######################################################################
+        ############################################################################################
 
         self.sys_argv = sys_argv
         # AG do not use abspath for the moment. Maybe later it can be used as
@@ -48,11 +50,23 @@ class VTAM(object):
 
         arg_parser_dic = vars(self.args)
 
-        #######################################################################
+        ############################################################################################
+        #
+        # If non-specified, initiate params.yml
+        #
+        ############################################################################################
+
+        if arg_parser_dic['params'] is None:
+            params_yml = os.path.join(PathManager.instance().get_configdir(), "params.yml")
+            if not os.path.isfile(params_yml):
+                pathlib.Path(params_yml).touch(exist_ok=False)
+            arg_parser_dic['params'] = params_yml
+
+        ############################################################################################
         #
         # Parse log arguments
         #
-        #######################################################################
+        ############################################################################################
 
         (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
                                              'log_file': arg_parser_dic['log_file']})
@@ -80,6 +94,21 @@ class VTAM(object):
 
         if arg_parser_dic['command'] in ['filter', 'optimize']:
 
+            if arg_parser_dic['command'] in ['filter']:
+
+                ############################################################################################
+                #
+                # If non-specified, initiate params.yml
+                #
+                ############################################################################################
+
+                if arg_parser_dic['cutoff_specific'] is None:
+                    cutoff_specific_tsv = os.path.join(PathManager.instance().get_configdir(),
+                                                       "cutoff_specific.tsv")
+                    if not os.path.isfile(cutoff_specific_tsv):
+                        pathlib.Path(cutoff_specific_tsv).touch(exist_ok=False)
+                    arg_parser_dic['cutoff_specific'] = cutoff_specific_tsv
+
             CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
 
         ############################################################################################
@@ -101,21 +130,6 @@ class VTAM(object):
         ############################################################################################
         #
         # Subcommand: sortreads
-        #
-        ############################################################################################
-
-        elif arg_parser_dic['command'] == 'sortreads':
-            fastadir = arg_parser_dic['fastadir']
-            fastainfo = arg_parser_dic['fastainfo']
-            outdir = arg_parser_dic['outdir']
-            num_threads = arg_parser_dic['threads']
-            params = arg_parser_dic['params']
-            CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
-                                  num_threads=num_threads, outdir=outdir)
-
-        ############################################################################################
-        #
-        # Subcommand: filter
         #
         ############################################################################################
 
