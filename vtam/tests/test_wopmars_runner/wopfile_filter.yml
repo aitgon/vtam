@@ -41,6 +41,7 @@ rule FilterLFN:
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
             params: None
+            cutoff_specific: None
     output:
         table:
             FilterLFN: vtam.models.FilterLFN
