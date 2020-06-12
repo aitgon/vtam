@@ -237,8 +237,4 @@ class CommandSortReads(object):
                 [sorted_read_info_df, fasta_info_df_i], axis=0)
 
         fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
-        sorted_read_info_df.to_csv(
-            fasta_trimmed_info_tsv,
-            sep="\t",
-            header=True,
-            index=False)
+        sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)

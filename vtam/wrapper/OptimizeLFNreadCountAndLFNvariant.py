@@ -31,6 +31,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         return [
             OptimizeLFNreadCountAndLFNvariant.__input_file_readinfo,
             OptimizeLFNreadCountAndLFNvariant.__input_file_known_occurrences,
+            "params",
         ]
 
     def specify_input_table(self):

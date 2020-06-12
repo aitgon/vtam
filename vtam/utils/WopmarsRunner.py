@@ -25,6 +25,7 @@ class WopmarsRunner(Singleton):
         self.cli_args_and_numerical_params.update(cli_args_dic)
 
         # Add user params.yml parameters
+
         params_dic = ParamsFile(cli_args_dic['params']).get_params_dic()
         self.cli_args_and_numerical_params.update(params_dic)
 
