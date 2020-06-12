@@ -10,6 +10,7 @@
         file:
             readinfo: {{readinfo}}
             params: {{params}}
+            cutoff_specific: {{cutoff_specific}}
     output:
         table:
             FilterLFN: vtam.models.FilterLFN

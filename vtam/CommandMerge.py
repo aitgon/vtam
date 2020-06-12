@@ -129,5 +129,5 @@ class CommandMerge(object):
                 'NbReadsFwd': [fastq_rv_abspath], 'NbReadsRev': [fastq_rv_linecount], 'FastaMerged': [out_fasta_path], 'NbMergedReads': [fasta_merged_linecount]})])
 
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
-        SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
+        # SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
 
