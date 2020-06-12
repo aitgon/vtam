@@ -1,11 +1,9 @@
 import argparse
 import os
-import pathlib
 import sys
 
 import yaml
 
-from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 
 from vtam.utils.Logger import Logger
@@ -37,15 +35,6 @@ class ParamsFile:
                 sys.exit(1)
         return True
 
-    # @staticmethod
-    # def touch_params_file():
-    #
-    #     """Returns params_path only if the parameter set is valid"""
-    #
-    #     params_yml = os.path.join(PathManager.instance().get_tempdir(), "params.yml")
-    #     pathlib.Path(params_yml).touch()
-    #     return params_yml
-
     def argparse_checker_params_file(self):
 
         """Returns params_path only if the parameter set is valid"""
@@ -53,9 +42,6 @@ class ParamsFile:
         if not os.path.isfile(self.params_path):
             raise argparse.ArgumentTypeError(
                 "The file '{}' does not exist. Please fix it.".format(self.params_path))
-        #  elif not os.stat(self.params_path).st_size > 0:
-        #     raise argparse.ArgumentTypeError(
-        #         "The file '{}' is empty!".format(self.params_path))
 
         if self.is_valid():
             return self.params_path  # return the tsv_path
