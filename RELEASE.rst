@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.1.9 (Jun 12, 2020)
+--------------------------------------------------
+
+- BLD requirements.txt missing in build
+
 CHANGES IN VERSION 0.1.8 (Jun 12, 2020)
 --------------------------------------------------
 
