@@ -1,5 +1,5 @@
 exclude _build
-include Makefile environment.yml environment-dev.yml
+include Makefile environment.yml environment-dev.yml requirements.txt
 recursive-include doc *.md Makefile *.tsv *.yml
 include doc/data/*
 include snakefile.yml
