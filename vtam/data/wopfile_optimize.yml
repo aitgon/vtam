@@ -45,6 +45,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
         file:
             readinfo: {{readinfo}}
             known_occurrences: {{known_occurrences}}
+            params: {{params}}
     output:
         file:
             optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}

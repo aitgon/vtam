@@ -58,7 +58,7 @@ class CutoffSpecificFile(object):
                             header_cutoff_specific_variant_replicate))
 
     def read_tsv_into_df(self, is_lfn_variant_replicate):
-        """Read into df
+        """Read into stats_df
         Updated: June 3, 2020
 
         Parameters
