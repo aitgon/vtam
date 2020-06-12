@@ -46,7 +46,7 @@ rule optimize_tmp:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam optimize --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_biosample_replicate}) -v --log {params.log}"
+        "vtam optimize --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_biosample_replicate}) -v --log {params.log}"
 
 rule asvtable_taxa_tmp:
     input:
@@ -98,7 +98,7 @@ rule filter_params:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
 
 rule filter:
     input:
@@ -111,7 +111,7 @@ rule filter:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
 
 rule sortreads:
     input:
