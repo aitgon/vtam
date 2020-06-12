@@ -79,7 +79,6 @@ class TestTutorialSnakemake(unittest.TestCase):
     def test_02_mfzr_optimize(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until optimize"
-        import pdb; pdb.set_trace()
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     def test_03_mfzr_filter_optimized(self):
