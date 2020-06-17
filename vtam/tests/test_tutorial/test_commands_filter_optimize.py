@@ -30,7 +30,7 @@ class TestCommands(unittest.TestCase):
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         # during development of the test, this prevents errors
-        shutil.rmtree(cls.outdir_path, ignore_errors=True)
+        # shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
         os.environ['VTAM_LOG_VERBOSITY'] = str(10)
 
@@ -135,8 +135,8 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam optimize --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
 
+        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
         optimize_lfn_read_count_variant_path = os.path.join(self.outdir_path,
                                                                 "optimize_lfn_read_count_and_lfn_variant.tsv")
         optimize_lfn_read_count_variant_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_read_count_and_lfn_variant.tsv")
@@ -153,7 +153,6 @@ class TestCommands(unittest.TestCase):
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant --lfn_variant_replicate " \
               "-v --log vtam.log".format(**self.args)
         subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-
         optimize_lfn_read_count_variant_replicate_path = os.path.join(self.outdir_path,
                                                                 "optimize_lfn_read_count_and_lfn_variant_replicate.tsv")
         optimize_lfn_read_count_variant_replicate_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_read_count_and_lfn_variant_replicate.tsv")
