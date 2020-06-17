@@ -1,10 +1,17 @@
+import numpy
+from vtam.utils.OptimizeLFNreadCountAndVariantRunMarkerRunner import \
+    OptimizeLFNreadCountAndVariantRunMarkerRunner
+
+from vtam.utils.constants import lfn_ni_njk_cutoff_global_max, lfn_nijk_cutoff_global_max, \
+    lfn_nijk_cutoff_lst_size
+
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.VariantReadCount import VariantReadCount
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.NameIdConverter import NameIdConverter
-from vtam.utils.OptimizeLFNreadCountAndLFNvariantRunner import \
-    OptimizeLFNreadCountAndLFNvariantRunner
+from vtam.utils.OptimizeLFNreadCountAndVariantRunner import \
+    OptimizeLFNreadCountAndVariantRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from wopmars.models.ToolWrapper import ToolWrapper
 
@@ -130,14 +137,31 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         ############################################################################################
         #
+        # Create cutoff values lists
+        #
+        ############################################################################################
+
+        # # lfn_nijk_cutoff_list = range(lfn_nijk_cutoff, lfn_nijk_cutoff_global_max + 1, round(int((lfn_nijk_cutoff_global_max - lfn_nijk_cutoff + 1)/10), -1))
+        # lfn_nijk_cutoff_list = range(lfn_nijk_cutoff, lfn_nijk_cutoff_global_max + 1, round(int((lfn_nijk_cutoff_global_max - lfn_nijk_cutoff + 1)/10), -1))
+        # lfn_nijk_cutoff_list = OptimizeLFNreadCountAndVariantRunMarkerRunner.get_lfn_nijk_cutoff_lst(start=lfn_nijk_cutoff, stop=lfn_nijk_cutoff_global_max, nb_points=10)
+        # lfn_nijk_cutoff_list = OptimizeLFNreadCountAndVariantRunMarkerRunner.get_lfn_nijk_cutoff_lst(start=lfn_nijk_cutoff, stop=lfn_nijk_cutoff_global_max, nb_points=10)
+        # if lfn_nik_cutoff is None:  # lfn_variant optimization
+        #     lfn_ni_nik_cutoff_list = [round(x, 3) for x in numpy.arange(lfn_ni_cutoff, lfn_ni_njk_cutoff_global_max + 0.001, (lfn_ni_njk_cutoff_global_max - lfn_ni_cutoff + 0.001)/10)]
+        # else:  # lfn_variant_replicate optimization
+        #     lfn_ni_nik_cutoff_list = [round(x, 3) for x in numpy.arange(lfn_ni_cutoff, lfn_ni_njk_cutoff_global_max + 0.001, (lfn_ni_njk_cutoff_global_max - lfn_ni_cutoff + 0.001)/10)]
+
+        ############################################################################################
+        #
         # Group and run_name this genetic_code by run_name/marker_name combination
         # Loop by run_name/marker_name
         #
         ############################################################################################
 
-        optim_lfn_readcount_variant_runner = OptimizeLFNreadCountAndLFNvariantRunner(
+        optim_lfn_readcount_variant_runner = OptimizeLFNreadCountAndVariantRunner(
             nijk_df=nijk_df, known_occurrences_df=known_occurrences_df)
-        out_optimize_df, out_optimize2_df = optim_lfn_readcount_variant_runner.get_optimize_df(**filter_kwargs)
+        out_optimize_df, out_optimize2_df = optim_lfn_readcount_variant_runner.get_optimize_df(
+            lfn_ni_cutoff=lfn_ni_cutoff, lfn_nik_cutoff=lfn_nik_cutoff, lfn_njk_cutoff=lfn_njk_cutoff,
+            lfn_nijk_cutoff=lfn_nijk_cutoff, min_replicate_number=min_replicate_number)
 
         ############################################################################################
         #
