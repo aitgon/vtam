@@ -2,6 +2,10 @@ import os
 import pathlib
 import sys
 
+import yaml
+
+from vtam.utils.ParamsFile import ParamsFile
+
 from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandMerge import CommandMerge
@@ -86,19 +90,44 @@ class VTAM(object):
         if 'threads' in arg_parser_dic:
             os.environ['VTAM_THREADS'] = str(arg_parser_dic['threads'])
 
-        ###############################################################
+        ############################################################################################
         #
         # Subcommands: wopfile-dependent, filter, optimize
         #
-        ###############################################################
+        ############################################################################################
 
         if arg_parser_dic['command'] in ['filter', 'optimize']:
 
             if arg_parser_dic['command'] in ['filter']:
 
+                ####################################################################################
+                #
+                # Verify coherence of --lfn_variant_replicate and params arguments
+                #
+                ####################################################################################
+
+                with open(arg_parser_dic['params']) as fin:
+                    # The FullLoader parameter handles the conversion from YAML
+                    # scalar values to Python the dictionary format
+                    params_dic = yaml.load(fin, Loader=yaml.SafeLoader) or {}
+
+                    if arg_parser_dic['lfn_variant_replicate']:
+                        if 'lfn_variant_cutoff' in params_dic:
+                            Logger.instance().error(VTAMexception(
+                                'The parameter "lfn_variant_cutoff" in the parameter file "{}" is incompatible with'
+                                ' the --lfn_variant_replicate argument.'.format(arg_parser_dic['params'])))
+                            sys.exit(1)
+
+                    else:
+                        if 'lfn_variant_replicate_cutoff' in params_dic:
+                            Logger.instance().error(VTAMexception(
+                                'The parameter "lfn_variant_replicate_cutoff" in the parameter file "{}" needs'
+                                ' the --lfn_variant_replicate argument.'.format(arg_parser_dic['params'])))
+                            sys.exit(1)
+
                 ############################################################################################
                 #
-                # If non-specified, initiate params.yml
+                # If non-specified, initiate cutoff specific
                 #
                 ############################################################################################
 

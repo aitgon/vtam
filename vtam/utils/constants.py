@@ -1,11 +1,11 @@
 import multiprocessing
 import yaml
 
-##########################################################################
+####################################################################################################
 #
 # Default VTAM parameters_numerical_default
 #
-##########################################################################
+####################################################################################################
 
 params_default_str = """################################################################################
 # Parameters of the "merge" command
@@ -91,6 +91,18 @@ include_prop: 90
 min_number_of_taxa: 3
 ltg_rule_threshold: 97"""
 
+####################################################################################################
+#
+#  Optimize lfn_readcount_cutoff, lfn_variant_cutoff, lfn_variant_replicate_cutoff, ...
+#
+####################################################################################################
+
+# 100 110 absolute lfn_nijk_cutoff maximal value, used by the optimized
+lfn_nijk_cutoff_global_max = 101
+lfn_nijk_cutoff_lst_size = 10
+# 0.05 1 absolute maximal lfn_ni_cutoff or lfn_njk_cutoff, used by the optimized
+lfn_ni_njk_cutoff_global_max = 0.051
+lfn_ni_njk_cutoff_lst_size = 10
 
 def get_params_default_dic():
     params_default_dic = yaml.load(params_default_str, Loader=yaml.SafeLoader)
@@ -98,12 +110,12 @@ def get_params_default_dic():
     return params_default_dic
 
 
-##########################################################################
+####################################################################################################
 #
 #  Header of these information files
 #  PairedFastq, MergedFasta, SortedReadFasta
 #
-##########################################################################
+####################################################################################################
 
 header_paired_fastq = {'run', 'marker', 'biosample', 'replicate'}
 header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev',
@@ -113,12 +125,11 @@ header_known_occurrences = {'run', 'marker', 'biosample', 'mock', 'variant', 'ac
 header_cutoff_specific_variant_replicate = {'run', 'marker', 'variant', 'lfn_variant_replicate_cutoff'}
 header_cutoff_specific_variant = {'run', 'marker', 'variant', 'lfn_variant_cutoff'}
 
-
-##########################################################################
+####################################################################################################
 #
 #  Tax_assign parameters_numerical_default
 #
-##########################################################################
+####################################################################################################
 
 rank_hierarchy = [
     'no rank',
@@ -154,11 +165,11 @@ sorted_dryad_f40v5_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vta
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 
-##########################################################################
+####################################################################################################
 #
 #  FilterLFNreference
 #
-##########################################################################
+####################################################################################################
 
 FilterLFNreference_records = [
     {'filter_id': 2, 'filter_name': 'lfn_per_variant'},
