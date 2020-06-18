@@ -18,8 +18,8 @@ rule all:
 rule optimize:
     input:
         optimize_lfn_biosample_replicate=expand("{outdir}/optimize_lfn_biosample_replicate.tsv", outdir=outdir),
-        optimize_lfn_read_count_and_lfn_variant=expand("{outdir}/optimize_lfn_read_count_and_lfn_variant.tsv", outdir=outdir),
-        optimize_lfn_variant_specific=expand("{outdir}/optimize_lfn_variant_specific.tsv", outdir=outdir),
+        optimize_lfn_read_count_and_lfn_variant=expand("{outdir}/optimize_lfn_read_count_and_lfn_variant_replicate.tsv", outdir=outdir),
+        optimize_lfn_variant_specific=expand("{outdir}/optimize_lfn_variant_replicate_specific.tsv", outdir=outdir),
         optimize_pcr_error=expand("{outdir}/optimize_pcr_error.tsv", outdir=outdir),
 
 rule asvtable_taxa:
@@ -37,8 +37,8 @@ rule optimize_tmp:
         known_occurrences=known_occurrences,
     output:
         optimize_lfn_biosample_replicate="{outdir}/optimize_lfn_biosample_replicate.tsv",
-        optimize_lfn_read_count_and_lfn_variant="{outdir}/optimize_lfn_read_count_and_lfn_variant.tsv",
-        optimize_lfn_variant_specific="{outdir}/optimize_lfn_variant_specific.tsv",
+        optimize_lfn_read_count_and_lfn_variant="{outdir}/optimize_lfn_read_count_and_lfn_variant_replicate.tsv",
+        optimize_lfn_variant_specific="{outdir}/optimize_lfn_variant_replicate_specific.tsv",
         optimize_pcr_error="{outdir}/optimize_pcr_error.tsv",
     resources:
         db=1
@@ -46,7 +46,7 @@ rule optimize_tmp:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam optimize --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_biosample_replicate}) -v --log {params.log}"
+        "vtam optimize --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_biosample_replicate}) -v --log {params.log}"
 
 rule asvtable_taxa_tmp:
     input:
@@ -98,7 +98,7 @@ rule filter_params:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
 
 rule filter:
     input:
@@ -111,7 +111,7 @@ rule filter:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --lfn_variant_replicate --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
 
 rule sortreads:
     input:
