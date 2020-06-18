@@ -48,7 +48,7 @@ class TestCommandsFilterParams(unittest.TestCase):
         tar.close()
 
         cls.args = {}
-        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params.yml")
+        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
 
         ############################################################################################
         #
