@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.1.10 (Jun 18, 2020)
+--------------------------------------------------
+
+- RFR Refactored optimize lfn variant or variant replicate
+- TST New tests optimize lfn variant or variant replicate
+
 CHANGES IN VERSION 0.1.9 (Jun 12, 2020)
 --------------------------------------------------
 
