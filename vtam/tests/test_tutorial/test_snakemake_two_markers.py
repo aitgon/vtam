@@ -84,7 +84,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_03_mfzr_filter_optimized(self):
 
-        cmd = "vtam filter --lfn_variant_replicate --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_mfzr.tsv --readdir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log"
+        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_mfzr.tsv --readdir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
 
     def test_03_mfzr_taxassign_optimized(self):
@@ -96,7 +96,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_04_zfzr_filter_optimized(self):
 
-        cmd = "vtam filter --lfn_variant_replicate --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv " \
+        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv " \
               "--readdir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml " \
               "--asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log"
         subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
