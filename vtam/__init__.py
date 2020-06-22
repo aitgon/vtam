@@ -4,6 +4,7 @@ import sys
 
 import yaml
 
+from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.ParamsFile import ParamsFile
 
 from vtam.CommandFilterOptimize import CommandFilterOptimize
@@ -123,6 +124,31 @@ class VTAM(object):
                             Logger.instance().error(VTAMexception(
                                 'The parameter "lfn_variant_replicate_cutoff" in the parameter file "{}" needs'
                                 ' the --lfn_variant_replicate argument.'.format(arg_parser_dic['params'])))
+                            sys.exit(1)
+
+                ####################################################################################
+                #
+                # Verify coherence of --lfn_variant_replicate and cutoff_specific argument
+                #
+                ####################################################################################
+
+                if not (arg_parser_dic['cutoff_specific'] is None):  # cutoff specific argument
+
+                    if arg_parser_dic['lfn_variant_replicate']:  # lfn_variant_replicate
+
+                        # cutoff_specific for lfn_variant
+                        if not CutoffSpecificFile(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
+                            Logger.instance().error('The --lfn_variant_replicate argument is incompatible with the cutoff_specific file {}.'.format(
+                                    arg_parser_dic['cutoff_specific']))
+                            sys.exit(1)
+
+                    else: # lfn_variant
+
+                        # cutoff_specific for lfn_variant_replicate
+                        if CutoffSpecificFile(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
+
+                            Logger.instance().error('The cutoff_specific file {} requires the --lfn_variant_replicate argument.'.format(
+                                    arg_parser_dic['cutoff_specific']))
                             sys.exit(1)
 
                 ############################################################################################

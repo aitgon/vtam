@@ -1,4 +1,3 @@
-import filecmp
 import os
 import pathlib
 import shlex
@@ -58,7 +57,7 @@ class TestCommands(unittest.TestCase):
 
         cls.args = {}
         cls.args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo.tsv")
-        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params.yml")
+        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params_min_replicate_number1.yml")
         cls.args['params_lfn_variant'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
         cls.args['params_lfn_variant_replicate'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant_replicate.yml")
 
@@ -115,60 +114,6 @@ class TestCommands(unittest.TestCase):
         cur_result = cur.execute('SELECT COUNT(*) from FilterMinReplicateNumber where filter_delete=0').fetchone()
         self.assertTrue(cur_result[0] > 0)
         con.close()
-
-    def test_filter_params_lfn_variant_replicate(self):
-
-        ############################################################################################
-        #
-        # Wrong
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
-              "--lfn_variant_replicate".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-
-        self.assertEqual(result.returncode, 1)
-
-        ############################################################################################
-        #
-        # Wrong
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
-              "".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-
-        self.assertEqual(result.returncode, 1)
-
-        ############################################################################################
-        #
-        # Right
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
-              "".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-
-        self.assertEqual(result.returncode, 0)
-
-        ############################################################################################
-        #
-        # Right
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
-              "--lfn_variant_replicate".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
-
-        self.assertEqual(result.returncode, 0)
 
     @classmethod
     def tearDownClass(cls):

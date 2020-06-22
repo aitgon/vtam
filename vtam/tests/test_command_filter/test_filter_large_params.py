@@ -48,7 +48,7 @@ class TestCommandsFilterParams(unittest.TestCase):
         tar.close()
 
         cls.args = {}
-        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
+        cls.args['params'] = os.path.join(os.path.dirname(__file__), "params_large.yml")
 
         ############################################################################################
         #
@@ -65,18 +65,19 @@ class TestCommandsFilterParams(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam coi_blast_db --coi_blast_db_dir coi_blast_db_dir"
+        command = "vtam coi_blast_db --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db_20191211"
         subprocess.run(shlex.split(command), check=True, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
-        ################################################################################################################
+        ############################################################################################
         #
         # Command Filter
         #
-        ################################################################################################################
+        ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv --params {params}".format(**self.args)
+        cmd = "vtam filter --lfn_variant_replicate --db db.sqlite --readinfo sorted/readinfo.tsv " \
+              "--readdir sorted --asvtable asvtable_default.tsv --params {params} -v".format(**self.args)
         subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
@@ -85,13 +86,14 @@ class TestCommandsFilterParams(unittest.TestCase):
 
     def test_02_taxasign(self):
 
-        ################################################################################################################
+        ############################################################################################
         #
         # Command Filter
         #
-        ################################################################################################################
+        ############################################################################################
 
-        command = "vtam taxassign --variants asvtable_default.tsv --output asvtable_default_taxa.tsv --db db.sqlite --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db --taxonomy taxonomy.tsv"
+        command = "vtam taxassign --variants asvtable_default.tsv --output asvtable_default_taxa.tsv " \
+                  "--db db.sqlite --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db_20191211 --taxonomy taxonomy.tsv"
         subprocess.run(shlex.split(command), cwd=self.outdir_path, check=True)
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default_taxa.tsv")
