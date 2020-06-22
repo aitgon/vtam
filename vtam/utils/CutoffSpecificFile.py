@@ -57,13 +57,31 @@ class CutoffSpecificFile(object):
                     .format(self.cutoff_specific_tsv, header_cutoff_specific_variant,
                             header_cutoff_specific_variant_replicate))
 
+    def is_compatible_lfn_variant_replicate(self):
+
+        """
+        Verifies if this cutoff specific files contains header_cutoff_specific_variant_replicate columns
+        Updated: June 18, 2020
+
+        """
+
+
+        cutoff_specific_df = pandas.read_csv(
+            self.cutoff_specific_tsv, sep="\t", header=0)
+        cutoff_specific_df.columns = cutoff_specific_df.columns.str.lower()
+        # must contain at least these columns
+        if (set(cutoff_specific_df.columns) >= header_cutoff_specific_variant_replicate):
+            return True
+        else:
+            return False
+
     def read_tsv_into_df(self, is_lfn_variant_replicate):
         """Read into stats_df
         Updated: June 3, 2020
 
         Parameters
         ----------
-        is_lfn_variant_replicate: Booleand that tells if algorithm is lfn_variant_replicate or not
+        is_lfn_variant_replicate: Boolean that tells if algorithm is lfn_variant_replicate or not
 
         Returns
         -------
