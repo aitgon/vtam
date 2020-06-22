@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.1.11 (Jun 22, 2020)
+--------------------------------------------------
+
+- ENH verification of --cutoff_specific and --lfn_variant_replicate arguments
+
 CHANGES IN VERSION 0.1.10 (Jun 18, 2020)
 --------------------------------------------------
 
