@@ -42,7 +42,7 @@ class CommandBlastCOI(object):
             return self.blastdbname
         except :
             raise argparse.ArgumentTypeError(
-                "There is not this COI Blast DB name '{}'. Please check available versions here: '{}'".format(self.blastdbname, os.path.dirname(coi_blast_db_gz_url)))
+                "There is not this COI Blast DB name '{}'. Please check available versions (<version>.tar.gz), for instance 'coi_blast_db', here: '{}'".format(self.blastdbname, os.path.dirname(coi_blast_db_gz_url)))
 
     def download(self, blastdbdir):
         """
