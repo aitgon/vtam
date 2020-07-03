@@ -118,11 +118,11 @@ class FilterPCRerror(ToolWrapper):
             marker_id = row.marker_id
             biosample_id = row.biosample_id
 
+            # Get variant read for the current run-marker-biosample
             variant_read_count_per_biosample_df = variant_read_count_df.loc[(variant_read_count_df.run_id == run_id) & (
                 variant_read_count_df.marker_id == marker_id) & (variant_read_count_df.biosample_id == biosample_id)]
 
-            variant_per_biosample_df = variant_df.loc[variant_df.index.isin(
-                variant_read_count_df.variant_id.unique().tolist())]
+            variant_per_biosample_df = variant_df.loc[variant_df.index.isin(variant_read_count_per_biosample_df.variant_id.unique().tolist())]
             this_step_tmp_per_biosample_dir = os.path.join(
                 this_temp_dir, "run_{}_marker_{}_biosample{}".format(
                     run_id, marker_id, biosample_id))
