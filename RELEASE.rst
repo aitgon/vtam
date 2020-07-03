@@ -1,3 +1,8 @@
+CHANGES IN VERSION 0.1.12 (Jul 3, 2020)
+--------------------------------------------------
+
+- BUG fixed FilterPCRerror runned with all variants
+
 CHANGES IN VERSION 0.1.11 (Jun 22, 2020)
 --------------------------------------------------
 
