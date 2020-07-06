@@ -74,7 +74,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 1)
 
@@ -87,7 +92,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 1)
 
@@ -100,7 +110,11 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 0)
 
@@ -113,7 +127,11 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 0)
 

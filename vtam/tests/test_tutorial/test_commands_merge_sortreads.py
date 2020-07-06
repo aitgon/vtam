@@ -80,9 +80,14 @@ class TestTutorialCommands(unittest.TestCase):
         #
         ################################################################################################################
 
-        cmd_merge = "vtam merge --fastqinfo {fastqinfo} --fastqdir {fastqdir} --fastainfo {fastainfo} --fastadir {fastadir} " \
+        cmd = "vtam merge --fastqinfo {fastqinfo} --fastqdir {fastqdir} --fastainfo {fastainfo} --fastadir {fastadir} " \
               "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd_merge))
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args)
 
         self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/fastainfo.tsv")
         self.fastadir_path_bak = os.path.join(os.path.dirname(__file__), "merge")
@@ -102,7 +107,12 @@ class TestTutorialCommands(unittest.TestCase):
 
         cmd = "vtam sortreads --fastainfo {fastainfo} --fastadir {fastadir} --outdir {sorted} " \
               "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd))
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args)
 
         self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/sortedreadinfo.tsv")
         self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, self.sortedreadinfo_path_bak, shallow=True))

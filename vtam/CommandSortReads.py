@@ -1,5 +1,7 @@
 import multiprocessing
 import os
+import sys
+
 import pandas
 import pathlib
 import shlex
@@ -87,8 +89,13 @@ class CommandSortReads(object):
                 "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
-            run_result = subprocess.run(shlex.split(cmd_cutadapt_tag_str), capture_output=True,
-                                        check=True)
+
+            if sys.platform.startswith("win"):
+                args = cmd_cutadapt_tag_str
+            else:
+                args = shlex.split(cmd_cutadapt_tag_str)
+            run_result = subprocess.run(args=args, capture_output=True, check=True)
+
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 
@@ -127,9 +134,13 @@ class CommandSortReads(object):
                 "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
-            run_result = subprocess.run(
-                shlex.split(cmd_cutadapt_primer_str),
-                capture_output=True)
+
+            if sys.platform.startswith("win"):
+                args = cmd_cutadapt_primer_str
+            else:
+                args = shlex.split(cmd_cutadapt_primer_str)
+            run_result = subprocess.run(args=args, capture_output=True)
+
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 
@@ -161,9 +172,13 @@ class CommandSortReads(object):
                 "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
-            run_result = subprocess.run(
-                shlex.split(cmd_cutadapt_tag_str),
-                capture_output=True)
+
+            if sys.platform.startswith("win"):
+                args = cmd_cutadapt_tag_str
+            else:
+                args = shlex.split(cmd_cutadapt_tag_str)
+            run_result = subprocess.run(args=args, capture_output=True)
+
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 
@@ -202,9 +217,13 @@ class CommandSortReads(object):
                 "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
-            run_result = subprocess.run(
-                shlex.split(cmd_cutadapt_primer_str),
-                capture_output=True)
+
+            if sys.platform.startswith("win"):
+                args = cmd_cutadapt_primer_str
+            else:
+                args = shlex.split(cmd_cutadapt_primer_str)
+            run_result = subprocess.run(args=args, capture_output=True)
+
             Logger.instance().info(run_result.stdout.decode())
             Logger.instance().info(run_result.stderr.decode())
 

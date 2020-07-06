@@ -72,7 +72,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
               "--lfn_variant_replicate".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 1)
 
@@ -85,7 +90,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
               "".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 1)
 
@@ -98,7 +108,11 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
               "".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 0)
 
@@ -111,7 +125,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
               "--lfn_variant_replicate".format(**self.args)
-        result = subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
 
         self.assertEqual(result.returncode, 0)
 
