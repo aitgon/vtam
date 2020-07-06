@@ -1,6 +1,7 @@
 import os
 import pathlib
 import shlex
+import sys
 import unittest
 import yaml
 
@@ -41,7 +42,11 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
     def test_wopmars_runner_filter(self):
 
         args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
-        args = ArgParser.get_main_arg_parser().parse_args(shlex.split(args_str))
+
+        if not sys.platform.startswith("win"):
+            args_str = shlex.split(args_str)
+
+        args = ArgParser.get_main_arg_parser().parse_args(args_str)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
@@ -56,7 +61,10 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
         args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv --lfn_variant_replicate'.format(
             **self.foopaths)
-        args = ArgParser.get_main_arg_parser().parse_args(shlex.split(args_str))
+
+        if not sys.platform.startswith("win"):
+            args_str = shlex.split(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(args_str)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()

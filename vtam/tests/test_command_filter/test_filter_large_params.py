@@ -56,8 +56,13 @@ class TestCommandsFilterParams(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam taxonomy --output taxonomy.tsv --precomputed"
-        subprocess.run(shlex.split(command), check=True, cwd=cls.outdir_path)
+        cmd = "vtam taxonomy --output taxonomy.tsv --precomputed"
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
         ############################################################################################
         #
@@ -65,8 +70,13 @@ class TestCommandsFilterParams(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam coi_blast_db --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db_20191211"
-        subprocess.run(shlex.split(command), check=True, cwd=cls.outdir_path)
+        cmd = "vtam coi_blast_db --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db_20191211"
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
@@ -78,7 +88,11 @@ class TestCommandsFilterParams(unittest.TestCase):
 
         cmd = "vtam filter --lfn_variant_replicate --db db.sqlite --readinfo sorted/readinfo.tsv " \
               "--readdir sorted --asvtable asvtable_default.tsv --params {params} -v".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default.tsv")
@@ -92,9 +106,14 @@ class TestCommandsFilterParams(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam taxassign --variants asvtable_default.tsv --output asvtable_default_taxa.tsv " \
+        cmd = "vtam taxassign --variants asvtable_default.tsv --output asvtable_default_taxa.tsv " \
                   "--db db.sqlite --blastdbdir coi_blast_db_dir --blastdbname coi_blast_db_20191211 --taxonomy taxonomy.tsv"
-        subprocess.run(shlex.split(command), cwd=self.outdir_path, check=True)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path, check=True)
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default_taxa.tsv")
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default_taxa.tsv")

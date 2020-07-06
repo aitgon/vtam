@@ -1,6 +1,7 @@
 import os
 import shlex
 import shutil
+import sys
 import unittest
 import yaml
 
@@ -34,7 +35,10 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
 
         args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
             .format(**self.foopaths)
-        args = ArgParser.get_main_arg_parser().parse_args(shlex.split(args_str))
+
+        if not sys.platform.startswith("win"):
+            args_str = shlex.split(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(args_str)
 
         wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(self.package_path, "tests/output/wopfile"), self.package_path)
@@ -48,7 +52,10 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
 
         args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir} --lfn_variant_replicate'\
             .format(**self.foopaths)
-        args = ArgParser.get_main_arg_parser().parse_args(shlex.split(args_str))
+
+        if not sys.platform.startswith("win"):
+            args_str = shlex.split(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(args_str)
 
         wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(self.package_path, "tests/output/wopfile"), self.package_path)

@@ -86,8 +86,13 @@ class TestAsvtableRunner(unittest.TestCase):
 
     def test_command_pool(self):
 
-        command = "vtam pool --runmarker {runmarker} --db {db} --output {asvtable_pooled_default}".format(**self.args)
-        subprocess.run(shlex.split(command), check=True)
+        cmd = "vtam pool --runmarker {runmarker} --db {db} --output {asvtable_pooled_default}".format(**self.args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True)
 
         self.assertTrue(filecmp.cmp(self.args['asvtable_pooled_default'], self.args['asvtable_pooled_default_bak'], shallow=True))
 

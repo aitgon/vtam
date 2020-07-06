@@ -70,13 +70,23 @@ class TestCommands(unittest.TestCase):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--asvtable asvtable_default.tsv -v --log vtam.log --until VariantReadCount".format(**cls.args)
-        subprocess.run(shlex.split(cmd), cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=cls.outdir_path)
 
     def test_01_filter_lfn_variant(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
@@ -85,7 +95,12 @@ class TestCommands(unittest.TestCase):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
               "--lfn_variant_replicate -v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_replicate.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
@@ -94,7 +109,12 @@ class TestCommands(unittest.TestCase):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
               "-v --log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_cutoff_specific.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
@@ -103,7 +123,12 @@ class TestCommands(unittest.TestCase):
 
         cmd = "vtam filter --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted --asvtable asvtable_default.tsv " \
               "--lfn_variant_replicate -v --log vtam.log --cutoff_specific {lfn_variant_replicate_cutoff_specific}".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default_lfn_variant_replicate_cutoff_specific.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
@@ -113,7 +138,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam optimize --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNbiosampleReplicate " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         optimize_lfn_biosample_replicate_path = os.path.join(self.outdir_path, "optimize_lfn_biosample_replicate.tsv")
         optimize_lfn_biosample_replicate_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_biosample_replicate.tsv")
@@ -124,7 +154,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam optimize --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizePCRerror " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         optimize_pcr_error_path = os.path.join(self.outdir_path, "optimize_pcr_error.tsv")
         optimize_pcr_error_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_pcr_error.tsv")
@@ -135,7 +170,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam optimize --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         optimize_lfn_read_count_variant_path = os.path.join(self.outdir_path,
                                                                 "optimize_lfn_read_count_and_lfn_variant.tsv")
@@ -152,7 +192,12 @@ class TestCommands(unittest.TestCase):
         cmd = "vtam optimize --db db.sqlite --readinfo sorted/readinfo.tsv --readdir sorted " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant --lfn_variant_replicate " \
               "-v --log vtam.log".format(**self.args)
-        subprocess.run(shlex.split(cmd), cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         optimize_lfn_read_count_variant_replicate_path = os.path.join(self.outdir_path,
                                                                 "optimize_lfn_read_count_and_lfn_variant_replicate.tsv")

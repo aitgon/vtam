@@ -65,53 +65,103 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=mfzr " \
               "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
-        subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
                   "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
-        subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
     def test_01_mfzr_filter(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_02_mfzr_optimize(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until optimize"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_03_mfzr_filter_optimized(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_optimized_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_04_zfzr_filter(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_05_zfzr_optimize(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until optimize"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_06_zfzr_filter_optimized(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_optimized_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_07_pool(self):
 
         cmd = "vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --output asper1/asvtable_pooled_mfzr_zfzr.tsv --log asper1/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_08_pool_taxa(self):
 
         cmd = "vtam taxassign --db asper1/db.sqlite --variants asper1/asvtable_pooled_mfzr_zfzr.tsv " \
               "--output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 --log asper1/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):
