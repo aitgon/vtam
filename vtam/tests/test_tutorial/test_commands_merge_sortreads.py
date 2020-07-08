@@ -25,7 +25,7 @@ class TestTutorialCommands(unittest.TestCase):
     def setUpClass(cls):
 
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
+        subprocess.run([sys.executable, '-m', 'pip', 'install', os.path.join('{}'.format(cls.package_path), '.'),
                         '--upgrade'])
 
         cls.test_path = os.path.join(PathManager.get_test_path())
@@ -48,7 +48,7 @@ class TestTutorialCommands(unittest.TestCase):
         tar.close()
 
         # Set test paths
-        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
+        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc", "data", "fastqinfo.tsv")
         cls.fastqdir_path = os.path.join(cls.outdir_path, "fastq")
         cls.fastainfo_path = os.path.join(cls.outdir_path, "fastainfo.tsv")
         cls.fastadir_path = os.path.join(cls.outdir_path, "merged")
@@ -89,13 +89,14 @@ class TestTutorialCommands(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args)
 
-        self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/fastainfo.tsv")
+        self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "fastainfo.tsv")
         self.fastadir_path_bak = os.path.join(os.path.dirname(__file__), "merge")
+
         self.assertTrue(filecmp.cmp(self.fastainfo_path, self.fastainfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) >= 11608260)
-        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) <= 11608270)
+        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) <= 11795030)
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) >= 11658700)
-        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) <= 11658710)
+        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) <= 11838710)
 
     def test_step02_sortreads(self):
 
@@ -114,7 +115,7 @@ class TestTutorialCommands(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args)
 
-        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/sortedreadinfo.tsv")
+        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sortedreadinfo.tsv")
         self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, self.sortedreadinfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5131900)
