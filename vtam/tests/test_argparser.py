@@ -19,20 +19,20 @@ class TestArgParser(unittest.TestCase):
         self.foopaths = {}
         self.foopaths['filedoesnotexist'] = "filedoesnotexist"
         self.foopaths['dirdoesnotexist'] = "dirdoesnotexist"
-        self.foopaths['fileisempty'] = os.path.join(test_path, "test_files/emptyfile")
+        self.foopaths['fileisempty'] = os.path.join(test_path, "test_files", "emptyfile")
         self.foopaths['filenottsv'] = __file__
-        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc/data/readinfo_mfzr.tsv")
-        self.foopaths['params_yml'] = os.path.join(package_path, 'doc/data/params_mfzr.yml')
-        self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file/params_wrong.yml")
-        self.foopaths['known_occurrences'] = os.path.join(package_path, 'doc/data/known_occurrences.tsv')
+        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc", "data", "readinfo_mfzr.tsv")
+        self.foopaths['params_yml'] = os.path.join(package_path, 'doc", "data", "params_mfzr.yml')
+        self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file", "params_wrong.yml")
+        self.foopaths['known_occurrences'] = os.path.join(package_path, 'doc", "data", "known_occurrences.tsv')
         self.foopaths['asvtable_tsv'] = os.path.join(
-            test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
-        self.foopaths['runmarker_tsv'] = os.path.join(package_path, 'doc/data/pool_run_marker.tsv')
+            test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default.tsv")
+        self.foopaths['runmarker_tsv'] = os.path.join(package_path, 'doc", "data", "pool_run_marker.tsv')
 
         self.foopaths['taxonomy_tsv'] = os.path.join(PathManager.get_test_path(),
-            "test_files_dryad.f40v5_small/taxonomy.tsv")
-        self.foopaths['foodir'] = os.path.relpath(
-            os.path.dirname(__file__), PathManager.get_package_path())
+            "test_files_dryad.f40v5_small", "taxonomy.tsv")
+
+        self.foopaths['foodir'] = package_path
         self.foopaths['outdir'] = outdir_path
         self.foopaths['emptydir'] = os.path.join(outdir_path, 'emptydir')
         pathlib.Path(
