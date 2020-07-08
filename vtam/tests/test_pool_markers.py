@@ -102,7 +102,7 @@ ATACCTATTATAATT
 333	3
 83683	83683"""
         cluster_df_bak = pandas.read_csv(
-            io.StringIO(cluster_str_bak), sep="\t", header=0)
+            io.StringIO(cluster_str_bak), sep="\t", header=0, dtype={'centroid_variant_id': 'int32', 'variant_id': 'int32'})
         pandas.testing.assert_frame_equal(cluster_df, cluster_df_bak)
 
         ####################################################################

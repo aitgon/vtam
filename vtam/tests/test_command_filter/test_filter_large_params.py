@@ -15,7 +15,7 @@ from urllib import request
 
 @unittest.skipIf(request.urlopen(sorted_dryad_f40v5_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
-class TestCommandsFilterParams(unittest.TestCase):
+class TestFilterLargeParams(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
