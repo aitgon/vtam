@@ -24,13 +24,14 @@ class TestTutorialCommands(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        cls.package_path = os.path.join(PathManager.get_package_path())
+
         # vtam needs to be in the tsv_path
         subprocess.run([sys.executable, '-m', 'pip', 'install', os.path.join('{}'.format(cls.package_path), '.'),
                         '--upgrade'])
 
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
-        cls.package_path = os.path.join(PathManager.get_package_path())
         shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
