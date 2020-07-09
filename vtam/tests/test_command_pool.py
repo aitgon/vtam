@@ -1,15 +1,3 @@
-import filecmp
-import os
-import shlex
-import subprocess
-import sys
-
-import pandas
-import pathlib
-import shutil
-import sqlalchemy
-import unittest
-
 from vtam.models.Biosample import Biosample
 from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.FilterCodonStop import FilterCodonStop
@@ -18,19 +6,28 @@ from vtam.models.Run import Run
 from vtam.models.SampleInformation import SampleInformation
 from vtam.models.Variant import Variant
 from vtam.utils.PathManager import PathManager
+import filecmp
+import os
+import pandas
+import pathlib
+import shlex
+import shutil
+import sqlalchemy
+import subprocess
+import sys
+import unittest
 
 
-class TestAsvtableRunner(unittest.TestCase):
+class TestCommandPool(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
     def setUp(self):
 
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
-
         self.package_path = os.path.join(PathManager.get_package_path())
+        # vtam needs to be in the tsv_path
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '.'], cwd=self.package_path)
+
         self.test_path = PathManager.get_test_path()
         self.outdir_path = os.path.join(self.test_path, 'outdir')
         # during development of the test, this prevents errors
@@ -59,7 +56,7 @@ class TestAsvtableRunner(unittest.TestCase):
         self.engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.args['db']), echo=False)
 
         sample_information_df = pandas.read_csv(sample_information_path, sep="\t", header=0)
-        sample_information_df.to_sql(name=SampleInformation.__tablename__, con=self.engine.connect())
+        sample_information_df.to_sql(name=SampleInformation.__tablename__, con=self.engine.connect(), if_exists='replace')
 
         run_df = pandas.DataFrame({'name': ['run1']}, index=range(1, 2))
         run_df.to_sql(name=Run.__tablename__, con=self.engine.connect(), index_label='id')

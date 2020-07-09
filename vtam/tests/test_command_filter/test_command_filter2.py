@@ -21,33 +21,35 @@ class TestCommandFilter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        cls.package_path = os.path.join(PathManager.get_package_path())
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '.', '--upgrade'], cwd=cls.package_path)
 
-    @classmethod
-    def setUp(self):
-
-        self.package_path = os.path.join(PathManager.get_package_path())
-        self.test_path = os.path.join(PathManager.get_test_path())
-        self.outdir_path = os.path.join(self.test_path, 'outdir')
-        # during development of the test, this prevents errors
-        shutil.rmtree(self.outdir_path, ignore_errors=True)
-        pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
-        os.environ['VTAM_LOG_VERBOSITY'] = str(10)
+        cls.package_path = os.path.join(PathManager.get_package_path())
+        cls.test_path = os.path.join(PathManager.get_test_path())
+        cls.outdir_path = os.path.join(cls.test_path, 'outdir')
+        cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)
+        pathlib.Path(cls.outdir_data_path).mkdir(parents=True, exist_ok=True)
 
         ############################################################################################
         #
-        # Download fastq test dataset
+        # Download test dataset
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(self.outdir_path, "sorted.tar.gz")
+        sorted_tar_path = os.path.join(cls.outdir_path, "sorted.tar.gz")
         if not os.path.isfile(sorted_tar_path):
             urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(sorted_tar_path, "r:gz")
-        tar.extractall(path=self.outdir_path)
+        tar.extractall(path=cls.outdir_data_path)
         tar.close()
+
+    def setUp(self):
+        self.outdir_thistest_path = os.path.join(self.outdir_path, 'thistest')
+        # during development of the test, this prevents errors
+        pathlib.Path(self.outdir_thistest_path).mkdir(parents=True, exist_ok=True)
+        os.environ['VTAM_LOG_VERBOSITY'] = str(10)
 
         ############################################################################################
         #
@@ -59,6 +61,7 @@ class TestCommandFilter(unittest.TestCase):
 
         self.args = {}
         self.args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo.tsv")
+        self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
         self.args['optimize_lfn_variant_specific'] = os.path.join(
             self.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
         self.args['optimize_lfn_variant_replicate_specific'] = os.path.join(
@@ -74,7 +77,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
@@ -92,7 +95,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
@@ -110,7 +113,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
         if sys.platform.startswith("win"):
@@ -127,7 +130,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
         if sys.platform.startswith("win"):
@@ -146,7 +149,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
               "--lfn_variant_replicate".format(**self.args)
 
@@ -164,7 +167,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
               "".format(**self.args)
 
@@ -182,7 +185,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
               "".format(**self.args)
         if sys.platform.startswith("win"):
@@ -199,7 +202,7 @@ class TestCommandFilter(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
               "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
               "--lfn_variant_replicate".format(**self.args)
 
@@ -211,7 +214,11 @@ class TestCommandFilter(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0)
 
-    @classmethod
     def tearDown(self):
 
-        shutil.rmtree(self.outdir_path, ignore_errors=True)
+        shutil.rmtree(self.outdir_thistest_path, ignore_errors=True)
+
+    @classmethod
+    def tearDownClass(cls):
+
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)

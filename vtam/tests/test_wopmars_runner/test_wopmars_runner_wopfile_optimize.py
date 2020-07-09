@@ -1,5 +1,4 @@
 import os
-import shlex
 import shutil
 import sys
 import unittest
@@ -31,17 +30,14 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
         foopaths['known_occurrences'] = os.path.join("doc", "data", "known_occurrences.tsv")
         self.foopaths = foopaths
 
-    @unittest.skipUnless(not sys.platform.startswith("win"), "Skip if Windows")
     def test_wopmars_runner_optimize(self):
 
-        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
+        cmd = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
             .format(**self.foopaths)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
-        # if not sys.platform.startswith("win"):
-        #     args_str = shlex.split(args_str)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str.split())
+        args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
@@ -50,18 +46,17 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
 
         with open(os.path.join(os.path.dirname(__file__), "wopfile_optimize.yml")) as fin:
             wopfile_content_bak = fin.read()
-        self.assertTrue(wopfile_content == wopfile_content_bak)
+        if not sys.platform.startswith("win"):
+            self.assertTrue(wopfile_content == wopfile_content_bak)
 
     def test_wopmars_runner_optimize_lfn_variant_replicate(self):
 
-        args_str = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir} --lfn_variant_replicate'\
+        cmd = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir} --lfn_variant_replicate'\
             .format(**self.foopaths)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
-        # if not sys.platform.startswith("win"):
-        #     args_str = shlex.split(args_str)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str.split())
+        args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
