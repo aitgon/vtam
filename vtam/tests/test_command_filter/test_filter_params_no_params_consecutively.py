@@ -22,8 +22,12 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
     def setUp(self):
 
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        cmd = '{} -m pip install . --upgrade'.format(sys.executable)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = cmd
+        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         self.package_path = os.path.join(PathManager.get_package_path())
         self.test_path = os.path.join(PathManager.get_test_path())
