@@ -1,6 +1,5 @@
 import os
 import pathlib
-import shlex
 import sys
 import unittest
 import yaml
@@ -41,14 +40,11 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
     def test_wopmars_runner_filter(self):
 
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
-
-        if not sys.platform.startswith("win"):
-            args_str = shlex.split(args_str)
+        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
@@ -57,20 +53,18 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), "wopfile_filter.yml")) as fin:
             wopfile_content_bak = fin.read()
 
-        self.assertTrue(wopfile_content == wopfile_content_bak.strip())
+        if not sys.platform.startswith("win"):
+            self.assertTrue(wopfile_content == wopfile_content_bak.strip())
         self.assertTrue('lfn_variant_cutoff' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
 
     def test_wopmars_runner_filter_lfn_variant_replicate(self):
 
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv --lfn_variant_replicate'.format(
+        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv --lfn_variant_replicate'.format(
             **self.foopaths)
-
-        if not sys.platform.startswith("win"):
-            args_str = shlex.split(args_str)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
@@ -81,15 +75,12 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
     def test_wopmars_runner_filter_with_cutoff_specific(self):
 
-        args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
+        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
                    ' --cutoff_specific {optimize_lfn_variant_specific}'.format(**self.foopaths)
-
-        if not sys.platform.startswith("win"):
-            args_str = shlex.split(args_str)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))

@@ -22,6 +22,9 @@ class CommandSortReads(object):
     @staticmethod
     def main(fastainfo, fastadir, outdir, params=None, num_threads=multiprocessing.cpu_count()):
 
+        if sys.platform.startswith('win'):
+            num_threads = 1
+
         ############################################################################################
         #
         # params.yml parameters
@@ -81,12 +84,14 @@ class CommandSortReads(object):
                 'tag_fwd_len': len(tag_fwd),
                 'tag_rev_rc': tag_rev_rc,
                 'tag_rev_rc_len': len(tag_rev_rc),
-                'num_threads': num_threads,
                 'in_fasta_path': in_raw_fasta_path,
-                'out_fasta': out_fasta_path}
-            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only " \
-                "--front '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
-                "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
+                'out_fasta': out_fasta_path,
+                'num_threads': num_threads,
+            }
+
+            cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
+                '--front "{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}" ' \
+                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
@@ -121,17 +126,19 @@ class CommandSortReads(object):
                 'primer_fwd_len': len(primer_fwd),
                 'primer_rev_rc': primer_rev_rc,
                 'primer_rev_rc_len': len(primer_rev_rc),
-                'num_threads': num_threads,
                 'in_fasta_path': in_fasta_path,
                 'out_fasta': out_fasta_path,
                 'error_rate': cutadapt_error_rate,
                 'read_min_length': cutadapt_minimum_length,
-                'read_max_length': cutadapt_maximum_length}
-            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} " \
-                                      "--minimum-length {read_min_length} " \
-                                      "--maximum-length {read_max_length} --trimmed-only  " \
-                                      "--front '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
-                "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
+                'read_max_length': cutadapt_maximum_length,
+                'num_threads': num_threads,
+            }
+
+            cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
+                                      '--minimum-length {read_min_length} ' \
+                                      '--maximum-length {read_max_length} --trimmed-only  ' \
+                                      '--front "{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}" '  \
+                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 
@@ -164,12 +171,14 @@ class CommandSortReads(object):
                 'tag_fwd_len': len(tag_rev),
                 'tag_rev_rc': tag_fwd_rc,
                 'tag_rev_rc_len': len(tag_fwd_rc),
-                'num_threads': num_threads,
                 'in_fasta_path': in_raw_fasta_path,
-                'out_fasta': out_rc_fasta_path}
-            cmd_cutadapt_tag_str = "cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only " \
-                "--front '{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}' " \
-                "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_tag_dic)
+                'out_fasta': out_rc_fasta_path,
+                'num_threads': num_threads,
+            }
+
+            cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
+                '--front "{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}" ' \
+                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
@@ -204,17 +213,18 @@ class CommandSortReads(object):
                 'primer_fwd_len': len(primer_rev),
                 'primer_rev_rc': primer_fwd_rc,
                 'primer_rev_rc_len': len(primer_fwd_rc),
-                'num_threads': num_threads,
                 'in_fasta_path': in_fasta_path,
                 'out_fasta': out_rc_fasta_path,
                 'error_rate': cutadapt_error_rate,
                 'read_min_length': cutadapt_minimum_length,
-                'read_max_length': cutadapt_maximum_length}
-            cmd_cutadapt_primer_str = "cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} " \
-                "--minimum-length {read_min_length} " \
-                "--maximum-length {read_max_length} --trimmed-only  " \
-                "--front '{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}' " \
-                "--output {out_fasta} {in_fasta_path}".format(**cmd_cutadapt_primer_dic)
+                'read_max_length': cutadapt_maximum_length,
+                'num_threads': num_threads,
+            }
+            cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
+                '--minimum-length {read_min_length} ' \
+                '--maximum-length {read_max_length} --trimmed-only  ' \
+                '--front "{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}" ' \
+                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 

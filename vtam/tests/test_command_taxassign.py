@@ -8,9 +8,7 @@ import sqlalchemy
 import subprocess
 import unittest
 
-from urllib import request
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import taxonomy_tsv_gz_url, coi_blast_db_gz_url
 from wopmars.Base import Base
 
 
@@ -20,8 +18,12 @@ class TestCommandTaxAssign(unittest.TestCase):
     def setUpClass(cls):
 
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        cmd = '{} -m pip install .'.format(sys.executable)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
@@ -36,8 +38,12 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        command = "vtam taxonomy --output {taxonomy} --precomputed".format(**cls.args)
-        subprocess.run(shlex.split(command), check=True)
+        cmd = "vtam taxonomy --output {taxonomy} --precomputed".format(**cls.args)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True)
 
         ############################################################################################
         #

@@ -16,6 +16,8 @@ from urllib import request
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
+@unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
+# Not working with windows because of commands in snake.tuto.data
 class TestTutorialSnakemake(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
