@@ -15,7 +15,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        package_path = PathManager.get_package_path()
+        cls.package_path = PathManager.get_package_path()
 
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
@@ -24,9 +24,9 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
             PathManager.get_package_path())
         foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
             PathManager.get_package_path())
-        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(package_path, "doc/data/readinfo_mfzr.tsv"),
+        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(cls.package_path, "doc/data/readinfo_mfzr.tsv"),
             PathManager.get_package_path())
-        foopaths['optimize_lfn_variant_specific'] = os.path.relpath(os.path.join(package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"),
+        foopaths['optimize_lfn_variant_specific'] = os.path.relpath(os.path.join(cls.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"),
             PathManager.get_package_path())
         cls.foopaths = foopaths
 
@@ -46,7 +46,10 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         if not sys.platform.startswith("win"):
             args_str = shlex.split(args_str)
 
+        cwd = os.getcwd()
+        os.chdir(self.package_path)
         args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
@@ -64,7 +67,11 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
         if not sys.platform.startswith("win"):
             args_str = shlex.split(args_str)
+
+        cwd = os.getcwd()
+        os.chdir(self.package_path)
         args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
@@ -76,7 +83,14 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
         args_str = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
                    ' --cutoff_specific {optimize_lfn_variant_specific}'.format(**self.foopaths)
-        args = ArgParser.get_main_arg_parser().parse_args(args_str.split())
+
+        if not sys.platform.startswith("win"):
+            args_str = shlex.split(args_str)
+
+        cwd = os.getcwd()
+        os.chdir(self.package_path)
+        args = ArgParser.get_main_arg_parser().parse_args(args_str)
+        os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"), PathManager.get_package_path())
