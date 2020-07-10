@@ -26,7 +26,7 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
         if sys.platform.startswith("win"):
             args = cmd
         else:
-            args = cmd
+            args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         self.package_path = os.path.join(PathManager.get_package_path())
