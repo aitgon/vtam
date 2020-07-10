@@ -30,7 +30,6 @@ class TestCommandPool(unittest.TestCase):
 
         self.test_path = PathManager.get_test_path()
         self.outdir_path = os.path.join(self.test_path, 'outdir')
-        # during development of the test, this prevents errors
         shutil.rmtree(self.outdir_path, ignore_errors=True)
         pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
 
@@ -59,24 +58,24 @@ class TestCommandPool(unittest.TestCase):
         sample_information_df.to_sql(name=SampleInformation.__tablename__, con=self.engine.connect(), if_exists='replace')
 
         run_df = pandas.DataFrame({'name': ['run1']}, index=range(1, 2))
-        run_df.to_sql(name=Run.__tablename__, con=self.engine.connect(), index_label='id')
+        run_df.to_sql(name=Run.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
         marker_df = pandas.DataFrame({'name': ['MFZR', 'ZFZR']}, index=range(1, 3))
-        marker_df.to_sql(name=Marker.__tablename__, con=self.engine.connect(), index_label='id')
+        marker_df.to_sql(name=Marker.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
         biosample_df = pandas.DataFrame({'name': ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']}, index=range(1, 5))
-        biosample_df.to_sql(name=Biosample.__tablename__, con=self.engine.connect(), index_label='id')
+        biosample_df.to_sql(name=Biosample.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
         variant_df = pandas.read_csv(variant_path, sep="\t", header=0, index_col='id')
-        variant_df.to_sql(name=Variant.__tablename__, con=self.engine.connect(), index_label='id')
+        variant_df.to_sql(name=Variant.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
         filter_codon_stop_df = pandas.read_csv(filter_codon_stop_path, sep="\t", header=0)
-        filter_codon_stop_df.to_sql(name=FilterCodonStop.__tablename__, con=self.engine.connect())
+        filter_codon_stop_df.to_sql(name=FilterCodonStop.__tablename__, con=self.engine.connect(), if_exists='replace')
 
         filter_chimera_borderline_path = os.path.join(
             self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/filter_chimera_borderline_and_filter_codon_stop.tsv")
         filter_chimera_borderline_db = pandas.read_csv(filter_chimera_borderline_path, sep="\t", header=0)
-        filter_chimera_borderline_db.to_sql(name=FilterChimeraBorderline.__tablename__, con=self.engine.connect())
+        filter_chimera_borderline_db.to_sql(name=FilterChimeraBorderline.__tablename__, con=self.engine.connect(), if_exists='replace')
 
         self.biosample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
 
