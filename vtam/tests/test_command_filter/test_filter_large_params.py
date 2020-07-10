@@ -27,14 +27,13 @@ class TestFilterLargeParams(unittest.TestCase):
         if sys.platform.startswith("win"):
             args = cmd
         else:
-            args = cmd
+            args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
-        # during development of the test, this prevents errors
-        # shutil.rmtree(cls.outdir_path, ignore_errors=True)
+        shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
         os.environ['VTAM_LOG_VERBOSITY'] = str(10)
 
@@ -82,8 +81,6 @@ class TestFilterLargeParams(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
-    def test_01_filter(self):
-
         ############################################################################################
         #
         # Command Filter
@@ -91,12 +88,14 @@ class TestFilterLargeParams(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --lfn_variant_replicate --db db.sqlite --readinfo sorted/readinfo.tsv " \
-              "--readdir sorted --asvtable asvtable_default.tsv --params {params} -v".format(**self.args)
+              "--readdir sorted --asvtable asvtable_default.tsv --params {params} -vv".format(**cls.args)
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
+        subprocess.run(args=args, shell=True, cwd=cls.outdir_path)
+
+    def test_01_filter(self):
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default.tsv")

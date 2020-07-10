@@ -39,7 +39,7 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
 
         ############################################################################################
         #
-        # Download fastq test dataset
+        # Download sorted fasta test dataset
         #
         ############################################################################################
 
