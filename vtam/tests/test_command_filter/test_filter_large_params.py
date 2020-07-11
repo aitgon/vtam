@@ -88,12 +88,12 @@ class TestFilterLargeParams(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --lfn_variant_replicate --db db.sqlite --readinfo sorted/readinfo.tsv " \
-              "--readdir sorted --asvtable asvtable_default.tsv --params {params} -vv".format(**cls.args)
+              "--readdir sorted --asvtable asvtable_default.tsv --params {params}".format(**cls.args)
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, shell=True, cwd=cls.outdir_path)
+        subprocess.run(args=args, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
@@ -116,7 +116,7 @@ class TestFilterLargeParams(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path, check=True)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         asvtable_path = os.path.join(self.outdir_path, "asvtable_default_taxa.tsv")
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5/asvtable_default_taxa.tsv")
