@@ -16,6 +16,8 @@ from urllib import request
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
+@unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
+# Not working with windows because of commands in snake.tuto.data
 class TestTutorialSnakemake(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -23,9 +25,12 @@ class TestTutorialSnakemake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
@@ -66,17 +71,33 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config " \
                   "PROJECT=asper2 PACKAGE_PATH={package_path} --until all_two_markers".format(**cls.args)
-        subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper2/user_input/snakeconfig.yml --until asvtable_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        pass
 
     def test_02_optimize(self):
 
         cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper2/user_input/snakeconfig.yml --until optimize"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
         optimize_pcr_error = os.path.join(self.outdir_path, "asper2/run1/optimize_pcr_error.tsv")
         optimize_pcr_error_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_pcr_error.tsv")
@@ -85,40 +106,70 @@ class TestTutorialSnakemake(unittest.TestCase):
     def test_03_mfzr_filter_optimized(self):
 
         cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_mfzr.tsv --readdir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_03_mfzr_taxassign_optimized(self):
 
         cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_mfzr.tsv " \
               "--output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 -v --log asper2/vtam.log"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_04_zfzr_filter_optimized(self):
 
         cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv " \
               "--readdir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml " \
               "--asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_05_zfzr_taxassign_optimized(self):
 
         cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_zfzr.tsv " \
               "--output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 -v --log asper2/vtam.log"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_07_pool(self):
 
         cmd = "vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --output asper2/asvtable_pooled_mfzr_zfzr.tsv --log asper2/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_08_pool_taxa(self):
 
         cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/asvtable_pooled_mfzr_zfzr.tsv " \
               "--output asper2/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 --log asper2/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):

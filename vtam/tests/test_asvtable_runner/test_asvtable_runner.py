@@ -67,5 +67,4 @@ class TestAsvtableRunner(unittest.TestCase):
 
     def tearDown(self):
 
-        # subprocess.run([sys.executable, '-m', 'pip', 'uninstall', 'vtam', '-y'])
         shutil.rmtree(self.outdir_path, ignore_errors=True)
