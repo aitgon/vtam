@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.1.13 (Jul 12, 2020)
+--------------------------------------------------
+
+- BUG fixed read fasta from sorted reads
+- ENH partially windows compatible
+
 CHANGES IN VERSION 0.1.12 (Jul 3, 2020)
 --------------------------------------------------
 
