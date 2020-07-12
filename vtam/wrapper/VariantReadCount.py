@@ -1,14 +1,16 @@
-import inspect
-import os
-
-import pandas
-import sqlalchemy
+from Bio import SeqIO
+from Bio.Alphabet import generic_dna
 from sqlalchemy import select, bindparam, func
-from wopmars.models.ToolWrapper import ToolWrapper
-
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from wopmars.models.ToolWrapper import ToolWrapper
+import inspect
+import os
+import pandas
+import sqlalchemy
+import sys
 
 
 class VariantReadCount(ToolWrapper):
@@ -194,10 +196,16 @@ class VariantReadCount(ToolWrapper):
             read_fasta_path = os.path.join(read_dir, read_fasta)
 
             if os.path.exists(read_fasta_path):
-                with open(read_fasta_path, "r") as fin:
-                    sorted_read_list = [
-                        x.upper() for x in fin.read().split("\n") if (
-                            not x.startswith('>') and x != '')]
+
+                ####################################################################################
+                #
+                # Read FASTA
+                #
+                ####################################################################################
+
+                sorted_read_list = [str(seq_record.seq).upper() for seq_record in
+                                    SeqIO.parse(read_fasta_path, format="fasta", alphabet=generic_dna)]
+
                 variant_read_count_df_sorted_i = pandas.DataFrame(
                     {
                         'run_id': [run_id] *
@@ -246,11 +254,11 @@ class VariantReadCount(ToolWrapper):
         #
         #######################################################################
 
-        variant_read_count_lfn = VariantReadCountLikeDF(variant_read_count_df)
+        variant_read_count_like_df_obj = VariantReadCountLikeDF(variant_read_count_df)
         Logger.instance().debug(
-            "file: {}; line: {}; Remove singletons".format(
+            "file: {}; line: {}; Remove variants with global read count lower than parameter 'global_read_count_cutoff'".format(
                 __file__, inspect.currentframe().f_lineno))
-        variant_read_count_df = variant_read_count_lfn.filter_out_below_global_read_count_cutoff(
+        variant_read_count_df = variant_read_count_like_df_obj.filter_out_below_global_read_count_cutoff(
             global_read_count_cutoff=global_read_count_cutoff)
         variant_read_count_df.rename(
             columns={
@@ -263,8 +271,7 @@ class VariantReadCount(ToolWrapper):
         #
         #######################################################################
 
-        Logger.instance().debug(
-            "file: {}; line: {}; Insert variants".format(
+        Logger.instance().debug("file: {}; line: {}; Insert variants".format(
                 __file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
         variant_read_count_df.sort_values(
@@ -303,6 +310,19 @@ class VariantReadCount(ToolWrapper):
                         'biosample_id': biosample_id,
                         'replicate': replicate,
                         'read_count': read_count})
+
+        #######################################################################
+        #
+        # Exit if variant_read_count_instance_list empty
+        #
+        #######################################################################
+
+        if not len(variant_read_count_instance_list):
+            Logger.instance().warning(
+                VTAMexception(
+                    "No new variants in these samples. Maybe singletons? The analysis will stop here.".format(
+                        self.__class__.__name__)))
+            sys.exit(0)
 
         #######################################################################
         #

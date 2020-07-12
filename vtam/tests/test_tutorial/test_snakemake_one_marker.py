@@ -11,7 +11,7 @@ import urllib
 from vtam.utils.constants import fastq_tar_gz_url
 from vtam.utils.PathManager import PathManager
 from urllib import request
-
+from vtam.utils import pip_install_vtam_for_tests
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
@@ -24,12 +24,15 @@ class TestTutorialSnakemake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        ########################################################################
+        #
+        # These tests need the vtam command in the path
+        #
+        ########################################################################
+
+        pip_install_vtam_for_tests()
+
         cls.package_path = PathManager.get_package_path()
-
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', os.path.join('{}'.format(cls.package_path), '.'),
-                        '--upgrade'])
-
         cls.test_path = PathManager.get_test_path()
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
