@@ -11,10 +11,12 @@ import urllib
 from vtam.utils.constants import fastq_tar_gz_url
 from vtam.utils.PathManager import PathManager
 from urllib import request
-
+from vtam.utils import pip_install_vtam_for_tests
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
+@unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
+# Not working with windows because of commands in snake.tuto.data
 class TestTutorialSnakemake(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -22,9 +24,13 @@ class TestTutorialSnakemake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        ########################################################################
+        #
+        # These tests need the vtam command in the path
+        #
+        ########################################################################
+
+        pip_install_vtam_for_tests()
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
@@ -32,7 +38,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
-        cls.snakefile_tuto_data = os.path.join(cls.package_path, "tools/snake.tuto.data.yml")
+        cls.snakefile_tuto_data = os.path.join(cls.package_path, "tools", "snake.tuto.data.yml")
 
         ############################################################################################
         #
@@ -65,53 +71,121 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=mfzr " \
               "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
-        subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
                   "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
-        subprocess.run(shlex.split(cmd), check=True, cwd=cls.outdir_path)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
     def test_01_mfzr_filter(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_taxa".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_02_mfzr_optimize(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until optimize"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_03_mfzr_filter_optimized(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_optimized_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_optimized_taxa".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_04_zfzr_filter(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_taxa".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_05_zfzr_optimize(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until optimize"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_06_zfzr_filter_optimized(self):
 
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_optimized_taxa"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_optimized_taxa".format(snakeconfig)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_07_pool(self):
 
-        cmd = "vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --output asper1/asvtable_pooled_mfzr_zfzr.tsv --log asper1/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        db = os.path.join("asper1", "db.sqlite")
+        runmarker = os.path.join("asper1", "user_input", "pool_run_marker.tsv")
+        output = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
+        log = os.path.join("asper1", "vtam.log")
+        args = {'db': db, 'runmarker': runmarker, 'output': output, 'log': log}
+        cmd = "vtam pool --db asper1/db.sqlite --runmarker {runmarker} --output {output} --log {log} -v".format(**args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     def test_08_pool_taxa(self):
 
-        cmd = "vtam taxassign --db asper1/db.sqlite --variants asper1/asvtable_pooled_mfzr_zfzr.tsv " \
-              "--output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
-              "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211 --log asper1/vtam.log -v"
-        subprocess.run(shlex.split(cmd), check=True, cwd=self.outdir_path)
+        db = os.path.join("asper1", "db.sqlite")
+        variants = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
+        output = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr_taxa.tsv")
+        taxonomy = os.path.join("vtam_db", "taxonomy.tsv")
+        blastdbdir = os.path.join("vtam_db", "coi_blast_db")
+        log = os.path.join("asper1", "vtam.log")
+        args = {'db': db, 'variants': variants, 'output': output, 'taxonomy': taxonomy, 'blastdbdir': blastdbdir, 'log': log}
+        cmd = "vtam taxassign --db {db} --variants {variants} " \
+              "--output {output} --taxonomy {taxonomy} " \
+              "--blastdbdir {blastdbdir} --blastdbname coi_blast_db_20191211 --log {log} -v".format(**args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):

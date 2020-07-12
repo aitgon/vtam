@@ -122,7 +122,7 @@ class ArgParserChecker(object):
             return path
         else:
             raise argparse.ArgumentTypeError(
-                "The format of file '{}' is wrong. Please fix it.".format(path))
+                "The --variants TSV file must contain a column with a 'sequence' header: '{}'.".format(path))
 
 
 class ArgParser:

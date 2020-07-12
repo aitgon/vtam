@@ -32,7 +32,7 @@ class CommandBlastCOI(object):
         self.tempdir = PathManager.instance().get_tempdir()
         pathlib.Path(os.path.join(self.tempdir)).mkdir(exist_ok=True, parents=True)
 
-        self.coi_blast_db_gz_url = os.path.join(os.path.dirname(coi_blast_db_gz_url), '{}.tar.gz'.format(self.blastdbname))
+        self.coi_blast_db_gz_url = os.path.dirname(coi_blast_db_gz_url) + '/{}.tar.gz'.format(self.blastdbname)
         self.coi_blast_db_gz_path = os.path.join(self.tempdir, '{}.tar.gz'.format(self.blastdbname))
 
     def argparse_checker_blast_coi_blastdbname(self):
