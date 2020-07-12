@@ -58,9 +58,12 @@ class CommandMerge(object):
                 fastqinfo_df.fastqrev == fastqrev)]
 
             fastq_fw_abspath = os.path.join(fastqdir, fastqfwd)
-            fastq_fw_linecount = int(sum(1 for i in open(fastq_fw_abspath, 'rb'))/4)
+            with open(fastq_fw_abspath, 'rb') as fin:
+                fastq_fw_linecount = int(sum(1 for i in fin.read())/4)
+
             fastq_rv_abspath = os.path.join(fastqdir, fastqrev)
-            fastq_rv_linecount = int(sum(1 for i in open(fastq_rv_abspath, 'rb'))/4)
+            with open(fastq_rv_abspath, 'rb') as fin:
+                fastq_rv_linecount = int(sum(1 for i in fin.read())/4)
 
             Logger.instance().debug(
                 "Analysing FASTQ files: {} and ".format(
@@ -116,7 +119,8 @@ class CommandMerge(object):
             fastainfo_df = pandas.concat(
                 [fastainfo_df, fastq_info_df_i], axis=0)
 
-            fasta_merged_linecount = int(sum(1 for i in open(out_fasta_path, 'rb')) / 4)
+            with open(out_fasta_path, 'rb') as fin:
+                fasta_merged_linecount = int(sum(1 for i in fin.read()) / 4)
 
             ########################################################################################
             #

@@ -1,12 +1,10 @@
-import sys
-
 from vtam.utils.FilterCodonStopRunner import FilterCodonStopRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
 from vtam.utils.Logger import Logger
+from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 from wopmars.models.ToolWrapper import ToolWrapper
+import sys
 
 
 class FilterCodonStop(ToolWrapper):
