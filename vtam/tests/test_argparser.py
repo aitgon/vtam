@@ -14,25 +14,26 @@ class TestArgParser(unittest.TestCase):
 
         package_path = PathManager.get_package_path()
         test_path = PathManager.get_test_path()
+        self.test_path = test_path
         outdir_path = os.path.join(test_path, "outdir")
 
         self.foopaths = {}
         self.foopaths['filedoesnotexist'] = "filedoesnotexist"
         self.foopaths['dirdoesnotexist'] = "dirdoesnotexist"
-        self.foopaths['fileisempty'] = os.path.join(test_path, "test_files/emptyfile")
+        self.foopaths['fileisempty'] = os.path.join(test_path, "test_files", "emptyfile")
         self.foopaths['filenottsv'] = __file__
-        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc/data/readinfo_mfzr.tsv")
-        self.foopaths['params_yml'] = os.path.join(package_path, 'doc/data/params_mfzr.yml')
-        self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file/params_wrong.yml")
-        self.foopaths['known_occurrences'] = os.path.join(package_path, 'doc/data/known_occurrences.tsv')
+        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc", "data", "readinfo_mfzr.tsv")
+        self.foopaths['params_yml'] = os.path.join(package_path, "doc", "data", "params_mfzr.yml")
+        self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file", "params_wrong.yml")
+        self.foopaths['known_occurrences'] = os.path.join(package_path, "doc", "data", "known_occurrences.tsv")
         self.foopaths['asvtable_tsv'] = os.path.join(
-            test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_default.tsv")
-        self.foopaths['runmarker_tsv'] = os.path.join(package_path, 'doc/data/pool_run_marker.tsv')
+            test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default.tsv")
+        self.foopaths['runmarker_tsv'] = os.path.join(package_path, "doc", "data", "pool_run_marker.tsv")
 
         self.foopaths['taxonomy_tsv'] = os.path.join(PathManager.get_test_path(),
-            "test_files_dryad.f40v5_small/taxonomy.tsv")
-        self.foopaths['foodir'] = os.path.relpath(
-            os.path.dirname(__file__), PathManager.get_package_path())
+            "test_files_dryad.f40v5_small", "taxonomy.tsv")
+
+        self.foopaths['foodir'] = package_path
         self.foopaths['outdir'] = outdir_path
         self.foopaths['emptydir'] = os.path.join(outdir_path, 'emptydir')
         pathlib.Path(
@@ -138,6 +139,22 @@ class TestArgParser(unittest.TestCase):
         args = ["taxassign"]
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
+
+    def test_arg_parser_taxassign_wrong_header_sequences(self):
+
+        #######################################################################
+        #
+        # Wrong
+        #
+        #######################################################################
+
+        self.foopaths['asvtable_tsv_wrong_header_sequences'] =  os.path.join(
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_wrong_header_sequence.tsv")
+        args = "taxassign --variants {asvtable_tsv_wrong_header_sequences} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
+               "--taxonomy  {taxonomy_tsv}".format(**self.foopaths).split()
+
+        with self.assertRaises(SystemExit):
+            self.assertTrue(self.parser.parse_args(args), 0)
 
     def test_arg_parser_pool_runmarker(self):
 

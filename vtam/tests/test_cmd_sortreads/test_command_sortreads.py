@@ -1,12 +1,9 @@
-
-import shutil
 from unittest import TestCase
-
 from vtam import CommandSortReads
 from vtam.utils.PathManager import PathManager
-
-import os
 import filecmp
+import os
+import shutil
 
 
 class TestCommandSortReads(TestCase):
