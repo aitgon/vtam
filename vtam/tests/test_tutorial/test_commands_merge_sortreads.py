@@ -1,18 +1,16 @@
-# -*- coding: utf-8 -*-
-import shlex
-import sys
+from urllib import request
+from vtam.utils.PathManager import PathManager
+from vtam.utils.constants import fastq_tar_gz_url
 import filecmp
 import os
 import pathlib
+import shlex
 import shutil
 import subprocess
+import sys
 import tarfile
-import urllib
 import unittest
-
-from vtam.utils.constants import fastq_tar_gz_url
-from vtam.utils.PathManager import PathManager
-from urllib import request
+import urllib
 
 
 @unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
@@ -24,13 +22,14 @@ class TestTutorialCommands(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        cls.package_path = os.path.join(PathManager.get_package_path())
+
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
+        subprocess.run([sys.executable, '-m', 'pip', 'install', os.path.join('{}'.format(cls.package_path), '.'),
                         '--upgrade'])
 
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
-        cls.package_path = os.path.join(PathManager.get_package_path())
         shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
@@ -48,7 +47,7 @@ class TestTutorialCommands(unittest.TestCase):
         tar.close()
 
         # Set test paths
-        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc/data/fastqinfo.tsv")
+        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc", "data", "fastqinfo.tsv")
         cls.fastqdir_path = os.path.join(cls.outdir_path, "fastq")
         cls.fastainfo_path = os.path.join(cls.outdir_path, "fastainfo.tsv")
         cls.fastadir_path = os.path.join(cls.outdir_path, "merged")
@@ -72,25 +71,31 @@ class TestTutorialCommands(unittest.TestCase):
         cls.args['asvtable'] = cls.asvtable_path
         cls.args['log'] = cls.log_path
 
-    def test_step01_merge(self):
-
         ################################################################################################################
         #
         # Command Merge
         #
         ################################################################################################################
 
-        cmd_merge = "vtam merge --fastqinfo {fastqinfo} --fastqdir {fastqdir} --fastainfo {fastainfo} --fastadir {fastadir} " \
-              "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd_merge))
+        cmd = "vtam merge --fastqinfo {fastqinfo} --fastqdir {fastqdir} --fastainfo {fastainfo} --fastadir {fastadir} " \
+              "-v --log {log}".format(**cls.args)
 
-        self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/fastainfo.tsv")
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args)
+
+    def test_step01_merge(self):
+
+        self.fastainfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "fastainfo.tsv")
         self.fastadir_path_bak = os.path.join(os.path.dirname(__file__), "merge")
+
         self.assertTrue(filecmp.cmp(self.fastainfo_path, self.fastainfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) >= 11608260)
-        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) <= 11608270)
+        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'mfzr_1_fw.fasta')) <= 11795030)
         self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) >= 11658700)
-        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) <= 11658710)
+        self.assertTrue(os.path.getsize(os.path.join(self.fastadir_path, 'zfzr_3_fw.fasta')) <= 11838710)
 
     def test_step02_sortreads(self):
 
@@ -102,17 +107,21 @@ class TestTutorialCommands(unittest.TestCase):
 
         cmd = "vtam sortreads --fastainfo {fastainfo} --fastadir {fastadir} --outdir {sorted} " \
               "-v --log {log}".format(**self.args)
-        subprocess.run(shlex.split(cmd))
 
-        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/sortedreadinfo.tsv")
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args)
+
+        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sortedreadinfo.tsv")
         self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, self.sortedreadinfo_path_bak, shallow=True))
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5131900)
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) >= 909500)  # 909507
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) <= 909510)
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5155360)
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) >= 909500)  # 909507 linux, 913883 windows
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) <= 913890)
 
     @classmethod
     def tearDownClass(cls):
 
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
-
