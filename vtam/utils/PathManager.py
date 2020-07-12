@@ -46,7 +46,7 @@ class PathManager(Singleton):
         :return: the output leading to the precomputed output
         """
 
-        package_path = os.path.join(os.path.dirname(__file__), "../..")
+        package_path = os.path.join(os.path.dirname(__file__), "..", "..")
         return package_path
 
     @staticmethod
@@ -57,5 +57,5 @@ class PathManager(Singleton):
         :return: the output leading to the tests output of the project
         """
 
-        test_dir_path = os.path.join(os.path.dirname(__file__), "../tests")
+        test_dir_path = os.path.join(os.path.dirname(__file__), "..", "tests")
         return test_dir_path
