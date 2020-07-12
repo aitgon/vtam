@@ -15,14 +15,14 @@ from urllib import request
 
 @unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
-class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
+class TestFilterMinReplicateNumber(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
     def setUp(self):
 
         # vtam needs to be in the tsv_path
-        cmd = '{} -m pip install . --upgrade'.format(sys.executable)
+        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
         if sys.platform.startswith("win"):
             args = cmd
         else:
@@ -86,7 +86,7 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur_result = cur.execute('SELECT COUNT(*) from FilterMinReplicateNumber where filter_delete=0').fetchone()
-        self.assertTrue(cur_result[0] > 0)
+        self.assertGreater(cur_result[0], 0)
         con.close()
 
         ############################################################################################
@@ -108,7 +108,7 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur_result = cur.execute('SELECT COUNT(*) from FilterMinReplicateNumber where filter_delete=0').fetchone()
-        self.assertFalse(cur_result[0] > 0)
+        self.assertEqual(cur_result[0], 0)
         con.close()
 
         ############################################################################################
@@ -130,7 +130,7 @@ class TestFilterParamsNoParamsConsecutively(unittest.TestCase):
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         cur_result = cur.execute('SELECT COUNT(*) from FilterMinReplicateNumber where filter_delete=0').fetchone()
-        self.assertTrue(cur_result[0] > 0)
+        self.assertGreater(cur_result[0], 0)
         con.close()
 
     def tearDown(self):
