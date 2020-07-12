@@ -8,23 +8,29 @@ import tarfile
 import unittest
 import urllib
 
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import sorted_tar_gz_url
 from urllib import request
 
 @unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
                  "This test requires an internet connection!")
-class TestCommandFilter(unittest.TestCase):
+class TestCmdVariantReadCount(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
     @classmethod
     def setUpClass(cls):
 
-        cls.package_path = os.path.join(PathManager.get_package_path())
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '.', '--upgrade'], cwd=cls.package_path)
+        ########################################################################
+        #
+        # These tests need the vtam command in the path
+        #
+        ########################################################################
 
+        pip_install_vtam_for_tests()
+
+        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
@@ -53,7 +59,7 @@ class TestCommandFilter(unittest.TestCase):
 
         ############################################################################################
         #
-        # Paths
+        # Fails
         #
         ############################################################################################
 
@@ -69,11 +75,11 @@ class TestCommandFilter(unittest.TestCase):
         self.args['params_lfn_variant'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
         self.args['params_lfn_variant_replicate'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant_replicate.yml")
 
-    def test_filter_lfn_variant_replicate_cutoff_specific_fail1(self):
+    def test_lfn_variant_replicate_cutoff_specific_fail1(self):
 
         ############################################################################################
         #
-        # Wrong
+        # Fails
         #
         ############################################################################################
 
@@ -89,7 +95,7 @@ class TestCommandFilter(unittest.TestCase):
 
         self.assertEqual(result.returncode, 1)
 
-    def test_filter_lfn_variant_replicate_cutoff_specific_fail2(self):
+    def test_lfn_variant_replicate_cutoff_specific_fail2(self):
 
         ############################################################################################
         #
@@ -109,11 +115,11 @@ class TestCommandFilter(unittest.TestCase):
 
         self.assertEqual(result.returncode, 1)
 
-    def test_filter_lfn_variant_replicate_cutoff_specific_right1(self):
+    def test_lfn_variant_replicate_cutoff_specific_succeeds1(self):
 
         ############################################################################################
         #
-        # Right
+        # Succeeds
         #
         ############################################################################################
 
@@ -129,11 +135,11 @@ class TestCommandFilter(unittest.TestCase):
         result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
         self.assertEqual(result.returncode, 0)
 
-    def test_filter_lfn_variant_replicate_cutoff_specific_right2(self):
+    def test_lfn_variant_replicate_cutoff_specific_succeeds2(self):
 
         ############################################################################################
         #
-        # Right
+        # Succeeds
         #
         ############################################################################################
 
@@ -150,82 +156,17 @@ class TestCommandFilter(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0)
 
-    def test_filter_params_lfn_variant_replicate_wrong1(self):
-
-        ############################################################################################
-        #
-        # Wrong
-        #
-        ############################################################################################
+    def test_read_fasta(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
-              "--lfn_variant_replicate".format(**self.args)
+              "--asvtable asvtable_default.tsv --until VariantReadCount " \
+              "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
 
-        self.assertEqual(result.returncode, 1)
-
-    def test_filter_params_lfn_variant_replicate_wrong2(self):
-
-        ############################################################################################
-        #
-        # Wrong
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
-              "".format(**self.args)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
-
-        self.assertEqual(result.returncode, 1)
-
-    def test_filter_params_lfn_variant_replicate_right1(self):
-
-        ############################################################################################
-        #
-        # Right
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant} --until FilterLFN " \
-              "".format(**self.args)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
-
-        self.assertEqual(result.returncode, 0)
-
-    def test_filter_params_lfn_variant_replicate_right2(self):
-
-        ############################################################################################
-        #
-        # Right
-        #
-        ############################################################################################
-
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
-              "--asvtable asvtable_default.tsv --params {params_lfn_variant_replicate} --until FilterLFN " \
-              "--lfn_variant_replicate".format(**self.args)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
         result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
 
         self.assertEqual(result.returncode, 0)

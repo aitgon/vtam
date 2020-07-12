@@ -22,10 +22,9 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cls.package_path = os.path.join(PathManager.get_package_path())
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '.', '--upgrade'], cwd=cls.package_path)
 
+
+        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
@@ -73,7 +72,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     def test_01_filter_lfn_variant(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
-              "-v --log vtam.log".format(**self.args)
+              "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -87,7 +86,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     def test_02_filter_lfn_variant_replicate(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
-              "--lfn_variant_replicate -v --log vtam.log".format(**self.args)
+              "--lfn_variant_replicate --log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -101,7 +100,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     def test_03_filter_lfn_variant_cutoff_specific(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
-              "-v --log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
+              "--log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -115,7 +114,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     def test_04_filter_lfn_variant_replicate_cutoff_specific(self):
 
         cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
-              "--lfn_variant_replicate -v --log vtam.log --cutoff_specific {lfn_variant_replicate_cutoff_specific}".format(**self.args)
+              "--lfn_variant_replicate --log vtam.log --cutoff_specific {lfn_variant_replicate_cutoff_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -130,7 +129,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
         cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNbiosampleReplicate " \
-              "-v --log vtam.log".format(**self.args)
+              "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -146,7 +145,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
         cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizePCRerror " \
-              "-v --log vtam.log".format(**self.args)
+              "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -162,7 +161,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
         cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant " \
-              "-v --log vtam.log".format(**self.args)
+              "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -184,7 +183,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
         cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant --lfn_variant_replicate " \
-              "-v --log vtam.log".format(**self.args)
+              "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd

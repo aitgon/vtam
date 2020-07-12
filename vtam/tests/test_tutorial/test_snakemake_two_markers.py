@@ -25,9 +25,12 @@ class TestTutorialSnakemake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '{}/.'.format(PathManager.get_package_path()),
-                        '--upgrade'])
+        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
@@ -84,6 +87,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         else:
             args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        pass
 
     def test_02_optimize(self):
 
