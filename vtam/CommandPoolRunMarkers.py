@@ -120,6 +120,8 @@ class CommandPoolRunMarkers(object):
 
     def get_pooled_marker_df(self):
 
+        """Prepares output df"""
+
         if self.cluster_df is None:
             self.get_vsearch_clusters_to_df()
 
@@ -142,13 +144,27 @@ class CommandPoolRunMarkers(object):
             return int(sum(x) > 0)
 
         agg_dic = {}
-        for k in ['variant_id', 'run_name', 'marker_name']:
+        for k in ['variant_id', 'run_name', 'marker_name', 'sequence_other']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
         for k in self.biosample_names:
             agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
                                                'centroid_variant_id', 'variant_id', 'run_name',
                                                'marker_name'] + self.biosample_names]
+
+        ############################################################################################
+        #
+        # issue 0002645. Add sequences of cluster members with the exception of the centroid variant
+        # Annotate all variants with their sequences
+        #
+        ############################################################################################
+
+        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='variant_id',
+                               right_on='variant_id')
+        pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'sequence_other'})
+        # pooled_marker_df.loc[
+        #     pooled_marker_df.centroid_variant_id == pooled_marker_df.variant_id, 'sequence_other'] = ''
+
         pooled_marker_df = pooled_marker_df.groupby(
             'centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(
@@ -162,12 +178,20 @@ class CommandPoolRunMarkers(object):
         pooled_marker_df.rename(
             {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'centroid_variant',
              'variant_id': 'variants'}, axis=1, inplace=True)
+
+        # Move sequence_other to end
+        sequence_other_list = pooled_marker_df.sequence_other.tolist()
+        pooled_marker_df.drop('sequence_other', axis=1, inplace=True)
+        pooled_marker_df['sequence_other'] = sequence_other_list
+        # Move sequence_centroid to end
+        sequence_other_list = pooled_marker_df.sequence_other.tolist()
+        pooled_marker_df.drop('sequence', axis=1, inplace=True)
+        pooled_marker_df['sequence'] = sequence_other_list
+
         return pooled_marker_df
 
     @classmethod
     def main(cls, db, pooled_marker_tsv, run_marker_tsv):
-
-        # import pdb; pdb.set_trace()
 
         run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv)
 
