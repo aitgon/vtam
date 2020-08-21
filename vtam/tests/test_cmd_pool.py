@@ -26,7 +26,7 @@ class TestCommandPool(unittest.TestCase):
 
         self.package_path = os.path.join(PathManager.get_package_path())
         # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '.'], cwd=self.package_path)
+        subprocess.run([sys.executable, '-m', 'pip', 'install', '-e', '.'], cwd=self.package_path)
 
         self.test_path = PathManager.get_test_path()
         self.outdir_path = os.path.join(self.test_path, 'outdir')
