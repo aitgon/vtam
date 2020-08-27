@@ -2,6 +2,7 @@ import gzip
 import pathlib
 import shutil
 
+from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 
@@ -49,7 +50,7 @@ class CommandTaxonomy(object):
             "file: {}; line: {}; Downloading NCBI taxonomy dump".format(
                 __file__, inspect.currentframe().f_lineno))
         if not os.path.isfile(new_taxdump_path):
-            urllib.request.urlretrieve(remotefile, new_taxdump_path)
+            urllib.request.urlretrieve(remotefile, new_taxdump_path, MyProgressBar())
         return new_taxdump_path
 
     def create_denovo_from_ncbi(self):
@@ -134,7 +135,7 @@ class CommandTaxonomy(object):
 
         if not os.path.isfile(self.taxonomy_tsv_path):
             urllib.request.urlretrieve(
-                taxonomy_tsv_gz_url, taxonomy_tsv_gz_path)
+                taxonomy_tsv_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
 
             with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
                 with open(self.taxonomy_tsv_path, 'wb') as fout:
