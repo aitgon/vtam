@@ -136,15 +136,12 @@ class CommandPoolRunMarkers(object):
                                           self.cluster_df.variant_id, ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
 
-        #  Centroid to aggregated variants and biosamples
-        # self.cluster_df_col = self.cluster_df.columns
-
         # Drop some columns
         def are_reads(x):
             return int(sum(x) > 0)
 
         agg_dic = {}
-        for k in ['variant_id', 'run_name', 'marker_name', 'variant_sequence']:
+        for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
         for k in self.biosample_names:
             agg_dic[k] = are_reads
@@ -161,9 +158,7 @@ class CommandPoolRunMarkers(object):
 
         pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='variant_id',
                                right_on='variant_id')
-        pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'variant_sequence'})
-        # pooled_marker_df.loc[
-        #     pooled_marker_df.centroid_variant_id == pooled_marker_df.variant_id, 'variant_sequence'] = ''
+        pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'pooled_sequences'})
 
         pooled_marker_df = pooled_marker_df.groupby(
             'centroid_variant_id').agg(agg_dic).reset_index()
@@ -176,17 +171,17 @@ class CommandPoolRunMarkers(object):
             {'variant_id_x': 'variant_id'}, axis=1, inplace=True)
         pooled_marker_df.drop(labels='variant_id_y', axis=1, inplace=True)
         pooled_marker_df.rename(
-            {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'centroid_variant',
-             'variant_id': 'variants'}, axis=1, inplace=True)
+            {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'variant',
+             'variant_id': 'pooled_variants'}, axis=1, inplace=True)
 
-        # Move variant_sequence to end
-        sequence_other_list = pooled_marker_df.variant_sequence.tolist()
-        pooled_marker_df.drop('variant_sequence', axis=1, inplace=True)
-        pooled_marker_df['variant_sequence'] = sequence_other_list
-        # Move sequence_centroid to end
-        sequence_other_list = pooled_marker_df.variant_sequence.tolist()
+        # Move pooled_sequences to end
+        sequence_pool_list = pooled_marker_df.pooled_sequences.tolist()
+        pooled_marker_df.drop('pooled_sequences', axis=1, inplace=True)
+        pooled_marker_df['pooled_sequences'] = sequence_pool_list
+        # Move (centroid) sequence to end
+        sequence_centroid_list = pooled_marker_df.sequence.tolist()
         pooled_marker_df.drop('sequence', axis=1, inplace=True)
-        pooled_marker_df['sequence'] = sequence_other_list
+        pooled_marker_df['sequence'] = sequence_centroid_list
 
         return pooled_marker_df
 
