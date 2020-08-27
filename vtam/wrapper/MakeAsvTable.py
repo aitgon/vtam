@@ -70,23 +70,23 @@ class MakeAsvTable(ToolWrapper):
         # Output file
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
 
-        ############################################################################################
+        #######################################################################
         #
         # Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
-        ############################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             FilterCodonStop, engine=engine)
 
-        ############################################################################################
+        #######################################################################
         #
         # Compute variant_to_chimera_borderline_df
         #
-        ############################################################################################
+        #######################################################################
 
         # asv_table_runner = AsvTableRunner(nijk_df).get_asvtable_biosamples(engine=engine)
         # asv_df_final = asv_table_runner.run()

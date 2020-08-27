@@ -22,9 +22,6 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-
-
-        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
