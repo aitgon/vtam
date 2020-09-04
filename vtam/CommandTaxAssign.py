@@ -7,13 +7,11 @@ import sqlalchemy
 
 from vtam.models.TaxAssign import TaxAssign
 from vtam.models.Variant import Variant
-from vtam.utils import constants
 from vtam.utils.Logger import Logger
 from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.TaxAssignRunner import TaxAssignRunner
 from vtam.utils.TaxLineage import TaxLineage
-
 
 
 class CommandTaxAssign(object):

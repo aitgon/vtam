@@ -9,11 +9,12 @@ from vtam.utils.PathManager import PathManager
 
 class SequenceClusterer(object):
 
-    def __init__(self, variant_info_df):
+    def __init__(self, variant_info_df, cluster_identity):
 
         """Takes as input df with at least these columns: variant_id, read_cout, sequence"""
 
         self.variant_info_df = variant_info_df
+        self.cluster_identity = cluster_identity
 
     def compute_clusters(self):
 
@@ -29,7 +30,7 @@ class SequenceClusterer(object):
                 fout.write(
                     ">{variant_id};size={read_count}\n{sequence}\n".format(
                         **valdict))
-        cmd = "vsearch --cluster_size cluster_input.fas --id 0.97 --otutabout otutabout.txt --clusters test"
+        cmd = "vsearch --cluster_size cluster_input.fas --id {} --otutabout otutabout.txt --clusters test".format(self.cluster_identity)
         if sys.platform.startswith("win"):
             args = cmd
         else:
