@@ -24,8 +24,8 @@ class TestArgParser(unittest.TestCase):
         # create fasta
         tempdir = PathManager.instance().get_tempdir()
         asvtable_df = pandas.read_csv(asvtable_default_tsv, sep='\t')
+
         i_fas = os.path.join(tempdir, 'cluster_input.fas')
-        print(tempdir)
         with open(i_fas, 'w') as fout:
             for idx,row in asvtable_df.iterrows():
                 valdict = {}
