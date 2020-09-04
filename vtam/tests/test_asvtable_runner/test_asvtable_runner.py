@@ -63,6 +63,7 @@ class TestAsvtableRunner(unittest.TestCase):
         asvtable_runner = AsvTableRunner(variant_read_count_df=self.filter_codon_stop_df,
                                          engine=self.engine, biosample_list=self.biosample_list)
         asvtable_runner.to_tsv(asvtable_default_path)
+
         self.assertTrue(filecmp.cmp(asvtable_default_path, asvtable_default_bak_path, shallow=True))
 
     def tearDown(self):
