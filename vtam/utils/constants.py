@@ -82,6 +82,11 @@ skip_filter_codon_stop: 0
 genetic_code: 5
 
 ################################################################################
+# Parameter of the "MakeAsvTable" filter in the "filter" command
+# Cluster identity value to clusterize sequences
+cluster_identity: 0.97
+
+################################################################################
 # Parameters of the "taxassign" command
 # Blast parameter for the minimum query coverage
 qcov_hsp_perc: 80

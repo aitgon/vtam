@@ -17,11 +17,12 @@ from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 class AsvTableRunner(object):
 
-    def __init__(self, variant_read_count_df, engine, biosample_list):
+    def __init__(self, variant_read_count_df, engine, biosample_list, cluster_identity):
 
         self.variant_read_count_df = variant_read_count_df
         self.engine = engine
         self.biosample_list = biosample_list
+        self.cluster_identity = cluster_identity
 
     def to_tsv(self, asvtable_path):
 
@@ -97,52 +98,16 @@ class AsvTableRunner(object):
             id_name_or_sequence_list=asvtable_variant_info_df.variant_id.tolist(), engine=self.engine)\
             .variant_id_is_chimera_borderline()
 
-        ############################################################################################
+        #######################################################################
         #
         # Cluster sequences
         #
-        ############################################################################################
+        #######################################################################
 
-        # tempcluster_dir = PathManager.instance().get_tempdir()
-        #
-        # i_fas = os.path.join(tempcluster_dir, 'cluster_input.fas')
-        # with open(i_fas, 'w') as fout:
-        #     for idx,row in asvtable_variant_info_df.iterrows():
-        #         valdict = {}
-        #         valdict['variant_id'] = row.variant_id
-        #         valdict['read_count'] = row.read_count
-        #         valdict['sequence'] = row.sequence
-        #         fout.write(">{variant_id};size={read_count}\n{sequence}\n".format(**valdict))
-        # cmd = "vsearch --cluster_size cluster_input.fas --id 0.97 --otutabout otutabout.txt --clusters test"
-        # if sys.platform.startswith("win"):
-        #     args = cmd
-        # else:
-        #     args = shlex.split(cmd)
-        # subprocess.run(args=args, check=True, cwd=tempcluster_dir)
-        #
-        # otutabout_path = os.path.join(tempcluster_dir, "otutabout.txt")
-        # otutabout_df = pandas.read_csv(otutabout_path, sep="\t")
-        # otutabout_df.rename({'#OTU ID': 'centroid'}, axis=1, inplace=True)
-        #
-        # otutabout_long_df = pandas.melt(otutabout_df, id_vars=['centroid'], var_name='variant_id', value_name='read_count')
-        # otutabout_long_df.rename({'centroid': 'clusterid'}, axis=1, inplace=True)
-        # otutabout_long_df = otutabout_long_df.loc[otutabout_long_df.read_count > 0]
-        # otutabout_long_df.variant_id = otutabout_long_df.variant_id.astype('int')
-        #
-        # cluster_count_df = otutabout_long_df[['clusterid', 'variant_id']].groupby('clusterid').count()
-        # cluster_count_df.rename({'variant_id': 'clustersize'}, axis=1, inplace=True)
-        # cluster_count_df = otutabout_long_df[['clusterid', 'variant_id']].merge(cluster_count_df, on='clusterid')
-
-        seq_clusterer_obj = SequenceClusterer(asvtable_variant_info_df)
+        seq_clusterer_obj = SequenceClusterer(asvtable_variant_info_df, cluster_identity=self.cluster_identity)
         cluster_count_df = seq_clusterer_obj.compute_clusters()
 
         asvtable_variant_info_df = asvtable_variant_info_df.merge(cluster_count_df, on='variant_id')
-
-        ############################################################################################
-        #
-        # End of variant sequence clusters
-        #
-        ############################################################################################
 
         return asvtable_variant_info_df
 
