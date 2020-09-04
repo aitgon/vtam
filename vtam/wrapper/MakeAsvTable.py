@@ -47,6 +47,7 @@ class MakeAsvTable(ToolWrapper):
     def specify_params(self):
         return {
             "foo": "int",
+            "cluster_identity": "float",
         }
 
     def run(self):
@@ -64,6 +65,10 @@ class MakeAsvTable(ToolWrapper):
 
         # Output file
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
+        #
+        # Options
+        cluster_identity = float(
+            self.option("cluster_identity"))
 
         #######################################################################
         #
@@ -85,5 +90,5 @@ class MakeAsvTable(ToolWrapper):
 
         biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                         engine=engine, biosample_list=biosample_list)
+                                         engine=engine, biosample_list=biosample_list, cluster_identity=cluster_identity)
         asvtable_runner.to_tsv(asvtable_tsv_path)

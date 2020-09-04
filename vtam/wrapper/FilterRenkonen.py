@@ -65,7 +65,6 @@ class FilterRenkonen(ToolWrapper):
             FilterRenkonen.__input_table_chimera)
         #
         # Options
-        # PoolMarkers parameters
         renkonen_distance_quantile = float(
             self.option("renkonen_distance_quantile"))
         #
