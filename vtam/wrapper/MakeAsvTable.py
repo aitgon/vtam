@@ -1,10 +1,5 @@
-import pandas
-import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.models.Biosample import Biosample
-from vtam.models.Marker import Marker
-from vtam.models.Run import Run
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.models.FilterCodonStop import FilterCodonStop
@@ -87,15 +82,6 @@ class MakeAsvTable(ToolWrapper):
         # Compute variant_to_chimera_borderline_df
         #
         #######################################################################
-
-        # asv_table_runner = AsvTableRunner(nijk_df).get_asvtable_biosamples(engine=engine)
-        # asv_df_final = asv_table_runner.run()
-        #
-        # asv_df_final.to_csv(
-        #     asv_table_tsv_path,
-        #     sep='\t',
-        #     index=False,
-        #     header=True)
 
         biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,

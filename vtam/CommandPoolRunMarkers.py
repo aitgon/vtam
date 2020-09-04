@@ -215,7 +215,7 @@ class CommandPoolRunMarkers(object):
 
         asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
                                           engine=engine, biosample_list=biosample_list)
-        asv_table_df = asv_table_runner.get_asvtable_df()
+        asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
         pool_marker_runner = CommandPoolRunMarkers(
