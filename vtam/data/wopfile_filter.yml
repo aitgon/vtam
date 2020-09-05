@@ -207,4 +207,6 @@ rule MakeAsvTable:
             readinfo: {{readinfo}}
     output:
         file:
-            ASVTable: {{asvtable}}{% endblock %}
+            ASVTable: {{asvtable}}
+    params:
+        cluster_identity: {{cluster_identity}}{% endblock %}
