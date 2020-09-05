@@ -209,4 +209,5 @@ rule MakeAsvTable:
         file:
             ASVTable: {{asvtable}}
     params:
-        cluster_identity: {{cluster_identity}}{% endblock %}
+        cluster_identity: {{cluster_identity}}
+        known_occurrences: {{known_occurrences}}{% endblock %}
