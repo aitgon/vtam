@@ -231,3 +231,5 @@ rule MakeAsvTable:
     output:
         file:
             ASVTable: asvtableoutput.tsv
+    params:
+        cluster_identity: 0.97
