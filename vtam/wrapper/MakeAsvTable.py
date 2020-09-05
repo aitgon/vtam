@@ -1,10 +1,5 @@
-import pandas
-import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.models.Biosample import Biosample
-from vtam.models.Marker import Marker
-from vtam.models.Run import Run
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.models.FilterCodonStop import FilterCodonStop
@@ -52,6 +47,7 @@ class MakeAsvTable(ToolWrapper):
     def specify_params(self):
         return {
             "foo": "int",
+            "cluster_identity": "float",
         }
 
     def run(self):
@@ -69,35 +65,30 @@ class MakeAsvTable(ToolWrapper):
 
         # Output file
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
+        #
+        # Options
+        cluster_identity = float(
+            self.option("cluster_identity"))
 
-        ############################################################################################
+        #######################################################################
         #
         # Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
-        ############################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             FilterCodonStop, engine=engine)
 
-        ############################################################################################
+        #######################################################################
         #
         # Compute variant_to_chimera_borderline_df
         #
-        ############################################################################################
-
-        # asv_table_runner = AsvTableRunner(nijk_df).get_asvtable_biosamples(engine=engine)
-        # asv_df_final = asv_table_runner.run()
-        #
-        # asv_df_final.to_csv(
-        #     asv_table_tsv_path,
-        #     sep='\t',
-        #     index=False,
-        #     header=True)
+        #######################################################################
 
         biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                         engine=engine, biosample_list=biosample_list)
+                                         engine=engine, biosample_list=biosample_list, cluster_identity=cluster_identity)
         asvtable_runner.to_tsv(asvtable_tsv_path)
