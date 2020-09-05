@@ -1,6 +1,7 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 
 from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.models.FilterCodonStop import FilterCodonStop
 
@@ -11,6 +12,7 @@ class MakeAsvTable(ToolWrapper):
 
     # Input file
     __input_file_readinfo = "readinfo"
+    __input_file_known_occurrences = "known_occurrences"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -48,6 +50,7 @@ class MakeAsvTable(ToolWrapper):
         return {
             "foo": "int",
             "cluster_identity": "float",
+            "known_occurrences": "str",
         }
 
     def run(self):
@@ -67,8 +70,8 @@ class MakeAsvTable(ToolWrapper):
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
         #
         # Options
-        cluster_identity = float(
-            self.option("cluster_identity"))
+        cluster_identity = float(self.option("cluster_identity"))
+        known_occurrences_tsv = str(self.option("known_occurrences"))
 
         #######################################################################
         #
@@ -82,6 +85,19 @@ class MakeAsvTable(ToolWrapper):
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             FilterCodonStop, engine=engine)
 
+        ############################################################################################
+        #
+        # KnownOccurrences
+        #
+        ############################################################################################
+
+        if known_occurrences_tsv == 'None' or known_occurrences_tsv is None:
+            known_occurrences_df = None
+        else:
+            known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
+            known_occurrences_df = known_occurrences_df.loc[
+                (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
+
         #######################################################################
         #
         # Compute variant_to_chimera_borderline_df
@@ -90,5 +106,7 @@ class MakeAsvTable(ToolWrapper):
 
         biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                         engine=engine, biosample_list=biosample_list, cluster_identity=cluster_identity)
+                                         engine=engine, biosample_list=biosample_list,
+                                         cluster_identity=cluster_identity,
+                                         known_occurrences_df=known_occurrences_df)
         asvtable_runner.to_tsv(asvtable_tsv_path)
