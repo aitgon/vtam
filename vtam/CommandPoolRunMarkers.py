@@ -7,6 +7,7 @@ import sqlalchemy
 from Bio import SeqIO
 
 from sqlalchemy.ext.automap import automap_base
+from vtam.utils.ParamsFile import ParamsFile
 
 from vtam.models.Biosample import Biosample
 from vtam.models.FilterCodonStop import FilterCodonStop
@@ -186,7 +187,18 @@ class CommandPoolRunMarkers(object):
         return pooled_marker_df
 
     @classmethod
-    def main(cls, db, pooled_marker_tsv, run_marker_tsv):
+    def main(cls, db, pooled_marker_tsv, run_marker_tsv, params):
+
+        #######################################################################
+        #
+        # Parameters
+        #
+        #######################################################################
+
+        # params_dic = constants.get_params_default_dic()
+        params_dic = ParamsFile(params).get_params_dic()
+
+        cluster_identity = params_dic['cluster_identity']
 
         run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv)
 
@@ -214,8 +226,8 @@ class CommandPoolRunMarkers(object):
             engine=engine, variant_read_count_like_model=FilterCodonStop)
 
         asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                          engine=engine, biosample_list=biosample_list)
-        asv_table_df = asv_table_runner.get_asvtable_df()
+                                          engine=engine, biosample_list=biosample_list, cluster_identity=cluster_identity)
+        asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
         pool_marker_runner = CommandPoolRunMarkers(
