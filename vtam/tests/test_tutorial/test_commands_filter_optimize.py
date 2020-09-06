@@ -210,7 +210,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args, cwd=self.outdir_thistest_path)
 
-        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default.tsv")
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_keep_occurrences.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
     def tearDown(self):
