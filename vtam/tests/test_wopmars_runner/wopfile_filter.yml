@@ -233,3 +233,4 @@ rule MakeAsvTable:
             ASVTable: asvtableoutput.tsv
     params:
         cluster_identity: 0.97
+        known_occurrences: None
