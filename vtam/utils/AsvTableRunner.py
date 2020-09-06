@@ -1,12 +1,3 @@
-import os
-import shlex
-import subprocess
-import sys
-
-import pandas
-
-from vtam.utils.PathManager import PathManager
-
 from vtam.models.Biosample import Biosample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
@@ -17,12 +8,13 @@ from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 class AsvTableRunner(object):
 
-    def __init__(self, variant_read_count_df, engine, biosample_list, cluster_identity):
+    def __init__(self, variant_read_count_df, engine, biosample_list, cluster_identity, known_occurrences_df=None):
 
         self.variant_read_count_df = variant_read_count_df
         self.engine = engine
         self.biosample_list = biosample_list
         self.cluster_identity = cluster_identity
+        self.known_occurrences_df = known_occurrences_df
 
     def to_tsv(self, asvtable_path):
 
@@ -36,13 +28,30 @@ class AsvTableRunner(object):
         asvtable_variant_info_df = self.get_asvtable_variants()
         asvtable_biosamples_df = self.get_asvtable_biosamples()
 
+        # Merge variant and biosample sides of asvtables
+        asvtable_df = asvtable_variant_info_df.merge(asvtable_biosamples_df, on=['run_id', 'marker_id', 'variant_id'])
+
         ############################################################################################
         #
-        # Merge variant and biosample sides of asvtables
+        # Label keep variants if known_occurrences not None
         #
         ############################################################################################
 
-        asvtable_df = asvtable_variant_info_df.merge(asvtable_biosamples_df, on=['run_id', 'marker_id', 'variant_id'])
+        if not (self.known_occurrences_df is None):
+
+            biosample_name = NameIdConverter(id_name_or_sequence_list=self.known_occurrences_df.biosample_id.tolist(), engine=self.engine).to_names(Biosample)
+            self.known_occurrences_df.biosample_id = ['keep_{}'.format(x) for x in biosample_name]
+            variant_keep_info_df = self.known_occurrences_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_id', values='action', aggfunc='first', fill_value=0).reset_index()
+            variant_keep_info_df.replace(to_replace='keep', value=1, inplace=True)
+            asvtable_df = asvtable_df.merge(variant_keep_info_df, on=['run_id', 'marker_id', 'variant_id'], how='left')
+            asvtable_df.fillna(0, inplace=True)
+
+        ############################################################################################
+        #
+        # Rename
+        #
+        ############################################################################################
+
         asvtable_df.run_id = NameIdConverter(id_name_or_sequence_list=asvtable_df.run_id.tolist(), engine=self.engine) \
             .to_names(Run)
         asvtable_df.marker_id = NameIdConverter(id_name_or_sequence_list=asvtable_df.marker_id.tolist(), engine=self.engine) \

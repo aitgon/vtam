@@ -336,6 +336,13 @@ class ArgParser:
             required=False,
             default=False)
 
+        parser_vtam_filter.add_argument(
+            '--known_occurrences',
+            action='store',
+            help="TSV file with known variants",
+            required=False,
+            type=lambda x: KnownOccurrences(x).argparse_checker_known_occurrences())
+
         #######################################################################
         #
         # Wopmars args

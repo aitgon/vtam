@@ -198,6 +198,21 @@ class TestCommandsFilterOptimize(unittest.TestCase):
         optimize_lfn_variant_replicate_specific_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_variant_replicate_specific.tsv")
         self.assertTrue(filecmp.cmp(optimize_lfn_variant_replicate_specific_path, optimize_lfn_variant_replicate_specific_bak_path, shallow=False))
 
+    def test_09_filter_lfn_variant_with_known_occurrences(self):
+
+        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+              "--known_occurrences {known_occurrences} " \
+              "--log vtam.log".format(**self.args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_thistest_path)
+
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_keep_occurrences.tsv")
+        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
+
     def tearDown(self):
 
         shutil.rmtree(self.outdir_thistest_path, ignore_errors=True)
