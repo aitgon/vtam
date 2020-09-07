@@ -16,6 +16,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunMarkerFile import RunMarkerFile
+from vtam.utils.SequenceClusterer import SequenceClusterer
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDF import VariantDF
 from vtam.utils.VTAMexception import VTAMexception
@@ -230,8 +231,43 @@ class CommandPoolRunMarkers(object):
         asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
-        pool_marker_runner = CommandPoolRunMarkers(
-            asv_table_df=asv_table_df,
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_df,
             run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
+
+        #######################################################################
+        #
+        # Cluster sequences
+        #
+        #######################################################################
+
+        # reset asvtable-based clusterid and clustersize
+        pooled_marker_df.drop(['clusterid', 'clustersize'], axis=1, inplace=True)
+        pooled_marker_df.rename({'variant': 'variant_id'}, axis=1, inplace=True)  # prepare
+        pooled_marker_df['read_count'] = pooled_marker_df.iloc[:, 4:-2].sum(axis=1)  # prepare
+
+        seq_clusterer_obj = SequenceClusterer(pooled_marker_df, cluster_identity=cluster_identity)
+        cluster_count_df = seq_clusterer_obj.compute_clusters()
+
+        pooled_marker_df = pooled_marker_df.merge(cluster_count_df, on='variant_id')
+        pooled_marker_df.drop(['read_count'], axis=1, inplace=True)
+
+        ############################################################################################
+        #
+        # Reorder columns
+        #
+        ############################################################################################
+
+        column_list = pooled_marker_df.columns.tolist()
+        column_list.remove("pooled_sequences")
+        column_list.remove("sequence")
+        column_list = column_list + ['pooled_sequences', 'sequence']
+        pooled_marker_df = pooled_marker_df[column_list]
+
+        #######################################################################
+        #
+        # To tsv
+        #
+        #######################################################################
+
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)
