@@ -45,6 +45,9 @@ class AsvTableRunner(object):
             variant_keep_info_df.replace(to_replace='keep', value=1, inplace=True)
             asvtable_df = asvtable_df.merge(variant_keep_info_df, on=['run_id', 'marker_id', 'variant_id'], how='left')
             asvtable_df.fillna(0, inplace=True)
+            for label in asvtable_df.columns:
+                if label.startswith('keep_'):
+                    asvtable_df[label] = asvtable_df[label].astype('int')
 
         ############################################################################################
         #
