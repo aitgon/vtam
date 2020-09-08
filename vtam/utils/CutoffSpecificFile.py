@@ -7,7 +7,7 @@ from vtam.utils.Logger import Logger
 
 from vtam.utils.VTAMexception import VTAMexception
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 
 from vtam.models.Marker import Marker
 
@@ -107,7 +107,7 @@ class CutoffSpecificFile(object):
         return df
 
     def to_identifier_df(self, engine, is_lfn_variant_replicate):
-        """Returns a list of dictionnaries with run_id, marker_id, biosample_id entries (See return)
+        """Returns a list of dictionnaries with run_id, marker_id, sample_id entries (See return)
 
         :return: pandas.DataFrame: with columns run_id, marker_id, ...
         """

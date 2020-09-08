@@ -15,7 +15,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_file_readinfo = "readinfo"
     __input_table_filter_codon_stop = "FilterCodonStop"
     # Output table
@@ -31,7 +31,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         return [
             ReadCountAverageOverReplicates.__input_table_marker,
             ReadCountAverageOverReplicates.__input_table_run,
-            ReadCountAverageOverReplicates.__input_table_biosample,
+            ReadCountAverageOverReplicates.__input_table_sample,
             ReadCountAverageOverReplicates.__input_table_filter_codon_stop,
 
         ]
@@ -64,7 +64,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         # #######################################################################
         # #
-        # # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # #
         # #######################################################################
         #
@@ -73,7 +73,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # #######################################################################
         # #
-        # # 2. Delete /run_name/markerbiosample/replicate from this filter table
+        # # 2. Delete /run_name/markersamples/replicate from this filter table
         # #
         # #######################################################################
         # # with engine.connect() as conn:
@@ -89,7 +89,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # #######################################################################
         # #
-        # # 3. Select marker_name/run_name/biosample/replicate from variant_read_count_model
+        # # 3. Select marker_name/run_name/sample/replicate from variant_read_count_model
         # #
         # #######################################################################
         #
@@ -107,8 +107,8 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
         #######################################################################
@@ -168,27 +168,27 @@ def read_count_average_over_replicates(variant_read_count_df):
     read_average_columns = ['variant', 'read_average']
     read_average_df = pandas.DataFrame(columns=read_average_columns)
 
-    # sum of read_count over variant_id and biosample_id
-    read_count_sum_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(
-        ['run_id', 'marker_id', 'variant_id', 'biosample_id']).sum().reset_index()
-    read_count_sum_over_variant_id_and_biosample_id_df.drop(
+    # sum of read_count over variant_id and sample_id
+    read_count_sum_over_variant_id_and_sample_id_df = variant_read_count_df.groupby(
+        ['run_id', 'marker_id', 'variant_id', 'sample_id']).sum().reset_index()
+    read_count_sum_over_variant_id_and_sample_id_df.drop(
         'replicate', axis=1, inplace=True)
-    read_count_sum_over_variant_id_and_biosample_id_df = read_count_sum_over_variant_id_and_biosample_id_df.rename(
+    read_count_sum_over_variant_id_and_sample_id_df = read_count_sum_over_variant_id_and_sample_id_df.rename(
         columns={'read_count': 'read_count'})
 
-    #  count of replicate number per variant_id and biosample_id
-    replicate_count_over_variant_id_and_biosample_id_df = variant_read_count_df.groupby(
-        ['run_id', 'marker_id', 'variant_id', 'biosample_id']).count().reset_index()
-    replicate_count_over_variant_id_and_biosample_id_df.drop(
+    #  count of replicate number per variant_id and sample_id
+    replicate_count_over_variant_id_and_sample_id_df = variant_read_count_df.groupby(
+        ['run_id', 'marker_id', 'variant_id', 'sample_id']).count().reset_index()
+    replicate_count_over_variant_id_and_sample_id_df.drop(
         'read_count', axis=1, inplace=True)
-    replicate_count_over_variant_id_and_biosample_id_df = replicate_count_over_variant_id_and_biosample_id_df.rename(
+    replicate_count_over_variant_id_and_sample_id_df = replicate_count_over_variant_id_and_sample_id_df.rename(
         columns={'replicate': 'replicate_count'})
 
     # merge
-    df_out = read_count_sum_over_variant_id_and_biosample_id_df.merge(
-        replicate_count_over_variant_id_and_biosample_id_df, left_on=(
-            'run_id', 'marker_id', 'variant_id', 'biosample_id'), right_on=(
-            'run_id', 'marker_id', 'variant_id', 'biosample_id'))
+    df_out = read_count_sum_over_variant_id_and_sample_id_df.merge(
+        replicate_count_over_variant_id_and_sample_id_df, left_on=(
+            'run_id', 'marker_id', 'variant_id', 'sample_id'), right_on=(
+            'run_id', 'marker_id', 'variant_id', 'sample_id'))
     df_out['read_count_average'] = df_out.read_count / df_out.replicate_count
     #
     return df_out

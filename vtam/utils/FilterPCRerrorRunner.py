@@ -23,7 +23,7 @@ class FilterPCRerrorRunner(object):
 
         :param variant_expected_df: DataFrame (id, sequence) with expected variants
         :param variant_unexpected_df: DataFrame (id, sequence) with unexpected variants
-        :param variant_read_count_df: DataFrame (run_id, marker_id, biosample_id, replicate, variant_id, read_count)
+        :param variant_read_count_df: DataFrame (run_id, marker_id, sample_id, replicate, variant_id, read_count)
         """
         self.__variant_expected_df = variant_expected_df
         self.__variant_unexpected_df = variant_unexpected_df
@@ -44,7 +44,7 @@ class FilterPCRerrorRunner(object):
                      ) < pcr_error_var_prop:
                 filter_output_df.loc[(filter_output_df['run_id'] == row.run_id)
                                      & (filter_output_df['marker_id'] == row.marker_id)
-                                     & (filter_output_df['biosample_id'] == row.biosample_id)
+                                     & (filter_output_df['sample_id'] == row.sample_id)
                                      & (filter_output_df['variant_id'] == row.variant_id_unexpected), 'filter_delete'] = True
         return filter_output_df
 
@@ -115,7 +115,7 @@ class FilterPCRerrorRunner(object):
 
     def get_variant_unexpected_to_expected_ratio_df(self):
         """Creates a DF with these columns
-        ['run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected', 'variant_id_unexpected',
+        ['run_id', 'marker_id', 'sample_id', 'variant_id_expected', 'N_ij_expected', 'variant_id_unexpected',
         'N_ij_unexpected', 'N_ij_unexpected_to_expected_ratio']
 
         """
@@ -147,7 +147,7 @@ class FilterPCRerrorRunner(object):
         pcr_error_df.drop('variant_id', axis=1, inplace=True)
 
         pcr_error_df = pcr_error_df.merge(N_ij_df, left_on=[
-            'run_id', 'marker_id', 'biosample_id', 'variant_id_unexpected'], right_on=['run_id', 'marker_id', 'biosample_id', 'variant_id'])
+            'run_id', 'marker_id', 'sample_id', 'variant_id_unexpected'], right_on=['run_id', 'marker_id', 'sample_id', 'variant_id'])
         pcr_error_df.rename(columns={'N_ij': 'N_ij_unexpected'}, inplace=True)
         pcr_error_df.drop('variant_id', axis=1, inplace=True)
 
@@ -162,7 +162,7 @@ class FilterPCRerrorRunner(object):
                                                             / pcr_error_df['N_ij_expected']
         # reorder columns
         pcr_error_df = pcr_error_df[[
-            'run_id', 'marker_id', 'biosample_id', 'variant_id_expected', 'N_ij_expected',
+            'run_id', 'marker_id', 'sample_id', 'variant_id_expected', 'N_ij_expected',
             'variant_id_unexpected', 'N_ij_unexpected', 'N_ij_unexpected_to_expected_ratio']]
 
         return pcr_error_df

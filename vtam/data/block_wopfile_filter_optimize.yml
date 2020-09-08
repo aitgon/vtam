@@ -7,7 +7,7 @@ rule SampleInformation:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             SortedReadFile: vtam.models.SortedReadFile
             SampleInformation: vtam.models.SampleInformation
 
@@ -20,7 +20,7 @@ rule VariantReadCount:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
     output:
         table:
             Variant: vtam.models.Variant

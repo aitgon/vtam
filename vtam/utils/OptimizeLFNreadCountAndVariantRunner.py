@@ -47,7 +47,7 @@ class OptimizeLFNreadCountAndVariantRunner:
             nijk_run_marker_df = self.nijk_df.loc[
                 (self.nijk_df.run_id == run_id) & (self.nijk_df.marker_id == marker_id),]
             nijk_run_marker_df = nijk_run_marker_df[
-                ['run_id', 'marker_id', 'biosample_id', 'replicate', 'variant_id',
+                ['run_id', 'marker_id', 'sample_id', 'replicate', 'variant_id',
                  'read_count']].drop_duplicates(inplace=False)
 
             optim_run_marker_obj = OptimizeLFNreadCountAndVariantRunMarkerRunner(

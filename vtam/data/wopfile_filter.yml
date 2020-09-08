@@ -5,7 +5,7 @@
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: {{readinfo}}
@@ -24,7 +24,7 @@
         {%- if not (lfn_variant_replicate_specific_cutoff is none) %}
         lfn_variant_replicate_specific_cutoff: {{lfn_variant_replicate_specific_cutoff}}{% endif %}
         {%- endif %}
-        lfn_biosample_replicate_cutoff: {{lfn_biosample_replicate_cutoff}}
+        lfn_sample_replicate_cutoff: {{lfn_sample_replicate_cutoff}}
         lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
 
 
@@ -34,7 +34,7 @@ rule FilterMinReplicateNumber:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterLFN
         file:
             readinfo: {{readinfo}}
@@ -52,7 +52,7 @@ rule FilterPCRerror:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
@@ -71,7 +71,7 @@ rule FilterChimera:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
@@ -91,7 +91,7 @@ rule FilterMinReplicateNumber2:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterChimera
         file:
             readinfo: {{readinfo}}
@@ -109,7 +109,7 @@ rule FilterRenkonen:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
             readinfo: {{readinfo}}
@@ -127,7 +127,7 @@ rule FilterMinReplicateNumber3:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterRenkonen
         file:
             readinfo: {{readinfo}}
@@ -145,7 +145,7 @@ rule FilterIndel:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
@@ -164,7 +164,7 @@ rule FilterCodonStop:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
@@ -184,7 +184,7 @@ rule ReadCountAverageOverReplicates:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
             readinfo: {{readinfo}}
@@ -199,7 +199,7 @@ rule MakeAsvTable:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop

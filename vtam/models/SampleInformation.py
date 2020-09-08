@@ -11,7 +11,7 @@ class SampleInformation(Base):
         UniqueConstraint(
             'run_id',
             'marker_id',
-            'biosample_id',
+            'sample_id',
             'replicate',
             'sortedreadfile_id'),
     )
@@ -38,10 +38,10 @@ class SampleInformation(Base):
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)
-    biosample_id = Column(
+    sample_id = Column(
         Integer,
         ForeignKey(
-            "Biosample.id",
+            "Sample.id",
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)
