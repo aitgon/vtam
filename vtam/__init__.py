@@ -227,8 +227,9 @@ class VTAM(object):
             db = arg_parser_dic['db']
             run_marker_tsv = arg_parser_dic['runmarker']
             pooled_marker_tsv = arg_parser_dic['output']
+            params = arg_parser_dic['params']
             CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv,
-                run_marker_tsv=run_marker_tsv)
+                run_marker_tsv=run_marker_tsv, params=params)
 
         ############################################################################################
         #

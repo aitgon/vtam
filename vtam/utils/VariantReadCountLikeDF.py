@@ -6,23 +6,23 @@ from vtam.utils.VTAMexception import VTAMexception
 
 class VariantReadCountLikeDF(object):
     """
-    Takes as input a variant_read_count_input_df (run_id, marker_id, biosample_id, replicate, N_ijk) and returns
+    Takes as input a variant_read_count_input_df (run_id, marker_id, sample_id, replicate, N_ijk) and returns
     the different LFN calculation, that is N_i, N_ik, ...
 
-    N_ijk stands for the read count for each variant_id i, biosample_id j and replicate k
+    N_ijk stands for the read count for each variant_id i, sample_id j and replicate k
     """
 
     def __init__(self, variant_read_count_df):
         """
 
-        :param variant_read_count_df: DataFrame with columns run_id, marker_id, biosample_id, replicate, N_ijk
+        :param variant_read_count_df: DataFrame with columns run_id, marker_id, sample_id, replicate, N_ijk
         """
 
         # This is the only order allowed of variant_read_count_input_df columns
         self.column_list = [
             'run_id',
             'marker_id',
-            'biosample_id',
+            'sample_id',
             'replicate',
             'variant_id',
             'read_count']
@@ -34,7 +34,7 @@ class VariantReadCountLikeDF(object):
             Logger.instance().error(
                 VTAMexception(
                     "This DataFrame is not composed of columns: 'run_id', 'marker_id', "
-                    "'biosample_id', 'replicate', 'variant_id', 'read_count'. The workflow will exit"))
+                    "'sample_id', 'replicate', 'variant_id', 'read_count'. The workflow will exit"))
             sys.exit(1)
 
         self.variant_read_count_df = variant_read_count_df
@@ -56,7 +56,7 @@ class VariantReadCountLikeDF(object):
         return variant_read_count_df
 
     def get_N_i_df(self):
-        """Returns N_i_df, that is a DataFrame with columns run_id, marker_id, biosample_id, N_ijk
+        """Returns N_i_df, that is a DataFrame with columns run_id, marker_id, sample_id, N_ijk
         N_i = sum aggregation of N_ijk over variants i
 
         """
@@ -69,20 +69,20 @@ class VariantReadCountLikeDF(object):
         return N_i_df
 
     def get_N_ij_df(self):
-        """Returns N_ij_df, that is a DataFrame with columns run_id, marker_id, variant_id, biosample_id, N_ij
-        N_ij = sum aggregation of N_ijk over variants i and biosamples j
+        """Returns N_ij_df, that is a DataFrame with columns run_id, marker_id, variant_id, sample_id, N_ij
+        N_ij = sum aggregation of N_ijk over variants i and samples j
 
         """
 
         N_ij_df = self.variant_read_count_df.groupby(
-            by=['run_id', 'marker_id', 'variant_id', 'biosample_id']).agg({'read_count': sum}) .reset_index()
+            by=['run_id', 'marker_id', 'variant_id', 'sample_id']).agg({'read_count': sum}) .reset_index()
         N_ij_df = N_ij_df.rename(columns={'read_count': 'N_ij'})
         N_ij_df.drop_duplicates(inplace=True)
 
         return N_ij_df
 
     def get_N_ik_df(self):
-        """Returns N_ik_df, that is a DataFrame with columns run_id, marker_id, biosample_id, N_ijk
+        """Returns N_ik_df, that is a DataFrame with columns run_id, marker_id, sample_id, N_ijk
         N_k = sum aggregation of N_ijk over variants i and replicate k
 
         """
@@ -95,13 +95,13 @@ class VariantReadCountLikeDF(object):
         return N_ik_df
 
     def get_N_jk_df(self):
-        """Returns N_i_df, that is a DataFrame with columns run_id, marker_id, biosample_id, N_ijk
-        N_kj = sum aggregation of N_ijk over biosample j and replicate k
+        """Returns N_i_df, that is a DataFrame with columns run_id, marker_id, sample_id, N_ijk
+        N_kj = sum aggregation of N_ijk over sample j and replicate k
 
         """
 
         N_jk_df = self.variant_read_count_df.groupby(
-            by=['run_id', 'marker_id', 'biosample_id', 'replicate']).agg({'read_count': sum}) .reset_index()
+            by=['run_id', 'marker_id', 'sample_id', 'replicate']).agg({'read_count': sum}) .reset_index()
         N_jk_df = N_jk_df.rename(columns={'read_count': 'N_jk'})
         N_jk_df.drop_duplicates(inplace=True)
 
@@ -116,11 +116,11 @@ class VariantReadCountLikeDF(object):
 
             run_id = row.run_id
             marker_id = row.marker_id
-            biosample_id = row.biosample_id
+            sample_id = row.sample_id
             variant_id = row.variant_id
             read_count = row.read_count
             instance = {'run_id': run_id, 'marker_id': marker_id,
-                        'variant_id': variant_id, 'biosample_id': biosample_id,
+                        'variant_id': variant_id, 'sample_id': sample_id,
                         'read_count': read_count}
             if 'filter_delete' in dir(row):
                 instance['filter_delete'] = row.filter_delete

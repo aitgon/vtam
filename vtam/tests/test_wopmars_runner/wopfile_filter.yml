@@ -7,7 +7,7 @@ rule SampleInformation:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             SortedReadFile: vtam.models.SortedReadFile
             SampleInformation: vtam.models.SampleInformation
 
@@ -20,7 +20,7 @@ rule VariantReadCount:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
     output:
         table:
             Variant: vtam.models.Variant
@@ -36,7 +36,7 @@ rule FilterLFN:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             VariantReadCount: vtam.models.VariantReadCount
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -47,7 +47,7 @@ rule FilterLFN:
             FilterLFN: vtam.models.FilterLFN
     params:
         lfn_variant_cutoff: 0.001
-        lfn_biosample_replicate_cutoff: 0.001
+        lfn_sample_replicate_cutoff: 0.001
         lfn_read_count_cutoff: 10
 
 
@@ -57,7 +57,7 @@ rule FilterMinReplicateNumber:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterLFN
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -75,7 +75,7 @@ rule FilterPCRerror:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
@@ -94,7 +94,7 @@ rule FilterChimera:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
@@ -114,7 +114,7 @@ rule FilterMinReplicateNumber2:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterChimera
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -132,7 +132,7 @@ rule FilterRenkonen:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -150,7 +150,7 @@ rule FilterMinReplicateNumber3:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterRenkonen
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -168,7 +168,7 @@ rule FilterIndel:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
@@ -187,7 +187,7 @@ rule FilterCodonStop:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
@@ -207,7 +207,7 @@ rule ReadCountAverageOverReplicates:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
             readinfo: doc/data/readinfo_mfzr.tsv
@@ -222,7 +222,7 @@ rule MakeAsvTable:
         table:
             Marker: vtam.models.Marker
             Run: vtam.models.Run
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
@@ -231,3 +231,6 @@ rule MakeAsvTable:
     output:
         file:
             ASVTable: asvtableoutput.tsv
+    params:
+        cluster_identity: 0.97
+        known_occurrences: None

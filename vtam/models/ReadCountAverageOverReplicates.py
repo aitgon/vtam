@@ -5,7 +5,7 @@ from sqlalchemy import UniqueConstraint, Float, Column, Integer, ForeignKey
 class ReadCountAverageOverReplicates(Base):
     __tablename__ = __qualname__
     __table_args__ = (
-        UniqueConstraint('marker_id', 'run_id', 'variant_id', 'biosample_id'),
+        UniqueConstraint('marker_id', 'run_id', 'variant_id', 'sample_id'),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -30,10 +30,10 @@ class ReadCountAverageOverReplicates(Base):
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)
-    biosample_id = Column(
+    sample_id = Column(
         Integer,
         ForeignKey(
-            "Biosample.id",
+            "Sample.id",
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)

@@ -31,15 +31,15 @@ class FilterChimeraRunner(object):
         filter_output_borderline_df = self.variant_read_count_df.copy()
         filter_output_borderline_df['filter_delete'] = False
 
-        run_marker_biosample_df = self.variant_read_count_df[[
-            'run_id', 'marker_id', 'biosample_id']].drop_duplicates(inplace=False)
-        for row in run_marker_biosample_df.itertuples():
+        run_marker_sample_df = self.variant_read_count_df[[
+            'run_id', 'marker_id', 'sample_id']].drop_duplicates(inplace=False)
+        for row in run_marker_sample_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
-            biosample_id = row.biosample_id
+            sample_id = row.sample_id
 
             variant_read_count_df = self.variant_read_count_df.loc[(self.variant_read_count_df.run_id == run_id) & (
-                self.variant_read_count_df.marker_id == marker_id) & (self.variant_read_count_df.biosample_id == biosample_id)]
+                self.variant_read_count_df.marker_id == marker_id) & (self.variant_read_count_df.sample_id == sample_id)]
 
             variant_read_count_df_obj = VariantReadCountLikeDF(
                 variant_read_count_df=variant_read_count_df)
@@ -64,8 +64,8 @@ class FilterChimeraRunner(object):
             variant_df_utils_obj = VariantDF(variant_size_df)
 
             uchime_fasta_path = os.path.join(
-                temp_dir, 'run_{}_marker_{}_biosample_{}.fasta' .format(
-                    run_id, marker_id, biosample_id))
+                temp_dir, 'run_{}_marker_{}_sample_{}.fasta' .format(
+                    run_id, marker_id, sample_id))
             variant_df_utils_obj.to_fasta(
                 fasta_path=uchime_fasta_path, add_column="size")
 
@@ -76,14 +76,14 @@ class FilterChimeraRunner(object):
             ###################################################################
 
             uchime_borderline_fasta_path = os.path.join(
-                temp_dir, 'run_{}_marker_{}_biosample_{}_borderline.fasta' .format(
-                    run_id, marker_id, biosample_id))
+                temp_dir, 'run_{}_marker_{}_sample_{}_borderline.fasta' .format(
+                    run_id, marker_id, sample_id))
             uchime_nonchimeras_fasta_path = os.path.join(
-                temp_dir, 'run_{}_marker_{}_biosample_id_{}_nonchimeras.fasta' .format(
-                    run_id, marker_id, biosample_id))
+                temp_dir, 'run_{}_marker_{}_sample_id_{}_nonchimeras.fasta' .format(
+                    run_id, marker_id, sample_id))
             uchime_chimeras_fasta_path = os.path.join(
-                temp_dir, 'run_{}_marker_{}_biosample_{}_chimeras.fasta' .format(
-                    run_id, marker_id, biosample_id))
+                temp_dir, 'run_{}_marker_{}_sample_{}_chimeras.fasta' .format(
+                    run_id, marker_id, sample_id))
 
             #
             # Create object and run_name vsearch
@@ -109,7 +109,7 @@ class FilterChimeraRunner(object):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])
                     filter_output_chimera_df.loc[(filter_output_chimera_df['run_id'] == run_id)
                                                  & (filter_output_chimera_df['marker_id'] == marker_id)
-                                                 & (filter_output_chimera_df['biosample_id'] == biosample_id)
+                                                 & (filter_output_chimera_df['sample_id'] == sample_id)
                                                  & (filter_output_chimera_df['variant_id'] == variant_id), 'filter_delete'] = True
 
             Logger.instance().debug("Vsearch uchime chimera borderline tsv_path: {}".format(
@@ -119,7 +119,7 @@ class FilterChimeraRunner(object):
                     variant_id = int(chimera_seqrecord.id.split(';')[0])
                     filter_output_borderline_df.loc[(filter_output_borderline_df['run_id'] == run_id)
                                                     & (filter_output_borderline_df['marker_id'] == marker_id)
-                                                    & (filter_output_borderline_df['biosample_id'] == biosample_id)
+                                                    & (filter_output_borderline_df['sample_id'] == sample_id)
                                                     & (filter_output_borderline_df['variant_id'] == variant_id), 'filter_delete'] = True
 
         return filter_output_chimera_df, filter_output_borderline_df

@@ -19,7 +19,7 @@ class FilterIndel(ToolWrapper):
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_filter_renkonen = "FilterRenkonen"
     __input_table_Variant = "Variant"
     # Output table
@@ -34,7 +34,7 @@ class FilterIndel(ToolWrapper):
         return [
             FilterIndel.__input_table_marker,
             FilterIndel.__input_table_run,
-            FilterIndel.__input_table_biosample,
+            FilterIndel.__input_table_sample,
             FilterIndel.__input_table_filter_renkonen,
             FilterIndel.__input_table_Variant,
         ]
@@ -76,8 +76,8 @@ class FilterIndel(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
         #######################################################################

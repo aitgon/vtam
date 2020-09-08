@@ -7,14 +7,16 @@ import sqlalchemy
 from Bio import SeqIO
 
 from sqlalchemy.ext.automap import automap_base
+from vtam.utils.ParamsFile import ParamsFile
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.Logger import Logger
 from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunMarkerFile import RunMarkerFile
+from vtam.utils.SequenceClusterer import SequenceClusterer
 from vtam.utils.VSearch import VSearch
 from vtam.utils.VariantDF import VariantDF
 from vtam.utils.VTAMexception import VTAMexception
@@ -33,7 +35,7 @@ class CommandPoolRunMarkers(object):
                     "run_name, marker_name, variant_id, sequence_length, read_count"))
             sys.exit(1)
 
-        self.biosample_names = asv_table_df.columns.tolist()[5:-2]
+        self.sample_names = asv_table_df.columns.tolist()[5:-2]
 
         if run_marker_df is None:  # Default: pool all marker_name
             self.asv_table_df = asv_table_df
@@ -120,6 +122,8 @@ class CommandPoolRunMarkers(object):
 
     def get_pooled_marker_df(self):
 
+        """Prepares output df"""
+
         if self.cluster_df is None:
             self.get_vsearch_clusters_to_df()
 
@@ -134,21 +138,30 @@ class CommandPoolRunMarkers(object):
                                           self.cluster_df.variant_id, ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
 
-        #  Centroid to aggregated variants and biosamples
-        # self.cluster_df_col = self.cluster_df.columns
-
         # Drop some columns
         def are_reads(x):
             return int(sum(x) > 0)
 
         agg_dic = {}
-        for k in ['variant_id', 'run_name', 'marker_name']:
+        for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
-        for k in self.biosample_names:
+        for k in self.sample_names:
             agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
                                                'centroid_variant_id', 'variant_id', 'run_name',
-                                               'marker_name'] + self.biosample_names]
+                                               'marker_name'] + self.sample_names]
+
+        ############################################################################################
+        #
+        # issue 0002645. Add sequences of cluster members with the exception of the centroid variant
+        # Annotate all variants with their sequences
+        #
+        ############################################################################################
+
+        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='variant_id',
+                               right_on='variant_id')
+        pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'pooled_sequences'})
+
         pooled_marker_df = pooled_marker_df.groupby(
             'centroid_variant_id').agg(agg_dic).reset_index()
         pooled_marker_df = pooled_marker_df.merge(
@@ -160,14 +173,33 @@ class CommandPoolRunMarkers(object):
             {'variant_id_x': 'variant_id'}, axis=1, inplace=True)
         pooled_marker_df.drop(labels='variant_id_y', axis=1, inplace=True)
         pooled_marker_df.rename(
-            {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'centroid_variant',
-             'variant_id': 'variants'}, axis=1, inplace=True)
+            {'run_name': 'run', 'marker_name': 'marker', 'centroid_variant_id': 'variant',
+             'variant_id': 'pooled_variants'}, axis=1, inplace=True)
+
+        # Move pooled_sequences to end
+        sequence_pool_list = pooled_marker_df.pooled_sequences.tolist()
+        pooled_marker_df.drop('pooled_sequences', axis=1, inplace=True)
+        pooled_marker_df['pooled_sequences'] = sequence_pool_list
+        # Move (centroid) sequence to end
+        sequence_centroid_list = pooled_marker_df.sequence.tolist()
+        pooled_marker_df.drop('sequence', axis=1, inplace=True)
+        pooled_marker_df['sequence'] = sequence_centroid_list
+
         return pooled_marker_df
 
     @classmethod
-    def main(cls, db, pooled_marker_tsv, run_marker_tsv):
+    def main(cls, db, pooled_marker_tsv, run_marker_tsv, params):
 
-        # import pdb; pdb.set_trace()
+        #######################################################################
+        #
+        # Parameters
+        #
+        #######################################################################
+
+        # params_dic = constants.get_params_default_dic()
+        params_dic = ParamsFile(params).get_params_dic()
+
+        cluster_identity = params_dic['cluster_identity']
 
         run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv)
 
@@ -182,8 +214,8 @@ class CommandPoolRunMarkers(object):
         Base = automap_base()
         Base.prepare(engine, reflect=True)
 
-        biosample_list = run_marker_file_obj.get_biosample_ids(engine)
-        biosample_list = NameIdConverter(id_name_or_sequence_list=biosample_list, engine=engine).to_names(Biosample)
+        sample_list = run_marker_file_obj.get_sample_ids(engine)
+        sample_list = NameIdConverter(id_name_or_sequence_list=sample_list, engine=engine).to_names(Sample)
 
         #######################################################################
         #
@@ -195,12 +227,47 @@ class CommandPoolRunMarkers(object):
             engine=engine, variant_read_count_like_model=FilterCodonStop)
 
         asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                          engine=engine, biosample_list=biosample_list)
-        asv_table_df = asv_table_runner.get_asvtable_df()
+                                          engine=engine, sample_list=sample_list, cluster_identity=cluster_identity)
+        asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
-        pool_marker_runner = CommandPoolRunMarkers(
-            asv_table_df=asv_table_df,
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_df,
             run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
+
+        #######################################################################
+        #
+        # Cluster sequences
+        #
+        #######################################################################
+
+        # reset asvtable-based clusterid and clustersize
+        pooled_marker_df.drop(['clusterid', 'clustersize'], axis=1, inplace=True)
+        pooled_marker_df.rename({'variant': 'variant_id'}, axis=1, inplace=True)  # prepare
+        pooled_marker_df['read_count'] = pooled_marker_df.iloc[:, 4:-2].sum(axis=1)  # prepare
+
+        seq_clusterer_obj = SequenceClusterer(pooled_marker_df, cluster_identity=cluster_identity)
+        cluster_count_df = seq_clusterer_obj.compute_clusters()
+
+        pooled_marker_df = pooled_marker_df.merge(cluster_count_df, on='variant_id')
+        pooled_marker_df.drop(['read_count'], axis=1, inplace=True)
+
+        ############################################################################################
+        #
+        # Reorder columns
+        #
+        ############################################################################################
+
+        column_list = pooled_marker_df.columns.tolist()
+        column_list.remove("pooled_sequences")
+        column_list.remove("sequence")
+        column_list = column_list + ['pooled_sequences', 'sequence']
+        pooled_marker_df = pooled_marker_df[column_list]
+
+        #######################################################################
+        #
+        # To tsv
+        #
+        #######################################################################
+
         pooled_marker_df.to_csv(pooled_marker_tsv, sep="\t", index=False)

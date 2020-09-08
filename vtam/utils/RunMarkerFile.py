@@ -2,7 +2,7 @@ import argparse
 import pandas
 import sqlalchemy
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.SampleInformation import SampleInformation
@@ -24,21 +24,21 @@ class RunMarkerFile(object):
                                         prerun	MFZR
                                         prerun	ZFZR"""
 
-    def get_biosample_ids(self, engine):
+    def get_sample_ids(self, engine):
 
-        biosample_lst = []
+        sample_lst = []
 
         record_list = [*self.to_identifier_df(engine).T.to_dict().values()]
         declarative_meta_table = SampleInformation.__table__
-        stmt = sqlalchemy.select([declarative_meta_table.c.biosample_id]).where(
+        stmt = sqlalchemy.select([declarative_meta_table.c.sample_id]).where(
             declarative_meta_table.c.run_id == sqlalchemy.bindparam('run_id')).where(
             declarative_meta_table.c.marker_id == sqlalchemy.bindparam('marker_id')).distinct()
 
         with engine.connect() as conn:
             for record in record_list:
-                biosample_lst = biosample_lst + [i[0] for i in conn.execute(stmt, record).fetchall()]
+                sample_lst = sample_lst + [i[0] for i in conn.execute(stmt, record).fetchall()]
 
-        return [*set(biosample_lst)]
+        return [*set(sample_lst)]
 
     def read_tsv_into_df(self):
         """
@@ -70,7 +70,7 @@ class RunMarkerFile(object):
         Returns
         -------
         pandas.DataFrame
-        DF with ids instead of names and columns run_id, marker_id, biosample_id
+        DF with ids instead of names and columns run_id, marker_id, sample_id
 
         """
 
@@ -87,9 +87,9 @@ class RunMarkerFile(object):
             filter_id=None):
         """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
 
-        :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
+        :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, sample_id, replicate, variant_id, read_count
         :param filter_id:
-        :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
+        :return: DataFrame with columns: run_id, marker_id, sample_id, replicate, variant_id, read_count
         """
 
         variant_read_count_like_table = variant_read_count_like_model.__table__
@@ -104,7 +104,7 @@ class RunMarkerFile(object):
                 [
                     variant_read_count_like_table.c.run_id,
                     variant_read_count_like_table.c.marker_id,
-                    variant_read_count_like_table.c.biosample_id,
+                    variant_read_count_like_table.c.sample_id,
                     variant_read_count_like_table.c.replicate,
                     variant_read_count_like_table.c.variant_id,
                     variant_read_count_like_table.c.read_count]).distinct() .where(
@@ -129,7 +129,7 @@ class RunMarkerFile(object):
             columns=[
                 'run_id',
                 'marker_id',
-                'biosample_id',
+                'sample_id',
                 'replicate',
                 'variant_id',
                 'read_count'])

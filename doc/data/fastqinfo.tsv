@@ -1,4 +1,4 @@
-TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Biosample	Replicate	Run	FastqFwd	FastqRev
+TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Sample	Replicate	Run	FastqFwd	FastqRev
 tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tpos1_run1	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
 agatcgtactagct	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tnegtag_run1	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
 gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben01	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq

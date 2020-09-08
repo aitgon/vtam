@@ -1,4 +1,4 @@
-run_id	marker_id	variant_id	biosample_id	replicate	read_count
+run_id	marker_id	variant_id	sample_id	replicate	read_count
 1	1	MFZR_005937	14Ben01	14Ben01-R1	5180
 1	1	MFZR_009797	14Ben01	14Ben01-R1	193
 1	1	MFZR_005937	14Ben01	14Ben01-R2	5254
