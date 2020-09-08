@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.1.14 (Sep 8, 2020)
+--------------------------------------------------
+
+- ENH Cluster sequences in ASV table
+- ENH Label keep occurrences in ASV table
+- RFR Renamed biosample to sample
+
 CHANGES IN VERSION 0.1.13 (Jul 12, 2020)
 --------------------------------------------------
 
