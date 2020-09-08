@@ -4,24 +4,10 @@ import pathlib
 import tarfile
 from urllib import request
 
+from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import coi_blast_db_gz_url
-import progressbar
 
-class MyProgressBar():
-    def __init__(self):
-        self.pbar = None
-
-    def __call__(self, block_num, block_size, total_size):
-        if not self.pbar:
-            self.pbar=progressbar.ProgressBar(maxval=total_size)
-            self.pbar.start()
-
-        downloaded = block_num * block_size
-        if downloaded < total_size:
-            self.pbar.update(downloaded)
-        else:
-            self.pbar.finish()
 
 class CommandBlastCOI(object):
 

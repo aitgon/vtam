@@ -1,13 +1,13 @@
-from vtam.utils.OptimizeLFNbiosampleReplicateRunner import OptimizeLFNbiosampleReplicateRunner
+from vtam.utils.OptimizeLFNsampleReplicateRunner import OptimizeLFNsampleReplicateRunner
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils.KnownOccurrences import KnownOccurrences
 from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.models.VariantReadCount import VariantReadCount
 
 
-class OptimizeLFNbiosampleReplicate(ToolWrapper):
+class OptimizeLFNsampleReplicate(ToolWrapper):
     __mapper_args__ = {
-        "polymorphic_identity": "vtam.wrapper.OptimizeLFNbiosampleReplicate"
+        "polymorphic_identity": "vtam.wrapper.OptimizeLFNsampleReplicate"
     }
 
     # Input file
@@ -16,30 +16,30 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
-    __output_file_optimize_lfn_biosample_replicate = "optimize_lfn_biosample_replicate"
+    __output_file_optimize_lfn_sample_replicate = "optimize_lfn_sample_replicate"
 
     def specify_input_file(self):
         return[
-            OptimizeLFNbiosampleReplicate.__input_file_readinfo,
-            OptimizeLFNbiosampleReplicate.__input_file_known_occurrences,
+            OptimizeLFNsampleReplicate.__input_file_readinfo,
+            OptimizeLFNsampleReplicate.__input_file_known_occurrences,
         ]
 
     def specify_input_table(self):
         return [
-            OptimizeLFNbiosampleReplicate.__input_table_marker,
-            OptimizeLFNbiosampleReplicate.__input_table_run,
-            OptimizeLFNbiosampleReplicate.__input_table_biosample,
-            OptimizeLFNbiosampleReplicate.__input_table_variant,
-            OptimizeLFNbiosampleReplicate.__input_table_variant_read_count,
+            OptimizeLFNsampleReplicate.__input_table_marker,
+            OptimizeLFNsampleReplicate.__input_table_run,
+            OptimizeLFNsampleReplicate.__input_table_sample,
+            OptimizeLFNsampleReplicate.__input_table_variant,
+            OptimizeLFNsampleReplicate.__input_table_variant_read_count,
         ]
 
     def specify_output_file(self):
         return [
-            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate,
+            OptimizeLFNsampleReplicate.__output_file_optimize_lfn_sample_replicate,
         ]
 
     def specify_params(self):
@@ -58,13 +58,13 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
 
         # Input file output
         known_occurrences_tsv = self.input_file(
-            OptimizeLFNbiosampleReplicate.__input_file_known_occurrences)
+            OptimizeLFNsampleReplicate.__input_file_known_occurrences)
         fasta_info_tsv = self.input_file(
-            OptimizeLFNbiosampleReplicate.__input_file_readinfo)
+            OptimizeLFNsampleReplicate.__input_file_readinfo)
 
         # Output file output
         output_optimize_path = self.output_file(
-            OptimizeLFNbiosampleReplicate.__output_file_optimize_lfn_biosample_replicate)
+            OptimizeLFNsampleReplicate.__output_file_optimize_lfn_sample_replicate)
 
         ############################################################################################
         #
@@ -85,8 +85,8 @@ class OptimizeLFNbiosampleReplicate(ToolWrapper):
         #
         ############################################################################################
 
-        optimize_lfn_biosample_replicate_runner = OptimizeLFNbiosampleReplicateRunner(
+        optimize_lfn_sample_replicate_runner = OptimizeLFNsampleReplicateRunner(
             variant_read_count_df=variant_read_count_df, known_occurrences_df=known_occurrences_df)
-        optimize_lfn_biosample_replicate_runner.to_tsv(optimize_path=output_optimize_path, engine=engine)
+        optimize_lfn_sample_replicate_runner.to_tsv(optimize_path=output_optimize_path, engine=engine)
 
 

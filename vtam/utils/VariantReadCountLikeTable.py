@@ -3,7 +3,7 @@ import sqlalchemy
 
 
 class VariantReadCountLikeTable(object):
-    """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, biosample_id, replicate, variant_id
+    """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, sample_id, replicate, variant_id
     attributes/columns and performs various operations on it"""
 
     def __init__(self, engine, variant_read_count_like_model):
@@ -13,7 +13,7 @@ class VariantReadCountLikeTable(object):
 
     def delete_from_db(self, sample_record_list):
         """Deletes the entries in the output filter models based on a list of instances (dicts) defined by, run_id,
-         marker_id, biosample_id, replicate"""
+         marker_id, sample_id, replicate"""
 
         sample_column_list = pandas.DataFrame(
             sample_record_list).columns.tolist()
@@ -24,9 +24,9 @@ class VariantReadCountLikeTable(object):
                 self.variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
             stmt = stmt.where(
                 self.variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
-            if 'biosample_id' in sample_column_list:
+            if 'sample_id' in sample_column_list:
                 stmt = stmt.where(
-                    self.variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+                    self.variant_read_count_like_model.__table__.c.sample_id == sqlalchemy.bindparam('sample_id'))
             if 'replicate' in sample_column_list and 'replicate' in [
                     col.key for col in self.variant_read_count_like_model.__table__.columns]:
                 stmt = stmt.where(
@@ -46,11 +46,11 @@ class VariantReadCountLikeTable(object):
         for row in filter_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
-            biosample_id = row.biosample_id
+            sample_id = row.sample_id
             variant_id = row.variant_id
             read_count = row.read_count
             instance = {'run_id': run_id, 'marker_id': marker_id,
-                                                         'variant_id': variant_id, 'biosample_id': biosample_id,
+                                                         'variant_id': variant_id, 'sample_id': sample_id,
                                                          'read_count': read_count}
             if 'filter_delete' in dir(row):
                 instance['filter_delete'] = row.filter_delete

@@ -45,7 +45,7 @@ These columns are needed
 - Tag_rev
 - Primer_rev
 - Marker
-- Biosample
+- Sample
 - Replicate
 - Run
 - Fastq_fw
@@ -56,7 +56,7 @@ The first two lines of my *fastqinfo.tsv* look like this:
 
 .. code-block:: bash
 
-    Tag_fwd	Primer_fwd	Tag_rev	Primer_rev	Marker	 Biosample	Replicate	Run	Fastq_fwd	Fastq_rev
+    Tag_fwd	Primer_fwd	Tag_rev	Primer_rev	Marker	 Sample	Replicate	Run	Fastq_fwd	Fastq_rev
     cgatcgtcatcacg	TCCACTAATCACAARGATATTGGTAC	cgcgatctgtagag	WACTAATCAATTWCCAAATCCTCC	MFZR	14Mon01	repl2	prerun	MFZR2_S5_L001_R1_001.fastq	MFZR2_S5_L001_R2_001.fastq
 
 Run the VTAM merge command
@@ -87,7 +87,7 @@ There is a single command *filter* to demultiplex the reads, filter variants and
 
     vtam filter --fastainfo out/fastainfo.tsv --fastadir out/fastadir --db out/db.sqlite --outdir out --log out/vtam.log -v
 
-The variants that passed all the filters together with read count in the different biosamples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
+The variants that passed all the filters together with read count in the different samples are found in the *out/asvtable.tsv*. The variants that were removed by the different filters can be found in the *out/db.sqlite* database that can be opened with the *sqlitebrowser* program.
 
 Pool Markers
 ----------------
@@ -134,7 +134,7 @@ The command to carry out the taxon assignation is:
 Parameter Optimization
 ------------------------------
 
-To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real biosamples. The set of known variants are defined in a TSV file like this: :download:`known_occurrences.tsv <known_occurrences.tsv>`
+To help the user select the parameters, VTAM has an *optimize* subcommand that will compute different values based on positive and negative variants present in the mock, negative and real samples. The set of known variants are defined in a TSV file like this: :download:`known_occurrences.tsv <known_occurrences.tsv>`
 
 .. code-block:: bash
 

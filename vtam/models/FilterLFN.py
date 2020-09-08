@@ -9,7 +9,7 @@ class FilterLFN(Base):
             'marker_id',
             'run_id',
             'variant_id',
-            'biosample_id',
+            'sample_id',
             'replicate',
             'filter_id'),
     )
@@ -29,10 +29,10 @@ class FilterLFN(Base):
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)
-    biosample_id = Column(
+    sample_id = Column(
         Integer,
         ForeignKey(
-            "Biosample.id",
+            "Sample.id",
             onupdate="CASCADE",
             ondelete="CASCADE"),
         nullable=False)

@@ -1,13 +1,13 @@
 import pandas
 import sqlalchemy
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 
-class OptimizeLFNbiosampleReplicateRunner:
+class OptimizeLFNsampleReplicateRunner:
 
     def __init__(self, variant_read_count_df, known_occurrences_df):
 
@@ -18,21 +18,21 @@ class OptimizeLFNbiosampleReplicateRunner:
 
         ############################################################################################
         #
-        # Compute ratio per_sum_biosample_replicate: N_ijk / N_jk
+        # Compute ratio per_sum_sample_replicate: N_ijk / N_jk
         #
         ############################################################################################
 
         N_jk_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_jk_df()
 
         # Append N_jk
-        optimize_df = self.variant_read_count_df.merge(N_jk_df, on=['run_id', 'marker_id', 'biosample_id', 'replicate'])
+        optimize_df = self.variant_read_count_df.merge(N_jk_df, on=['run_id', 'marker_id', 'sample_id', 'replicate'])
 
         # Keep only 'keep' variants for output
         optimize_df = optimize_df.merge(
-            self.known_occurrences_df, on=['run_id', 'marker_id', 'biosample_id', 'variant_id']).drop_duplicates()
+            self.known_occurrences_df, on=['run_id', 'marker_id', 'sample_id', 'variant_id']).drop_duplicates()
 
         optimize_df.rename(columns={'read_count': 'N_ijk'}, inplace=True)
-        optimize_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_df['N_ijk'] / \
+        optimize_df['lfn_sample_replicate: N_ijk/N_jk'] = optimize_df['N_ijk'] / \
             optimize_df['N_jk']
 
         ############################################################################################
@@ -42,15 +42,15 @@ class OptimizeLFNbiosampleReplicateRunner:
         ############################################################################################
 
         optimize_df = optimize_df.sort_values(
-            'lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
+            'lfn_sample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
         def round_down_4_decimals(x): return int(x * 10 ** 4) / 10 ** 4
-        optimize_df['round_down'] = optimize_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(
+        optimize_df['round_down'] = optimize_df['lfn_sample_replicate: N_ijk/N_jk'].apply(
             round_down_4_decimals)
 
         ############################################################################################
         #
-        # Add run, marker and biosample names
+        # Add run, marker and sample names
         #
         ############################################################################################
 
@@ -62,9 +62,9 @@ class OptimizeLFNbiosampleReplicateRunner:
         marker_df.rename({'id': 'marker_id', 'name': 'marker', }, axis=1, inplace=True)
         optimize_df = optimize_df.merge(marker_df, on='marker_id')
 
-        biosample_df = pandas.read_sql(sqlalchemy.select([Biosample]), con=engine.connect())
-        biosample_df.rename({'id': 'biosample_id', 'name': 'biosample', }, axis=1, inplace=True)
-        optimize_df = optimize_df.merge(biosample_df, on='biosample_id')
+        sample_df = pandas.read_sql(sqlalchemy.select([Sample]), con=engine.connect())
+        sample_df.rename({'id': 'sample_id', 'name': 'sample', }, axis=1, inplace=True)
+        optimize_df = optimize_df.merge(sample_df, on='sample_id')
 
         ############################################################################################
         #
@@ -72,11 +72,11 @@ class OptimizeLFNbiosampleReplicateRunner:
         #
         ############################################################################################
 
-        optimize_df['lfn_biosample_replicate: N_ijk/N_jk'] = optimize_df['N_ijk'] / optimize_df['N_jk']
+        optimize_df['lfn_sample_replicate: N_ijk/N_jk'] = optimize_df['N_ijk'] / optimize_df['N_jk']
 
-        optimize_df = optimize_df.sort_values('lfn_biosample_replicate: N_ijk/N_jk', ascending=True)
+        optimize_df = optimize_df.sort_values('lfn_sample_replicate: N_ijk/N_jk', ascending=True)
         # Make round.inf with 4 decimals
-        optimize_df['round_down'] = optimize_df['lfn_biosample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
+        optimize_df['round_down'] = optimize_df['lfn_sample_replicate: N_ijk/N_jk'].apply(round_down_4_decimals)
 
         ############################################################################################
         #
@@ -84,7 +84,7 @@ class OptimizeLFNbiosampleReplicateRunner:
         #
         ############################################################################################
 
-        optimize_df = optimize_df[['run', 'marker', 'biosample', 'replicate', 'variant_id', 'N_ijk', 'N_jk', 'lfn_biosample_replicate: N_ijk/N_jk', 'round_down', 'variant_sequence']].drop_duplicates()
+        optimize_df = optimize_df[['run', 'marker', 'sample', 'replicate', 'variant_id', 'N_ijk', 'N_jk', 'lfn_sample_replicate: N_ijk/N_jk', 'round_down', 'variant_sequence']].drop_duplicates()
         optimize_df = optimize_df.rename({'variant_id': 'variant', 'variant_sequence': 'sequence'}, axis=1)
 
         #######################################################################
@@ -93,7 +93,7 @@ class OptimizeLFNbiosampleReplicateRunner:
         #
         #######################################################################
 
-        optimize_df.sort_values(by=['run', 'marker', 'round_down', 'lfn_biosample_replicate: N_ijk/N_jk', 'biosample', 'replicate'], ascending=[True, True, True, True, True, True], inplace=True)
+        optimize_df.sort_values(by=['run', 'marker', 'round_down', 'lfn_sample_replicate: N_ijk/N_jk', 'sample', 'replicate'], ascending=[True, True, True, True, True, True], inplace=True)
 
         return optimize_df
 

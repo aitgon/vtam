@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.1.14 (Sep 8, 2020)
+--------------------------------------------------
+
+- ENH Cluster sequences in ASV table
+- ENH Label keep occurrences in ASV table
+- RFR Renamed biosample to sample
+
 CHANGES IN VERSION 0.1.13 (Jul 12, 2020)
 --------------------------------------------------
 
@@ -46,7 +53,7 @@ CHANGES IN VERSION 0.1.5 (Mai 31, 2020)
 --------------------------------------------------
 
 - ENH: issue 0002607. check paramater names in params.yml
-- BUG: issue 0002606. When using --params in filter lfn_read_count_cutoff takes the value of lfn_biosample_replicate_cutoff
+- BUG: issue 0002606. When using --params in filter lfn_read_count_cutoff takes the value of lfn_sample_replicate_cutoff
 
 CHANGES IN VERSION 0.1.4 (Mai 29, 2020)
 --------------------------------------------------

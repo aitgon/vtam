@@ -1,4 +1,4 @@
-id	run_id	marker_id	variant_id	biosample_id	replicate	read_count	filter_delete
+id	run_id	marker_id	variant_id	sample_id	replicate	read_count	filter_delete
 203	1	1	95	1	1	375	0
 204	1	1	271	1	1	1546	0
 205	1	1	603	1	1	138	0

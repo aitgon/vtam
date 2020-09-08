@@ -22,9 +22,6 @@ class TestCommandsFilterOptimize(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-
-
-        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
@@ -125,10 +122,10 @@ class TestCommandsFilterOptimize(unittest.TestCase):
         asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_lfn_variant_replicate_cutoff_specific.tsv")
         self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
-    def test_05_optimize_lfn_biosample_replicate(self):
+    def test_05_optimize_lfn_sample_replicate(self):
 
         cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
-              "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNbiosampleReplicate " \
+              "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNsampleReplicate " \
               "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -137,9 +134,9 @@ class TestCommandsFilterOptimize(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args, cwd=self.outdir_thistest_path)
 
-        optimize_lfn_biosample_replicate_path = os.path.join(self.outdir_thistest_path, "optimize_lfn_biosample_replicate.tsv")
-        optimize_lfn_biosample_replicate_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_biosample_replicate.tsv")
-        self.assertTrue(filecmp.cmp(optimize_lfn_biosample_replicate_path, optimize_lfn_biosample_replicate_bak_path, shallow=False))
+        optimize_lfn_sample_replicate_path = os.path.join(self.outdir_thistest_path, "optimize_lfn_sample_replicate.tsv")
+        optimize_lfn_sample_replicate_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_sample_replicate.tsv")
+        self.assertTrue(filecmp.cmp(optimize_lfn_sample_replicate_path, optimize_lfn_sample_replicate_bak_path, shallow=False))
 
     def test_06_optimize_pcr_error(self):
 
@@ -200,6 +197,21 @@ class TestCommandsFilterOptimize(unittest.TestCase):
                                                                 "optimize_lfn_variant_replicate_specific.tsv")
         optimize_lfn_variant_replicate_specific_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_variant_replicate_specific.tsv")
         self.assertTrue(filecmp.cmp(optimize_lfn_variant_replicate_specific_path, optimize_lfn_variant_replicate_specific_bak_path, shallow=False))
+
+    def test_09_filter_lfn_variant_with_known_occurrences(self):
+
+        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+              "--known_occurrences {known_occurrences} " \
+              "--log vtam.log".format(**self.args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, cwd=self.outdir_thistest_path)
+
+        asvtable_bak_path = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_keep_occurrences.tsv")
+        self.assertTrue(filecmp.cmp(self.asvtable_path, asvtable_bak_path, shallow=False))
 
     def tearDown(self):
 

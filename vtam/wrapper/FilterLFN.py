@@ -24,7 +24,7 @@ class FilterLFN(ToolWrapper):
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_variant_read_count = "VariantReadCount"
     # Output table
     __output_table_filter_lfn = "FilterLFN"
@@ -38,7 +38,7 @@ class FilterLFN(ToolWrapper):
         return [
             FilterLFN.__input_table_marker,
             FilterLFN.__input_table_run,
-            FilterLFN.__input_table_biosample,
+            FilterLFN.__input_table_sample,
             FilterLFN.__input_table_variant_read_count,
         ]
 
@@ -53,7 +53,7 @@ class FilterLFN(ToolWrapper):
             "lfn_variant_specific_cutoff": "str",
             "lfn_variant_replicate_cutoff": "float",
             "lfn_variant_replicate_specific_cutoff": "str",
-            "lfn_biosample_replicate_cutoff": "required|float",
+            "lfn_sample_replicate_cutoff": "required|float",
             "lfn_read_count_cutoff": "required|float",
         }
 
@@ -86,13 +86,13 @@ class FilterLFN(ToolWrapper):
         lfn_variant_specific_cutoff = self.option("lfn_variant_specific_cutoff")
         lfn_variant_replicate_cutoff = self.option("lfn_variant_replicate_cutoff")
         lfn_variant_replicate_specific_cutoff = self.option("lfn_variant_replicate_specific_cutoff")
-        lfn_biosample_replicate_cutoff = self.option("lfn_biosample_replicate_cutoff")
+        lfn_sample_replicate_cutoff = self.option("lfn_sample_replicate_cutoff")
         lfn_read_count_cutoff = self.option("lfn_read_count_cutoff")
 
         ############################################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
         ############################################################################################
@@ -124,7 +124,7 @@ class FilterLFN(ToolWrapper):
             lfn_variant_specific_cutoff=lfn_variant_specific_cutoff_df,
             lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
             lfn_variant_replicate_specific_cutoff=lfn_variant_replicate_specific_cutoff_df,
-            lfn_biosample_replicate_cutoff=lfn_biosample_replicate_cutoff,
+            lfn_sample_replicate_cutoff=lfn_sample_replicate_cutoff,
             lfn_read_count_cutoff=lfn_read_count_cutoff)
 
         VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
