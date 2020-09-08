@@ -41,14 +41,14 @@ lfn_variant_cutoff: 0.001
 # Occurrence is deleted if N_ijk/N_ik < lfn_variant_replicate_cutoff
 # This parameter is used if the --lfn_variant_replicate option is set in "vtam filter" or "vtam optimize"
 lfn_variant_replicate_cutoff: 0.001
-# Occurrence is deleted if N_ijk/N_jk < lfn_ biosample lfn_biosample_replicate_cutoff
-lfn_biosample_replicate_cutoff: 0.001
+# Occurrence is deleted if N_ijk/N_jk < lfn_ sample lfn_sample_replicate_cutoff
+lfn_sample_replicate_cutoff: 0.001
 # Occurrence is deleted if N_ijk < lfn_ lfn_read_count_cutoff
 lfn_read_count_cutoff: 10
 
 ################################################################################
 # Parameters of the "FilterMinReplicateNumber" filter in the "filter" command
-# Occurrences of a variant in a given biosample are retained only if it is present in at least min_replicate_number replicates of the biosample
+# Occurrences of a variant in a given sample are retained only if it is present in at least min_replicate_number replicates of the sample
 min_replicate_number: 2
 
 ################################################################################
@@ -122,11 +122,11 @@ def get_params_default_dic():
 #
 ####################################################################################################
 
-header_paired_fastq = {'run', 'marker', 'biosample', 'replicate'}
-header_merged_fasta = {'run', 'marker', 'biosample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev',
+header_paired_fastq = {'run', 'marker', 'sample', 'replicate'}
+header_merged_fasta = {'run', 'marker', 'sample', 'replicate', 'tagfwd', 'primerfwd', 'tagrev',
     'primerrev', 'mergedfasta'}
-header_sortedread_fasta = {'run', 'marker', 'biosample', 'replicate', 'sortedfasta'}
-header_known_occurrences = {'run', 'marker', 'biosample', 'mock', 'variant', 'action', 'sequence'}
+header_sortedread_fasta = {'run', 'marker', 'sample', 'replicate', 'sortedfasta'}
+header_known_occurrences = {'run', 'marker', 'sample', 'mock', 'variant', 'action', 'sequence'}
 header_cutoff_specific_variant_replicate = {'run', 'marker', 'variant', 'lfn_variant_replicate_cutoff'}
 header_cutoff_specific_variant = {'run', 'marker', 'variant', 'lfn_variant_cutoff'}
 
@@ -181,7 +181,7 @@ FilterLFNreference_records = [
                                     't_replicate'},
     {'filter_id': 4, 'filter_name': 'lfn_per_variant_specific'},
     {'filter_id': 5, 'filter_name': 'lfn_per_variant_replicate_specific'},
-    {'filter_id': 6, 'filter_name': 'lfn_biosample_replicate'},
+    {'filter_id': 6, 'filter_name': 'lfn_sample_replicate'},
     {'filter_id': 7, 'filter_name': 'lfn_read_count'},
     {'filter_id': 8, 'filter_name': 'lfn_did_not_passed_all'},
 ]

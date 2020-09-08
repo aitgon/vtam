@@ -24,7 +24,7 @@ class VariantReadCount(ToolWrapper):
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     # Output
     # Output file
     # Output table
@@ -35,7 +35,7 @@ class VariantReadCount(ToolWrapper):
         return [
             VariantReadCount.__input_table_run,
             VariantReadCount.__input_table_marker,
-            VariantReadCount.__input_table_biosample,
+            VariantReadCount.__input_table_sample,
         ]
 
     def specify_input_file(self):
@@ -78,8 +78,8 @@ class VariantReadCount(ToolWrapper):
         # Input table models
         run_model = self.input_table(VariantReadCount.__input_table_run)
         marker_model = self.input_table(VariantReadCount.__input_table_marker)
-        biosample_model = self.input_table(
-            VariantReadCount.__input_table_biosample)
+        sample_model = self.input_table(
+            VariantReadCount.__input_table_sample)
         #
         # Output
         # Output table
@@ -94,8 +94,8 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete variants if below global_read_count_cutoff
@@ -105,7 +105,7 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read sample information to get run_id, marker_id, biosample_id, replicate for current analysis
+        # 1. Read sample information to get run_id, marker_id, sample_id, replicate for current analysis
         #
         #######################################################################
 
@@ -120,7 +120,7 @@ class VariantReadCount(ToolWrapper):
             Logger.instance().debug(row)
             marker_name = row.marker
             run_name = row.run
-            biosample_name = row.biosample
+            sample_name = row.sample
             replicate = row.replicate
             with engine.connect() as conn:
                 # get run_id ###########
@@ -131,25 +131,25 @@ class VariantReadCount(ToolWrapper):
                 stmt_select_marker_id = select([marker_model.__table__.c.id]).where(
                     marker_model.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = select([biosample_model.__table__.c.id]).where(
-                    biosample_model.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(
-                    stmt_select_biosample_id).first()[0]
+                # get sample_id ###########
+                stmt_select_sample_id = select([sample_model.__table__.c.id]).where(
+                    sample_model.__table__.c.name == sample_name)
+                sample_id = conn.execute(
+                    stmt_select_sample_id).first()[0]
                 # add this sample_instance ###########
                 sample_instance_list.append({'run_id': run_id,
                                              'marker_id': marker_id,
-                                             'biosample_id': biosample_id,
+                                             'sample_id': sample_id,
                                              'replicate': replicate})
 
         #######################################################################
         #
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         #
         #######################################################################
 
         Logger.instance().debug(
-            "file: {}; line: {}; Delete marker_name/run_name/biosample/replicate".format(
+            "file: {}; line: {}; Delete marker_name/run_name/sample/replicate".format(
                 __file__, inspect.currentframe().f_lineno))
 
         with engine.connect() as conn:
@@ -159,7 +159,7 @@ class VariantReadCount(ToolWrapper):
             stmt_del = stmt_del.where(
                 variant_read_count_model.__table__.c.marker_id == bindparam('marker_id'))
             stmt_del = stmt_del.where(
-                variant_read_count_model.__table__.c.biosample_id == bindparam('biosample_id'))
+                variant_read_count_model.__table__.c.sample_id == bindparam('sample_id'))
             stmt_del = stmt_del.where(
                 variant_read_count_model.__table__.c.replicate == bindparam('replicate'))
             conn.execute(stmt_del, sample_instance_list)
@@ -185,7 +185,7 @@ class VariantReadCount(ToolWrapper):
         for row in sample_info_ids_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
-            biosample_id = row.biosample_id
+            sample_id = row.sample_id
             replicate = row.replicate
             read_fasta = row.sortedfasta
 
@@ -212,7 +212,7 @@ class VariantReadCount(ToolWrapper):
                         len(sorted_read_list),
                         'marker_id': [marker_id] *
                         len(sorted_read_list),
-                        'biosample_id': [biosample_id] *
+                        'sample_id': [sample_id] *
                         len(sorted_read_list),
                         'replicate': [replicate] *
                         len(sorted_read_list),
@@ -221,7 +221,7 @@ class VariantReadCount(ToolWrapper):
                         len(sorted_read_list)})
                 #  Compute read count
                 variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
-                    ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']).sum().reset_index()
+                    ['run_id', 'marker_id', 'sample_id', 'replicate', 'read_sequence']).sum().reset_index()
 
                 variant_read_count_df = variant_read_count_df.append(
                     variant_read_count_df_sorted_i)
@@ -239,7 +239,7 @@ class VariantReadCount(ToolWrapper):
             "file: {}; line: {}; Group by read sequence".format(
                 __file__, inspect.currentframe().f_lineno))
         variant_read_count_df = variant_read_count_df.groupby(
-            ['run_id', 'marker_id', 'biosample_id', 'replicate', 'read_sequence']) .sum().reset_index()
+            ['run_id', 'marker_id', 'sample_id', 'replicate', 'read_sequence']) .sum().reset_index()
         variant_read_count_df.rename(
             columns={
                 'read_sequence': 'variant_id'},
@@ -249,7 +249,7 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 5. Remove variants with read count across all run_name, markers, biosamples and replicates lower than
+        # 5. Remove variants with read count across all run_name, markers, samples and replicates lower than
         # global_read_count_cutoff parameter
         #
         #######################################################################
@@ -275,7 +275,7 @@ class VariantReadCount(ToolWrapper):
                 __file__, inspect.currentframe().f_lineno))
         variant_read_count_instance_list = []
         variant_read_count_df.sort_values(
-            by=['variant_sequence', 'run_id', 'marker_id', 'biosample_id', 'replicate'], inplace=True)
+            by=['variant_sequence', 'run_id', 'marker_id', 'sample_id', 'replicate'], inplace=True)
         variant_new_set = set()
         variant_new_instance_list = []
         with engine.connect() as conn:
@@ -287,7 +287,7 @@ class VariantReadCount(ToolWrapper):
             for row in variant_read_count_df.itertuples():
                 run_id = row.run_id
                 marker_id = row.marker_id
-                biosample_id = row.biosample_id
+                sample_id = row.sample_id
                 replicate = row.replicate
                 variant_sequence = row.variant_sequence
                 read_count = row.read_count
@@ -307,7 +307,7 @@ class VariantReadCount(ToolWrapper):
                         'run_id': run_id,
                         'marker_id': marker_id,
                         'variant_id': variant_id,
-                        'biosample_id': biosample_id,
+                        'sample_id': sample_id,
                         'replicate': replicate,
                         'read_count': read_count})
 

@@ -60,7 +60,7 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
         self.variant_read_count_df = pandas.DataFrame({
             'run_id': [1] * 5,
             'marker_id': [1] * 5,
-            'biosample_id': [1] * 5,
+            'sample_id': [1] * 5,
             'replicate': [1] * 5,
             'variant_id': list(range(1, 6)),
             'read_count': [650, 700, 50, 350, 50],
@@ -77,21 +77,11 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
         filter_output_df, filter_borderline_output_df = filter_chimera_runner.get_variant_read_count_delete_df(
             variant_df=self.variant_df, uchime3_denovo_abskew=16)
 
-        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
-0       1          1             1          1           1         650          False
-1       1          1             1          1           2         700          False
-2       1          1             1          1           3          50          False
-3       1          1             1          1           4         350          False
-4       1          1             1          1           5          50          False"""
-        self.assertTrue(filter_output_df_bak_str ==
-                        filter_output_df.to_string())
-
-        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
-0       1          1             1          1           1         650          False
-1       1          1             1          1           2         700          False
-2       1          1             1          1           3          50          False
-3       1          1             1          1           4         350          False
-4       1          1             1          1           5          50          False"""
-
-        self.assertTrue(filter_output_df_bak_str ==
-                        filter_borderline_output_df.to_string())
+        filter_output_bak_dict = {'filter_delete': {0: False, 1: False, 2: False, 3: False, 4: False},
+ 'marker_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
+ 'read_count': {0: 650, 1: 700, 2: 50, 3: 350, 4: 50},
+ 'replicate': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
+ 'run_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
+ 'sample_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
+ 'variant_id': {0: 1, 1: 2, 2: 3, 3: 4, 4: 5}}
+        self.assertTrue(filter_output_bak_dict == filter_output_df.to_dict())

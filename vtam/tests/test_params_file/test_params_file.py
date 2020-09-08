@@ -24,5 +24,5 @@ class TestParamsFile(unittest.TestCase):
 
     def test_get_params_dic(self):
 
-        self.assertTrue(ParamsFile(self.params).get_params_dic()['lfn_biosample_replicate_cutoff']
+        self.assertTrue(ParamsFile(self.params).get_params_dic()['lfn_sample_replicate_cutoff']
                         == 0.003)

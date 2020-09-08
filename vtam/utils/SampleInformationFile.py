@@ -10,7 +10,7 @@ from vtam.utils.VTAMexception import VTAMexception
 
 from vtam.models.Run import Run
 from vtam.models.Marker import Marker
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.Variant import Variant
 from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.SampleInformation import SampleInformation
@@ -36,9 +36,9 @@ class SampleInformationFile:
                 variant_read_count_like_model.__table__.c.run_id == sqlalchemy.bindparam('run_id'))
             stmt = stmt.where(
                 variant_read_count_like_model.__table__.c.marker_id == sqlalchemy.bindparam('marker_id'))
-            if 'biosample_id' in sample_column_list:
+            if 'sample_id' in sample_column_list:
                 stmt = stmt.where(
-                    variant_read_count_like_model.__table__.c.biosample_id == sqlalchemy.bindparam('biosample_id'))
+                    variant_read_count_like_model.__table__.c.sample_id == sqlalchemy.bindparam('sample_id'))
             if 'replicate' in sample_column_list and 'replicate' in [
                     col.key for col in variant_read_count_like_model.__table__.columns]:
                 stmt = stmt.where(
@@ -52,9 +52,9 @@ class SampleInformationFile:
             filter_id=None):
         """Based on the SortedReadFile samples and the variant_read_count_model, returns the variant_read_count_input_df
 
-        :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
+        :param variant_read_count_like_model: SQLalchemy models with columns: run_id, marker_id, sample_id, replicate, variant_id, read_count
         :param filter_id:
-        :return: DataFrame with columns: run_id, marker_id, biosample_id, replicate, variant_id, read_count
+        :return: DataFrame with columns: run_id, marker_id, sample_id, replicate, variant_id, read_count
         """
 
         variant_read_count_like_table = variant_read_count_like_model.__table__
@@ -65,19 +65,19 @@ class SampleInformationFile:
                 engine=engine).itertuples():
             run_id = sample_instance_row.run_id
             marker_id = sample_instance_row.marker_id
-            biosample_id = sample_instance_row.biosample_id
+            sample_id = sample_instance_row.sample_id
             replicate = sample_instance_row.replicate
             stmt_select = sqlalchemy.select(
                 [
                     variant_read_count_like_table.c.run_id,
                     variant_read_count_like_table.c.marker_id,
-                    variant_read_count_like_table.c.biosample_id,
+                    variant_read_count_like_table.c.sample_id,
                     variant_read_count_like_table.c.replicate,
                     variant_read_count_like_table.c.variant_id,
                     variant_read_count_like_table.c.read_count]).distinct() .where(
                 variant_read_count_like_table.c.run_id == run_id).where(
                 variant_read_count_like_table.c.marker_id == marker_id) .where(
-                    variant_read_count_like_table.c.biosample_id == biosample_id).where(
+                    variant_read_count_like_table.c.sample_id == sample_id).where(
                         variant_read_count_like_table.c.replicate == replicate)
             # Used for filters tables where filter_delete attribute exists
             if 'filter_delete' in [
@@ -98,7 +98,7 @@ class SampleInformationFile:
             columns=[
                 'run_id',
                 'marker_id',
-                'biosample_id',
+                'sample_id',
                 'replicate',
                 'variant_id',
                 'read_count'])
@@ -121,19 +121,19 @@ class SampleInformationFile:
         Returns
         -------
         pandas.DataFrame
-        DF with ids instead of names and columns run_id, marker_id, biosample_id
+        DF with ids instead of names and columns run_id, marker_id, sample_id
 
         """
 
         sample_info_df = pandas.DataFrame()
         sample_info_df['run_id'] = None
         sample_info_df['marker_id'] = None
-        sample_info_df['biosample_id'] = None
+        sample_info_df['sample_id'] = None
         with engine.connect() as conn:
             for k, row in self.read_tsv_into_df().iterrows():
                 marker_name = row.marker
                 run_name = row.run
-                biosample_name = row.biosample
+                sample_name = row['sample']  # fixed confusion of sample method and variable
                 replicate = int(row.replicate)
                 # get run_id ###########
                 stmt_select_run_id = sqlalchemy.select(
@@ -143,19 +143,19 @@ class SampleInformationFile:
                 stmt_select_marker_id = sqlalchemy.select([Marker.__table__.c.id]).where(
                     Marker.__table__.c.name == marker_name)
                 marker_id = conn.execute(stmt_select_marker_id).first()[0]
-                # get biosample_id ###########
-                stmt_select_biosample_id = sqlalchemy.select([Biosample.__table__.c.id]).where(
-                    Biosample.__table__.c.name == biosample_name)
-                biosample_id = conn.execute(
-                    stmt_select_biosample_id).first()[0]
+                # get sample_id ###########
+                stmt_select_sample_id = sqlalchemy.select([Sample.__table__.c.id]).where(
+                    Sample.__table__.c.name == sample_name)
+                sample_id = conn.execute(
+                    stmt_select_sample_id).first()[0]
                 new_row_dic = dict(row)
                 new_row_dic['run_id'] = run_id
                 new_row_dic['marker_id'] = marker_id
-                new_row_dic['biosample_id'] = biosample_id
+                new_row_dic['sample_id'] = sample_id
                 new_row_dic['replicate'] = replicate
                 del new_row_dic["run"]
                 del new_row_dic["marker"]
-                del new_row_dic["biosample"]
+                del new_row_dic["sample"]
 
                 sample_info_df = sample_info_df.append(
                     pandas.DataFrame(new_row_dic, index=[0]), sort=False)
@@ -226,14 +226,14 @@ class SampleInformationFile:
         Returns
         -------
         pandas.DataFrame
-        DF with ids instead of names and columns run_id, marker_id, biosample_id
+        DF with ids instead of names and columns run_id, marker_id, sample_id
 
         """
 
         for row in self.read_tsv_into_df().itertuples():
             run_name = row.run
             marker_name = row.marker
-            biosample_name = row.biosample
+            sample_name = row.sample
             replicate = row.replicate
             sorted_read_file = row.sortedfasta
             #
@@ -250,10 +250,10 @@ class SampleInformationFile:
             marker_id = marker_instance.id
             #
             # Insert Biosamples
-            biosample_obj = {'name': biosample_name}
-            biosample_instance = SampleInformationFile.get_or_create(
-                session, Biosample, **biosample_obj)
-            biosample_id = biosample_instance.id
+            sample_obj = {'name': sample_name}
+            sample_instance = SampleInformationFile.get_or_create(
+                session, Sample, **sample_obj)
+            sample_id = sample_instance.id
             #
             # Insert file output
             fasta_obj = {'name': sorted_read_file, 'run_id': run_id}
@@ -263,7 +263,7 @@ class SampleInformationFile:
 
             # Insert sample_information
             sample_information_obj = {
-                'biosample_id': biosample_id,
+                'sample_id': sample_id,
                 'replicate': replicate,
                 'run_id': run_id}
             sample_information_obj['sortedreadfile_id'] = fasta_id

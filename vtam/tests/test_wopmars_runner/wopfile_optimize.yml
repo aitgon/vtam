@@ -7,7 +7,7 @@ rule SampleInformation:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             SortedReadFile: vtam.models.SortedReadFile
             SampleInformation: vtam.models.SampleInformation
 
@@ -20,7 +20,7 @@ rule VariantReadCount:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
     output:
         table:
             Variant: vtam.models.Variant
@@ -30,13 +30,13 @@ rule VariantReadCount:
         global_read_count_cutoff: 2
 
 
-rule OptimizeLFNbiosampleReplicate:
-    tool: vtam.wrapper.OptimizeLFNbiosampleReplicate
+rule OptimizeLFNsampleReplicate:
+    tool: vtam.wrapper.OptimizeLFNsampleReplicate
     input:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -44,7 +44,7 @@ rule OptimizeLFNbiosampleReplicate:
             known_occurrences: doc/data/known_occurrences.tsv
     output:
         file:
-            optimize_lfn_biosample_replicate: vtam/tests/output/optimize_lfn_biosample_replicate.tsv
+            optimize_lfn_sample_replicate: vtam/tests/output/optimize_lfn_sample_replicate.tsv
 
 
 rule OptimizePCRerror:
@@ -53,7 +53,7 @@ rule OptimizePCRerror:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -70,7 +70,7 @@ rule OptimizeLFNreadCountAndLFNvariant:
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
-            Biosample: vtam.models.Biosample
+            Sample: vtam.models.Sample
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
@@ -83,6 +83,6 @@ rule OptimizeLFNreadCountAndLFNvariant:
             optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
     params:
         lfn_variant_cutoff: 0.001
-        lfn_biosample_replicate_cutoff: 0.001
+        lfn_sample_replicate_cutoff: 0.001
         lfn_read_count_cutoff: 10
         min_replicate_number: 2

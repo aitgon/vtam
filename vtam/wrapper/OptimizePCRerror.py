@@ -22,7 +22,7 @@ class OptimizePCRerror(ToolWrapper):
     __input_table_run = "Run"
     __input_table_marker = "Marker"
     __input_table_variant = "Variant"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
     __output_file_optimize_pcr_error = "optimize_pcr_error"
@@ -40,7 +40,7 @@ class OptimizePCRerror(ToolWrapper):
             OptimizePCRerror.__input_table_marker,
             OptimizePCRerror.__input_table_run,
             OptimizePCRerror.__input_table_variant,
-            OptimizePCRerror.__input_table_biosample,
+            OptimizePCRerror.__input_table_sample,
             OptimizePCRerror.__input_table_variant_read_count,
         ]
 

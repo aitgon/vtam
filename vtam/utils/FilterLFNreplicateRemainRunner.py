@@ -17,21 +17,21 @@ class FilterLFNreplicateRemainRunner:
 
     def count_keep_delete(self, known_occurrences_df):
 
-        keep_run_marker_biosample_variant_df = known_occurrences_df.loc[
-            known_occurrences_df.action == 'keep', ['run_id', 'marker_id', 'biosample_id',
+        keep_run_marker_sample_variant_df = known_occurrences_df.loc[
+            known_occurrences_df.action == 'keep', ['run_id', 'marker_id', 'sample_id',
                                                            'variant_id']]
 
-        delete_run_marker_biosample_variant_df = known_occurrences_df.loc[
-            known_occurrences_df.action == 'delete', ['run_id', 'marker_id', 'biosample_id',
+        delete_run_marker_sample_variant_df = known_occurrences_df.loc[
+            known_occurrences_df.action == 'delete', ['run_id', 'marker_id', 'sample_id',
                                                            'variant_id']]
 
         nijk_remain_df = self.get_nijk_remain_df()
-        count_keep = nijk_remain_df.merge(keep_run_marker_biosample_variant_df,
-                                          on=['run_id', 'marker_id', 'biosample_id',
+        count_keep = nijk_remain_df.merge(keep_run_marker_sample_variant_df,
+                                          on=['run_id', 'marker_id', 'sample_id',
                                               'variant_id']).drop_duplicates(inplace=False).shape[0]
         count_delete = nijk_remain_df.merge(
-            delete_run_marker_biosample_variant_df,
-            on=['run_id', 'marker_id', 'biosample_id', 'variant_id']).drop_duplicates(
+            delete_run_marker_sample_variant_df,
+            on=['run_id', 'marker_id', 'sample_id', 'variant_id']).drop_duplicates(
             inplace=False).shape[0]
 
         return count_keep, count_delete
@@ -56,7 +56,7 @@ class FilterLFNreplicateRemainRunner:
 
         ############################################################################################
         #
-        # Filter lfn_biosample_replicate
+        # Filter lfn_sample_replicate
         #
         ############################################################################################
 
@@ -103,6 +103,6 @@ class FilterLFNreplicateRemainRunner:
         # Delete object
 
         return nijk_remain_df[
-            ['run_id', 'marker_id', 'biosample_id', 'variant_id']].copy().drop_duplicates(
+            ['run_id', 'marker_id', 'sample_id', 'variant_id']].copy().drop_duplicates(
             inplace=False)
 

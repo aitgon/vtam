@@ -160,12 +160,12 @@ class OptimizeLFNreadCountAndVariantRunMarkerRunner:
 
         """Two parameter loop for lfn_nijk_cutoff and lfn_ni_cutoff/lfn_nik_cutoff to get keep_nb, delete_nb with the two parameters"""
 
-        delete_run_marker_biosample_variant_df = self.known_occurrences_df.loc[
-            self.known_occurrences_df.action == 'delete', ['run_id', 'marker_id', 'biosample_id',
+        delete_run_marker_sample_variant_df = self.known_occurrences_df.loc[
+            self.known_occurrences_df.action == 'delete', ['run_id', 'marker_id', 'sample_id',
                                                            'variant_id']]
 
         nijk_run_marker_delete_df = self.nijk_df.merge(
-            delete_run_marker_biosample_variant_df, on=['run_id', 'marker_id', 'biosample_id',
+            delete_run_marker_sample_variant_df, on=['run_id', 'marker_id', 'sample_id',
                                                         'variant_id'])
         nijk_df_i_obj = VariantReadCountLikeDF(self.nijk_df)
 

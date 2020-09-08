@@ -28,7 +28,7 @@ class TestIndel(unittest.TestCase):
             'run_id': [1] * 7,
             'marker_id': [1] * 7,
             'variant_id': list(range(1, 8)),
-            'biosample_id': [1] * 7,
+            'sample_id': [1] * 7,
             'replicate': [1] * 7,
             'read_count': [
                 25, 25, 350, 360, 335, 325, 350
@@ -47,7 +47,7 @@ class TestIndel(unittest.TestCase):
                 (variant_read_count_delete_df.run_id == 1) & (
                     variant_read_count_delete_df.marker_id == 1) & (
                     variant_read_count_delete_df.variant_id == 1) & (
-                    variant_read_count_delete_df.biosample_id == 1) & (
+                    variant_read_count_delete_df.sample_id == 1) & (
                         variant_read_count_delete_df.replicate == 1),
                 'filter_delete'].values[0])
         # Variant 7 passes
@@ -56,6 +56,6 @@ class TestIndel(unittest.TestCase):
                 (variant_read_count_delete_df.run_id == 1) & (
                     variant_read_count_delete_df.marker_id == 1) & (
                     variant_read_count_delete_df.variant_id == 7) & (
-                    variant_read_count_delete_df.biosample_id == 1) & (
+                    variant_read_count_delete_df.sample_id == 1) & (
                         variant_read_count_delete_df.replicate == 1),
                 'filter_delete'].values[0])
