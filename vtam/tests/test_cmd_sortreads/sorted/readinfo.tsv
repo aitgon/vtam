@@ -1,4 +1,4 @@
-run	marker	biosample	replicate	sortedfasta
+run	marker	sample	replicate	sortedfasta
 run1	mfzr	tpos1_run1	1	MFZR_14Ben01_Tpos1_1_fw_48_000.fasta
 run1	mfzr	14ben01	1	MFZR_14Ben01_Tpos1_1_fw_48_001.fasta
 run1	mfzr	tpos1_run1	2	MFZR_14Ben01_Tpos1_2_fw_48_002.fasta

@@ -1,4 +1,4 @@
-run	marker	biosample	replicate	tagfwd	primerfwd	tagrev	primerrev	mergedfasta
+run	marker	sample	replicate	tagfwd	primerfwd	tagrev	primerrev	mergedfasta
 run1	MFZR	tpos1_run1	1	tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	mfzr_1_fw.fasta
 run1	MFZR	tnegtag_run1	1	agatcgtactagct	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	mfzr_1_fw.fasta
 run1	MFZR	14ben01	1	gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	mfzr_1_fw.fasta

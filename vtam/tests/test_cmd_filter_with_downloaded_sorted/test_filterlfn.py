@@ -164,7 +164,6 @@ class TestCmdFilterLFN(unittest.TestCase):
         else:
             args = shlex.split(cmd)
         result = subprocess.run(args=args, cwd=self.outdir_thistest_path)
-
         self.assertEqual(result.returncode, 0)
 
     def tearDown(self):
@@ -173,5 +172,4 @@ class TestCmdFilterLFN(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-
         shutil.rmtree(cls.outdir_path, ignore_errors=True)

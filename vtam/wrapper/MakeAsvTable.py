@@ -16,7 +16,7 @@ class MakeAsvTable(ToolWrapper):
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_filter_chimera_borderline = "FilterChimeraBorderline"
     __input_table_filter_codon_stop = "FilterCodonStop"
     __input_table_variant = "Variant"
@@ -34,7 +34,7 @@ class MakeAsvTable(ToolWrapper):
         return [
             MakeAsvTable.__input_table_marker,
             MakeAsvTable.__input_table_run,
-            MakeAsvTable.__input_table_biosample,
+            MakeAsvTable.__input_table_sample,
             MakeAsvTable.__input_table_variant,
             MakeAsvTable.__input_table_filter_chimera_borderline,
             MakeAsvTable.__input_table_filter_codon_stop,
@@ -75,7 +75,7 @@ class MakeAsvTable(ToolWrapper):
 
         #######################################################################
         #
-        # Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
         #######################################################################
@@ -104,9 +104,9 @@ class MakeAsvTable(ToolWrapper):
         #
         #######################################################################
 
-        biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
+        sample_list = sample_info_tsv_obj.read_tsv_into_df()['sample'].drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                         engine=engine, biosample_list=biosample_list,
+                                         engine=engine, sample_list=sample_list,
                                          cluster_identity=cluster_identity,
                                          known_occurrences_df=known_occurrences_df)
         asvtable_runner.to_tsv(asvtable_tsv_path)

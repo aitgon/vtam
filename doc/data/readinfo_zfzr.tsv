@@ -1,4 +1,4 @@
-run	marker	biosample	replicate	sortedfasta
+run	marker	sample	replicate	sortedfasta
 run1	ZFZR	tpos1_run1	1	zfzr_1_fw_012.fasta
 run1	ZFZR	tnegtag_run1	1	zfzr_1_fw_013.fasta
 run1	ZFZR	14ben01	1	zfzr_1_fw_014.fasta

@@ -1,4 +1,4 @@
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.models.Marker import Marker
@@ -63,8 +63,8 @@ class TestCommandPool(unittest.TestCase):
         marker_df = pandas.DataFrame({'name': ['MFZR', 'ZFZR']}, index=range(1, 3))
         marker_df.to_sql(name=Marker.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
-        biosample_df = pandas.DataFrame({'name': ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']}, index=range(1, 5))
-        biosample_df.to_sql(name=Biosample.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
+        sample_df = pandas.DataFrame({'name': ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']}, index=range(1, 5))
+        sample_df.to_sql(name=Sample.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
 
         variant_df = pandas.read_csv(variant_path, sep="\t", header=0, index_col='id')
         variant_df.to_sql(name=Variant.__tablename__, con=self.engine.connect(), index_label='id', if_exists='replace')
@@ -77,7 +77,7 @@ class TestCommandPool(unittest.TestCase):
         filter_chimera_borderline_db = pandas.read_csv(filter_chimera_borderline_path, sep="\t", header=0)
         filter_chimera_borderline_db.to_sql(name=FilterChimeraBorderline.__tablename__, con=self.engine.connect(), if_exists='replace')
 
-        self.biosample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
+        self.sample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
 
 
     def test_command_pool(self):

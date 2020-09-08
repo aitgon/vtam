@@ -48,7 +48,7 @@ First two lines of *MFZR_variant_info.tsv* for marker *MFZR*
 
 .. code-block:: bash
 
-	    variant_seq	replicate	biosample	sample_replicate	count	is_borderline	is_pseudogene_indel	is_pseudogene_codon_stop	read_average
+	    variant_seq	replicate	sample	sample_replicate	count	is_borderline	is_pseudogene_indel	is_pseudogene_codon_stop	read_average
     0	TTTATACTTCATTTTTGGGGCTTGATCTGGTATAGTAGGGACATCTCTTAGTCTACTAATTCGAGCTGAATTAGGACAACCAGGATCCCTTATTGGAGACGACCAAATTTACAATGTAATTGTCACAGCCCATGCCTTTATTATAATTTTCTTCATGGTTATGCCCATTATAATT	repl2	14Cro11	14Cro11_repl2	26	False	False	False	12.0
 
 First two lines of *MFZR_variant.fasta* for marker *MFZR*

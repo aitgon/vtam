@@ -113,7 +113,7 @@ class CommandMerge(object):
             vsearch_cluster = VSearch(parameters=vsearch_args_dic)
             vsearch_cluster.run()
 
-            fastq_info_df_i = fastq_info_df_i[['run', 'marker', 'biosample', 'replicate', 'tagfwd',
+            fastq_info_df_i = fastq_info_df_i[['run', 'marker', 'sample', 'replicate', 'tagfwd',
                                                'primerfwd', 'tagrev', 'primerrev']]
             fastq_info_df_i['mergedfasta'] = fasta_merged_basename
             fastainfo_df = pandas.concat(

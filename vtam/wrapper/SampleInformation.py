@@ -8,7 +8,7 @@ class SampleInformation(ToolWrapper):
     }
     __input_file_csv = "readinfo"
     #
-    __output_table_biosample = "Biosample"
+    __output_table_sample = "Sample"
     __output_table_sorted_read_file = "SortedReadFile"
     __output_table_marker = "Marker"
     __output_table_primerpair = "PrimerPair"
@@ -21,7 +21,7 @@ class SampleInformation(ToolWrapper):
 
     def specify_output_table(self):
         return [
-            SampleInformation.__output_table_biosample,
+            SampleInformation.__output_table_sample,
             SampleInformation.__output_table_sorted_read_file,
             SampleInformation.__output_table_marker,
             SampleInformation.__output_table_run,

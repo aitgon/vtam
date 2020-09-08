@@ -9,7 +9,7 @@ from Bio import SeqIO
 from sqlalchemy.ext.automap import automap_base
 from vtam.utils.ParamsFile import ParamsFile
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.utils.AsvTableRunner import AsvTableRunner
 from vtam.utils.Logger import Logger
@@ -35,7 +35,7 @@ class CommandPoolRunMarkers(object):
                     "run_name, marker_name, variant_id, sequence_length, read_count"))
             sys.exit(1)
 
-        self.biosample_names = asv_table_df.columns.tolist()[5:-2]
+        self.sample_names = asv_table_df.columns.tolist()[5:-2]
 
         if run_marker_df is None:  # Default: pool all marker_name
             self.asv_table_df = asv_table_df
@@ -145,11 +145,11 @@ class CommandPoolRunMarkers(object):
         agg_dic = {}
         for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
-        for k in self.biosample_names:
+        for k in self.sample_names:
             agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
                                                'centroid_variant_id', 'variant_id', 'run_name',
-                                               'marker_name'] + self.biosample_names]
+                                               'marker_name'] + self.sample_names]
 
         ############################################################################################
         #
@@ -214,8 +214,8 @@ class CommandPoolRunMarkers(object):
         Base = automap_base()
         Base.prepare(engine, reflect=True)
 
-        biosample_list = run_marker_file_obj.get_biosample_ids(engine)
-        biosample_list = NameIdConverter(id_name_or_sequence_list=biosample_list, engine=engine).to_names(Biosample)
+        sample_list = run_marker_file_obj.get_sample_ids(engine)
+        sample_list = NameIdConverter(id_name_or_sequence_list=sample_list, engine=engine).to_names(Sample)
 
         #######################################################################
         #
@@ -227,7 +227,7 @@ class CommandPoolRunMarkers(object):
             engine=engine, variant_read_count_like_model=FilterCodonStop)
 
         asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                          engine=engine, biosample_list=biosample_list, cluster_identity=cluster_identity)
+                                          engine=engine, sample_list=sample_list, cluster_identity=cluster_identity)
         asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 

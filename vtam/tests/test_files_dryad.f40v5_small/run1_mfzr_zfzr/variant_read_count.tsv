@@ -1,4 +1,4 @@
-marker_id	biosample_id	replicate	variant_id	read_count
+marker_id	sample_id	replicate	variant_id	read_count
 1	4	2	2	2
 1	4	2	3	10
 1	4	1	4	4

@@ -1,4 +1,4 @@
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.utils.NameIdConverter import NameIdConverter
@@ -8,11 +8,11 @@ from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
 
 class AsvTableRunner(object):
 
-    def __init__(self, variant_read_count_df, engine, biosample_list, cluster_identity, known_occurrences_df=None):
+    def __init__(self, variant_read_count_df, engine, sample_list, cluster_identity, known_occurrences_df=None):
 
         self.variant_read_count_df = variant_read_count_df
         self.engine = engine
-        self.biosample_list = biosample_list
+        self.sample_list = sample_list
         self.cluster_identity = cluster_identity
         self.known_occurrences_df = known_occurrences_df
 
@@ -26,10 +26,10 @@ class AsvTableRunner(object):
         """Merge asvtable information and reorder columns"""
 
         asvtable_variant_info_df = self.get_asvtable_variants()
-        asvtable_biosamples_df = self.get_asvtable_biosamples()
+        asvtable_samples_df = self.get_asvtable_samples()
 
-        # Merge variant and biosample sides of asvtables
-        asvtable_df = asvtable_variant_info_df.merge(asvtable_biosamples_df, on=['run_id', 'marker_id', 'variant_id'])
+        # Merge variant and sample sides of asvtables
+        asvtable_df = asvtable_variant_info_df.merge(asvtable_samples_df, on=['run_id', 'marker_id', 'variant_id'])
 
         ############################################################################################
         #
@@ -39,9 +39,9 @@ class AsvTableRunner(object):
 
         if not (self.known_occurrences_df is None):
 
-            biosample_name = NameIdConverter(id_name_or_sequence_list=self.known_occurrences_df.biosample_id.tolist(), engine=self.engine).to_names(Biosample)
-            self.known_occurrences_df.biosample_id = ['keep_{}'.format(x) for x in biosample_name]
-            variant_keep_info_df = self.known_occurrences_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample_id', values='action', aggfunc='first', fill_value=0).reset_index()
+            sample_name = NameIdConverter(id_name_or_sequence_list=self.known_occurrences_df.sample_id.tolist(), engine=self.engine).to_names(Sample)
+            self.known_occurrences_df.sample_id = ['keep_{}'.format(x) for x in sample_name]
+            variant_keep_info_df = self.known_occurrences_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='sample_id', values='action', aggfunc='first', fill_value=0).reset_index()
             variant_keep_info_df.replace(to_replace='keep', value=1, inplace=True)
             asvtable_df = asvtable_df.merge(variant_keep_info_df, on=['run_id', 'marker_id', 'variant_id'], how='left')
             asvtable_df.fillna(0, inplace=True)
@@ -123,12 +123,12 @@ class AsvTableRunner(object):
 
         return asvtable_variant_info_df
 
-    def get_asvtable_biosamples(self):
+    def get_asvtable_samples(self):
 
-        """This function gets biosample-related data such as run, marker, variants and read_count per biosample
+        """This function gets sample-related data such as run, marker, variants and read_count per sample
 
         Example:
-biosample  run_id  marker_id  variant_id  tpos1_run1  tnegtag_run1  14ben01  14ben02
+sample  run_id  marker_id  variant_id  tpos1_run1  tnegtag_run1  14ben01  14ben02
 0               1          1          95         563             0        0        0
 1               1          1         271        3471             0        0        0
 2               1          1         603         489             0        0        0
@@ -140,23 +140,23 @@ biosample  run_id  marker_id  variant_id  tpos1_run1  tnegtag_run1  14ben01  14b
             """
 
         asvtable_2nd_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_ij_df()
-        asvtable_2nd_df.biosample_id = NameIdConverter(id_name_or_sequence_list=asvtable_2nd_df.biosample_id.tolist(), engine=self.engine)\
-            .to_names(Biosample)
-        asvtable_2nd_df.rename({'biosample_id': 'biosample'}, axis=1, inplace=True)
-        asvtable_2nd_df = asvtable_2nd_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='biosample',
+        asvtable_2nd_df.sample_id = NameIdConverter(id_name_or_sequence_list=asvtable_2nd_df.sample_id.tolist(), engine=self.engine)\
+            .to_names(Sample)
+        asvtable_2nd_df.rename({'sample_id': 'sample'}, axis=1, inplace=True)
+        asvtable_2nd_df = asvtable_2nd_df.pivot_table(index=['run_id', 'marker_id', 'variant_id'], columns='sample',
                             values='N_ij', fill_value=0).reset_index()
 
         ############################################################################################
         #
-        # Set order and fill 0-read count biosamples with Zeros
+        # Set order and fill 0-read count samples with Zeros
         #
         ############################################################################################
 
         asvtable_2nd_2_df = (asvtable_2nd_df.copy())[['run_id', 'marker_id', 'variant_id']]
-        for biosample_name in self.biosample_list:
-            if biosample_name in asvtable_2nd_df.columns:  # biosample with read counts
-                asvtable_2nd_2_df[biosample_name] = asvtable_2nd_df[biosample_name].tolist()
-            else:  # biosample without read counts
-                asvtable_2nd_2_df[biosample_name] = [0] * asvtable_2nd_df.shape[0]
+        for sample_name in self.sample_list:
+            if sample_name in asvtable_2nd_df.columns:  # sample with read counts
+                asvtable_2nd_2_df[sample_name] = asvtable_2nd_df[sample_name].tolist()
+            else:  # sample without read counts
+                asvtable_2nd_2_df[sample_name] = [0] * asvtable_2nd_df.shape[0]
 
         return asvtable_2nd_2_df

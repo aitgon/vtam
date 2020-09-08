@@ -1,4 +1,4 @@
-marker_id	run_id	biosample_id	variant_id
+marker_id	run_id	sample_id	variant_id
 1	1	1	95
 1	1	1	271
 1	1	1	603
