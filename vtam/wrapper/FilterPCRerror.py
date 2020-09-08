@@ -23,7 +23,7 @@ class FilterPCRerror(ToolWrapper):
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_variant = "Variant"
     __input_table_filter_min_replicate_number = "FilterMinReplicateNumber"
     # Output table
@@ -38,7 +38,7 @@ class FilterPCRerror(ToolWrapper):
         return [
             FilterPCRerror.__input_table_marker,
             FilterPCRerror.__input_table_run,
-            FilterPCRerror.__input_table_biosample,
+            FilterPCRerror.__input_table_sample,
             FilterPCRerror.__input_table_variant,
             FilterPCRerror.__input_table_filter_min_replicate_number,
         ]
@@ -84,8 +84,8 @@ class FilterPCRerror(ToolWrapper):
 
         ############################################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
         ############################################################################################
@@ -102,7 +102,7 @@ class FilterPCRerror(ToolWrapper):
 
         ############################################################################################
         #
-        # Run per biosample_id
+        # Run per sample_id
         #
         ############################################################################################
 
@@ -111,22 +111,22 @@ class FilterPCRerror(ToolWrapper):
 
         record_list = []
 
-        run_marker_biosample_df = variant_read_count_df[[
-            'run_id', 'marker_id', 'biosample_id']].drop_duplicates()
-        for row in run_marker_biosample_df.itertuples():
+        run_marker_sample_df = variant_read_count_df[[
+            'run_id', 'marker_id', 'sample_id']].drop_duplicates()
+        for row in run_marker_sample_df.itertuples():
             run_id = row.run_id
             marker_id = row.marker_id
-            biosample_id = row.biosample_id
+            sample_id = row.sample_id
 
-            # Get variant read for the current run-marker-biosample
-            variant_read_count_per_biosample_df = variant_read_count_df.loc[(variant_read_count_df.run_id == run_id) & (
-                variant_read_count_df.marker_id == marker_id) & (variant_read_count_df.biosample_id == biosample_id)]
+            # Get variant read for the current run-marker-sample
+            variant_read_count_per_sample_df = variant_read_count_df.loc[(variant_read_count_df.run_id == run_id) & (
+                variant_read_count_df.marker_id == marker_id) & (variant_read_count_df.sample_id == sample_id)]
 
-            variant_per_biosample_df = variant_df.loc[variant_df.index.isin(variant_read_count_per_biosample_df.variant_id.unique().tolist())]
-            this_step_tmp_per_biosample_dir = os.path.join(
-                this_temp_dir, "run_{}_marker_{}_biosample{}".format(
-                    run_id, marker_id, biosample_id))
-            pathlib.Path(this_step_tmp_per_biosample_dir).mkdir(exist_ok=True)
+            variant_per_sample_df = variant_df.loc[variant_df.index.isin(variant_read_count_per_sample_df.variant_id.unique().tolist())]
+            this_step_tmp_per_sample_dir = os.path.join(
+                this_temp_dir, "run_{}_marker_{}_sample{}".format(
+                    run_id, marker_id, sample_id))
+            pathlib.Path(this_step_tmp_per_sample_dir).mkdir(exist_ok=True)
 
             ########################################################################################
             #
@@ -135,21 +135,21 @@ class FilterPCRerror(ToolWrapper):
             ########################################################################################
 
             filter_pcr_error_runner = FilterPCRerrorRunner(
-                variant_expected_df=variant_per_biosample_df,
-                variant_unexpected_df=variant_per_biosample_df,
-                variant_read_count_df=variant_read_count_per_biosample_df)
-            filter_output_per_biosample_df = filter_pcr_error_runner.get_variant_read_count_delete_df(
+                variant_expected_df=variant_per_sample_df,
+                variant_unexpected_df=variant_per_sample_df,
+                variant_read_count_df=variant_read_count_per_sample_df)
+            filter_output_per_sample_df = filter_pcr_error_runner.get_variant_read_count_delete_df(
                 pcr_error_var_prop)
 
             ########################################################################################
             #
-            # Per biosample add to record list
+            # Per sample add to record list
             #
             ########################################################################################
 
-            record_per_biosample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
-                filter_output_per_biosample_df)
-            record_list = record_list + record_per_biosample_list
+            record_per_sample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
+                filter_output_per_sample_df)
+            record_list = record_list + record_per_sample_list
 
         variant_read_count_delete_df = pandas.DataFrame.from_records(
             data=record_list)

@@ -18,7 +18,7 @@ class FilterChimera(ToolWrapper):
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_filter_pcr_error = "FilterPCRerror"
     __input_table_Variant = "Variant"
     # Output table
@@ -34,7 +34,7 @@ class FilterChimera(ToolWrapper):
         return [
             FilterChimera.__input_table_marker,
             FilterChimera.__input_table_run,
-            FilterChimera.__input_table_biosample,
+            FilterChimera.__input_table_sample,
             FilterChimera.__input_table_filter_pcr_error,
             FilterChimera.__input_table_Variant,
         ]
@@ -79,8 +79,8 @@ class FilterChimera(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
-        # 2. Delete marker_name/run_name/biosample/replicate from variant_read_count_model
+        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
         #######################################################################

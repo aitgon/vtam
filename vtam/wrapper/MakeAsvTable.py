@@ -1,11 +1,7 @@
-import pandas
-import sqlalchemy
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.models.Biosample import Biosample
-from vtam.models.Marker import Marker
-from vtam.models.Run import Run
 from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.KnownOccurrences import KnownOccurrences
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.models.FilterCodonStop import FilterCodonStop
 
@@ -16,10 +12,11 @@ class MakeAsvTable(ToolWrapper):
 
     # Input file
     __input_file_readinfo = "readinfo"
+    __input_file_known_occurrences = "known_occurrences"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_filter_chimera_borderline = "FilterChimeraBorderline"
     __input_table_filter_codon_stop = "FilterCodonStop"
     __input_table_variant = "Variant"
@@ -37,7 +34,7 @@ class MakeAsvTable(ToolWrapper):
         return [
             MakeAsvTable.__input_table_marker,
             MakeAsvTable.__input_table_run,
-            MakeAsvTable.__input_table_biosample,
+            MakeAsvTable.__input_table_sample,
             MakeAsvTable.__input_table_variant,
             MakeAsvTable.__input_table_filter_chimera_borderline,
             MakeAsvTable.__input_table_filter_codon_stop,
@@ -52,6 +49,8 @@ class MakeAsvTable(ToolWrapper):
     def specify_params(self):
         return {
             "foo": "int",
+            "cluster_identity": "float",
+            "known_occurrences": "str",
         }
 
     def run(self):
@@ -69,13 +68,17 @@ class MakeAsvTable(ToolWrapper):
 
         # Output file
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
-
-        ############################################################################################
         #
-        # Read readinfo to get run_id, marker_id, biosample_id, replicate for current analysis
+        # Options
+        cluster_identity = float(self.option("cluster_identity"))
+        known_occurrences_tsv = str(self.option("known_occurrences"))
+
+        #######################################################################
+        #
+        # Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
-        ############################################################################################
+        #######################################################################
 
         sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
 
@@ -84,20 +87,26 @@ class MakeAsvTable(ToolWrapper):
 
         ############################################################################################
         #
-        # Compute variant_to_chimera_borderline_df
+        # KnownOccurrences
         #
         ############################################################################################
 
-        # asv_table_runner = AsvTableRunner(nijk_df).get_asvtable_biosamples(engine=engine)
-        # asv_df_final = asv_table_runner.run()
-        #
-        # asv_df_final.to_csv(
-        #     asv_table_tsv_path,
-        #     sep='\t',
-        #     index=False,
-        #     header=True)
+        if known_occurrences_tsv == 'None' or known_occurrences_tsv is None:
+            known_occurrences_df = None
+        else:
+            known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
+            known_occurrences_df = known_occurrences_df.loc[
+                (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
 
-        biosample_list = sample_info_tsv_obj.read_tsv_into_df().biosample.drop_duplicates(keep='first').tolist()
+        #######################################################################
+        #
+        # Compute variant_to_chimera_borderline_df
+        #
+        #######################################################################
+
+        sample_list = sample_info_tsv_obj.read_tsv_into_df()['sample'].drop_duplicates(keep='first').tolist()
         asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
-                                         engine=engine, biosample_list=biosample_list)
+                                         engine=engine, sample_list=sample_list,
+                                         cluster_identity=cluster_identity,
+                                         known_occurrences_df=known_occurrences_df)
         asvtable_runner.to_tsv(asvtable_tsv_path)

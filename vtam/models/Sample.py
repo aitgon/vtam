@@ -2,7 +2,7 @@ from wopmars.Base import Base
 from sqlalchemy import Column, String, Integer
 
 
-class Biosample(Base):
+class Sample(Base):
     __tablename__ = __qualname__
 
     id = Column(Integer, primary_key=True, autoincrement=True)

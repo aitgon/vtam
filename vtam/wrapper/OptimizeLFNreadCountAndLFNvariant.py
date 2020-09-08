@@ -27,7 +27,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
-    __input_table_biosample = "Biosample"
+    __input_table_sample = "Sample"
     __input_table_variant = "Variant"
     __input_table_variant_read_count = "VariantReadCount"
     # Output file
@@ -45,7 +45,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         return [
             OptimizeLFNreadCountAndLFNvariant.__input_table_marker,
             OptimizeLFNreadCountAndLFNvariant.__input_table_run,
-            OptimizeLFNreadCountAndLFNvariant.__input_table_biosample,
+            OptimizeLFNreadCountAndLFNvariant.__input_table_sample,
             OptimizeLFNreadCountAndLFNvariant.__input_table_variant,
             OptimizeLFNreadCountAndLFNvariant.__input_table_variant_read_count,
         ]
@@ -60,7 +60,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         return {
             "lfn_variant_cutoff": "float",
             "lfn_variant_replicate_cutoff": "float",
-            "lfn_biosample_replicate_cutoff": "required|float",
+            "lfn_sample_replicate_cutoff": "required|float",
             "lfn_read_count_cutoff": "required|float",
             "min_replicate_number": "required|int",
         }
@@ -71,7 +71,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         1. Read file with known variants (Mock/tolerate, delete and real)
         2. Control if user variants and sequence are consistent in the database
-        3. Get variant_read_count of this run_name-marker_name-biosample-replicate experiment
+        3. Get variant_read_count of this run_name-marker_name-sample-replicate experiment
         5. Compute maximal lfn_nijk_cutoff that keeps all 'keep' variants with the 'run_lfn_read_count_and_lfn_variant' algorithm
         6. Compute maximal lfn_variant_cutoff that keeps all 'keep' variants with the 'run_lfn_read_count_and_lfn_variant' algorithm (See below)
         7. Loop between default and lfn_nijk_cutoff and run_lfn_read_count_and_lfn_variant parameters
@@ -85,7 +85,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         1. Remove if does not pass these filter
             1.1 Filter lfn_variant (Or lfn_variant_replicate)
-            1.2 Filter lfn_biosample_replicate
+            1.2 Filter lfn_sample_replicate
             1.3 Filter absolute read count
         2. Filter if not min replicate number
 
@@ -113,7 +113,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
         lfn_ni_cutoff = self.option("lfn_variant_cutoff")
         lfn_nik_cutoff = self.option("lfn_variant_replicate_cutoff")
         min_replicate_number = self.option("min_replicate_number")
-        lfn_njk_cutoff = self.option("lfn_biosample_replicate_cutoff")
+        lfn_njk_cutoff = self.option("lfn_sample_replicate_cutoff")
         lfn_nijk_cutoff = int(self.option("lfn_read_count_cutoff"))
 
         filter_kwargs = {"lfn_ni_cutoff": lfn_ni_cutoff,

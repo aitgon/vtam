@@ -6,7 +6,7 @@ import shutil
 import sqlalchemy
 import unittest
 
-from vtam.models.Biosample import Biosample
+from vtam.models.Sample import Sample
 from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
@@ -43,8 +43,8 @@ class TestAsvtableRunner(unittest.TestCase):
         marker_df = pandas.DataFrame({'name': ['MFZR', 'ZFZR']}, index=range(1, 3))
         marker_df.to_sql(name=Marker.__tablename__, con=self.engine.connect(), index_label='id')
 
-        biosample_df = pandas.DataFrame({'name': ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']}, index=range(1, 5))
-        biosample_df.to_sql(name=Biosample.__tablename__, con=self.engine.connect(), index_label='id')
+        sample_df = pandas.DataFrame({'name': ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']}, index=range(1, 5))
+        sample_df.to_sql(name=Sample.__tablename__, con=self.engine.connect(), index_label='id')
 
         variant_df = pandas.read_csv(variant_path, sep="\t", header=0, index_col='id')
         variant_df.to_sql(name=Variant.__tablename__, con=self.engine.connect(), index_label='id')
@@ -53,7 +53,7 @@ class TestAsvtableRunner(unittest.TestCase):
         filter_chimera_borderline_db.to_sql(name=FilterChimeraBorderline.__tablename__, con=self.engine.connect())
 
         self.filter_codon_stop_df = pandas.read_csv(filter_codon_stop_path, sep="\t", header=0)
-        self.biosample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
+        self.sample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
         self.outdir_path = os.path.join(self.test_path, 'outdir')
 
     def test_asvtable(self):
@@ -61,8 +61,9 @@ class TestAsvtableRunner(unittest.TestCase):
         asvtable_default_path = os.path.join(self.outdir_path, 'asvtable_default.tsv')
         asvtable_default_bak_path = os.path.join(os.path.dirname(__file__), "asvtable_default.tsv")
         asvtable_runner = AsvTableRunner(variant_read_count_df=self.filter_codon_stop_df,
-                                         engine=self.engine, biosample_list=self.biosample_list)
+                                         engine=self.engine, sample_list=self.sample_list, cluster_identity=0.97)
         asvtable_runner.to_tsv(asvtable_default_path)
+
         self.assertTrue(filecmp.cmp(asvtable_default_path, asvtable_default_bak_path, shallow=True))
 
     def tearDown(self):

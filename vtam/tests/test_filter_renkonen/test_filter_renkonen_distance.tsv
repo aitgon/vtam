@@ -1,4 +1,4 @@
-run_id	marker_id	biosample_id	replicate_left	replicate_right	renkonen_distance
+run_id	marker_id	sample_id	replicate_left	replicate_right	renkonen_distance
 1	1	14Ben01	14Ben01-R1	14Ben01-R2	0.017426040192591
 1	1	14Ben01	14Ben01-R1	14Ben01-R3	0.014119987806088
 1	1	14Ben01	14Ben01-R2	14Ben01-R3	0.003306052386503

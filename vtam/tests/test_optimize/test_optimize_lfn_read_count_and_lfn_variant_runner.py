@@ -26,13 +26,13 @@ class TestOptimizeLFNreadCountAndLFNvariantRunner(unittest.TestCase):
         params_default_dic = get_params_default_dic()
         self.optimize_params_dic = {'lfn_ni_cutoff': params_default_dic['lfn_variant_cutoff'],
                                     'lfn_nik_cutoff': params_default_dic['lfn_variant_replicate_cutoff'],
-                                    'lfn_njk_cutoff': params_default_dic['lfn_biosample_replicate_cutoff'],
+                                    'lfn_njk_cutoff': params_default_dic['lfn_sample_replicate_cutoff'],
                                     'lfn_nijk_cutoff': params_default_dic['lfn_read_count_cutoff'],
                                     'min_replicate_number': params_default_dic['min_replicate_number']}
 
         self.lfn_ni_cutoff = params_default_dic['lfn_variant_cutoff']
         self.lfn_nik_cutoff = params_default_dic['lfn_variant_replicate_cutoff']
-        self.lfn_njk_cutoff = params_default_dic['lfn_biosample_replicate_cutoff']
+        self.lfn_njk_cutoff = params_default_dic['lfn_sample_replicate_cutoff']
         self.lfn_nijk_cutoff = params_default_dic['lfn_read_count_cutoff']
         self.min_replicate_number = params_default_dic['min_replicate_number']
 

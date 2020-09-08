@@ -27,7 +27,7 @@ class TestFilterPCRError(TestCase):
         self.variant_read_count_df = pandas.DataFrame({
             'run_id': [1] * 8,
             'marker_id': [1] * 8,
-            'biosample_id': [1] * 8,
+            'sample_id': [1] * 8,
             'replicate': [1, 2] * 4,
             'variant_id': [1] * 2 + [2] * 2 + [3] * 2 + [4] * 2,
             'read_count': [
@@ -65,14 +65,19 @@ class TestFilterPCRError(TestCase):
         pcr_error_var_prop = 0.05
         filter_output_df = filter_pcr_error_runner.get_variant_read_count_delete_df(
             pcr_error_var_prop)
-        filter_output_df_bak_str = """   run_id  marker_id  biosample_id  replicate  variant_id  read_count  filter_delete
-0       1          1             1          1           1         350          False
-1       1          1             1          2           1         300          False
-2       1          1             1          1           2         300          False
-3       1          1             1          2           2         220          False
-4       1          1             1          1           3          60          False
-5       1          1             1          2           3           0          False
-6       1          1             1          1           4           2           True
-7       1          1             1          2           4           0           True"""
-        self.assertTrue(filter_output_df_bak_str ==
-                        filter_output_df.to_string())
+        filter_output_bak_dic = {'filter_delete': {0: False,
+                   1: False,
+                   2: False,
+                   3: False,
+                   4: False,
+                   5: False,
+                   6: True,
+                   7: True},
+ 'marker_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1},
+ 'read_count': {0: 350, 1: 300, 2: 300, 3: 220, 4: 60, 5: 0, 6: 2, 7: 0},
+ 'replicate': {0: 1, 1: 2, 2: 1, 3: 2, 4: 1, 5: 2, 6: 1, 7: 2},
+ 'run_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1},
+ 'sample_id': {0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1},
+ 'variant_id': {0: 1, 1: 1, 2: 2, 3: 2, 4: 3, 5: 3, 6: 4, 7: 4}}
+        self.assertTrue(filter_output_bak_dic ==
+                        filter_output_df.to_dict())

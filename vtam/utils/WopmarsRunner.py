@@ -109,8 +109,8 @@ class WopmarsRunner(Singleton):
             self.cli_args_and_numerical_params['sortreads'] = os.path.join(
                 outdir, "sortreads.tsv")
             #
-            self.cli_args_and_numerical_params['optimize_lfn_biosample_replicate'] \
-                = os.path.join(outdir, "optimize_lfn_biosample_replicate.tsv")
+            self.cli_args_and_numerical_params['optimize_lfn_sample_replicate'] \
+                = os.path.join(outdir, "optimize_lfn_sample_replicate.tsv")
             self.cli_args_and_numerical_params['optimize_pcr_error'] \
                 = os.path.join(outdir, "optimize_pcr_error.tsv")
 
