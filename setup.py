@@ -11,6 +11,12 @@ from setuptools import find_packages
 import os
 import sys
 
+def read_setup_cfg_metadata(field):
+    """Return package version from setup.cfg."""
+    config = RawConfigParser()
+    config.read(os.path.join('.', 'setup.cfg'))
+    return str(config.get('metadata', field))
+
 install_requires = [
     'Jinja2>=2.11',
     'PyYAML>=5.3',
@@ -28,7 +34,7 @@ if sys.version_info < (3, 7):
 try:
     from setuptools import setup, find_packages
 except ImportError:
-    print("Please install setuptools before installing wopmars.",
+    print("Please install setuptools before installing VTAM.",
           file=sys.stderr)
     exit(1)
 
@@ -42,26 +48,30 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as fin:
     long_description = fin.read()
 
+CLASSIFIERS = """\
+Development Status :: 4 - Beta
+Intended Audience :: Science/Research
+License :: OSI Approved :: MIT License
+Programming Language :: Python
+Programming Language :: Python :: 3
+Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3 :: Only
+Topic :: Scientific/Engineering :: Bio-Informatics
+Topic :: Software Development
+Operating System :: POSIX :: Linux
+Operating System :: Microsoft :: Windows :: Windows 10
+"""
+
 setup(
     name='vtam',
-    version=str(get_version()),
+    version=read_setup_cfg_metadata(field='version'),
     description="VTAM - Validation and Taxonomic Assignation of Metabarcoding Data",
-    long_description=long_description,
-    license=__license__,
-    classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Scientific/Engineering :: Bio-Informatics',
-    ],
-    author=__author__,
-    author_email=__email__,
+    author=read_setup_cfg_metadata(field='author'),
+    author_email=read_setup_cfg_metadata(field='email'),
     url='https://tagc.univ-amu.fr/en/users/gonzalez-aitor, http://net.imbe.fr/~emeglecz/',
+    license=read_setup_cfg_metadata(field='license'),
+    long_description=long_description,
+    classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
     package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*",

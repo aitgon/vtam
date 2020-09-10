@@ -12,32 +12,29 @@
 # add these directories to sys.output here. If the directory is relative to the
 # documentation root, use os.output.abspath to make it absolute, like shown here.
 #
-import configparser
+from configparser import RawConfigParser
 import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
+# import sys
+# sys.path.insert(0, os.path.abspath('...'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'vtam'
-copyright = 'Since 2018, Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz'
-author = 'Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz'
-
-## The short X.Y version
-#version = '0.0'
-## The full version, including alpha/beta/rc tags
-#release = '0.0.1'
-def get_version():
-    """Return package version from setup.cfg."""
-    config = configparser.RawConfigParser()
+def read_setup_cfg_metadata(field):
+    """Reads and gets information from setup.cfg."""
+    config = RawConfigParser()
     config.read(os.path.join('..', 'setup.cfg'))
-    return config.get('metadata', 'version')
+    return str(config.get('metadata', field))
+
+# General information about the project.
+project = 'VTAM'
+copyright = read_setup_cfg_metadata(field='copyright')
+author = read_setup_cfg_metadata(field='author')
 
 # The short X.Y version.
-version = '.'.join(get_version().split('.')[0:2])
+version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])
 # The full version, including alpha/beta/rc tags.
-release = str(get_version())
+release = read_setup_cfg_metadata(field='version')
 
 # -- General configuration ---------------------------------------------------
 
