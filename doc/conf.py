@@ -12,6 +12,7 @@
 # add these directories to sys.output here. If the directory is relative to the
 # documentation root, use os.output.abspath to make it absolute, like shown here.
 #
+import configparser
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
@@ -29,7 +30,7 @@ author = 'Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz'
 #release = '0.0.1'
 def get_version():
     """Return package version from setup.cfg."""
-    config = RawConfigParser()
+    config = configparser.RawConfigParser()
     config.read(os.path.join('..', 'setup.cfg'))
     return config.get('metadata', 'version')
 
