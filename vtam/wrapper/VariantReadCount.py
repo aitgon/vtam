@@ -1,5 +1,4 @@
 from Bio import SeqIO
-from Bio.Alphabet import generic_dna
 from sqlalchemy import select, bindparam, func
 from vtam.utils.Logger import Logger
 from vtam.utils.SampleInformationFile import SampleInformationFile
@@ -11,6 +10,12 @@ import os
 import pandas
 import sqlalchemy
 import sys
+
+# Compatible with both pre- and post Biopython 1.78:
+try:
+    from Bio.Alphabet import generic_dna
+except ImportError:
+    generic_dna is None
 
 
 class VariantReadCount(ToolWrapper):
@@ -203,8 +208,18 @@ class VariantReadCount(ToolWrapper):
                 #
                 ####################################################################################
 
-                sorted_read_list = [str(seq_record.seq).upper() for seq_record in
-                                    SeqIO.parse(read_fasta_path, format="fasta", alphabet=generic_dna)]
+                if generic_dna:  # Biopython <1.78
+                    sorted_read_list = [str(seq_record.seq).upper() for
+                                        seq_record in
+                                        SeqIO.parse(read_fasta_path,
+                                                    format="fasta",
+                                                    alphabet=generic_dna)]
+                else:  # Biopython =>1.78
+                    sorted_read_list = [str(seq_record.seq).upper() for
+                                        seq_record in
+                                        SeqIO.parse(read_fasta_path,
+                                                    format="fasta",
+                                                    alphabet=generic_dna)]
 
                 variant_read_count_df_sorted_i = pandas.DataFrame(
                     {
