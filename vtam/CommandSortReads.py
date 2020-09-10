@@ -12,7 +12,7 @@ import subprocess
 try:
     from Bio.Alphabet import generic_dna
 except ImportError:
-    generic_dna is None
+    generic_dna = None
 
 from Bio.Seq import Seq
 from vtam.utils.Logger import Logger

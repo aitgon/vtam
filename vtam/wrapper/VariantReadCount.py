@@ -15,7 +15,7 @@ import sys
 try:
     from Bio.Alphabet import generic_dna
 except ImportError:
-    generic_dna is None
+    generic_dna = None
 
 
 class VariantReadCount(ToolWrapper):

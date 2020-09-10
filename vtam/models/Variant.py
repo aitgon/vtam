@@ -7,7 +7,7 @@ from wopmars.Base import Base
 try:
     from Bio.Alphabet import IUPAC  # No longer availa
 except ImportError:
-    IUPAC is None
+    IUPAC = None
 
 class Variant(Base):
     __tablename__ = __qualname__
