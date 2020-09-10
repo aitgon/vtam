@@ -8,7 +8,12 @@ import shlex
 import shutil
 import subprocess
 
-from Bio.Alphabet import generic_dna
+# Compatible with both pre- and post Biopython 1.78:
+try:
+    from Bio.Alphabet import generic_dna
+except ImportError:
+    generic_dna is None
+
 from Bio.Seq import Seq
 from vtam.utils.Logger import Logger
 from vtam.utils.ParamsFile import ParamsFile
@@ -74,7 +79,11 @@ class CommandSortReads(object):
             #
             ########################################################################################
 
-            tag_rev_rc = str(Seq(tag_rev, generic_dna).reverse_complement())
+            if generic_dna:  # Biopython <1.78
+                tag_rev_rc = str(Seq(tag_rev, generic_dna).reverse_complement())
+            else:  # Biopython =>1.78
+                tag_rev_rc = str(Seq(tag_rev).reverse_complement())
+
             out_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
                 '.fasta', '_sorted_%03d.fasta' % i)
             out_fasta_path = os.path.join(tempdir, out_fasta_basename)
@@ -114,8 +123,11 @@ class CommandSortReads(object):
             #
             ########################################################################################
 
-            primer_rev_rc = str(
-                Seq(primer_rev, generic_dna).reverse_complement())
+            if generic_dna:  # Biopython <1.78
+                primer_rev_rc = str(Seq(primer_rev, generic_dna).reverse_complement())
+            else:  # Biopython =>1.78
+                primer_rev_rc = str(Seq(primer_rev).reverse_complement())
+
             in_fasta_path = out_fasta_path
             out_fasta_basename = os.path.basename(in_fasta_path).replace(
                 '_sorted_%03d.fasta' % i, '_sorted_trimmed_%03d.fasta' % i)
@@ -161,7 +173,11 @@ class CommandSortReads(object):
             #
             ########################################################################################
 
-            tag_fwd_rc = str(Seq(tag_fwd, generic_dna).reverse_complement())
+            if generic_dna:  # Biopython <1.78
+                tag_fwd_rc = str(Seq(tag_fwd, generic_dna).reverse_complement())
+            else:  # Biopython =>1.78
+                tag_fwd_rc = str(Seq(tag_fwd).reverse_complement())
+
             out_rc_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
                 '.fasta', '_rc_sorted_%03d.fasta' % i)
             out_rc_fasta_path = os.path.join(tempdir, out_rc_fasta_basename)
@@ -201,8 +217,11 @@ class CommandSortReads(object):
             #
             ###################################################################
 
-            primer_fwd_rc = str(
-                Seq(primer_fwd, generic_dna).reverse_complement())
+            if generic_dna:  # Biopython <1.78
+                primer_fwd_rc = str(Seq(primer_fwd, generic_dna).reverse_complement())
+            else:  # Biopython =>1.78
+                primer_fwd_rc = str(Seq(primer_fwd).reverse_complement())
+
             in_fasta_path = out_rc_fasta_path
             out_rc_fasta_basename = os.path.basename(in_fasta_path).replace(
                 '_rc_sorted_%03d.fasta' % i, '_rc_sorted_trimmed_%03d.fasta' % i)
@@ -254,8 +273,14 @@ class CommandSortReads(object):
                 with open(out_rc_fasta_path, 'r') as fin:
                     for line in fin:
                         if not line.startswith('>'):
-                            fout.write("%s\n" % str(
-                                Seq(line.strip(), generic_dna).reverse_complement()))
+
+                            if generic_dna:  # Biopython <1.78
+                                fout.write("%s\n" % str(
+                                    Seq(line.strip(), generic_dna).reverse_complement()))
+                            else:  # Biopython =>1.78
+                                fout.write("%s\n" % str(
+                                    Seq(line.strip()).reverse_complement()))
+
                         else:
                             fout.write(line)
 
