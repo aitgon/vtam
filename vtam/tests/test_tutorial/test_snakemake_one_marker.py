@@ -179,7 +179,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         args = {'db': db, 'variants': variants, 'output': output, 'taxonomy': taxonomy, 'blastdbdir': blastdbdir, 'log': log}
         cmd = "vtam taxassign --db {db} --variants {variants} " \
               "--output {output} --taxonomy {taxonomy} " \
-              "--blastdbdir {blastdbdir} --blastdbname coi_blast_db_20191211 --log {log} -v".format(**args)
+              "--blastdbdir {blastdbdir} --blastdbname coi_blast_db_20200420 --log {log} -v".format(**args)
 
         if sys.platform.startswith("win"):
             args = cmd
