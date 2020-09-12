@@ -10,12 +10,12 @@ import vtam
 rule all_two_markers:
     input:
         taxonomy="vtam_db/taxonomy.tsv",
-        nhr="vtam_db/coi_blast_db/coi_blast_db_20191211.nhr",
-        nin="vtam_db/coi_blast_db/coi_blast_db_20191211.nin",
-        nog="vtam_db/coi_blast_db/coi_blast_db_20191211.nog",
-        nsd="vtam_db/coi_blast_db/coi_blast_db_20191211.nsd",
-        nsi="vtam_db/coi_blast_db/coi_blast_db_20191211.nsi",
-        nsq="vtam_db/coi_blast_db/coi_blast_db_20191211.nsq",
+        nhr="vtam_db/coi_blast_db/coi_blast_db_20200420.nhr",
+        nin="vtam_db/coi_blast_db/coi_blast_db_20200420.nin",
+        nog="vtam_db/coi_blast_db/coi_blast_db_20200420.nog",
+        nsd="vtam_db/coi_blast_db/coi_blast_db_20200420.nsd",
+        nsi="vtam_db/coi_blast_db/coi_blast_db_20200420.nsi",
+        nsq="vtam_db/coi_blast_db/coi_blast_db_20200420.nsq",
         fastq1="fastq/mfzr_1_fw.fastq",
         fastq2="fastq/mfzr_3_rv.fastq",
         fastq3="fastq/zfzr_1_fw.fastq",
@@ -32,12 +32,12 @@ rule all_two_markers:
 rule all_one_marker:
     input:
         taxonomy="vtam_db/taxonomy.tsv",
-        nhr="vtam_db/coi_blast_db/coi_blast_db_20191211.nhr",
-        nin="vtam_db/coi_blast_db/coi_blast_db_20191211.nin",
-        nog="vtam_db/coi_blast_db/coi_blast_db_20191211.nog",
-        nsd="vtam_db/coi_blast_db/coi_blast_db_20191211.nsd",
-        nsi="vtam_db/coi_blast_db/coi_blast_db_20191211.nsi",
-        nsq="vtam_db/coi_blast_db/coi_blast_db_20191211.nsq",
+        nhr="vtam_db/coi_blast_db/coi_blast_db_20200420.nhr",
+        nin="vtam_db/coi_blast_db/coi_blast_db_20200420.nin",
+        nog="vtam_db/coi_blast_db/coi_blast_db_20200420.nog",
+        nsd="vtam_db/coi_blast_db/coi_blast_db_20200420.nsd",
+        nsi="vtam_db/coi_blast_db/coi_blast_db_20200420.nsi",
+        nsq="vtam_db/coi_blast_db/coi_blast_db_20200420.nsq",
         fastq1="fastq/mfzr_1_fw.fastq",
         fastq2="fastq/mfzr_3_rv.fastq",
         fastq3="fastq/zfzr_1_fw.fastq",
@@ -128,14 +128,14 @@ rm -f fastq.tar.gz
 
 rule coi_blast_db:
     output:
-        nhr="vtam_db/coi_blast_db/coi_blast_db_20191211.nhr",
-        nin="vtam_db/coi_blast_db/coi_blast_db_20191211.nin",
-        nog="vtam_db/coi_blast_db/coi_blast_db_20191211.nog",
-        nsd="vtam_db/coi_blast_db/coi_blast_db_20191211.nsd",
-        nsi="vtam_db/coi_blast_db/coi_blast_db_20191211.nsi",
-        nsq="vtam_db/coi_blast_db/coi_blast_db_20191211.nsq",
+        nhr="vtam_db/coi_blast_db/coi_blast_db_20200420.nhr",
+        nin="vtam_db/coi_blast_db/coi_blast_db_20200420.nin",
+        nog="vtam_db/coi_blast_db/coi_blast_db_20200420.nog",
+        nsd="vtam_db/coi_blast_db/coi_blast_db_20200420.nsd",
+        nsi="vtam_db/coi_blast_db/coi_blast_db_20200420.nsi",
+        nsq="vtam_db/coi_blast_db/coi_blast_db_20200420.nsq",
     shell:
-        "vtam coi_blast_db --blastdbdir $(dirname {output.nhr}) --blastdbname coi_blast_db_20191211"
+        "vtam coi_blast_db --blastdbdir $(dirname {output.nhr}) --blastdbname coi_blast_db_20200420"
 
 rule taxonomy:
     output:
