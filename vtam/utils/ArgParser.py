@@ -162,7 +162,7 @@ class ArgParser:
         parser_vtam_main.add_argument('--threads', action='store', help="Number of threads",
                                       required=False, default=multiprocessing.cpu_count())
         parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
-        subparsers = parser_vtam_main.add_subparsers()
+        subparsers = parser_vtam_main.add_subparsers(title='Subcommands')
 
         ############################################################################################
         #
@@ -299,7 +299,8 @@ class ArgParser:
     @classmethod
     def create_filter(cls, subparsers, parent_parser):
         parser_vtam_filter = subparsers.add_parser(
-            'filter', add_help=True, parents=[parent_parser])
+            'filter', add_help=True, parents=[parent_parser], help="""Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table. 
+            Steps of '%(prog)s': SampleInformation, VariantReadCount , FilterLFN, FilterMinReplicateNumber, FilterPCRerror, FilterChimera, FilterMinReplicateNumber2, FilterRenkonen, FilterMinReplicateNumber3, FilterIndel, FilterCodonStop, ReadCountAverageOverReplicates, MakeAsvTable""")
 
         parser_vtam_filter.add_argument(
             '--readinfo',
@@ -373,7 +374,7 @@ class ArgParser:
             dest='until',
             action='store',
             default=None,
-            help="Execute the workflow until the given target RULE: SampleInformation, ...",
+            help="Execute the workflow until a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
             required=False)
 
         parser_vtam_filter.add_argument(
@@ -382,7 +383,7 @@ class ArgParser:
             dest='since',
             action='store',
             default=None,
-            help="Execute the workflow since the given RULE.",
+            help="Execute the workflow since a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
             required=False)
 
         # This attribute will trigger the good command
@@ -391,7 +392,8 @@ class ArgParser:
     @classmethod
     def create_optimize(cls, subparsers, parent_parser):
         parser_vtam_optimize = subparsers.add_parser(
-            'optimize', add_help=True, parents=[parent_parser])
+            'optimize', add_help=True, parents=[parent_parser], help="""Finds optimal parameters for filtering. 
+            Steps of '%(prog)s': SampleInformation, VariantReadCount , OptimizeLFNsampleReplicate, OptimizePCRerror, OptimizeLFNreadCountAndLFNvariant""")
 
         parser_vtam_optimize.add_argument(
             '--readinfo',
@@ -459,7 +461,7 @@ class ArgParser:
             dest='until',
             action='store',
             default=None,
-            help="Execute the workflow until the given target RULE: SampleInformation, ...",
+            help="Execute the workflow until a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
             required=False)
         parser_vtam_optimize.add_argument(
             '-S',
@@ -467,7 +469,7 @@ class ArgParser:
             dest='since',
             action='store',
             default=None,
-            help="Execute the workflow since the given RULE.",
+            help="Execute the workflow since a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
             required=False)
 
         # This attribute will trigger the good command
