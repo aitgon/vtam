@@ -25,12 +25,12 @@ from vtam.utils.constants import FilterLFNreference_records
 
 class VTAM(object):
 
-    usage_message = """usage: vtam <command> [<args>]
+    usage_message = """usage: vtam <subcommand> [<args>]
 
-        These are the VTAM commands:
+        These are the VTAM subcommands:
 
    merge      Merges paired-end reads
-   sortreads  Trims, demultiplex and and sorts reads
+   sortreads  Trims and sorts/demultiplexes reads
    filter     Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table
    taxassign     Assigns amplicon sequence variants to taxa
    optimize   Finds optimal parameters for filtering
@@ -266,7 +266,7 @@ class VTAM(object):
 
 
 def main():
-    if sys.argv[1:] == []:  # No arguments
+    if sys.argv[1:] == [] or sys.argv[1:] == ['--help'] or sys.argv[1:] == ['-h']:  # No arguments
         print(VTAM.usage_message)
         sys.exit(1)
     VTAM(sys.argv[1:])
