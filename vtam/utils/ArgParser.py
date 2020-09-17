@@ -122,21 +122,31 @@ class ArgParserChecker(object):
             return path
         else:
             raise argparse.ArgumentTypeError(
-                "The --variants TSV file must contain a column with a 'sequence' header: '{}'.".format(path))
+                "The --variants TSV file must contain a column with a 'sequence' header: '{}'.".format(
+                    path))
 
 
 class ArgParser:
+
+    ################################################################################################
+    #
+    # Some common args are stored in variables
+    #
+    ################################################################################################
+
     args_db = {
         'dest': 'db',
         'action': 'store',
         'default': 'db.sqlite',
         'required': False,
         'help': "Database in SQLITE format"}
+
     args_log_file = {
         'dest': 'log_file',
         'action': 'store',
         'help': "Write log to file.",
         'required': False}
+    
     args_log_verbosity = {
         'dest': 'log_verbosity',
         'action': 'count',
@@ -162,7 +172,7 @@ class ArgParser:
         parser_vtam_main.add_argument('--threads', action='store', help="Number of threads",
                                       required=False, default=multiprocessing.cpu_count())
         parser_vtam_main.add_argument('-v', **cls.args_log_verbosity)
-        subparsers = parser_vtam_main.add_subparsers(title='Subcommands')
+        subparsers = parser_vtam_main.add_subparsers(title='VTAM sub-commands')
 
         ############################################################################################
         #
@@ -226,7 +236,7 @@ class ArgParser:
         #
         #######################################################################
 
-        cls.create_coiblastdb(subparsers=subparsers)
+        cls.create_coiblastdb(subparsers=subparsers, parent_parser=parser_vtam_main)
 
         return parser_vtam_main
 
@@ -234,30 +244,31 @@ class ArgParser:
     def create_merge(cls, subparsers, parent_parser):
         parser_vtam_merge = subparsers.add_parser('merge', add_help=True,
                                                   formatter_class=argparse.RawTextHelpFormatter,
-                                                  parents=[parent_parser])
+                                                  parents=[parent_parser],
+                                                  help="Merges paired-end reads.")
 
         parser_vtam_merge.add_argument('--fastqinfo', action='store',
-                                       help="TSV file with FASTQ sample information",
+                                       help="REQUIRED: Input TSV file with paired FASTQ file information",
                                        required=True,
                                        type=lambda x: SampleInformationFile(x).check_args(
                                            header=header_paired_fastq))
 
         parser_vtam_merge.add_argument('--fastainfo',
                                        action='store',
-                                       help="REQUIRED: Output TSV file for FASTA sample information",
+                                       help="REQUIRED: Output TSV file with merged FASTA file information",
                                        required=True)
 
         parser_vtam_merge.add_argument(
             '--fastqdir',
             action='store',
-            help="Directory with FASTQ files",
+            help="Input directory with paired FASTQ files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
 
         parser_vtam_merge.add_argument(
             '--fastadir',
             action='store',
-            help="Directory with FASTA files",
+            help="Output directory with merged FASTA files",
             required=True)
         # This attribute will trigger the good command
 
@@ -269,12 +280,13 @@ class ArgParser:
             'sortreads',
             add_help=True,
             formatter_class=argparse.RawTextHelpFormatter,
-            parents=[parent_parser])
+            parents=[parent_parser],
+            help="Sorts (Trims and demultiplexes) reads to biological samples and replicates according to the presence of sequence tags and primers.")
 
         parser_vtam_sortreads.add_argument(
             '--fastainfo',
             action='store',
-            help="REQUIRED: TSV file with FASTA information",
+            help="REQUIRED: Input TSV file with FASTA file information",
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_merged_fasta))
@@ -282,14 +294,14 @@ class ArgParser:
         parser_vtam_sortreads.add_argument(
             '--fastadir',
             action='store',
-            help="REQUIRED: Directory with FASTA files",
+            help="REQUIRED: Input directory with FASTA files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
 
         parser_vtam_sortreads.add_argument(
-            '--outdir',
+            '--sorteddir',
             action='store',
-            help="REQUIRED: Output directory for trimmed and demultiplexed files",
+            help="REQUIRED: Output directory with sorted reads (Trimmed and demultiplexed) in FASTA files and TSV file with corresponnding FASTA file information ('SORTEDDIR/readinfo.tsv')",
             default="out",
             required=True)
         # This attribute will trigger the good command
@@ -299,21 +311,21 @@ class ArgParser:
     @classmethod
     def create_filter(cls, subparsers, parent_parser):
         parser_vtam_filter = subparsers.add_parser(
-            'filter', add_help=True, parents=[parent_parser], help="""Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table. 
-            Steps of '%(prog)s': SampleInformation, VariantReadCount , FilterLFN, FilterMinReplicateNumber, FilterPCRerror, FilterChimera, FilterMinReplicateNumber2, FilterRenkonen, FilterMinReplicateNumber3, FilterIndel, FilterCodonStop, ReadCountAverageOverReplicates, MakeAsvTable""")
+            'filter', add_help=True, parents=[parent_parser],
+            help="Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table.")
 
         parser_vtam_filter.add_argument(
-            '--readinfo',
+            '--sortedinfo',
             action='store',
-            help="REQUIRED: TSV file with information of sorted read files",
+            help="REQUIRED: Input TSV file with information about FASTA files containing sorted reads",
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_sortedread_fasta)
         )
         parser_vtam_filter.add_argument(
-            '--readdir',
+            '--sorteddir',
             action='store',
-            help="REQUIRED: TSV file with information of sorted read files",
+            help="REQUIRED:  Input directory with sorted (Trimmed and demultiplexed) FASTA files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty
         )
@@ -333,14 +345,14 @@ class ArgParser:
         parser_vtam_filter.add_argument(
             '--lfn_variant_replicate',
             action='store_true',
-            help="If set, VTAM will run the algorithm for the low frequency noise over variant and replicates",
+            help="If set, VTAM will run the algorithm for the low frequency noise over variant and replicates.",
             required=False,
             default=False)
 
         parser_vtam_filter.add_argument(
             '--known_occurrences',
             action='store',
-            help="TSV file with known variants",
+            help="TSV file with expected (keep) occurrences.",
             required=False,
             type=lambda x: KnownOccurrences(x).argparse_checker_known_occurrences())
 
@@ -374,7 +386,8 @@ class ArgParser:
             dest='until',
             action='store',
             default=None,
-            help="Execute the workflow until a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
+            help="""Executes '%(prog)s' UNTIL one rule, where the rule order looks like:            
+1. SampleInformation, 2. VariantReadCount, 3. FilterLFN, 4. FilterMinReplicateNumber, 5. FilterPCRerror, 6. FilterChimera, 7. FilterMinReplicateNumber2, 8. FilterRenkonen, 9. FilterMinReplicateNumber3, 10. FilterIndel, 11. FilterCodonStop, 12. ReadCountAverageOverReplicates, 13. MakeAsvTable""",
             required=False)
 
         parser_vtam_filter.add_argument(
@@ -383,37 +396,94 @@ class ArgParser:
             dest='since',
             action='store',
             default=None,
-            help="Execute the workflow since a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
+            help="""Executes '%(prog)s' SINCE one rule, where the rule order looks like:
+            1. SampleInformation, 2. VariantReadCount, 3. FilterLFN, 4. FilterMinReplicateNumber, 5. FilterPCRerror, 6. FilterChimera, 7. FilterMinReplicateNumber2, 8. FilterRenkonen, 9. FilterMinReplicateNumber3, 10. FilterIndel, 11. FilterCodonStop, 12. ReadCountAverageOverReplicates, 13. MakeAsvTable""",
             required=False)
 
         # This attribute will trigger the good command
         parser_vtam_filter.set_defaults(command='filter')
 
     @classmethod
+    def create_taxassign(cls, subparsers, parent_parser):
+        parser_vtam_taxassign = subparsers.add_parser(
+            'taxassign',
+            add_help=True,
+            parents=[parent_parser],
+            help="Assigns amplicon sequence variants (ASVs) to taxonomic groups.")
+
+        parser_vtam_taxassign.add_argument(
+            '--asvtable',
+            action='store',
+            help="REQUIRED: Input TSV file with variant sequences and sequence header in the last column.",
+            required=True,
+            type=lambda x: ArgParserChecker.check_taxassign_variants(x))
+        parser_vtam_taxassign.add_argument(
+            '--output',
+            action='store',
+            help="REQUIRED: Output TSV file where the taxon assignation has beeen added.",
+            required=True)
+        parser_vtam_taxassign.add_argument(
+            '--mode',
+            dest='mode',
+            default="unassigned",
+            action='store',
+            required=False,
+            choices=[
+                'unassigned',
+                'reset'],
+            help="The default 'unassigned' mode will only assign 'unassigned' variants."
+                 "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
+                 "input variants.")
+        parser_vtam_taxassign.add_argument('--db', **cls.args_db)
+        parser_vtam_taxassign.add_argument(
+            '--blastdbdir',
+            action='store',
+            help="REQUIRED: Input directory with (Full or custom one) Blast database files.",
+            required=True,
+            type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+        parser_vtam_taxassign.add_argument(
+            '--blastdbname',
+            action='store',
+            help="REQUIRED: Input Blast database name, which corresponds to the file name without suffix of the Blast database files.",
+            required=True)
+        parser_vtam_taxassign.add_argument(
+            '--taxonomy',
+            dest='taxonomy',
+            action='store',
+            help="""REQUIRED: Input TSV file with taxonomy information.
+        This file is created with the 'taxonomy' sub-command. For instance
+        'vtam taxonomy -o taxonomy.tsv' creates the 'taxonomy.tsv' file in the current directory.""",
+            required=True,
+            type=ArgParserChecker.check_taxassign_taxonomy)
+
+        # This attribute will trigger the good command
+        parser_vtam_taxassign.set_defaults(command='taxassign')
+
+    @classmethod
     def create_optimize(cls, subparsers, parent_parser):
         parser_vtam_optimize = subparsers.add_parser(
-            'optimize', add_help=True, parents=[parent_parser], help="""Finds optimal parameters for filtering. 
-            Steps of '%(prog)s': SampleInformation, VariantReadCount , OptimizeLFNsampleReplicate, OptimizePCRerror, OptimizeLFNreadCountAndLFNvariant""")
+            'optimize', add_help=True, parents=[parent_parser],
+            help="Finds out optimal parameters for filtering.")
 
         parser_vtam_optimize.add_argument(
-            '--readinfo',
+            '--sortedinfo',
             action='store',
-            help="REQUIRED: TSV file with information of sorted read files",
+            help="REQUIRED: Input TSV file with information about FASTA files containing sorted (trimmed and demultiplexed) reads",
             required=True,
             type=lambda x: SampleInformationFile(x).check_args(
                 header=header_sortedread_fasta))
 
         parser_vtam_optimize.add_argument(
-            '--readdir',
+            '--sorteddir',
             action='store',
-            help="REQUIRED: Directory with sorted read files",
+            help="REQUIRED:  Input directory with sorted (Trimmed and demultiplexed) FASTA files",
             required=True,
             type=ArgParserChecker.check_dir_exists_and_is_nonempty)
 
         parser_vtam_optimize.add_argument(
             '--outdir',
             action='store',
-            help="Directory for output",
+            help="Output directory",
             default="out",
             required=True)
 
@@ -461,7 +531,8 @@ class ArgParser:
             dest='until',
             action='store',
             default=None,
-            help="Execute the workflow until a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
+            help="""Executes '%(prog)s' UNTIL one rule, where the rules follow this order:
+            1. SampleInformation, 2. VariantReadCount, 3. either OptimizeLFNsampleReplicate or OptimizePCRerror or OptimizeLFNreadCountAndLFNvariant""",
             required=False)
         parser_vtam_optimize.add_argument(
             '-S',
@@ -469,7 +540,8 @@ class ArgParser:
             dest='since',
             action='store',
             default=None,
-            help="Execute the workflow since a given STEP. See STEPs of '%(prog)s' in the subcommands help below.",
+            help="""Executes '%(prog)s' SINCE one rule, where the rules follow this order: 
+            1. SampleInformation, 2. VariantReadCount, 3. either OptimizeLFNsampleReplicate or OptimizePCRerror or OptimizeLFNreadCountAndLFNvariant""",
             required=False)
 
         # This attribute will trigger the good command
@@ -480,10 +552,12 @@ class ArgParser:
         parser_vtam_pool_markers = subparsers.add_parser(
             'pool',
             add_help=True,
-            formatter_class=argparse.RawTextHelpFormatter,
-            parents=[parent_parser])
+            parents=[parent_parser],
+            help="Pools amplicon sequence variants (ASVs) from different but overlapping markers.")
+
         parser_vtam_pool_markers.add_argument(
             '--db', action='store', required=True, help="SQLITE file with DB")
+
         from vtam.utils.RunMarkerFile import RunMarkerFile
         parser_vtam_pool_markers.add_argument(
             '--runmarker',
@@ -493,77 +567,20 @@ class ArgParser:
             required=True,
             type=lambda x: RunMarkerFile(x).check_argument())
         parser_vtam_pool_markers.add_argument(
-            '--output',
+            '--asvtable',
             action='store',
-            help="REQUIRED: Output TSV file with pooled markers",
+            help="REQUIRED: Output TSV file with pooled markers and their occurrences in biological samples",
             required=True)
 
         # This attribute will trigger the good command
         parser_vtam_pool_markers.set_defaults(command='pool')
 
     @classmethod
-    def create_taxassign(cls, subparsers, parent_parser):
-        parser_vtam_taxassign = subparsers.add_parser(
-            'taxassign',
-            add_help=True,
-            formatter_class=argparse.RawTextHelpFormatter,
-            parents=[parent_parser])
-
-        parser_vtam_taxassign.add_argument(
-            '--variants',
-            action='store',
-            help="REQUIRED: TSV file with variant sequences and sequence header in the last column.",
-            required=True,
-            type=lambda x: ArgParserChecker.check_taxassign_variants(x))
-        parser_vtam_taxassign.add_argument(
-            '--output',
-            action='store',
-            help="REQUIRED: TSV file where the taxon assignation has beeen added.",
-            required=True)
-        parser_vtam_taxassign.add_argument(
-            '--mode',
-            dest='mode',
-            default="unassigned",
-            action='store',
-            required=False,
-            choices=[
-                'unassigned',
-                'reset'],
-            help="The default 'unassigned' mode will only assign 'unassigned' variants."
-                 "The alternative 'reset' mode will erase the TaxAssign table and reassigned all "
-                 "input variants.")
-        parser_vtam_taxassign.add_argument('--db', **cls.args_db)
-        parser_vtam_taxassign.add_argument(
-            '--blastdbdir',
-            action='store',
-            help="REQUIRED: Blast DB directory (Full or custom one) with DB files.",
-            required=True,
-            type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        parser_vtam_taxassign.add_argument(
-            '--blastdbname',
-            action='store',
-            help="REQUIRED: Blast DB name. It corresponds to file name (without suffix)"
-                 "of blast DB files.",
-            required=True)
-        parser_vtam_taxassign.add_argument(
-            '--taxonomy',
-            dest='taxonomy',
-            action='store',
-            help="""REQUIRED: SQLITE DB with taxonomy information.
-
-        This database is create with the command: vtam taxonomy. For instance
-
-        vtam taxonomy -o taxonomy.sqlite to create a database in the current directory.""",
-            required=True,
-            type=ArgParserChecker.check_taxassign_taxonomy)
-
-        # This attribute will trigger the good command
-        parser_vtam_taxassign.set_defaults(command='taxassign')
-
-    @classmethod
     def create_taxonomy(cls, subparsers, parent_parser):
         parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
-                                                     parents=[parent_parser])
+                                                     parents=[parent_parser],
+                                                     help="Downloads a TSV file with the NCBI taxonomy information.")
+
         parser_vtam_taxonomy.add_argument(
             '-o',
             '--output',
@@ -583,21 +600,23 @@ class ArgParser:
         parser_vtam_taxonomy.set_defaults(command='taxonomy')
 
     @classmethod
-    def create_coiblastdb(cls, subparsers):
+    def create_coiblastdb(cls, subparsers, parent_parser):
         parser_vtam_coi_blast_db = subparsers.add_parser(
-            'coi_blast_db', add_help=True)
+            'coi_blast_db', add_help=True,
+            help="Downloads a precomputed BLAST database for the cytochrome C oxidase subunit I (COI) marker.")
+
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbdir',
             dest='blastdbdir',
             action='store',
-            help="Path COI Blast DB",
+            help="REQUIRED: Output directory with custom Blast database files of the cytochrome C oxidase subunit I (COI) marker files.",
             required=False,
             default='.')
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbname',
             dest='blastdbname',
             action='store',
-            help="COI Blast DB name, eg coi_blast_db_20191211, coi_blast_db_20200420. Versions can be found as basename here: {}".format(
+            help="REQUIRED: Cytochrome C oxidase subunit I (COI) Blast database name among these current possibilities: coi_blast_db, coi_blast_db_20191211, coi_blast_db_20200420. Other versions if available can be found here: {}".format(
                 os.path.dirname(coi_blast_db_gz_url)),
             required=False,
             default='coi_blast_db',
