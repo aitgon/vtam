@@ -19,7 +19,7 @@ class LessThanFilter(logging.Filter):
 
 class LoggerArguments(dict, Singleton):
     """
-    The LoggerArguments is a single dictionary with the log_verbosity and log_file values
+    The LoggerArguments is a single dictionary with the log_verbosity and log values
 
     """
 
@@ -59,8 +59,8 @@ class Logger(Singleton):
         else:
             verbosity = 0
 
-        if 'log_file' in LoggerArguments.instance():
-            log_file_path = LoggerArguments.instance()['log_file']
+        if 'log' in LoggerArguments.instance():
+            log_file_path = LoggerArguments.instance()['log']
         elif 'VTAM_LOG_FILE' in os.environ:
             log_file_path = os.environ['VTAM_LOG_FILE']
         else:

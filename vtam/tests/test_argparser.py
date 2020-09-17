@@ -50,11 +50,11 @@ class TestArgParser(unittest.TestCase):
 
     def test_arg_parser_params(self):
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
+        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv --params {params_wrong_yml}".format(
+        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_wrong_yml}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
@@ -62,7 +62,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_filter(self):
 
         # Ok
-        args = "filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtable.tsv".format(
+        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -76,22 +76,22 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {filedoesnotexist} --readdir {foodir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {filedoesnotexist} --sorteddir {foodir} --outdir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {filenottsv} --readdir {foodir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {filenottsv} --sorteddir {foodir} --outdir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {emptydir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {emptydir} --outdir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --readinfo {readinfo_tsv} --readdir {dirdoesnotexist} --outdir {foodir}".format(
+        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {dirdoesnotexist} --outdir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
@@ -99,7 +99,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_optimize(self):
 
         # Ok
-        args = "optimize --known_occurrences {known_occurrences} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {known_occurrences} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -113,12 +113,12 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --known_occurrences {filedoesnotexist} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {filedoesnotexist} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --known_occurrences {filenottsv} --readinfo {readinfo_tsv} --readdir {foodir} " \
+        args = "optimize --known_occurrences {filenottsv} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
@@ -126,7 +126,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_taxassign(self):
 
         # Ok
-        args = "taxassign --variants {asvtable_tsv} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
+        args = "taxassign --asvtable {asvtable_tsv} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
                "--taxonomy  {taxonomy_tsv}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -150,7 +150,7 @@ class TestArgParser(unittest.TestCase):
 
         self.foopaths['asvtable_tsv_wrong_header_sequences'] =  os.path.join(
             self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default_wrong_header_sequence.tsv")
-        args = "taxassign --variants {asvtable_tsv_wrong_header_sequences} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
+        args = "taxassign --asvtable {asvtable_tsv_wrong_header_sequences} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
                "--taxonomy  {taxonomy_tsv}".format(**self.foopaths).split()
 
         with self.assertRaises(SystemExit):
@@ -159,7 +159,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_pool_runmarker(self):
 
         # Ok
-        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --output {outdir}".format(
+        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --asvtable {outdir}".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
