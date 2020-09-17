@@ -1,14 +1,11 @@
+import jinja2
 import os
 import pathlib
 import tempfile
 
-import jinja2
-import yaml
-
 from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
-from vtam.utils import constants
 
 
 class WopmarsRunner(Singleton):
@@ -195,9 +192,9 @@ class WopmarsRunner(Singleton):
                     os.environ['VTAM_LOG_VERBOSITY'] = str(
                         self.cli_args_and_numerical_params['log_verbosity'])
 
-        if not self.cli_args_and_numerical_params['log_file'] is None:
+        if not self.cli_args_and_numerical_params['log'] is None:
             wopmars_command += " --log " + \
-                self.cli_args_and_numerical_params['log_file']
+                self.cli_args_and_numerical_params['log']
 
         if 'since' in self.cli_args_and_numerical_params:
             if not self.cli_args_and_numerical_params['since'] is None:

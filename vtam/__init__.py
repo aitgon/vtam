@@ -1,22 +1,20 @@
 import os
 import pathlib
 import sys
-
 import yaml
 
-from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
-from vtam.utils.ParamsFile import ParamsFile
-
-from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandBlastCOI import CommandBlastCOI
+from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandSortReads import CommandSortReads
 from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.ArgParser import ArgParser
+from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.Logger import Logger
 from vtam.utils.Logger import LoggerArguments
+from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
@@ -24,20 +22,6 @@ from vtam.utils.constants import FilterLFNreference_records
 
 
 class VTAM(object):
-
-    usage_message = """usage: vtam <subcommand> [<args>]
-
-        These are the VTAM subcommands:
-
-   merge      Merges paired-end reads
-   sortreads  Trims and sorts/demultiplexes reads
-   filter     Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table
-   taxassign     Assigns amplicon sequence variants to taxa
-   optimize   Finds optimal parameters for filtering
-   pool   Pools overlapping markers from the ASV table into one
-   taxonomy   Creates the taxonomy TSV file required for tax assignation
-   coi_blast_db   Downloads a precomputed COI Blast database
-"""
 
     def __init__(self, sys_argv):
 
@@ -74,12 +58,12 @@ class VTAM(object):
         ############################################################################################
 
         (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
-                                             'log_file': arg_parser_dic['log_file']})
+                                             'log': arg_parser_dic['log']})
         if 'log_verbosity' in arg_parser_dic:
             os.environ['VTAM_LOG_VERBOSITY'] = str(
                 arg_parser_dic['log_verbosity'])
-        if 'log_file' in arg_parser_dic:
-            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log_file'])
+        if 'log' in arg_parser_dic:
+            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log'])
 
         #######################################################################
         #
@@ -262,11 +246,12 @@ class VTAM(object):
         ############################################################################################
 
         else:
-            print(VTAM.usage_message)
+            self.args = parser.parse_args(['--help'])  # if command unknown print help
+
 
 
 def main():
-    if sys.argv[1:] == [] or sys.argv[1:] == ['--help'] or sys.argv[1:] == ['-h']:  # No arguments
-        print(VTAM.usage_message)
-        sys.exit(1)
+
+    if not sys.argv[1:]:  # if not arguments, print help
+        VTAM(['--help'])
     VTAM(sys.argv[1:])
