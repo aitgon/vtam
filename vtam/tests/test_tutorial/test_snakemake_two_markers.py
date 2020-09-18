@@ -105,7 +105,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_03_mfzr_filter_optimized(self):
 
-        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_mfzr.tsv --readdir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log"
+        cmd = "vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_mfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log"
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -115,7 +115,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_03_mfzr_taxassign_optimized(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_mfzr.tsv " \
+        cmd = "vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_mfzr.tsv " \
               "--output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log"
 
@@ -127,8 +127,8 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_04_zfzr_filter_optimized(self):
 
-        cmd = "vtam filter --db asper2/db.sqlite --readinfo asper2/user_input/readinfo_zfzr.tsv " \
-              "--readdir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml " \
+        cmd = "vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_zfzr.tsv " \
+              "--sorteddir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml " \
               "--asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log"
 
         if sys.platform.startswith("win"):
@@ -139,7 +139,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_05_zfzr_taxassign_optimized(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/run1/asvtable_params_zfzr.tsv " \
+        cmd = "vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_zfzr.tsv " \
               "--output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log"
 
@@ -151,7 +151,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_07_pool(self):
 
-        cmd = "vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --output asper2/asvtable_pooled_mfzr_zfzr.tsv --log asper2/vtam.log -v"
+        cmd = "vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/asvtable_pooled_mfzr_zfzr.tsv --log asper2/vtam.log -v"
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -161,7 +161,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
     def test_08_pool_taxa(self):
 
-        cmd = "vtam taxassign --db asper2/db.sqlite --variants asper2/asvtable_pooled_mfzr_zfzr.tsv " \
+        cmd = "vtam taxassign --db asper2/db.sqlite --asvtable asper2/asvtable_pooled_mfzr_zfzr.tsv " \
               "--output asper2/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv " \
               "--blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v"
 

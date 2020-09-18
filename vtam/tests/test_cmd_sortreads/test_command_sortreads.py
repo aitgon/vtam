@@ -22,10 +22,10 @@ class TestCommandSortReads(TestCase):
 
     def test_01(self):
 
-        CommandSortReads.main(fastainfo=self.fastainfo, fastadir=self.fastadir, outdir=self.sorted_dir)
+        CommandSortReads.main(fastainfo=self.fastainfo, fastadir=self.fastadir, sorteddir=self.sorted_dir)
 
         self.assertTrue(filecmp.cmpfiles(self.sorted_dir, self.sorted_dir_bak, common=[
-            'readinfo.tsv', 'MFZR_14Ben01_Tpos1_1_fw_48_000.fasta', 'MFZR_14Ben01_Tpos1_1_fw_48_001.fasta',
+            'sortedinfo.tsv', 'MFZR_14Ben01_Tpos1_1_fw_48_000.fasta', 'MFZR_14Ben01_Tpos1_1_fw_48_001.fasta',
             'MFZR_14Ben01_Tpos1_1_fw_48_002.fasta', 'MFZR_14Ben01_Tpos1_1_fw_48_003.fasta'], shallow=True))
 
     def tearDown(self):

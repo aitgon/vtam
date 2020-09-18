@@ -66,7 +66,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         self.asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
 
         self.args = {}
-        self.args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo.tsv")
+        self.args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo.tsv")
         self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
         self.args['optimize_lfn_variant_specific'] = os.path.join(
             self.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
@@ -83,7 +83,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
@@ -103,7 +103,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
@@ -123,7 +123,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
@@ -143,7 +143,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
@@ -158,7 +158,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
     def test_read_fasta(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 

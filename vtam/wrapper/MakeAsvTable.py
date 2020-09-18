@@ -11,7 +11,7 @@ class MakeAsvTable(ToolWrapper):
         "polymorphic_identity": "vtam.wrapper.MakeAsvTable"}
 
     # Input file
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     __input_file_known_occurrences = "known_occurrences"
     # Input table
     __input_table_marker = "Marker"
@@ -27,7 +27,7 @@ class MakeAsvTable(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            MakeAsvTable.__input_file_readinfo,
+            MakeAsvTable.__input_file_sortedinfo,
         ]
 
     def specify_input_table(self):
@@ -64,7 +64,7 @@ class MakeAsvTable(ToolWrapper):
         #######################################################################
 
         # Input file
-        fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_readinfo)
+        fasta_info_tsv = self.input_file(MakeAsvTable.__input_file_sortedinfo)
 
         # Output file
         asvtable_tsv_path = self.output_file(MakeAsvTable.__output_table_asv)
@@ -75,7 +75,7 @@ class MakeAsvTable(ToolWrapper):
 
         #######################################################################
         #
-        # Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # Compute variant_read_count_input_df and other dfs for the asv_table_runner
         #
         #######################################################################
