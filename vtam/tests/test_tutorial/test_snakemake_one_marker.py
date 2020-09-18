@@ -157,10 +157,10 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         db = os.path.join("asper1", "db.sqlite")
         runmarker = os.path.join("asper1", "user_input", "pool_run_marker.tsv")
-        output = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
+        asvtable_pooled = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
         log = os.path.join("asper1", "vtam.log")
-        args = {'db': db, 'runmarker': runmarker, 'output': output, 'log': log}
-        cmd = "vtam pool --db asper1/db.sqlite --runmarker {runmarker} --output {output} --log {log} -v".format(**args)
+        args = {'db': db, 'runmarker': runmarker, 'asvtable_pooled': asvtable_pooled, 'log': log}
+        cmd = "vtam pool --db asper1/db.sqlite --runmarker {runmarker} --asvtable {asvtable_pooled} --log {log} -v".format(**args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -171,13 +171,13 @@ class TestTutorialSnakemake(unittest.TestCase):
     def test_08_pool_taxa(self):
 
         db = os.path.join("asper1", "db.sqlite")
-        variants = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
+        asvtable = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
         output = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr_taxa.tsv")
         taxonomy = os.path.join("vtam_db", "taxonomy.tsv")
         blastdbdir = os.path.join("vtam_db", "coi_blast_db")
         log = os.path.join("asper1", "vtam.log")
-        args = {'db': db, 'variants': variants, 'output': output, 'taxonomy': taxonomy, 'blastdbdir': blastdbdir, 'log': log}
-        cmd = "vtam taxassign --db {db} --variants {variants} " \
+        args = {'db': db, 'asvtable': asvtable, 'output': output, 'taxonomy': taxonomy, 'blastdbdir': blastdbdir, 'log': log}
+        cmd = "vtam taxassign --db {db} --asvtable {asvtable} " \
               "--output {output} --taxonomy {taxonomy} " \
               "--blastdbdir {blastdbdir} --blastdbname coi_blast_db_20200420 --log {log} -v".format(**args)
 

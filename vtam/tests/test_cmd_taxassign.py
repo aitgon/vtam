@@ -97,7 +97,7 @@ class TestCommandTaxAssign(unittest.TestCase):
 
     def test_03_taxassign(self):
 
-        # CommandTaxAssign.main(db=self.db_path, mode='unassigned', variants_tsv=self.asvtable,
+        # CommandTaxAssign.main(db=self.db_path, mode='unassigned', asvtable_tsv=self.asvtable,
         #                       output=self.asvtable_taxa, taxonomy_tsv=self.taxonomy_tsv,
         #                       blastdb_dir_path=self.coi_blast_db_dir, blastdbname_str='coi_blast_db')
 
@@ -107,7 +107,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam taxassign --variants {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 --taxonomy {taxonomy}".format(**self.args)
+        cmd = "vtam taxassign --asvtable {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 --taxonomy {taxonomy}".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd

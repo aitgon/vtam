@@ -1,22 +1,20 @@
 import os
 import pathlib
 import sys
-
 import yaml
 
-from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
-from vtam.utils.ParamsFile import ParamsFile
-
-from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandBlastCOI import CommandBlastCOI
+from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandSortReads import CommandSortReads
 from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.ArgParser import ArgParser
+from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
 from vtam.utils.Logger import Logger
 from vtam.utils.Logger import LoggerArguments
+from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
@@ -24,20 +22,6 @@ from vtam.utils.constants import FilterLFNreference_records
 
 
 class VTAM(object):
-
-    usage_message = """usage: vtam <command> [<args>]
-
-        These are the VTAM commands:
-
-   merge      Merges paired-end reads
-   sortreads  Trims, demultiplex and and sorts reads
-   filter     Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table
-   taxassign     Assigns amplicon sequence variants to taxa
-   optimize   Finds optimal parameters for filtering
-   pool   Pools overlapping markers from the ASV table into one
-   taxonomy   Creates the taxonomy TSV file required for tax assignation
-   coi_blast_db   Downloads a precomputed COI Blast database
-"""
 
     def __init__(self, sys_argv):
 
@@ -61,7 +45,7 @@ class VTAM(object):
         #
         ############################################################################################
 
-        if arg_parser_dic['params'] is None:
+        if 'params' in arg_parser_dic and arg_parser_dic['params'] is None:
             params_yml = os.path.join(PathManager.instance().get_configdir(), "params.yml")
             if not os.path.isfile(params_yml):
                 pathlib.Path(params_yml).touch(exist_ok=False)
@@ -73,13 +57,14 @@ class VTAM(object):
         #
         ############################################################################################
 
-        (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
-                                             'log_file': arg_parser_dic['log_file']})
         if 'log_verbosity' in arg_parser_dic:
+            (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity']})
             os.environ['VTAM_LOG_VERBOSITY'] = str(
                 arg_parser_dic['log_verbosity'])
-        if 'log_file' in arg_parser_dic:
-            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log_file'])
+
+        if 'log' in arg_parser_dic:
+            (LoggerArguments.instance()).update({'log': arg_parser_dic['log']})
+            os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log'])
 
         #######################################################################
         #
@@ -191,11 +176,11 @@ class VTAM(object):
         elif arg_parser_dic['command'] == 'sortreads':
             fastadir = arg_parser_dic['fastadir']
             fastainfo = arg_parser_dic['fastainfo']
-            outdir = arg_parser_dic['outdir']
+            sorteddir = arg_parser_dic['sorteddir']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
             CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
-                                  num_threads=num_threads, outdir=outdir)
+                                  num_threads=num_threads, sorteddir=sorteddir)
 
         ############################################################################################
         #
@@ -205,7 +190,7 @@ class VTAM(object):
 
         elif arg_parser_dic['command'] == 'taxassign':
             db = arg_parser_dic['db']
-            variants_tsv = arg_parser_dic['variants']
+            asvtable_tsv = arg_parser_dic['asvtable']
             output = arg_parser_dic['output']
             mode = arg_parser_dic['mode']
             taxonomy_tsv = arg_parser_dic['taxonomy']
@@ -213,9 +198,9 @@ class VTAM(object):
             blastdbname_str = arg_parser_dic['blastdbname']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
-            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output,
-                taxonomy_tsv=taxonomy_tsv, blastdb_dir_path=blasdb_dir_path,
-                blastdbname_str=blastdbname_str, params=params, num_threads=num_threads)
+            CommandTaxAssign.main(db=db, mode=mode, asvtable_tsv=asvtable_tsv, output=output,
+                                  taxonomy_tsv=taxonomy_tsv, blastdb_dir_path=blasdb_dir_path,
+                                  blastdbname_str=blastdbname_str, params=params, num_threads=num_threads)
 
         ############################################################################################
         #
@@ -226,7 +211,7 @@ class VTAM(object):
         elif arg_parser_dic['command'] == 'pool':
             db = arg_parser_dic['db']
             run_marker_tsv = arg_parser_dic['runmarker']
-            pooled_marker_tsv = arg_parser_dic['output']
+            pooled_marker_tsv = arg_parser_dic['asvtable']
             params = arg_parser_dic['params']
             CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv,
                 run_marker_tsv=run_marker_tsv, params=params)
@@ -262,11 +247,12 @@ class VTAM(object):
         ############################################################################################
 
         else:
-            print(VTAM.usage_message)
+            self.args = parser.parse_args(['--help'])  # if command unknown print help
+
 
 
 def main():
-    if sys.argv[1:] == []:  # No arguments
-        print(VTAM.usage_message)
-        sys.exit(1)
+
+    if not sys.argv[1:]:  # if not arguments, print help
+        VTAM(['--help'])
     VTAM(sys.argv[1:])

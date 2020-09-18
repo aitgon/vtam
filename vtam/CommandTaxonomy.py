@@ -1,22 +1,20 @@
 import gzip
-import pathlib
-import shutil
-
-from vtam.utils.MyProgressBar import MyProgressBar
-from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.Logger import Logger
-
 import inspect
 import os
 import pandas
+import pathlib
+import shutil
 import sqlalchemy
 import tarfile
 import urllib
 import urllib.request
 
-from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import taxonomy_tsv_gz_url
 from sqlalchemy.exc import OperationalError
+from vtam.utils.Logger import Logger
+from vtam.utils.MyProgressBar import MyProgressBar
+from vtam.utils.PathManager import PathManager
+from vtam.utils.VTAMexception import VTAMexception
+from vtam.utils.constants import taxonomy_tsv_gz_url
 
 
 class CommandTaxonomy(object):
@@ -134,6 +132,7 @@ class CommandTaxonomy(object):
         taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
 
         if not os.path.isfile(self.taxonomy_tsv_path):
+            Logger.instance().info(self.taxonomy_tsv_path)
             urllib.request.urlretrieve(
                 taxonomy_tsv_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
 
