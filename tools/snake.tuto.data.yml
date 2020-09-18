@@ -27,7 +27,7 @@ rule all_two_markers:
         params2=expand("{PROJECT}/user_input/params_{MARKER}.yml", MARKER=['mfzr', 'zfzr'], PROJECT=PROJECT),
         snakeconfig=expand("{PROJECT}/user_input/snakeconfig.yml", PROJECT=PROJECT),
         snakefile="snakefile.yml",
-        readinfo=expand("{PROJECT}/user_input/readinfo_{MARKER}.tsv", MARKER=['mfzr', 'zfzr'], PROJECT=PROJECT),
+        sortedinfo=expand("{PROJECT}/user_input/sortedinfo_{MARKER}.tsv", MARKER=['mfzr', 'zfzr'], PROJECT=PROJECT),
 
 rule all_one_marker:
     input:
@@ -63,22 +63,22 @@ rule user_input_two_markers:
         known_occurrences=os.path.join(PACKAGE_PATH, 'doc/data', 'known_occurrences.tsv'),
         params=os.path.join(PACKAGE_PATH, 'doc/data', 'params.yml'),
         snakeconfig=os.path.join(PACKAGE_PATH, 'doc/data', 'snakeconfig.yml'),
-        readinfo_mfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'readinfo_mfzr.tsv'),
-        readinfo_zfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'readinfo_zfzr.tsv'),
+        sortedinfo_mfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'sortedinfo_mfzr.tsv'),
+        sortedinfo_zfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'sortedinfo_zfzr.tsv'),
     output:
         fastqinfo="{PROJECT}/user_input/fastqinfo.tsv",
         known_occurrences="{PROJECT}/user_input/known_occurrences.tsv",
         params="{PROJECT}/user_input/params.yml",
         snakeconfig="{PROJECT}/user_input/snakeconfig.yml",
-        readinfo_mfzr="{PROJECT}/user_input/readinfo_mfzr.tsv",
-        readinfo_zfzr="{PROJECT}/user_input/readinfo_zfzr.tsv",
+        sortedinfo_mfzr="{PROJECT}/user_input/sortedinfo_mfzr.tsv",
+        sortedinfo_zfzr="{PROJECT}/user_input/sortedinfo_zfzr.tsv",
     shell:
         """rsync -avt {input.fastqinfo} {output.fastqinfo}
 rsync -avt {input.known_occurrences} {output.known_occurrences}
 rsync -avt {input.params} {output.params}
 rsync -avt {input.snakeconfig} {output.snakeconfig}
-rsync -avt {input.readinfo_mfzr} {output.readinfo_mfzr}
-rsync -avt {input.readinfo_zfzr} {output.readinfo_zfzr}"""
+rsync -avt {input.sortedinfo_mfzr} {output.sortedinfo_mfzr}
+rsync -avt {input.sortedinfo_zfzr} {output.sortedinfo_zfzr}"""
 
 rule user_input_params:
     input:

@@ -129,7 +129,7 @@ The command to carry out the taxon assignation is:
 
 .. code-block:: bash
 
-    vtam taxassign --variants out/pooled_markers.tsv --variant_taxa out/pooled_markers_taxa.tsv --db out/db.sqlite --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log
+    vtam taxassign --asvtable out/pooled_markers.tsv --variant_taxa out/pooled_markers_taxa.tsv --db out/db.sqlite --taxonomy out/taxonomy.tsv --blastdbdir out/coi_blast_db --blastdbname coi_blast_db --log out/vtam.log
 
 Parameter Optimization
 ------------------------------

@@ -122,7 +122,7 @@ class ArgParserChecker(object):
             return path
         else:
             raise argparse.ArgumentTypeError(
-                "The --variants TSV file must contain a column with a 'sequence' header: '{}'.".format(
+                "The --asvtable TSV file must contain a column with a 'sequence' header: '{}'.".format(
                     path))
 
 
@@ -277,7 +277,7 @@ class ArgParser:
         parser_vtam_sortreads.add_argument(
             '--sorteddir',
             action='store',
-            help="output directory with sorted reads (Trimmed and demultiplexed) in FASTA files and TSV file with corresponnding FASTA file information ('SORTEDDIR/readinfo.tsv')",
+            help="output directory with sorted reads (Trimmed and demultiplexed) in FASTA files and TSV file with corresponnding FASTA file information ('SORTEDDIR/sortedinfo.tsv')",
             default="out",
             required=True)
         # This attribute will trigger the good command
@@ -514,8 +514,7 @@ class ArgParser:
     @classmethod
     def add_parser_taxonomy(cls, subparsers):
         parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
-                                                  parents=[cls.parser_params, cls.parser_log,
-                                                           cls.parser_threads, cls.parser_verbosity],
+                                                  parents=[],
                                                      help="downloads a TSV file with the NCBI taxonomy information")
 
         parser_vtam_taxonomy.add_argument(

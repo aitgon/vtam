@@ -103,8 +103,8 @@ class WopmarsRunner(Singleton):
 
         elif self.command == 'optimize':
             outdir = self.cli_args_and_numerical_params['outdir']
-            self.cli_args_and_numerical_params['sortreads'] = os.path.join(
-                outdir, "sortreads.tsv")
+            # self.cli_args_and_numerical_params['sortreads'] = os.path.join(
+            #     outdir, "sortreads.tsv")
             #
             self.cli_args_and_numerical_params['optimize_lfn_sample_replicate'] \
                 = os.path.join(outdir, "optimize_lfn_sample_replicate.tsv")

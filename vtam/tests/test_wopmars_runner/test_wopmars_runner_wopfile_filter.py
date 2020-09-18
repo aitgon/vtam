@@ -19,11 +19,11 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
         foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['outdir'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'output'),
+        foopaths['sorteddir'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'output'),
             PathManager.get_package_path())
         foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
             PathManager.get_package_path())
-        foopaths['readinfo_tsv'] = os.path.relpath(os.path.join(cls.package_path, "doc/data/readinfo_mfzr.tsv"),
+        foopaths['sortedinfo_tsv'] = os.path.relpath(os.path.join(cls.package_path, "doc/data/sortedinfo_mfzr.tsv"),
             PathManager.get_package_path())
         foopaths['optimize_lfn_variant_specific'] = os.path.relpath(os.path.join(cls.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"),
             PathManager.get_package_path())
@@ -40,7 +40,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
     def test_wopmars_runner_filter(self):
 
-        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
+        cmd = 'filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtableoutput.tsv'.format(**self.foopaths)
 
         cwd = os.getcwd()
         os.chdir(self.package_path)
@@ -59,7 +59,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
     def test_wopmars_runner_filter_lfn_variant_replicate(self):
 
-        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv --lfn_variant_replicate'.format(
+        cmd = 'filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtableoutput.tsv --lfn_variant_replicate'.format(
             **self.foopaths)
 
         cwd = os.getcwd()
@@ -75,7 +75,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
 
     def test_wopmars_runner_filter_with_cutoff_specific(self):
 
-        cmd = 'filter --readinfo {readinfo_tsv} --readdir {foodir} --asvtable asvtableoutput.tsv' \
+        cmd = 'filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtableoutput.tsv' \
                    ' --cutoff_specific {optimize_lfn_variant_specific}'.format(**self.foopaths)
 
         cwd = os.getcwd()

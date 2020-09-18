@@ -2,8 +2,9 @@ import argparse
 import os
 import pathlib
 import tarfile
-from urllib import request
 
+from urllib import request
+from vtam.utils.Logger import Logger
 from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import coi_blast_db_gz_url
@@ -45,6 +46,7 @@ class CommandBlastCOI(object):
         """
 
         if not os.path.isfile(self.coi_blast_db_gz_path):
+            Logger.instance().info(self.coi_blast_db_gz_path)
             request.urlretrieve(self.coi_blast_db_gz_url, self.coi_blast_db_gz_path, MyProgressBar())
 
         tar = tarfile.open(self.coi_blast_db_gz_path)
