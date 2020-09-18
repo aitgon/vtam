@@ -54,7 +54,6 @@ class TestAsvtableRunner(unittest.TestCase):
 
         self.filter_codon_stop_df = pandas.read_csv(filter_codon_stop_path, sep="\t", header=0)
         self.sample_list = ['tpos1_run1', 'tnegtag_run1', '14ben01', '14ben02']
-        self.outdir_path = os.path.join(self.test_path, 'outdir')
 
     def test_asvtable(self):
 
