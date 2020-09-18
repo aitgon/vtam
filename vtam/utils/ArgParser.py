@@ -1,11 +1,8 @@
 import argparse
 import multiprocessing
 import os
-from configparser import RawConfigParser
-
 import pandas
 import yaml
-from vtam.utils.PathManager import PathManager
 
 from vtam import CommandBlastCOI
 from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
@@ -15,6 +12,7 @@ from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
     coi_blast_db_gz_url
+import vtam
 
 
 class ArgParserChecker(object):
@@ -192,12 +190,12 @@ class ArgParser:
         #
         ############################################################################################
 
-        config = RawConfigParser()
-        config.read(os.path.join(PathManager.get_package_path(), 'setup.cfg'))
-        version = config.get('metadata', 'version')
+        # config = RawConfigParser()
+        # config.read(os.path.join(PathManager.get_package_path(), 'setup.cfg'))
+        # version = config.get('metadata', 'version')
 
-        parser_vtam_main = argparse.ArgumentParser(prog='vtam', description='%(prog)s {} - VTAM - Validation and Taxonomic Assignation of Metabarcoding Data'.format(version))
-        parser_vtam_main.add_argument('--version', action='version', version='%(prog)s {}'.format(version))
+        parser_vtam_main = argparse.ArgumentParser(prog='vtam', description='%(prog)s {} - VTAM - Validation and Taxonomic Assignation of Metabarcoding Data'.format(vtam.__version__))
+        parser_vtam_main.add_argument('--version', action='version', version='%(prog)s {}'.format(vtam.__version__))
         subparsers = parser_vtam_main.add_subparsers(title='VTAM sub-commands')
 
         ############################################################################################
