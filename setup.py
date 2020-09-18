@@ -8,8 +8,11 @@ __license__ = "MIT"
 from configparser import RawConfigParser
 from setuptools import setup
 from setuptools import find_packages
+# from vtam import __version__
 import os
 import sys
+import vtam
+
 
 def read_setup_cfg_metadata(field):
     """Return package version from setup.cfg."""
@@ -38,11 +41,11 @@ except ImportError:
           file=sys.stderr)
     exit(1)
 
-def get_version():
-    """Return package version from setup.cfg."""
-    config = RawConfigParser()
-    config.read(os.path.join('.', 'setup.cfg'))
-    return config.get('metadata', 'version')
+# def get_version():
+#     """Return package version from setup.cfg."""
+#     config = RawConfigParser()
+#     config.read(os.path.join('.', 'setup.cfg'))
+#     return config.get('metadata', 'version')
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as fin:
@@ -64,7 +67,8 @@ Operating System :: Microsoft :: Windows :: Windows 10
 
 setup(
     name='vtam',
-    version=read_setup_cfg_metadata(field='version'),
+    # version=read_setup_cfg_metadata(field='version'),
+    version=vtam.__version__,
     description="VTAM - Validation and Taxonomic Assignation of Metabarcoding Data",
     author=read_setup_cfg_metadata(field='author'),
     author_email=read_setup_cfg_metadata(field='email'),
