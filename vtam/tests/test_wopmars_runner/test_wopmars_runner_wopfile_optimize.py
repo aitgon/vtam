@@ -25,14 +25,14 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
             os.path.join(test_path, 'output'), self.package_path)
         foopaths['blastdb'] = os.path.relpath(os.path.join(
             test_path, 'test_files', 'blastdb'), self.package_path)
-        foopaths['readinfo_tsv'] = os.path.join("doc", "data", "readinfo_mfzr.tsv")
-        foopaths['tsv_path'] = os.path.join("doc", "data", "readinfo_mfzr.tsv")
+        foopaths['sortedinfo_tsv'] = os.path.join("doc", "data", "sortedinfo_mfzr.tsv")
+        foopaths['tsv_path'] = os.path.join("doc", "data", "sortedinfo_mfzr.tsv")
         foopaths['known_occurrences'] = os.path.join("doc", "data", "known_occurrences.tsv")
         self.foopaths = foopaths
 
     def test_wopmars_runner_optimize(self):
 
-        cmd = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
+        cmd = 'optimize --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --known_occurrences {known_occurrences} --outdir {outdir}'\
             .format(**self.foopaths)
 
         cwd = os.getcwd()
@@ -51,7 +51,7 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
 
     def test_wopmars_runner_optimize_lfn_variant_replicate(self):
 
-        cmd = 'optimize --readinfo {readinfo_tsv} --readdir {foodir} --known_occurrences {known_occurrences} --outdir {outdir} --lfn_variant_replicate'\
+        cmd = 'optimize --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --known_occurrences {known_occurrences} --outdir {outdir} --lfn_variant_replicate'\
             .format(**self.foopaths)
 
         cwd = os.getcwd()

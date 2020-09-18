@@ -25,7 +25,7 @@ class CommandSortReads(object):
     """Class for the Merge command"""
 
     @staticmethod
-    def main(fastainfo, fastadir, outdir, params=None, num_threads=multiprocessing.cpu_count()):
+    def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count()):
 
         if sys.platform.startswith('win'):
             num_threads = 1
@@ -50,7 +50,7 @@ class CommandSortReads(object):
 
         merged_fastainfo_df = SampleInformationFile(fastainfo).read_tsv_into_df()
 
-        pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(sorteddir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
 
         sorted_read_info_df = pandas.DataFrame()
@@ -265,7 +265,7 @@ class CommandSortReads(object):
             out_final_fasta_basename = os.path.basename(
                 in_raw_fasta_path).replace('.fasta', '_%03d.fasta' % i)
             out_final_fasta_path = os.path.join(
-                outdir, out_final_fasta_basename)
+                sorteddir, out_final_fasta_basename)
             shutil.copy(out_fasta_path, out_final_fasta_path)
 
             Logger.instance().debug("Pooling fwd and rc reads...")
@@ -290,5 +290,5 @@ class CommandSortReads(object):
             sorted_read_info_df = pandas.concat(
                 [sorted_read_info_df, fasta_info_df_i], axis=0)
 
-        fasta_trimmed_info_tsv = os.path.join(outdir, 'readinfo.tsv')
+        fasta_trimmed_info_tsv = os.path.join(sorteddir, 'sortedinfo.tsv')
         sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
