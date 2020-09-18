@@ -2,7 +2,7 @@ rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -16,7 +16,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -39,7 +39,7 @@ rule FilterLFN:
             Sample: vtam.models.Sample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
             cutoff_specific: None
     output:
@@ -60,7 +60,7 @@ rule FilterMinReplicateNumber:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterLFN
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -79,7 +79,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -98,7 +98,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -117,7 +117,7 @@ rule FilterMinReplicateNumber2:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterChimera
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -135,7 +135,7 @@ rule FilterRenkonen:
             Sample: vtam.models.Sample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -153,7 +153,7 @@ rule FilterMinReplicateNumber3:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -172,7 +172,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -191,7 +191,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
             params: None
     output:
         table:
@@ -210,7 +210,7 @@ rule ReadCountAverageOverReplicates:
             Sample: vtam.models.Sample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -227,7 +227,7 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: doc/data/readinfo_mfzr.tsv
+            sortedinfo: doc/data/sortedinfo_mfzr.tsv
     output:
         file:
             ASVTable: asvtableoutput.tsv

@@ -53,7 +53,7 @@ class TestTutorialCommands(unittest.TestCase):
         cls.fastadir_path = os.path.join(cls.outdir_path, "merged")
 
         cls.sorted_dir_path = os.path.join(cls.outdir_path, "sorted")
-        cls.sortedreadinfo_path = os.path.join(cls.sorted_dir_path, "readinfo.tsv")
+        cls.sortedinfo_path = os.path.join(cls.sorted_dir_path, "sortedinfo.tsv")
 
         cls.log_path = os.path.join(cls.outdir_path, "vtam.log")
 
@@ -66,8 +66,8 @@ class TestTutorialCommands(unittest.TestCase):
         cls.args['fastadir'] = cls.fastadir_path
         cls.args['sorted'] = cls.sorted_dir_path
         cls.args['db'] = os.path.join(cls.outdir_path, "db.sqlite")
-        cls.args['readinfo'] = cls.sortedreadinfo_path
-        cls.args['readdir'] = cls.sorted_dir_path
+        cls.args['sortedinfo'] = cls.sortedinfo_path
+        cls.args['sorteddir'] = cls.sorted_dir_path
         cls.args['asvtable'] = cls.asvtable_path
         cls.args['log'] = cls.log_path
 
@@ -105,7 +105,7 @@ class TestTutorialCommands(unittest.TestCase):
         #
         ################################################################################################################
 
-        cmd = "vtam sortreads --fastainfo {fastainfo} --fastadir {fastadir} --outdir {sorted} " \
+        cmd = "vtam sortreads --fastainfo {fastainfo} --fastadir {fastadir} --sorteddir {sorted} " \
               "-v --log {log}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -114,8 +114,8 @@ class TestTutorialCommands(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args)
 
-        self.sortedreadinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sortedreadinfo.tsv")
-        self.assertTrue(filecmp.cmp(self.sortedreadinfo_path, self.sortedreadinfo_path_bak, shallow=True))
+        self.sortedinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sortedinfo.tsv")
+        self.assertTrue(filecmp.cmp(self.sortedinfo_path, self.sortedinfo_path_bak, shallow=True))
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5155360)
         self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) >= 909500)  # 909507 linux, 913883 windows

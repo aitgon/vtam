@@ -45,7 +45,7 @@ class VTAM(object):
         #
         ############################################################################################
 
-        if arg_parser_dic['params'] is None:
+        if 'params' in arg_parser_dic and arg_parser_dic['params'] is None:
             params_yml = os.path.join(PathManager.instance().get_configdir(), "params.yml")
             if not os.path.isfile(params_yml):
                 pathlib.Path(params_yml).touch(exist_ok=False)
@@ -57,12 +57,13 @@ class VTAM(object):
         #
         ############################################################################################
 
-        (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity'],
-                                             'log': arg_parser_dic['log']})
         if 'log_verbosity' in arg_parser_dic:
+            (LoggerArguments.instance()).update({'log_verbosity': arg_parser_dic['log_verbosity']})
             os.environ['VTAM_LOG_VERBOSITY'] = str(
                 arg_parser_dic['log_verbosity'])
+
         if 'log' in arg_parser_dic:
+            (LoggerArguments.instance()).update({'log': arg_parser_dic['log']})
             os.environ['VTAM_LOG_FILE'] = str(arg_parser_dic['log'])
 
         #######################################################################
@@ -175,11 +176,11 @@ class VTAM(object):
         elif arg_parser_dic['command'] == 'sortreads':
             fastadir = arg_parser_dic['fastadir']
             fastainfo = arg_parser_dic['fastainfo']
-            outdir = arg_parser_dic['outdir']
+            sorteddir = arg_parser_dic['sorteddir']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
             CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
-                                  num_threads=num_threads, outdir=outdir)
+                                  num_threads=num_threads, sorteddir=sorteddir)
 
         ############################################################################################
         #
@@ -189,7 +190,7 @@ class VTAM(object):
 
         elif arg_parser_dic['command'] == 'taxassign':
             db = arg_parser_dic['db']
-            variants_tsv = arg_parser_dic['variants']
+            asvtable_tsv = arg_parser_dic['asvtable']
             output = arg_parser_dic['output']
             mode = arg_parser_dic['mode']
             taxonomy_tsv = arg_parser_dic['taxonomy']
@@ -197,9 +198,9 @@ class VTAM(object):
             blastdbname_str = arg_parser_dic['blastdbname']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
-            CommandTaxAssign.main(db=db, mode=mode, variants_tsv=variants_tsv, output=output,
-                taxonomy_tsv=taxonomy_tsv, blastdb_dir_path=blasdb_dir_path,
-                blastdbname_str=blastdbname_str, params=params, num_threads=num_threads)
+            CommandTaxAssign.main(db=db, mode=mode, asvtable_tsv=asvtable_tsv, output=output,
+                                  taxonomy_tsv=taxonomy_tsv, blastdb_dir_path=blasdb_dir_path,
+                                  blastdbname_str=blastdbname_str, params=params, num_threads=num_threads)
 
         ############################################################################################
         #
@@ -210,7 +211,7 @@ class VTAM(object):
         elif arg_parser_dic['command'] == 'pool':
             db = arg_parser_dic['db']
             run_marker_tsv = arg_parser_dic['runmarker']
-            pooled_marker_tsv = arg_parser_dic['output']
+            pooled_marker_tsv = arg_parser_dic['asvtable']
             params = arg_parser_dic['params']
             CommandPoolRunMarkers.main(db=db, pooled_marker_tsv=pooled_marker_tsv,
                 run_marker_tsv=run_marker_tsv, params=params)

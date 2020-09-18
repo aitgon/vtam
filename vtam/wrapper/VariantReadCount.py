@@ -25,7 +25,7 @@ class VariantReadCount(ToolWrapper):
     }
     # Input
     # Input file
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -46,7 +46,7 @@ class VariantReadCount(ToolWrapper):
     def specify_input_file(self):
         return[
             # VariantReadCount.__input_file_sort_reads,
-            VariantReadCount.__input_file_readinfo,
+            VariantReadCount.__input_file_sortedinfo,
         ]
 
     def specify_output_table(self):
@@ -77,8 +77,8 @@ class VariantReadCount(ToolWrapper):
 
         # Input file
         # sort_reads_tsv = self.input_file(VariantReadCount.__input_file_sort_reads)
-        input_file_readinfo = self.input_file(
-            VariantReadCount.__input_file_readinfo)
+        input_file_sortedinfo = self.input_file(
+            VariantReadCount.__input_file_sortedinfo)
         #
         # Input table models
         run_model = self.input_table(VariantReadCount.__input_table_run)
@@ -99,7 +99,7 @@ class VariantReadCount(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 1. Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
@@ -117,11 +117,11 @@ class VariantReadCount(ToolWrapper):
         Logger.instance().debug(
             "file: {}; line: {}; Read sample information".format(
                 __file__, inspect.currentframe().f_lineno))
-        readinfo_df = pandas.read_csv(input_file_readinfo, sep="\t", header=0)
+        sortedinfo_df = pandas.read_csv(input_file_sortedinfo, sep="\t", header=0)
         sample_instance_list = []
-        readinfo_df.columns = readinfo_df.columns.str.lower()
+        sortedinfo_df.columns = sortedinfo_df.columns.str.lower()
 
-        for row in readinfo_df.itertuples():
+        for row in sortedinfo_df.itertuples():
             Logger.instance().debug(row)
             marker_name = row.marker
             run_name = row.run
@@ -175,10 +175,10 @@ class VariantReadCount(ToolWrapper):
         #
         #######################################################################
 
-        # fasta_info_obj = FastaInformationTSV(input_file_readinfo, engine=engine)
+        # fasta_info_obj = FastaInformationTSV(input_file_sortedinfo, engine=engine)
         # sample_info_ids_df = fasta_info_obj.get_ids_df()
         sample_info_tsv_obj = SampleInformationFile(
-            tsv_path=input_file_readinfo)
+            tsv_path=input_file_sortedinfo)
         sample_info_ids_df = sample_info_tsv_obj.to_identifier_df(engine=engine)
 
         Logger.instance().debug(

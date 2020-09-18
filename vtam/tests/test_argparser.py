@@ -22,7 +22,7 @@ class TestArgParser(unittest.TestCase):
         self.foopaths['dirdoesnotexist'] = "dirdoesnotexist"
         self.foopaths['fileisempty'] = os.path.join(test_path, "test_files", "emptyfile")
         self.foopaths['filenottsv'] = __file__
-        self.foopaths['readinfo_tsv'] = os.path.join(package_path, "doc", "data", "readinfo_mfzr.tsv")
+        self.foopaths['sortedinfo_tsv'] = os.path.join(package_path, "doc", "data", "sortedinfo_mfzr.tsv")
         self.foopaths['params_yml'] = os.path.join(package_path, "doc", "data", "params_mfzr.yml")
         self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file", "params_wrong.yml")
         self.foopaths['known_occurrences'] = os.path.join(package_path, "doc", "data", "known_occurrences.tsv")
@@ -34,7 +34,7 @@ class TestArgParser(unittest.TestCase):
             "test_files_dryad.f40v5_small", "taxonomy.tsv")
 
         self.foopaths['foodir'] = package_path
-        self.foopaths['outdir'] = outdir_path
+        self.foopaths['sorteddir'] = outdir_path
         self.foopaths['emptydir'] = os.path.join(outdir_path, 'emptydir')
         pathlib.Path(
             os.path.join(
@@ -50,11 +50,11 @@ class TestArgParser(unittest.TestCase):
 
     def test_arg_parser_params(self):
 
-        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
+        args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_wrong_yml}".format(
+        args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_wrong_yml}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
@@ -62,7 +62,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_filter(self):
 
         # Ok
-        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv".format(
+        args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -76,22 +76,22 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --sortedinfo {filedoesnotexist} --sorteddir {foodir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {filedoesnotexist} --sorteddir {foodir} --sorteddir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --sortedinfo {filenottsv} --sorteddir {foodir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {filenottsv} --sorteddir {foodir} --sorteddir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {emptydir} --outdir {foodir}".format(
+        args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {emptydir} --sorteddir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "filter --sortedinfo {readinfo_tsv} --sorteddir {dirdoesnotexist} --outdir {foodir}".format(
+        args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {dirdoesnotexist} --sorteddir {foodir}".format(
             **self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
@@ -99,7 +99,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_optimize(self):
 
         # Ok
-        args = "optimize --known_occurrences {known_occurrences} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
+        args = "optimize --known_occurrences {known_occurrences} --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} " \
                "--outdir {foodir}".format(**self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -113,13 +113,13 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --known_occurrences {filedoesnotexist} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
-               "--outdir {foodir}".format(**self.foopaths).split()
+        args = "optimize --known_occurrences {filedoesnotexist} --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} " \
+               "--sorteddir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-        args = "optimize --known_occurrences {filenottsv} --sortedinfo {readinfo_tsv} --sorteddir {foodir} " \
-               "--outdir {foodir}".format(**self.foopaths).split()
+        args = "optimize --known_occurrences {filenottsv} --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} " \
+               "--sorteddir {foodir}".format(**self.foopaths).split()
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
@@ -159,7 +159,7 @@ class TestArgParser(unittest.TestCase):
     def test_arg_parser_pool_runmarker(self):
 
         # Ok
-        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --asvtable {outdir}".format(
+        args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --asvtable {asvtable_tsv}".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
@@ -174,4 +174,4 @@ class TestArgParser(unittest.TestCase):
             self.parser.parse_args(args)
 
     def tearDown(self):
-        shutil.rmtree(self.foopaths['outdir'], ignore_errors=True)
+        shutil.rmtree(self.foopaths['sorteddir'], ignore_errors=True)

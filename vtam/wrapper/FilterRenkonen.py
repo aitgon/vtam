@@ -15,7 +15,7 @@ class FilterRenkonen(ToolWrapper):
     }
 
     # Input file
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     # Input table
     __input_table_marker = "Marker"
     __input_table_run = "Run"
@@ -26,7 +26,7 @@ class FilterRenkonen(ToolWrapper):
 
     def specify_input_file(self):
         return [
-            "readinfo", "params",
+            "sortedinfo", "params",
         ]
 
     def specify_input_table(self):
@@ -58,7 +58,7 @@ class FilterRenkonen(ToolWrapper):
         ############################################################################################
 
         # Input file
-        fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_readinfo)
+        fasta_info_tsv = self.input_file(FilterRenkonen.__input_file_sortedinfo)
         #
         # Input table models
         input_filter_chimera_model = self.input_table(
@@ -74,7 +74,7 @@ class FilterRenkonen(ToolWrapper):
 
         ############################################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 1. Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #

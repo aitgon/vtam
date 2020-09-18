@@ -22,7 +22,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
     }
 
     # Input file
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     __input_file_known_occurrences = "known_occurrences"
     # Input table
     __input_table_run = "Run"
@@ -36,7 +36,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
     def specify_input_file(self):
         return [
-            OptimizeLFNreadCountAndLFNvariant.__input_file_readinfo,
+            OptimizeLFNreadCountAndLFNvariant.__input_file_sortedinfo,
             OptimizeLFNreadCountAndLFNvariant.__input_file_known_occurrences,
             "params",
         ]
@@ -101,7 +101,7 @@ class OptimizeLFNreadCountAndLFNvariant(ToolWrapper):
 
         # Input file output
         known_occurrences_tsv = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_known_occurrences)
-        fasta_info_tsv = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_readinfo)
+        fasta_info_tsv = self.input_file(OptimizeLFNreadCountAndLFNvariant.__input_file_sortedinfo)
 
         # Output file output
         output_file_optimize_lfn_tsv = self.output_file(
