@@ -1,8 +1,11 @@
 import argparse
 import multiprocessing
 import os
+from configparser import RawConfigParser
+
 import pandas
 import yaml
+from vtam.utils.PathManager import PathManager
 
 from vtam import CommandBlastCOI
 from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
@@ -189,7 +192,12 @@ class ArgParser:
         #
         ############################################################################################
 
-        parser_vtam_main = argparse.ArgumentParser(prog='vtam')
+        config = RawConfigParser()
+        config.read(os.path.join(PathManager.get_package_path(), 'setup.cfg'))
+        version = config.get('metadata', 'version')
+
+        parser_vtam_main = argparse.ArgumentParser(prog='vtam', description='%(prog)s {} - VTAM - Validation and Taxonomic Assignation of Metabarcoding Data'.format(version))
+        parser_vtam_main.add_argument('--version', action='version', version='%(prog)s {}'.format(version))
         subparsers = parser_vtam_main.add_subparsers(title='VTAM sub-commands')
 
         ############################################################################################
