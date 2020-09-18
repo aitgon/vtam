@@ -35,10 +35,10 @@ class TestCmdVariantReadCount(unittest.TestCase):
     def test_filter_singleton(self):
 
         args = {}
-        args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo_1sample_singletons.tsv")
+        args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo_1sample_singletons.tsv")
         args['sorteddir'] = os.path.dirname(__file__)
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount".format(**args)
 
         if sys.platform.startswith("win"):
@@ -52,10 +52,10 @@ class TestCmdVariantReadCount(unittest.TestCase):
     def test_filter_fasta_over_two_lines(self):
 
         args = {}
-        args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo_1sample.tsv")
+        args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo_1sample.tsv")
         args['sorteddir'] = os.path.dirname(__file__)
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir {sorteddir} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_default.tsv --until VariantReadCount".format(**args)
 
         if sys.platform.startswith("win"):

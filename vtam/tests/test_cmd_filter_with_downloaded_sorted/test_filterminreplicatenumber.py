@@ -59,7 +59,7 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         self.asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
 
         self.args = {}
-        self.args['readinfo'] = os.path.join(os.path.dirname(__file__), "readinfo.tsv")
+        self.args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo.tsv")
         self.args['params'] = os.path.join(os.path.dirname(__file__), "params_min_replicate_number1.yml")
         self.args['params_lfn_variant'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
         self.args['params_lfn_variant_replicate'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant_replicate.yml")
@@ -72,7 +72,7 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir sorted " \
               "--asvtable asvtable_default.tsv --params {params} --until FilterMinReplicateNumber " \
               "--lfn_variant_replicate".format(**self.args)
 
@@ -95,7 +95,7 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir sorted " \
               "--asvtable asvtable_default.tsv --until FilterMinReplicateNumber".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -117,7 +117,7 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam filter --db db.sqlite --readinfo {readinfo} --readdir sorted " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir sorted " \
               "--asvtable asvtable_default.tsv --params {params} --until FilterMinReplicateNumber".format(**self.args)
 
         if sys.platform.startswith("win"):

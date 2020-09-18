@@ -33,7 +33,7 @@ rule asvtable_optimized_taxa:
 rule optimize_tmp:
     input:
         asvtable="{outdir}/asvtable_default_taxa.tsv",
-        readinfo="{outdir}/sorted/readinfo.tsv",
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
         known_occurrences=known_occurrences,
     output:
         optimize_lfn_sample_replicate="{outdir}/optimize_lfn_sample_replicate.tsv",
@@ -46,7 +46,7 @@ rule optimize_tmp:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam optimize --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_sample_replicate}) -v --log {params.log}"
+        "vtam optimize --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_sample_replicate}) -v --log {params.log}"
 
 rule asvtable_taxa_tmp:
     input:
@@ -57,7 +57,7 @@ rule asvtable_taxa_tmp:
         nsi="{}/{}.nsi".format(blastdbdir, blastdbname),
         nsq="{}/{}.nsq".format(blastdbdir, blastdbname),
         taxonomy=taxonomy,
-        variants="{outdir}/asvtable_default.tsv",
+        asvtable="{outdir}/asvtable_default.tsv",
     output:
         variant_taxa="{outdir}/asvtable_default_taxa.tsv",
     params:
@@ -65,7 +65,7 @@ rule asvtable_taxa_tmp:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam taxassign --db {params.db} --variants {input.variants} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr})  --blastdbname {params.blastdbname} -v --log {params.log}"
+        "vtam taxassign --db {params.db} --asvtable {input.asvtable} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr})  --blastdbname {params.blastdbname} -v --log {params.log}"
 
 rule asvtable_optimized_taxa_tmp:
     input:
@@ -76,7 +76,7 @@ rule asvtable_optimized_taxa_tmp:
         nsi="{}/{}.nsi".format(blastdbdir, blastdbname),
         nsq="{}/{}.nsq".format(blastdbdir, blastdbname),
         taxonomy=taxonomy,
-        variants="{outdir}/asvtable_optimized.tsv",
+        asvtable="{outdir}/asvtable_optimized.tsv",
     output:
         variant_taxa="{outdir}/asvtable_optimized_taxa.tsv",
     params:
@@ -84,11 +84,11 @@ rule asvtable_optimized_taxa_tmp:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam taxassign --db {params.db} --variants {input.variants} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname {params.blastdbname} -v --log {params.log}"
+        "vtam taxassign --db {params.db} --asvtable {input.asvtable} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname {params.blastdbname} -v --log {params.log}"
 
 rule filter_params:
     input:
-        readinfo="{outdir}/sorted/readinfo.tsv",
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
         params=params,
     output:
         asvtable="{outdir}/asvtable_optimized.tsv",
@@ -98,11 +98,11 @@ rule filter_params:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
 
 rule filter:
     input:
-        readinfo="{outdir}/sorted/readinfo.tsv",
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
     output:
         asvtable="{outdir}/asvtable_default.tsv",
     resources:
@@ -111,19 +111,19 @@ rule filter:
         db=os.path.join(project, 'db.sqlite'),
         log=os.path.join(project, "vtam.log"),
     shell:
-        "vtam filter --db {params.db} --readinfo {input.readinfo} --readdir $(dirname {input.readinfo}) --asvtable {output.asvtable} -v --log {params.log}"
+        "vtam filter --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --asvtable {output.asvtable} -v --log {params.log}"
 
 rule sortreads:
     input:
         fastainfo="{outdir}/fastainfo.tsv",
     output:
-        readinfo="{outdir}/sorted/readinfo.tsv",
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
     resources:
         db=1
     params:
         log=os.path.join(project, "vtam.log"),
     shell:
-        """vtam sortreads --fastainfo {input.fastainfo} --fastadir $(dirname {input.fastainfo})/merged --outdir $(dirname {output.readinfo}) -v --log {params.log}"""
+        """vtam sortreads --fastainfo {input.fastainfo} --fastadir $(dirname {input.fastainfo})/merged --sorteddir $(dirname {output.sortedinfo}) -v --log {params.log}"""
 
 rule merge:
     input:
