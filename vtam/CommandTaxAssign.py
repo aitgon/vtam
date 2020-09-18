@@ -18,7 +18,7 @@ class CommandTaxAssign(object):
     """Class for the Pool Marker wrapper"""
 
     @classmethod
-    def main(cls, db, mode, variants_tsv, output, taxonomy_tsv, blastdb_dir_path, blastdbname_str,
+    def main(cls, db, mode, asvtable_tsv, output, taxonomy_tsv, blastdb_dir_path, blastdbname_str,
              num_threads=multiprocessing.cpu_count(), params=None):
         """
 
@@ -27,7 +27,7 @@ class CommandTaxAssign(object):
         db: str
             Path to SQLITE database with Variant and Taxassign tables
         mode
-        variants_tsv
+        asvtable_tsv
         output
         taxonomy_tsv
         blastdb_dir_path
@@ -82,7 +82,7 @@ class CommandTaxAssign(object):
         #
         #######################################################################
 
-        variant_input_df = pandas.read_csv(variants_tsv, sep="\t", header=0)
+        variant_input_df = pandas.read_csv(asvtable_tsv, sep="\t", header=0)
         # get list of variant sequences
         variant_sequence_list = variant_input_df.sequence.tolist()
 

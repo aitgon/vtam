@@ -58,7 +58,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
         self.args = {}
         self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
-        self.args['sorted_readinfo'] = os.path.join(self.args['sorteddir'], "readinfo.tsv")
+        self.args['sortedinfo'] = os.path.join(self.args['sorteddir'], "sortedinfo.tsv")
         self.args['known_occurrences'] = os.path.join(self.package_path, "doc", "data", "known_occurrences.tsv")
         self.args['lfn_variant_cutoff_specific'] = os.path.join(
             self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_variant_specific.tsv")
@@ -68,7 +68,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_01_filter_lfn_variant(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} --asvtable {asvtable_default} " \
               "--log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -82,7 +82,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_02_filter_lfn_variant_replicate(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} --asvtable {asvtable_default} " \
               "--lfn_variant_replicate --log vtam.log".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -96,7 +96,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_03_filter_lfn_variant_cutoff_specific(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} --asvtable {asvtable_default} " \
               "--log vtam.log --cutoff_specific {lfn_variant_cutoff_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -110,7 +110,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_04_filter_lfn_variant_replicate_cutoff_specific(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} --asvtable {asvtable_default} " \
               "--lfn_variant_replicate --log vtam.log --cutoff_specific {lfn_variant_replicate_cutoff_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -124,7 +124,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_05_optimize_lfn_sample_replicate(self):
 
-        cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
+        cmd = "vtam optimize --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNsampleReplicate " \
               "--log vtam.log".format(**self.args)
 
@@ -140,7 +140,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_06_optimize_pcr_error(self):
 
-        cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
+        cmd = "vtam optimize --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizePCRerror " \
               "--log vtam.log".format(**self.args)
 
@@ -156,7 +156,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_07_optimize_lfn_read_count_variant(self):
 
-        cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
+        cmd = "vtam optimize --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant " \
               "--log vtam.log".format(**self.args)
 
@@ -178,7 +178,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_08_optimize_lfn_read_count_variant_replicate(self):
 
-        cmd = "vtam optimize --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} " \
+        cmd = "vtam optimize --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--known_occurrences {known_occurrences} --outdir . --until OptimizeLFNreadCountAndLFNvariant --lfn_variant_replicate " \
               "--log vtam.log".format(**self.args)
 
@@ -200,7 +200,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
 
     def test_09_filter_lfn_variant_with_known_occurrences(self):
 
-        cmd = "vtam filter --db db.sqlite --readinfo {sorted_readinfo} --readdir {sorteddir} --asvtable {asvtable_default} " \
+        cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} --asvtable {asvtable_default} " \
               "--known_occurrences {known_occurrences} " \
               "--log vtam.log".format(**self.args)
 

@@ -16,14 +16,14 @@ class ReadCountAverageOverReplicates(ToolWrapper):
     __input_table_marker = "Marker"
     __input_table_run = "Run"
     __input_table_sample = "Sample"
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     __input_table_filter_codon_stop = "FilterCodonStop"
     # Output table
     __output_table_filter_consensus = "ReadCountAverageOverReplicates"
 
     def specify_input_file(self):
         return[
-            ReadCountAverageOverReplicates.__input_file_readinfo,
+            ReadCountAverageOverReplicates.__input_file_sortedinfo,
 
         ]
 
@@ -52,7 +52,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         # Input file output
         fasta_info_tsv = self.input_file(
-            ReadCountAverageOverReplicates.__input_file_readinfo)
+            ReadCountAverageOverReplicates.__input_file_sortedinfo)
         #
         codon_stop_model = self.input_table(
             ReadCountAverageOverReplicates.__input_table_filter_codon_stop)
@@ -64,12 +64,12 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         # #######################################################################
         # #
-        # # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # # 1. Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # #
         # #######################################################################
         #
-        # # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_readinfo)
-        # sample_info_tsv_obj = SampleInformationFile(tsv_path=input_file_readinfo)
+        # # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_sortedinfo)
+        # sample_info_tsv_obj = SampleInformationFile(tsv_path=input_file_sortedinfo)
         #
         # #######################################################################
         # #
@@ -107,7 +107,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 1. Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #

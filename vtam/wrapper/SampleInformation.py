@@ -6,7 +6,7 @@ class SampleInformation(ToolWrapper):
     __mapper_args__ = {
         "polymorphic_identity": "vtam.wrapper.SampleInformation"
     }
-    __input_file_csv = "readinfo"
+    __input_file_csv = "sortedinfo"
     #
     __output_table_sample = "Sample"
     __output_table_sorted_read_file = "SortedReadFile"

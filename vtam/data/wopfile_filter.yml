@@ -8,7 +8,7 @@
             Sample: vtam.models.Sample
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
             cutoff_specific: {{cutoff_specific}}
     output:
@@ -37,7 +37,7 @@ rule FilterMinReplicateNumber:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterLFN
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -56,7 +56,7 @@ rule FilterPCRerror:
             Variant: vtam.models.Variant
             FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -75,7 +75,7 @@ rule FilterChimera:
             Variant: vtam.models.Variant
             FilterPCRerror: vtam.models.FilterPCRerror
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -94,7 +94,7 @@ rule FilterMinReplicateNumber2:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterChimera
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -112,7 +112,7 @@ rule FilterRenkonen:
             Sample: vtam.models.Sample
             FilterChimera: vtam.models.FilterMinReplicateNumber2
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -130,7 +130,7 @@ rule FilterMinReplicateNumber3:
             Sample: vtam.models.Sample
             FilterLFN: vtam.models.FilterRenkonen
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -149,7 +149,7 @@ rule FilterIndel:
             Variant: vtam.models.Variant
             FilterRenkonen: vtam.models.FilterMinReplicateNumber3
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -168,7 +168,7 @@ rule FilterCodonStop:
             Variant: vtam.models.Variant
             FilterIndel: vtam.models.FilterIndel
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
             params: {{params}}
     output:
         table:
@@ -187,7 +187,7 @@ rule ReadCountAverageOverReplicates:
             Sample: vtam.models.Sample
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
     output:
         table:
             ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
@@ -204,7 +204,7 @@ rule MakeAsvTable:
             FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
             FilterCodonStop: vtam.models.FilterCodonStop
         file:
-            readinfo: {{readinfo}}
+            sortedinfo: {{sortedinfo}}
     output:
         file:
             ASVTable: {{asvtable}}

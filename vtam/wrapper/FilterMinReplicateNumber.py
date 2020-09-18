@@ -16,7 +16,7 @@ class FilterMinReplicateNumber(ToolWrapper):
     }
 
     # Input file
-    __input_file_readinfo = "readinfo"
+    __input_file_sortedinfo = "sortedinfo"
     # Input table
     __input_table_run = "Run"
     __input_table_marker = "Marker"
@@ -27,7 +27,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
     def specify_input_file(self):
         return[
-            "readinfo", "params",
+            "sortedinfo", "params",
         ]
 
     def specify_input_table(self):
@@ -59,7 +59,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         # Input files
         fasta_info_tsv = self.input_file(
-            FilterMinReplicateNumber.__input_file_readinfo)
+            FilterMinReplicateNumber.__input_file_sortedinfo)
         #
         # Input tables
         input_filter_lfn_model = self.input_table(
@@ -75,7 +75,7 @@ class FilterMinReplicateNumber(ToolWrapper):
 
         #######################################################################
         #
-        # 1. Read readinfo to get run_id, marker_id, sample_id, replicate for current analysis
+        # 1. Read sortedinfo to get run_id, marker_id, sample_id, replicate for current analysis
         # 2. Delete marker_name/run_name/sample/replicate from variant_read_count_model
         # 3. Get nijk_df input
         #
