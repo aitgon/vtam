@@ -14,6 +14,7 @@
 #
 from configparser import RawConfigParser
 import os
+import vtam
 # import sys
 # sys.path.insert(0, os.path.abspath('...'))
 
@@ -32,9 +33,11 @@ copyright = read_setup_cfg_metadata(field='copyright')
 author = read_setup_cfg_metadata(field='author')
 
 # The short X.Y version.
-version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])
+# version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])
+version = '.'.join((vtam.__version__).split('.')[0:2])
 # The full version, including alpha/beta/rc tags.
-release = read_setup_cfg_metadata(field='version')
+# release = read_setup_cfg_metadata(field='version')
+release = vtam.__version__
 
 # -- General configuration ---------------------------------------------------
 
