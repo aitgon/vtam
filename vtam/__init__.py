@@ -23,7 +23,7 @@ from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.constants import FilterLFNreference_records
 
 
-__version__ = "0.1.16"
+__version__ = "0.1.17"
 
 
 class VTAM(object):
