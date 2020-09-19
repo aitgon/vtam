@@ -1,3 +1,9 @@
+CHANGES IN VERSION 0.1.17 (Sep 19, 2020)
+--------------------------------------------------
+
+- DOC Renamed and improved command-line interface help
+- ENH Added a 'vtam example' command to generate a file tree for a quick start
+
 CHANGES IN VERSION 0.1.16 (Sep 12, 2020)
 --------------------------------------------------
 
