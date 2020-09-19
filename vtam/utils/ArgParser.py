@@ -1,6 +1,8 @@
 import argparse
 import multiprocessing
 import os
+import pathlib
+
 import pandas
 import yaml
 
@@ -12,6 +14,7 @@ from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
     coi_blast_db_gz_url
+import vtam
 
 
 class ArgParserChecker(object):
@@ -189,7 +192,12 @@ class ArgParser:
         #
         ############################################################################################
 
-        parser_vtam_main = argparse.ArgumentParser(prog='vtam')
+        # config = RawConfigParser()
+        # config.read(os.path.join(PathManager.get_package_path(), 'setup.cfg'))
+        # version = config.get('metadata', 'version')
+
+        parser_vtam_main = argparse.ArgumentParser(prog='vtam', description='%(prog)s {} - VTAM - Validation and Taxonomic Assignation of Metabarcoding Data'.format(vtam.__version__))
+        parser_vtam_main.add_argument('--version', action='version', version='%(prog)s {}'.format(vtam.__version__))
         subparsers = parser_vtam_main.add_subparsers(title='VTAM sub-commands')
 
         ############################################################################################
@@ -197,6 +205,8 @@ class ArgParser:
         # create the parsers
         #
         ############################################################################################
+
+        cls.add_parser_example(subparsers=subparsers)
 
         cls.add_parser_merge(subparsers=subparsers)
 
@@ -215,6 +225,19 @@ class ArgParser:
         cls.add_parser_coiblastdb(subparsers=subparsers)
 
         return parser_vtam_main
+
+    @classmethod
+    def add_parser_example(cls, subparsers):
+        parser_vtam_merge = subparsers.add_parser('example', add_help=True,
+                                                  parents=[cls.parser_params, cls.parser_log,
+                                                           cls.parser_threads, cls.parser_verbosity],
+                                                  help="generates data for quick start")
+
+        parser_vtam_merge.add_argument('--outdir', action='store',
+                                       help="directory for quick start data",
+                                       required=False, default='example', type=lambda x: pathlib.Path(x).mkdir(exist_ok=True, parents=True) or x)
+
+        parser_vtam_merge.set_defaults(command='example')
 
     @classmethod
     def add_parser_merge(cls, subparsers):
