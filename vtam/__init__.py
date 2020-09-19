@@ -3,7 +3,9 @@ import pathlib
 import sys
 import yaml
 
+from vtam import CommandExample
 from vtam.CommandBlastCOI import CommandBlastCOI
+from vtam.CommandExample import CommandExample
 from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
@@ -153,6 +155,16 @@ class VTAM(object):
                     arg_parser_dic['cutoff_specific'] = cutoff_specific_tsv
 
             CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
+
+        ############################################################################################
+        #
+        # Subcommand: example
+        #
+        ############################################################################################
+
+        elif arg_parser_dic['command'] == 'example':
+            outdir = arg_parser_dic['outdir']
+            CommandExample.main(outdir=outdir)
 
         ############################################################################################
         #
