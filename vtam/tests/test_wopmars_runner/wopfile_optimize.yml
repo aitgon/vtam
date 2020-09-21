@@ -2,7 +2,7 @@ rule SampleInformation:
     tool: vtam.wrapper.SampleInformation
     input:
         file:
-            sortedinfo: doc/data/sortedinfo_mfzr.tsv
+            sortedinfo: data/example/sortedinfo_mfzr.tsv
     output:
         table:
             Run: vtam.models.Run
@@ -16,7 +16,7 @@ rule VariantReadCount:
     tool: vtam.wrapper.VariantReadCount
     input:
         file:
-            sortedinfo: doc/data/sortedinfo_mfzr.tsv
+            sortedinfo: data/example/sortedinfo_mfzr.tsv
         table:
             Run: vtam.models.Run
             Marker: vtam.models.Marker
@@ -26,7 +26,7 @@ rule VariantReadCount:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
     params:
-        read_dir: vtam/tests/test_wopmars_runner
+        read_dir: tests/test_wopmars_runner
         global_read_count_cutoff: 2
 
 
@@ -40,11 +40,11 @@ rule OptimizeLFNsampleReplicate:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            sortedinfo: doc/data/sortedinfo_mfzr.tsv
-            known_occurrences: doc/data/known_occurrences.tsv
+            sortedinfo: data/example/sortedinfo_mfzr.tsv
+            known_occurrences: data/example/known_occurrences.tsv
     output:
         file:
-            optimize_lfn_sample_replicate: vtam/tests/output/optimize_lfn_sample_replicate.tsv
+            optimize_lfn_sample_replicate: tests/output/optimize_lfn_sample_replicate.tsv
 
 
 rule OptimizePCRerror:
@@ -57,11 +57,11 @@ rule OptimizePCRerror:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            sortedinfo: doc/data/sortedinfo_mfzr.tsv
-            known_occurrences: doc/data/known_occurrences.tsv
+            sortedinfo: data/example/sortedinfo_mfzr.tsv
+            known_occurrences: data/example/known_occurrences.tsv
     output:
         file:
-            optimize_pcr_error: vtam/tests/output/optimize_pcr_error.tsv
+            optimize_pcr_error: tests/output/optimize_pcr_error.tsv
 
 
 rule OptimizeLFNreadCountAndLFNvariant:
@@ -74,13 +74,13 @@ rule OptimizeLFNreadCountAndLFNvariant:
             Variant: vtam.models.Variant
             VariantReadCount: vtam.models.VariantReadCount
         file:
-            sortedinfo: doc/data/sortedinfo_mfzr.tsv
-            known_occurrences: doc/data/known_occurrences.tsv
+            sortedinfo: data/example/sortedinfo_mfzr.tsv
+            known_occurrences: data/example/known_occurrences.tsv
             params: None
     output:
         file:
-            optimize_lfn_read_count_and_lfn_variant: vtam/tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
-            optimize_lfn_variant_specific: vtam/tests/output/optimize_lfn_variant_specific.tsv
+            optimize_lfn_read_count_and_lfn_variant: tests/output/optimize_lfn_read_count_and_lfn_variant.tsv
+            optimize_lfn_variant_specific: tests/output/optimize_lfn_variant_specific.tsv
     params:
         lfn_variant_cutoff: 0.001
         lfn_sample_replicate_cutoff: 0.001

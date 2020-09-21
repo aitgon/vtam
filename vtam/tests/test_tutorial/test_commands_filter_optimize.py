@@ -59,7 +59,7 @@ class TestCommandsFilterOptimize(unittest.TestCase):
         self.args = {}
         self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
         self.args['sortedinfo'] = os.path.join(self.args['sorteddir'], "sortedinfo.tsv")
-        self.args['known_occurrences'] = os.path.join(self.package_path, "doc", "data", "known_occurrences.tsv")
+        self.args['known_occurrences'] = os.path.join(self.package_path, "data/example/known_occurrences.tsv")
         self.args['lfn_variant_cutoff_specific'] = os.path.join(
             self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "optimize_lfn_variant_specific.tsv")
         self.args['lfn_variant_replicate_cutoff_specific'] = os.path.join(

@@ -5,6 +5,7 @@ from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.SampleInformation import SampleInformation
 from vtam.models.Variant import Variant
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 import filecmp
 import os
@@ -24,17 +25,16 @@ class TestCommandPool(unittest.TestCase):
 
     def setUp(self):
 
-        self.package_path = os.path.join(PathManager.get_package_path())
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', '-e', '.'], cwd=self.package_path)
+        pip_install_vtam_for_tests()
 
         self.test_path = PathManager.get_test_path()
+        self.package_path = PathManager.get_package_path()
         self.outdir_path = os.path.join(self.test_path, 'outdir')
         shutil.rmtree(self.outdir_path, ignore_errors=True)
         pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
 
         self.args = {}
-        self.args['runmarker'] = os.path.join(self.package_path, "doc/data/pool_run_marker.tsv")
+        self.args['runmarker'] = os.path.join(self.package_path, "data/example/pool_run_marker.tsv")
         self.args['db'] = os.path.join(self.outdir_path, "db.sqlite")
         self.args['asvtable_pooled_default'] = os.path.join(self.outdir_path, "asvtable_pooled_default.tsv")
         self.args['asvtable_pooled_default_bak'] = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_default.tsv")

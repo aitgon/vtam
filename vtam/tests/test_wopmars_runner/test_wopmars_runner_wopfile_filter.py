@@ -15,18 +15,14 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
     def setUpClass(cls):
 
         cls.package_path = PathManager.get_package_path()
+        cls.test_path = PathManager.get_test_path()
 
         foopaths = {}
-        foopaths['foofile'] = os.path.relpath(__file__, PathManager.get_package_path())
-        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), PathManager.get_package_path())
-        foopaths['sorteddir'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'output'),
-            PathManager.get_package_path())
-        foopaths['blastdb'] = os.path.relpath(os.path.join(PathManager.get_test_path(), 'test_files', 'blastdb'),
-            PathManager.get_package_path())
-        foopaths['sortedinfo_tsv'] = os.path.relpath(os.path.join(cls.package_path, "doc/data/sortedinfo_mfzr.tsv"),
-            PathManager.get_package_path())
-        foopaths['optimize_lfn_variant_specific'] = os.path.relpath(os.path.join(cls.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"),
-            PathManager.get_package_path())
+        foopaths['foofile'] = os.path.relpath(__file__, cls.package_path)
+        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), cls.package_path)
+        foopaths['sorteddir'] = 'output'
+        foopaths['sortedinfo_tsv'] = "data/example/sortedinfo_mfzr.tsv"
+        foopaths['optimize_lfn_variant_specific'] = "tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv"
         cls.foopaths = foopaths
 
         cls.minseqlength_value_32 = 32

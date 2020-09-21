@@ -30,8 +30,6 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
         pip_install_vtam_for_tests()
 
-        cls.package_path = os.path.join(PathManager.get_package_path())
-        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
@@ -69,9 +67,9 @@ class TestCmdVariantReadCount(unittest.TestCase):
         self.args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo.tsv")
         self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
         self.args['optimize_lfn_variant_specific'] = os.path.join(
-            self.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
+            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
         self.args['optimize_lfn_variant_replicate_specific'] = os.path.join(
-            self.package_path, "vtam/tests/test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_replicate_specific.tsv")
+            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_replicate_specific.tsv")
         self.args['params_lfn_variant'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant.yml")
         self.args['params_lfn_variant_replicate'] = os.path.join(os.path.dirname(__file__), "params_lfn_variant_replicate.yml")
 

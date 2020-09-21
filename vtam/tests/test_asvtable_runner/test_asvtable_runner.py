@@ -21,9 +21,9 @@ class TestAsvtableRunner(unittest.TestCase):
 
     def setUp(self):
 
-        self.package_path = os.path.join(PathManager.get_package_path())
         self.test_path = os.path.join(PathManager.get_test_path())
         self.outdir_path = os.path.join(self.test_path, 'outdir')
+
         # during development of the test, this prevents errors
         shutil.rmtree(self.outdir_path, ignore_errors=True)
         pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)

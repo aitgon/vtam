@@ -9,6 +9,7 @@ import tarfile
 import unittest
 import urllib
 
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.constants import fastq_tar_gz_url
 from vtam.utils.PathManager import PathManager
 from urllib import request
@@ -25,12 +26,7 @@ class TestTutorialSnakemake(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
+        pip_install_vtam_for_tests()  # vtam needs to be in the path
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
@@ -38,7 +34,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         # shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
-        cls.snakefile_tuto_data = os.path.join(cls.package_path, "tools/snake.tuto.data.yml")
+        cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data.yml")
 
         ############################################################################################
         #
@@ -48,7 +44,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cls.args = {}
         cls.args['package_path'] = cls.package_path
-        cls.args['snake_tuto_data'] = os.path.join(cls.package_path, "tools/snake.tuto.data.yml")
+        cls.args['snake_tuto_data'] = cls.snakefile_tuto_data
 
         ############################################################################################
         #
