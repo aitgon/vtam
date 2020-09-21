@@ -1,3 +1,4 @@
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 import os
 import pathlib
@@ -16,17 +17,10 @@ class TestCmdVariantReadCount(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # vtam needs to be in the tsv_path
-        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
+        pip_install_vtam_for_tests()  # vtam needs to be in the path
 
     def setUp(self):
 
-        self.package_path = os.path.join(PathManager.get_package_path())
         self.test_path = os.path.join(PathManager.get_test_path())
         self.outdir_path = os.path.join(self.test_path, 'outdir')
         shutil.rmtree(self.outdir_path, ignore_errors=True)

@@ -14,4 +14,4 @@ def pip_install_vtam_for_tests():
         args = cmd
     else:
         args = shlex.split(cmd)
-    subprocess.run(args=args, check=True, cwd=PathManager.instance().get_package_path())
+    subprocess.run(args=args, check=True, cwd=PathManager.instance().get_project_path())

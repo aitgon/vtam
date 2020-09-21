@@ -1,4 +1,6 @@
 from urllib import request
+
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import fastq_tar_gz_url
 import filecmp
@@ -22,11 +24,7 @@ class TestTutorialCommands(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cls.package_path = os.path.join(PathManager.get_package_path())
-
-        # vtam needs to be in the tsv_path
-        subprocess.run([sys.executable, '-m', 'pip', 'install', os.path.join('{}'.format(cls.package_path), '.'),
-                        '--upgrade'])
+        pip_install_vtam_for_tests()  # vtam needs to be in the path
 
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
@@ -47,7 +45,7 @@ class TestTutorialCommands(unittest.TestCase):
         tar.close()
 
         # Set test paths
-        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "doc", "data", "fastqinfo.tsv")
+        cls.fastqinfo_path = os.path.join(PathManager.get_package_path(), "data/example/fastqinfo.tsv")
         cls.fastqdir_path = os.path.join(cls.outdir_path, "fastq")
         cls.fastainfo_path = os.path.join(cls.outdir_path, "fastainfo.tsv")
         cls.fastadir_path = os.path.join(cls.outdir_path, "merged")

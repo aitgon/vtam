@@ -51,7 +51,7 @@ rule all_one_marker:
 
 rule snakefile:
     input:
-        snakefile=os.path.join(PACKAGE_PATH, 'snakefile.yml'),
+        snakefile=os.path.join(PACKAGE_PATH, 'data/snakefile.yml'),
     output:
         snakefile="snakefile.yml",
     shell:
@@ -59,12 +59,12 @@ rule snakefile:
 
 rule user_input_two_markers:
     input:
-        fastqinfo=os.path.join(PACKAGE_PATH, 'doc/data', 'fastqinfo.tsv'),
-        known_occurrences=os.path.join(PACKAGE_PATH, 'doc/data', 'known_occurrences.tsv'),
-        params=os.path.join(PACKAGE_PATH, 'doc/data', 'params.yml'),
-        snakeconfig=os.path.join(PACKAGE_PATH, 'doc/data', 'snakeconfig.yml'),
-        sortedinfo_mfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'sortedinfo_mfzr.tsv'),
-        sortedinfo_zfzr=os.path.join(PACKAGE_PATH, 'doc/data', 'sortedinfo_zfzr.tsv'),
+        fastqinfo=os.path.join(PACKAGE_PATH, 'data/example', 'fastqinfo.tsv'),
+        known_occurrences=os.path.join(PACKAGE_PATH, 'data/example', 'known_occurrences.tsv'),
+        params=os.path.join(PACKAGE_PATH, 'data/example', 'params.yml'),
+        snakeconfig=os.path.join(PACKAGE_PATH, 'data/example', 'snakeconfig.yml'),
+        sortedinfo_mfzr=os.path.join(PACKAGE_PATH, 'data/example', 'sortedinfo_mfzr.tsv'),
+        sortedinfo_zfzr=os.path.join(PACKAGE_PATH, 'data/example', 'sortedinfo_zfzr.tsv'),
     output:
         fastqinfo="{PROJECT}/user_input/fastqinfo.tsv",
         known_occurrences="{PROJECT}/user_input/known_occurrences.tsv",
@@ -82,7 +82,7 @@ rsync -avt {input.sortedinfo_zfzr} {output.sortedinfo_zfzr}"""
 
 rule user_input_params:
     input:
-        params=os.path.join(PACKAGE_PATH, 'doc/data', 'params_{MARKER}.yml'),
+        params=os.path.join(PACKAGE_PATH, 'data/example', 'params_{MARKER}.yml'),
     output:
         params="{PROJECT}/user_input/params_{MARKER}.yml",
     shell:
@@ -91,9 +91,9 @@ rule user_input_params:
 
 rule user_input_one_marker:
     input:
-        fastqinfo=os.path.join(PACKAGE_PATH, 'doc/data', 'fastqinfo_{MARKER}.tsv'),
-        known_occurrences=os.path.join(PACKAGE_PATH, 'doc/data', 'known_occurrences_{MARKER}.tsv'),
-        snakeconfig=os.path.join(PACKAGE_PATH, 'doc/data', 'snakeconfig_{MARKER}.yml'),
+        fastqinfo=os.path.join(PACKAGE_PATH, 'data/example', 'fastqinfo_{MARKER}.tsv'),
+        known_occurrences=os.path.join(PACKAGE_PATH, 'data/example', 'known_occurrences_{MARKER}.tsv'),
+        snakeconfig=os.path.join(PACKAGE_PATH, 'data/example', 'snakeconfig_{MARKER}.yml'),
     output:
         fastqinfo="{PROJECT}/user_input/fastqinfo_{MARKER}.tsv",
         known_occurrences="{PROJECT}/user_input/known_occurrences_{MARKER}.tsv",
@@ -105,7 +105,7 @@ rsync -avt {input.snakeconfig} {output.snakeconfig}"""
 
 rule user_input_pool_marker:
     input:
-        pool_run_marker=os.path.join(PACKAGE_PATH, 'doc/data', 'pool_run_marker.tsv'),
+        pool_run_marker=os.path.join(PACKAGE_PATH, 'data/example', 'pool_run_marker.tsv'),
     output:
         pool_run_marker="{PROJECT}/user_input/pool_run_marker.tsv",
     shell:
