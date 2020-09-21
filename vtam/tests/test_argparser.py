@@ -12,6 +12,7 @@ class TestArgParser(unittest.TestCase):
     def setUp(self):
         self.parser = ArgParser.get_main_arg_parser()
 
+        doc_path = PathManager.get_doc_path()
         package_path = PathManager.get_package_path()
         test_path = PathManager.get_test_path()
         self.test_path = test_path
@@ -22,13 +23,13 @@ class TestArgParser(unittest.TestCase):
         self.foopaths['dirdoesnotexist'] = "dirdoesnotexist"
         self.foopaths['fileisempty'] = os.path.join(test_path, "test_files", "emptyfile")
         self.foopaths['filenottsv'] = __file__
-        self.foopaths['sortedinfo_tsv'] = os.path.join(package_path, "doc", "data", "sortedinfo_mfzr.tsv")
-        self.foopaths['params_yml'] = os.path.join(package_path, "doc", "data", "params_mfzr.yml")
+        self.foopaths['sortedinfo_tsv'] = os.path.join(package_path, "data/example", "sortedinfo_mfzr.tsv")
+        self.foopaths['params_yml'] = os.path.join(package_path, "data/example", "params_mfzr.yml")
         self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file", "params_wrong.yml")
-        self.foopaths['known_occurrences'] = os.path.join(package_path, "doc", "data", "known_occurrences.tsv")
+        self.foopaths['known_occurrences'] = os.path.join(package_path, "data/example", "known_occurrences.tsv")
         self.foopaths['asvtable_tsv'] = os.path.join(
             test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_default.tsv")
-        self.foopaths['runmarker_tsv'] = os.path.join(package_path, "doc", "data", "pool_run_marker.tsv")
+        self.foopaths['runmarker_tsv'] = os.path.join(package_path, "data/example", "pool_run_marker.tsv")
 
         self.foopaths['taxonomy_tsv'] = os.path.join(PathManager.get_test_path(),
             "test_files_dryad.f40v5_small", "taxonomy.tsv")

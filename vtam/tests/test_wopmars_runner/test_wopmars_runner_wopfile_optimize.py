@@ -19,15 +19,11 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
         # Minimal merge command
         foopaths = {}
         foopaths['foofile'] = os.path.relpath(__file__, self.package_path)
-        foopaths['foodir'] = os.path.relpath(
-            os.path.dirname(__file__), self.package_path)
-        foopaths['outdir'] = os.path.relpath(
-            os.path.join(test_path, 'output'), self.package_path)
-        foopaths['blastdb'] = os.path.relpath(os.path.join(
-            test_path, 'test_files', 'blastdb'), self.package_path)
-        foopaths['sortedinfo_tsv'] = os.path.join("doc", "data", "sortedinfo_mfzr.tsv")
-        foopaths['tsv_path'] = os.path.join("doc", "data", "sortedinfo_mfzr.tsv")
-        foopaths['known_occurrences'] = os.path.join("doc", "data", "known_occurrences.tsv")
+        foopaths['foodir'] = os.path.relpath(os.path.dirname(__file__), self.package_path)
+        foopaths['outdir'] = 'tests/output'
+        foopaths['sortedinfo_tsv'] = "data/example/sortedinfo_mfzr.tsv"
+        foopaths['tsv_path'] = "data/example/sortedinfo_mfzr.tsv"
+        foopaths['known_occurrences'] = "data/example/known_occurrences.tsv"
         self.foopaths = foopaths
 
     def test_wopmars_runner_optimize(self):
@@ -41,11 +37,12 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
         os.chdir(cwd)
 
         wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
-        wopfile_path = os.path.relpath(os.path.join(self.package_path, "tests", "output", "wopfile"), self.package_path)
+        wopfile_path = "tests/output/wopfile"
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
         with open(os.path.join(os.path.dirname(__file__), "wopfile_optimize.yml")) as fin:
             wopfile_content_bak = fin.read()
+
         if not sys.platform.startswith("win"):
             self.assertTrue(wopfile_content == wopfile_content_bak)
 
