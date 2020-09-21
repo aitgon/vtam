@@ -10,7 +10,7 @@ class TestParamsFile(unittest.TestCase):
     def setUp(self):
 
         package_path = PathManager.get_package_path()
-        self.params = os.path.join(package_path, "doc/data/params_mfzr.yml")
+        self.params = os.path.join(package_path, "data/example/params_mfzr.yml")
         self.params_wrong = os.path.join(os.path.dirname(__file__), "params_wrong.yml")
 
     def test_is_valid(self):

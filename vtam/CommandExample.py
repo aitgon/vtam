@@ -45,7 +45,7 @@ class CommandExample(object):
 
         args = {}
         args['package_path'] = package_path
-        args['snake_tuto_data'] = os.path.join(package_path, "tools/snake.tuto.data.yml")
+        args['snake_tuto_data'] = os.path.join(package_path, "data/snake.tuto.data.yml")
 
         ############################################################################################
         #

@@ -25,7 +25,7 @@ class TestTaxAssign(unittest.TestCase):
         self.min_number_of_taxa = 3
         self.include_prop = 90
         #
-        self.__testdir_path = os.path.join(PathManager.get_test_path())
+        self.__testdir_path = PathManager.get_test_path()
 
     @classmethod
     def setUpClass(cls):

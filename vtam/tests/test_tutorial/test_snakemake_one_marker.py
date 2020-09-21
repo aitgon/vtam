@@ -30,7 +30,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         #
         ########################################################################
 
-        pip_install_vtam_for_tests()
+        pip_install_vtam_for_tests()  # vtam needs to be in the path
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
@@ -38,7 +38,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
-        cls.snakefile_tuto_data = os.path.join(cls.package_path, "tools", "snake.tuto.data.yml")
+        cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data.yml")
 
         ############################################################################################
         #
@@ -48,7 +48,7 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cls.args = {}
         cls.args['package_path'] = cls.package_path
-        cls.args['snake_tuto_data'] = os.path.join(cls.package_path, "tools/snake.tuto.data.yml")
+        cls.args['snake_tuto_data'] = cls.snakefile_tuto_data
 
         ############################################################################################
         #

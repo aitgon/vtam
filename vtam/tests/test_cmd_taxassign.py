@@ -8,6 +8,7 @@ import sqlalchemy
 import subprocess
 import unittest
 
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 from wopmars.Base import Base
 
@@ -18,12 +19,7 @@ class TestCommandTaxAssign(unittest.TestCase):
     def setUpClass(cls):
 
         # vtam needs to be in the tsv_path
-        cmd = '{} -m pip install .'.format(sys.executable)
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=PathManager.get_package_path())
+        pip_install_vtam_for_tests()
 
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')

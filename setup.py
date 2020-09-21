@@ -27,7 +27,7 @@ install_requires = [
     'biopython>=1.76',
     'pandas>=1.0',
     'termcolor>=1.1',
-    'wopmars>=0.0.13',
+    'wopmars>=0.1.0',
 ]
 
 if sys.version_info < (3, 7):
@@ -40,12 +40,6 @@ except ImportError:
     print("Please install setuptools before installing VTAM.",
           file=sys.stderr)
     exit(1)
-
-# def get_version():
-#     """Return package version from setup.cfg."""
-#     config = RawConfigParser()
-#     config.read(os.path.join('.', 'setup.cfg'))
-#     return config.get('metadata', 'version')
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as fin:
@@ -65,6 +59,17 @@ Operating System :: POSIX :: Linux
 Operating System :: Microsoft :: Windows :: Windows 10
 """
 
+# Create list of package data files
+def data_files_to_list(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
+data_file_list = data_files_to_list('vtam/data')
+data_test_list = data_files_to_list('vtam/tests')
+
 setup(
     name='vtam',
     # version=read_setup_cfg_metadata(field='version'),
@@ -78,9 +83,7 @@ setup(
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
-    package_data={'vtam': ["data/*.yml", "tests/*.py", "tests/test_files/*", "tests/test_files/optimize_f7/*",
-                           "tests/output/*"]},
-    data_files = [],
+    package_data={'vtam': data_file_list + data_test_list},
     install_requires=install_requires,
     entry_points={
         'console_scripts': ['vtam=vtam:main']
