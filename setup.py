@@ -27,11 +27,11 @@ install_requires = [
     'biopython>=1.76',
     'pandas>=1.0',
     'termcolor>=1.1',
-    'wopmars>=0.1.0',
+    'wopmars>=0.1.1',
 ]
 
-if sys.version_info < (3, 7):
-    print("At least Python 3.7 is required.\n", file=sys.stderr)
+if sys.version_info < (3, 6):
+    print("At least Python 3.6 is required.\n", file=sys.stderr)
     exit(1)
 
 try:
@@ -54,7 +54,6 @@ Programming Language :: Python :: 3
 Programming Language :: Python :: 3.7
 Programming Language :: Python :: 3 :: Only
 Topic :: Scientific/Engineering :: Bio-Informatics
-Topic :: Software Development
 Operating System :: POSIX :: Linux
 Operating System :: Microsoft :: Windows :: Windows 10
 """
@@ -68,7 +67,6 @@ def data_files_to_list(directory):
     return paths
 
 data_file_list = data_files_to_list('vtam/data')
-data_test_list = data_files_to_list('vtam/tests')
 
 setup(
     name='vtam',
@@ -83,7 +81,7 @@ setup(
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
-    package_data={'vtam': data_file_list + data_test_list},
+    package_data={'vtam': data_file_list},
     install_requires=install_requires,
     entry_points={
         'console_scripts': ['vtam=vtam:main']
