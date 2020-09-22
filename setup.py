@@ -5,6 +5,7 @@ __copyright__ = "Copyright 2018-2020, Aitor Gonzalez, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
 
+import codecs
 import configparser
 from setuptools import setup
 from setuptools import find_packages
@@ -13,7 +14,6 @@ import sys
 
 config = configparser.RawConfigParser()
 config.read(os.path.join('.', 'setup.cfg'))
-version = config['metadata']['version']
 author = config['metadata']['author']
 email = config['metadata']['email']
 license = config['metadata']['license']
@@ -59,9 +59,22 @@ def data_files_to_list(directory):
 
 data_file_list = data_files_to_list('vtam/data')
 
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
 setup(
     name='vtam',
-    version=version,
+    version=get_version("vtam/__init__.py"),
     description="VTAM - Validation and Taxonomic Assignation of Metabarcoding Data",
     author=author,
     author_email=email,
@@ -72,7 +85,7 @@ setup(
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
     package_data={'vtam': data_file_list},
-    install_requires=['jinja2', 'pyyaml', 'sqlalchemy', 'biopython', 'pandas', 'termcolor', 'wopmars'],
+    install_requires=['jinja2', 'pyyaml', 'sqlalchemy', 'biopython', 'pandas', 'progressbar', 'termcolor', 'wopmars'],
     entry_points={
         'console_scripts': ['vtam=vtam:main']
     },

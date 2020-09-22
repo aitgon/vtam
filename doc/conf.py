@@ -14,28 +14,25 @@
 #
 import configparser
 import os
-# import sys
-# sys.path.insert(0, os.path.abspath('...'))
+import sys
+
+sys.path.insert(0, os.path.abspath('..'))
+import vtam
 
 
 # -- Project information -----------------------------------------------------
 
-config = configparser.RawConfigParser()
-config.read(os.path.join('.', 'setup.cfg'))
-version = config['metadata']['version']
-author = config['metadata']['author']
-
 # General information about the project.
 project = 'VTAM'
 copyright = copyright
-author = author
+author = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
 
 # The short X.Y version.
 # version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])
-version = '.'.join((version).split('.')[0:2])
+version = '.'.join((vtam.__version__).split('.')[0:2])
 # The full version, including alpha/beta/rc tags.
 # release = read_setup_cfg_metadata(field='version')
-release = version
+release = vtam.__version__
 
 # -- General configuration ---------------------------------------------------
 
