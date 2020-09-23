@@ -12,4 +12,3 @@ doc/vtam.wrapper.rst
 out
 vtam.egg-info
 vtam/tests/outdir
-example

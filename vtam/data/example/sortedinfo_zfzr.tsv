@@ -1,0 +1,13 @@
+run	marker	sample	replicate	sortedfasta
+run1	ZFZR	tpos1_run1	1	zfzr_1_fw_012.fasta
+run1	ZFZR	tnegtag_run1	1	zfzr_1_fw_013.fasta
+run1	ZFZR	14ben01	1	zfzr_1_fw_014.fasta
+run1	ZFZR	14ben02	1	zfzr_1_fw_015.fasta
+run1	ZFZR	tpos1_run1	2	zfzr_2_fw_016.fasta
+run1	ZFZR	tnegtag_run1	2	zfzr_2_fw_017.fasta
+run1	ZFZR	14ben01	2	zfzr_2_fw_018.fasta
+run1	ZFZR	14ben02	2	zfzr_2_fw_019.fasta
+run1	ZFZR	tpos1_run1	3	zfzr_3_fw_020.fasta
+run1	ZFZR	tnegtag_run1	3	zfzr_3_fw_021.fasta
+run1	ZFZR	14ben01	3	zfzr_3_fw_022.fasta
+run1	ZFZR	14ben02	3	zfzr_3_fw_023.fasta
