@@ -1,0 +1,10 @@
+project: asper1
+subproject: run1_zfzr
+fastqinfo: asper1/user_input/fastqinfo_zfzr.tsv
+fastqdir: fastq
+known_occurrences: asper1/user_input/known_occurrences_zfzr.tsv
+params: asper1/user_input/params_zfzr.yml
+blastdbdir: vtam_db/coi_blast_db
+blastdbname: coi_blast_db_20200420
+taxonomy: vtam_db/taxonomy.tsv
+

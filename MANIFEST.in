@@ -1,6 +1,3 @@
-exclude _build
 include Makefile environment.yml environment-dev.yml requirements.txt
-recursive-include doc *.md Makefile *.tsv *.yml
-include doc/data/*
-include snakefile.yml
-include tools/snake.tuto.data.yml
+graft vtam/data
+graft vtam/data/example

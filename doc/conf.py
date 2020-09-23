@@ -12,25 +12,25 @@
 # add these directories to sys.output here. If the directory is relative to the
 # documentation root, use os.output.abspath to make it absolute, like shown here.
 #
-from configparser import RawConfigParser
-import os
-import vtam
-# import sys
-# sys.path.insert(0, os.path.abspath('...'))
 
+import configparser
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('..'))
+import vtam
 
 # -- Project information -----------------------------------------------------
 
-def read_setup_cfg_metadata(field):
-    """Reads and gets information from setup.cfg."""
-    config = RawConfigParser()
-    config.read(os.path.join('..', 'setup.cfg'))
-    return str(config.get('metadata', field))
-
 # General information about the project.
+config = configparser.RawConfigParser()
+config.read(os.path.join('..', 'setup.cfg'))
+author = config['metadata']['author']
+copyright = config['metadata']['copyright']
+
 project = 'VTAM'
-copyright = read_setup_cfg_metadata(field='copyright')
-author = read_setup_cfg_metadata(field='author')
+author = author
+copyright = copyright
 
 # The short X.Y version.
 # version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])
@@ -102,7 +102,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
