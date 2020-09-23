@@ -2,7 +2,6 @@ CHANGES IN VERSION 0.1.18 (Sep 23, 2020)
 --------------------------------------------------
 
 - BUG bugs fixed
-- ENH Added a 'vtam example' command to generate a file tree for a quick start
 
 CHANGES IN VERSION 0.1.17 (Sep 19, 2020)
 --------------------------------------------------
