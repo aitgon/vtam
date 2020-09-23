@@ -2,10 +2,6 @@ import argparse
 import multiprocessing
 import os
 import pathlib
-<<<<<<< HEAD
-=======
-
->>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
 import pandas
 import yaml
 
