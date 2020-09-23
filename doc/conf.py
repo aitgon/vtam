@@ -12,20 +12,41 @@
 # add these directories to sys.output here. If the directory is relative to the
 # documentation root, use os.output.abspath to make it absolute, like shown here.
 #
+<<<<<<< HEAD
 import configparser
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 import vtam
+=======
+from configparser import RawConfigParser
+import os
+import vtam
+# import sys
+# sys.path.insert(0, os.path.abspath('...'))
+>>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
 
 
 # -- Project information -----------------------------------------------------
 
+<<<<<<< HEAD
 # General information about the project.
 project = 'VTAM'
 copyright = copyright
 author = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
+=======
+def read_setup_cfg_metadata(field):
+    """Reads and gets information from setup.cfg."""
+    config = RawConfigParser()
+    config.read(os.path.join('..', 'setup.cfg'))
+    return str(config.get('metadata', field))
+
+# General information about the project.
+project = 'VTAM'
+copyright = read_setup_cfg_metadata(field='copyright')
+author = read_setup_cfg_metadata(field='author')
+>>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
 
 # The short X.Y version.
 # version = '.'.join(read_setup_cfg_metadata(field='version').split('.')[0:2])

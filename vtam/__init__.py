@@ -22,6 +22,10 @@ from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.constants import FilterLFNreference_records
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
 __version__ = "0.1.17"
 
 

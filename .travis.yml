@@ -34,7 +34,11 @@ script:
   # Your tests script goes here
   - python --version
   - pip --version
+<<<<<<< HEAD
   - coverage run -m unittest discover -v -f
+=======
+  - coverage run_name -m unittest discover -v -f
+>>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

@@ -1,3 +1,12 @@
+<<<<<<< HEAD
 include Makefile environment.yml environment-dev.yml requirements.txt
 graft vtam/data
 graft vtam/data/example
+=======
+exclude _build
+include Makefile environment.yml environment-dev.yml requirements.txt
+recursive-include doc *.md Makefile *.tsv *.yml
+include doc/data/*
+include snakefile.yml
+include tools/snake.tuto.data.yml
+>>>>>>> 2195a5d6bb2972454c238c6fd43a8da854059011
