@@ -58,6 +58,7 @@ def data_files_to_list(directory):
 
 
 data_file_list = data_files_to_list('vtam/data')
+data_example_file_list = data_files_to_list('vtam/data/example')
 
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
