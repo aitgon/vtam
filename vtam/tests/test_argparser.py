@@ -12,7 +12,6 @@ class TestArgParser(unittest.TestCase):
     def setUp(self):
         self.parser = ArgParser.get_main_arg_parser()
 
-        doc_path = PathManager.get_doc_path()
         package_path = PathManager.get_package_path()
         test_path = PathManager.get_test_path()
         self.test_path = test_path
