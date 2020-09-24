@@ -433,4 +433,123 @@ Next we run the "taxassign" command for the new ASV table "asper1/asvtable_zfzr_
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_default.tsv --output asper1/run1_zfzr/asvtable_default_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper1/vtam.log
+    vtam taxassign --db
+
+Here, we prepare a new file of known occurrences for the ZFZR marker: "asper1/user_input/known_occurences_zfzr.tsv".
+Then we run the "optimize" command with the known occurrences:
+
+.. code-block:: bash
+
+    vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_zfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_zfzr/sorted --known_occurrences asper1/user_input/known_occurrences_zfzr.tsv --outdir asper1/run1_zfzr -v --log asper1/vtam.log
+
+At this point, we prepare a new params file for the ZFZR marker: asper1/user_input/params_zfzr.yml. Then we run the "filter" command with the optimized parameters:
+
+.. code-block:: bash
+
+    vtam filter --db asper1/db.sqlite --sortedinfo asper1/run1_zfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_zfzr/sorted --params asper1/user_input/params_zfzr.yml --asvtable asper1/run1_zfzr/asvtable_optimized.tsv -v --log asper1/vtam.log
+
+Then we run the "taxassign" command of the optimized ASV table:
+
+.. code-block:: bash
+
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_optimized.tsv --output asper1/run1_zfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper1/vtam.log
+
+At this point, we have run the equivalent of the previous section (MFZR marker) for the ZFZR marker.
+Now we can pool the two markers MFZR and ZFZR. This input TSV file "asper1/user_input/pool_run_marker.tsv" defines the run and marker combinations that must be pooled. The ”pool_run_marker.tsv” that looks like this:
+
+.. code-block:: bash
+
+    run    marker
+    run1    MFZR
+    run1    ZFZR
+
+Then the "pool" command can be used:
+
+.. code-block:: bash
+
+    vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --asvtable asper1/asvtable_pooled_mfzr_zfzr.tsv --log asper1/vtam.log -v
+
+.. note::
+    For info on I/O files see the Reference section<LINK The pool command>
+
+The output "asvtable_pooled_mfzr_zfzr.tsv" is an asv table that contains all samples of all runs (in this example there is only one run), and all "unique" variants: variants identical in their overlapping regions are pooled into the one line.
+
+Summing read count from different markers does not make sense.
+In "asvtable_pooled_mfzr_zfzr.tsv" cells contain 1/0 for presence/absence instead of read counts.
+
+Hereafter are the first lines of the “asvtable_pooled_mfzr_zfzr.tsv” <LINKto the command pool>
+
+.. code-block:: bash
+
+    variant_id    pooled_variants    run    marker    tpos1_run1    tnegtag_run1    14ben01    14ben02    clusterid    clustersize    pooled_sequences    sequence
+    25    25    run1    MFZR    1    0    0    0    25    1    ACTATACCTTATCTTCGCAGTATTCTCAGGAATGCTAGGAACTGCTTTTAGTGTTCTTATTCGAATGGAACTAACATCTCCAGGTGTACAATACCTACAGGGAAACCACCAACTTTACAATGTAATCATTACAGCTCACGCATTCCTAATGATCTTTTTCATGGTTATGCCAGGACTTGTT    ACTATACCTTATCTTCGCAGTATTCTCAGGAATGCTAGGAACTGCTTTTAGTGTTCTTATTCGAATGGAACTAACATCTCCAGGTGTACAATACCTACAGGGAAACCACCAACTTTACAATGTAATCATTACAGCTCACGCATTCCTAATGATCTTTTTCATGGTTATGCCAGGACTTGTT
+    137    137    run1    MFZR    1    0    0    0    137    1    ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC    ACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC
+    1112    1112,4876    run1    MFZR,ZFZR    1    0    0    0    1112    1    CTTATATTTTATTTTTGGTGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT,TGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT    CTTATATTTTATTTTTGGTGCTTGATCAGGGATAGTGGGAACTTCTTTAAGAATTCTTATTCGAGCTGAACTTGGTCATGCGGGATCTTTAATCGGAGACGATCAAATTTACAATGTAATTGTTACTGCACACGCCTTTGTAATAATTTTTTTTATAGTTATACCTATTTTAATT
+
+The sequence column is a representative sequence of the pooled variants. pooled_sequeces is a list of pooled variants.
+
+Complete the "asvtable_pooled_mfzr_zfzr.tsv" with taxonomic assignments using the "taxassign" command:
+
+.. code-block:: bash
+
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_pooled_mfzr_zfzr.tsv --output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper1/vtam.log -v
+
+We finished running VTAM for a second marker ZFZR.
+
+The additional data for the ZFZR and the pooled data can be found here:
+
+.. code-block:: bash
+
+    asper1
+    |-- asvtable_pooled_mfzr_zfzr.tsv
+    |-- asvtable_pooled_mfzr_zfzr_taxa.tsv
+    |-- ...
+    |-- run1_zfzr
+    |  |-- asvtable_default.tsv
+    |  |-- asvtable_default_taxa.tsv
+    |  |-- asvtable_optimized.tsv
+    |  |-- asvtable_optimized_taxa.tsv
+    |  |-- ...
+    ...
+
+Running VTAM for data with several run-marker combinations
+----------------------------------------------------------
+
+The outcome of some of the filtering steps (LFNfilter, renkonen) in vtam depends on the composition of the other samples in the dataset. Therefore vtam is designed to optimize parameters separately for each run-marker combination and do the filtering steps separately for each of them. However, since run-marker information is taken into account in the vtam scripts, technically it is possible to analyze several dataset (run-marker combination) in a single command.
+
+Let's use the same dataset as before, but run the two markers together. These analyses will give the same results as the previously described pipeline, we will just use fewer commands.
+
+We will define a new output folder "asper2" to clearly separate the results from the previous ones.
+
+For the "merge" command, the format of "--fastqinfo" file is as before, but it includes info on both markers.
+
+.. code-block:: bash
+
+    vtam merge --fastqinfo asper2/user_input/fastqinfo.tsv --fastqdir fastq --fastainfo asper2/run1/fastainfo.tsv --fastadir asper2/run1/merged -v --log asper2/vtam.log
+
+These are the "sortreads" and the "filter" commands:
+
+.. code-block:: bash
+
+    vtam sortreads --fastainfo asper2/run1/fastainfo.tsv --fastadir asper2/run1/merged --sorteddir asper2/run1/sorted -v --log asper2/vtam.log
+
+    vtam filter --db asper2/db.sqlite --sortedinfo asper2/run1/sorted/sortedinfo.tsv --sorteddir asper2/run1/sorted --asvtable asper2/run1/asvtable_default.tsv -v --log asper2/vtam.log
+
+The "asvtable_default.tsv" file contains all variants that passed the filters from both markers. Variants identical in the overlapping regions are NOT pooled at this point, since the optimization will be done separately for each marker-run combination.
+
+This is the "taxassign" command:
+
+.. code-block:: bash
+
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_default.tsv --output asper2/run1/asvtable_default_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+
+For the "optimize" command, make one single "known_occurrences.tsv" file with known occurrences for both markers:
+
+.. code-block:: bash
+
+    vtam optimize --db asper2/db.sqlite --sortedinfo asper2/run1/sorted/sortedinfo.tsv --sorteddir asper2/run1/sorted --known_occurrences asper2/user_input/known_occurrences.tsv --outdir asper2/run1 -v --log asper2/vtam.log
+
+
+
+
+
