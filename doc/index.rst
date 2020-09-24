@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 =============================================================================================
-Welcome to Validation and Taxonomic Assignation of Metabarcoding Data (VTAM)'s documentation!
+VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 =============================================================================================
 
 Table of Contents

@@ -549,6 +549,315 @@ For the "optimize" command, make one single "known_occurrences.tsv" file with kn
 
     vtam optimize --db asper2/db.sqlite --sortedinfo asper2/run1/sorted/sortedinfo.tsv --sorteddir asper2/run1/sorted --known_occurrences asper2/user_input/known_occurrences.tsv --outdir asper2/run1 -v --log asper2/vtam.log
 
+Each of the output files in the "asper2/run1/optimize" folder will contain information on both markers. The analyses suggest the optimal parameters have been run independently for the two markers. You have to choose the optimal parameters and make “params.yml“ files separately for each of them.
+
+Since the optimal parameters for the two markers are likely to be different, you have to run this step separately for the two markers.
+
+The content of the "--sortedinfo" is used to define the dataset for which the filtering is done. The “asper2/sorted/sortedinfo.tsv“ contains information on both markers. That is why, the filtering by default parameters were run on both markers. In this step, you have to split this file in two. Each of them will contain info on only one marker.
+
+So you will need the following input files:
+
+- asper2/user_input/params_mfzr.yml
+- asper2/user_input/params_zfzr.yml
+- asper2/user_input/readinfo_mfzr.tsv
+- asper2/user_input/readinfo_zfzr.tsv
+
+Run filter for MFZR:
+
+.. code-block:: bash
+
+    vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_mfzr.tsv --sorteddir asper2/run1/sorted --asvtable asper2/run1/asvtable_optimized_mfzr.tsv -v --log asper2/vtam.log --params asper2/user_input/params_mfzr.yml
+
+Run filter for ZFZR:
+
+.. code-block:: bash
+
+    vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_zfzr.tsv --sorteddir asper2/run1/sorted --asvtable asper2/run1/asvtable_optimized_zfzr.tsv -v --log asper2/vtam.log --params asper2/user_input/params_zfzr.yml
+
+To end this case, we run the "pool" and "taxassign" commands:
+
+.. code-block:: bash
+
+    vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --log asper2/vtam.log -v
+
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
+
+Run VTAM with snakemake
+-------------------------
+
+Snakemake <link> is a tool to create analysis workflows composed of several steps of VTAM. In this section, we will use a "Snakefile" <link> to run several steps together.
+This part of the tutorial supposes that you have read the tutorial on how to run vtam command by command for one run-marker combination [LINK] and you understand the role of each step and the essential input files.
+
+Basic pipeline with snakemake: one run-marker combination
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We will work marker by marker. At the root there is a project folder (*asper1*). The analyses related to run-marker will go to different subfolders (eg. *run1_mfzr*) that will contain all related files. We will illustrate the pipeline with the marker MFZR but the same commands can be run later in the same project folder with the marker ZFZR.
+First make sure that you have the "vtam_db" and "fastq" directories as in the Data section of the Tutorial <link>.
+To setup the pipeline we need the "fastqinfo_mfzr.tsv" file as before and a config file for "snakemake", called "snakeconfig_mfzr.yml". We will prepare these files inside a "<project>/user_input" folder as before. The "snakeconfig_mfzr.yml" looks like this:
+project: 'asper1'
+
+.. code-block:: bash
+
+    subproject: 'run1_mfzr'
+    fastqinfo: 'asper1/user_input/fastqinfo_mfzr.tsv'
+    fastqdir: 'fastq'
+    known_occurrences: 'asper1/user_input/known_occurrences_mfzr.tsv'
+    params: 'asper1/user_input/params_mfzr.yml'
+    blastdbdir: 'vtam_db/coi_blast_db'
+    blastdbname: 'coi_blast_db_20200420'
+    taxonomy: 'vtam_db/taxonomy.tsv'
+
+Make sure the "snakefile.yml" <link> is in the current working directory. The resulting file tree looks like this:
+
+.. code-block:: bash
+
+    .
+    |-- asper1
+    |  `-- user_input
+    |    |-- fastqinfo_mfzr.tsv
+    |    `-- snakeconfig_mfzr.yml
+    |-- fastq
+    |  |-- mfzr_1_fw.fastq
+    |  |-- ...
+    |-- snakefile.yml
+    `-- vtam_db
+      |-- coi_blast_db
+      |  |-- coi_blast_db.nhr
+      |  |-- ...
+      `-- taxonomy.tsv
+
+Steps merge, sortreads, filter with default parameters, taxassign
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can run these four steps in one go and create the ASV table with taxonomic assignments with this command:
+
+.. code-block:: bash
+
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa
+
+We find the same directory tree as before:
+
+.. code-block:: bash
+
+    asper1
+    |-- db.sqlite
+    |-- run1_mfzr
+    |  |-- asvtable.tsv
+    |  |-- asvtable_taxa.tsv
+    |  |-- fastainfo.tsv
+    |  |-- merged
+    |  |  |-- mfzr_1_fw.fasta
+    |  |  |-- ...
+    |  `-- sorted
+    |    |-- mfzr_1_fw_002.fasta
+    |    |-- ...
+    |    `-- sortedinfo.tsv
+    |-- user_input
+    |  |-- fastqinfo_mfzr.tsv
+    |  |-- known_occurrences_mfzr.tsv
+    |  |-- params_mfzr.yml
+    |  `-- snakeconfig_mfzr.yml
+    |-- vtam.err
+    `-- vtam.log
+
+The step "optimize"
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can now create the "aspersnake/user_input/known_occurrences_mfzr.tsv" <link> based on the informations given by the "asper1/run1_mfzr/asvtable_default_taxa.tsv".
+
+Then you will run the "optimize" script to look for better parameters for the MFZR marker:
+snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until optimize
+
+The resulting optimization files will be found here:
+
+.. code-block:: bash
+
+    asper1
+    |-- db.sqlite
+    |-- run1_mfzr
+    |  |-- ...
+    |  |-- optimize_lfn_sample_replicate.tsv
+    |  |-- optimize_lfn_read_count_and_lfn_variant.tsv
+    |  |-- optimize_lfn_variant_specific.tsv
+    |  |-- optimize_pcr_error.tsv
+
+The steps "filter with optimized parameters" and "taxassign"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~é
+
+Define the optimal parameters and create a parameter file: "asper1/user_input/params_mfzr.yml" <link>.
+Run the filtering and taxassign steps:
+
+.. code-block:: bash
+
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_optimized_taxa
+
+This last command will give you two new ASV tables with optimized parameters:
+
+.. code-block:: bash
+
+    asper1
+    |-- ...
+    |-- run1_mfzr
+    |  |-- ...
+    |  |-- asvtable_params_taxa.tsv
+    |  |-- asvtable_taxa.tsv
+
+Add new run-marker data to existing database
+
+The same commands can be run for the second marker ZFZR. You will need the following additional files:
+
+- asper1/user_input/snakeconfig_zfzr.yml
+- asper1/user_input/fastqinfo_zfzr.tsv
+- asper1/user_input/known_occurrences_zfzr.tsv
+- asper1/user_input/params_zfzr.yml
+
+The “snakeconfig_zfzr.yml“ will look like this:
+
+.. code-block:: bash
+
+    project: 'asper1'
+    subproject: 'run1_zfzr'
+    fastqinfo: 'asper1/user_input/fastqinfo_zfzr.tsv'
+    fastqdir: 'fastq'
+    known_occurrences: 'asper1/user_input/known_occurrences_zfzr.tsv'
+    params: 'asper1/user_input/params_zfzr.yml'
+    blastdbdir: 'vtam_db/coi_blast_db'
+    blastdbname: 'coi_blast_db_20200420'
+    taxonomy: 'vtam_db/taxonomy.tsv'
+
+Then you can run the same commands as above for the new marker ZFZR:
+
+.. code-block:: bash
+
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_taxa
+
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until optimize
+
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_zfzr.yml --until asvtable_optimized_taxa
+
+These commands will generate a new folder with the same files for the new marker ZFZR. The database "db.sqlite" will be shared by both markers MFZR and ZFZR:
+
+.. code-block:: bash
+
+    asper1
+    |-- db.sqlite
+    |-- ...
+    |-- run1_zfzr
+    |  |-- asvtable.tsv
+    |  |-- asvtable_taxa.tsv
+    |  |-- fastainfo.tsv
+    |  |-- merged
+    |  |  |-- zfzr_1_fw.fasta
+    |  |  |-- ...
+    |  `-- sorted
+    |    |-- sortedinfo.tsv
+    |    |-- zfzr_1_fw_002.fasta
+    |    |-- ...
+
+The results of the two markers can be pooled as before:
+
+.. code-block:: bash
+
+    vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --asvtable asper1/pooled_asvtable_mfzr_zfzr.tsv --log asper1/vtam.log -v
+
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/pooled_asvtable_mfzr_zfzr.tsv --output asper1/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper1/vtam.log -v
+
+Running snakemake for data with several run-marker combinations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similarly as before, we can run all run-markers simultaneously. We will use these files:
+
+- asper2/user_input/snakeconfig.yml
+- asper2/user_input/fastqinfo.tsv (info on both markers)
+- asper2/user_input/known_occurrences.tsv (info on both markers)
+- asper2/user_input/params.yml (Empty or absent ok)
+
+The “snakeconfig.yml“ looks like this:
+
+.. code-block:: bash
+
+    project: 'asper2'
+    subproject: 'run1'
+    db: 'db.sqlite'
+    fastqinfo: 'asper2/user_input/fastqinfo.tsv'
+    fastqdir: 'fastq'
+    known_occurrences: 'asper2/user_input/known_occurrences.tsv'
+    params: 'asper2/user_input/params.yml'
+    blastdbdir: 'vtam_db/coi_blast_db'
+    blastdbname: 'coi_blast_db_20200420'
+    taxonomy: 'vtam_db/taxonomy.tsv'
+
+Then you compute the ASV tables and the optimization files with default parameters:
+
+.. code-block:: bash
+
+    snakemake -p --resources db=1 -s snakefile.yml --cores 4 --configfile asper2/user_input/snakeconfig.yml --until asvtable_taxa
+
+    snakemake -p --resources db=1 -s snakefile.yml --cores 4 --configfile asper2/user_input/snakeconfig.yml --until optimize
+
+Optimized parameter are specific of each marker.
+
+Therefore, it is simpler to run the optimized filter as in the previous section with two files “params_mfzr.yml“ and “params_zfzr.yml“ for each marker:
+
+- asper2/user_input/params_mfzr.yml
+- asper2/user_input/params_zfzr.yml
+
+To run the "filter" command for each marker, we need to create two "readinfo.tsv" files for each marker based on "asper2/prerun/sorted/readinfo.tsv":
+
+- asper2/user_input/sortedinfo_mfzr.tsv
+- asper2/user_input/sortedinfo_zfzr.tsv
+
+Then, we can run the filter and taxassign commands with optimized parameters:
+
+.. code-block:: bash
+
+    vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_mfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log
+
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_mfzr.tsv --output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+
+    vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_zfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml --asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log
+
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_zfzr.tsv --output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+
+The resulting directory tree looks like this:
+
+.. code-block:: bash
+
+    asper2
+    |-- db.sqlite
+    |-- run1
+    |  |-- asvtable.tsv
+    |  |-- asvtable_params_mfzr.tsv
+    |  |-- asvtable_params_taxa_mfzr.tsv
+    |  |-- asvtable_params_taxa_zfzr.tsv
+    |  |-- asvtable_params_zfzr.tsv
+    |  |-- asvtable_taxa.tsv
+    |  |-- fastainfo.tsv
+    |  |-- merged
+    |  |  |-- mfzr_1_fw.fasta
+    |  |  |-- ....
+    |  `-- sorted
+    |    |-- mfzr_1_fw_002.fasta
+    |    |-- ...
+    |    |-- sortedinfo.tsv
+    |    |-- ...
+    |-- user_input
+    |  |-- fastqinfo.tsv
+    |  |-- known_occurrences.tsv
+    |  |-- params.yml
+    |  |-- params_mfzr.yml
+    |  |-- params_zfzr.yml
+    |  |-- snakeconfig.yml
+    |  |-- readinfo_mfzr.tsv
+    |  `-- readinfo_zfzr.tsv
+
+The results of the two markers can be pooled as before:
+
+.. code-block:: bash
+
+    vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --log asper2/vtam.log -v
+
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
 
 
 
