@@ -11,11 +11,13 @@ Table of Contents
 =================
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
+    content/overview
     content/installation
-    content/userinput
     content/tutorial
+    content/reference
+    content/changelog
 
 Indices and tables
 ==================
