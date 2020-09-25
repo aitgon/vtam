@@ -16,8 +16,6 @@ Table of Contents
     content/installation
     content/userinput
     content/tutorial
-    content/developer_filter
-    content/developer_tax_assign
 
 Indices and tables
 ==================
