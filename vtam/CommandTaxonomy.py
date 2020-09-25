@@ -122,7 +122,7 @@ class CommandTaxonomy(object):
 
     def download_precomputed_taxonomy(self):
         """
-        Copy the online TSV taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
+        Copy the online TSV taxonomy DB
         to the pathname output
         """
         Logger.instance().debug(
