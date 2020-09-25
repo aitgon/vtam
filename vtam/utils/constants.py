@@ -162,9 +162,9 @@ rank_hierarchy_asv_table = [
     'species']
 
 # public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
-taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
-coi_blast_db_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db/coi_blast_db.tar.gz"
-fastq_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
+taxonomy_tsv_gz_url = "https://github.com/aitgon/vtam/releases/download/data/taxonomy.tsv.gz"
+coi_blast_db_gz_url = "https://github.com/aitgon/vtam/releases/download/data/coi_blast_db.tar.gz"
+fastq_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz"
 sorted_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/sorted.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
