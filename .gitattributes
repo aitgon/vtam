@@ -1,0 +1,2 @@
+vtam/tests/test_files/fastq.tar.gz filter=lfs diff=lfs merge=lfs -text
+vtam/tests/test_files/sorted.tar.gz filter=lfs diff=lfs merge=lfs -text
