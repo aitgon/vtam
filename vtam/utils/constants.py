@@ -164,7 +164,7 @@ rank_hierarchy_asv_table = [
 taxonomy_tsv_gz_url = "https://github.com/aitgon/vtam/releases/download/data/taxonomy.tsv.gz"
 coi_blast_db_gz_url = "https://github.com/aitgon/vtam/releases/download/data/coi_blast_db.tar.gz"
 fastq_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz"
-sorted_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/sorted.tar.gz"
+# sorted_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/sorted.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

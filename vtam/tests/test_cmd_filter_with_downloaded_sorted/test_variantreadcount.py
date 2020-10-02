@@ -6,15 +6,15 @@ import subprocess
 import sys
 import tarfile
 import unittest
-import urllib
+# import urllib
 
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import sorted_tar_gz_url
-from urllib import request
+# from vtam.utils.constants import sorted_tar_gz_url
+# from urllib import request
 
-@unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
-                 "This test requires an internet connection!")
+# @unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
+#                  "This test requires an internet connection!")
 class TestCmdVariantReadCount(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -42,9 +42,9 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(cls.outdir_path, "sorted.tar.gz")
-        if not os.path.isfile(sorted_tar_path):
-            urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
+        sorted_tar_path = os.path.join(cls.test_path, "test_files", "sorted.tar.gz")
+        # if not os.path.isfile(sorted_tar_path):
+        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(sorted_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_data_path)
         tar.close()
