@@ -17,8 +17,8 @@ jobs:
     - name: Setup environment
       run: |
           export PATH="/usr/share/miniconda/bin:$PATH"
-          conda create -q -n tests-environment
-          #source activate tests-environment
+          conda create -q -n vtam
+          source activate vtam
           #conda env update -f environment.yml
           #python setup.py install
 
