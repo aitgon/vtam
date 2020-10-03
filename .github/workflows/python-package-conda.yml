@@ -18,7 +18,7 @@ jobs:
       run: |
           export PATH="/usr/share/miniconda/bin:$PATH"
           conda create -q -n tests-environment
-          conda activate tests-environment
-          conda env update -f environment.yml
-          python setup.py install
+          #source activate tests-environment
+          #conda env update -f environment.yml
+          #python setup.py install
 
