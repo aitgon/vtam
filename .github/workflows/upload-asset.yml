@@ -1,0 +1,23 @@
+name: Upload assets
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Publish binaries
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/fastq.tar.gz
+        asset_name: data/fastq.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: "This is my release text"
