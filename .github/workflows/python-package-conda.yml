@@ -21,4 +21,11 @@ jobs:
           source activate vtam
           conda env update -f environment.yml
           #python setup.py install
+    - name: Run tests
+      env:
+        CI: true
+      run: |
+        # activate conda env
+        export PATH="/usr/share/miniconda/bin:$PATH"
+        source activate vtam
 
