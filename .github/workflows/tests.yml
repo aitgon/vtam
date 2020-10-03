@@ -1,4 +1,4 @@
-name: Python Package using Conda
+name: Tests in Conda environment
 
 on: [push]
 
@@ -20,8 +20,6 @@ jobs:
           conda create -q -n vtam
           source activate vtam
           conda env update -f environment.yml
-          #pip install . -q --upgrade
-          #python setup.py install
     - name: Run tests
       env:
         CI: true
