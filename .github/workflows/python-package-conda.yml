@@ -2,24 +2,13 @@ name: Python Package using Conda
 
 on: [push]
 
-jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
+testing:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v1
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
-    - name: Install dependencies
+    - name: Setup VTAM environment
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda env update --file environment.yml --name base        
-        python setup.py install
-    - name: Test with pytest
-      run: |
-        # conda install pytest
-        $CONDA/bin/python -m unittest discover -v -f
+        export PATH="/usr/share/miniconda/bin:$PATH"
+        conda create -q --name vtam --file environment-dev.yml
+          
