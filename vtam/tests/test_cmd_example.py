@@ -6,6 +6,7 @@ import subprocess
 import sys
 import unittest
 
+from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 
 
@@ -14,6 +15,8 @@ class TestCommandExample(unittest.TestCase):
     """Will test main commands based on a complete test dataset"""
 
     def setUp(self):
+
+        pip_install_vtam_for_tests()
 
         self.test_path = PathManager.get_test_path()
         self.outdir_path = os.path.join(self.test_path, 'outdir')
