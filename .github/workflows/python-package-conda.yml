@@ -2,13 +2,22 @@ name: Python Package using Conda
 
 on: [push]
 
-testing:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v1
 
-    - name: Setup VTAM environment
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
       run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
         export PATH="/usr/share/miniconda/bin:$PATH"
         conda create -q --name vtam --file environment-dev.yml
           
