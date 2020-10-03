@@ -31,4 +31,5 @@ jobs:
         vsearch --version
         cutadapt --version
         blastn -version
+        python -m unittest -v -f
 
