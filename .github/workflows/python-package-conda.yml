@@ -28,4 +28,7 @@ jobs:
         # activate conda env
         export PATH="/usr/share/miniconda/bin:$PATH"
         source activate vtam
+        vsearch --version
+        cutadapt --version
+        blastn -version
 
