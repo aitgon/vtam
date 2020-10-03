@@ -32,5 +32,5 @@ jobs:
         vsearch --version
         cutadapt --version
         blastn -version
-        #vtam -version
+        python -m unittest discover -v -f
 
