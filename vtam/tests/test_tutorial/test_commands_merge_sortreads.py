@@ -26,6 +26,7 @@ class TestTutorialCommands(unittest.TestCase):
 
         pip_install_vtam_for_tests()  # vtam needs to be in the path
 
+        cls.package_path = PathManager.get_package_path()
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
@@ -37,9 +38,16 @@ class TestTutorialCommands(unittest.TestCase):
         #
         ################################################################################################################
 
-        fastq_tar_path = os.path.join(cls.outdir_path, "fastq.tar.gz")
-        if not os.path.isfile(fastq_tar_path):
-            urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
+        # fastq_tar_path = os.path.join(cls.outdir_path, "fastq.tar.gz")
+        # if not os.path.isfile(fastq_tar_path):
+        #     urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
+        # tar = tarfile.open(fastq_tar_path, "r:gz")
+        # tar.extractall(path=cls.outdir_path)
+        # tar.close()
+
+        fastq_tar_path = os.path.join(cls.package_path, "..", "data", "fastq.tar.gz")
+        # if not os.path.isfile(sorted_tar_path):
+        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()

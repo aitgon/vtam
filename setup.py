@@ -114,7 +114,7 @@ def data_files_to_list(directory):
     return paths
 
 data_file_list = data_files_to_list('vtam/data')
-data_test_list = data_files_to_list('vtam/tests')
+# data_test_list = data_files_to_list('vtam/tests')
 
 setup(
     name='vtam',

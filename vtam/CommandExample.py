@@ -27,10 +27,17 @@ class CommandExample(object):
         #
         ############################################################################################
 
-        fastq_tar_path = os.path.join(outdir, "fastq.tar.gz")
-        if not os.path.isfile(fastq_tar_path):
-            Logger.instance().info(fastq_tar_path)
-            urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path, MyProgressBar())
+        # fastq_tar_path = os.path.join(outdir, "fastq.tar.gz")
+        # if not os.path.isfile(fastq_tar_path):
+        #     Logger.instance().info(fastq_tar_path)
+        #     urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path, MyProgressBar())
+        # tar = tarfile.open(fastq_tar_path, "r:gz")
+        # tar.extractall(path=outdir)
+        # tar.close()
+
+        fastq_tar_path = os.path.join(package_path, "..", "data", "fastq.tar.gz")
+        # if not os.path.isfile(sorted_tar_path):
+        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=outdir)
         tar.close()
