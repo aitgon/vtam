@@ -1,3 +1,5 @@
+__version__ = "0.1.18"
+
 import os
 import pathlib
 import sys
@@ -21,8 +23,6 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.WopmarsRunner import WopmarsRunner
 from vtam.utils.constants import FilterLFNreference_records
-
-__version__ = "0.1.18"
 
 
 class VTAM(object):

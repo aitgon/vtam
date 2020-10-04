@@ -1,6 +1,8 @@
 import multiprocessing
 import yaml
 
+from vtam import __version__
+
 ####################################################################################################
 #
 # Default VTAM parameters_numerical_default
@@ -161,10 +163,14 @@ rank_hierarchy_asv_table = [
     'genus',
     'species']
 
-taxonomy_tsv_gz_url = "https://github.com/aitgon/vtam/releases/download/data/taxonomy.tsv.gz"
-coi_blast_db_gz_url = "https://github.com/aitgon/vtam/releases/download/data/coi_blast_db.tar.gz"
-fastq_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz"
+# taxonomy_tsv_gz_url = "https://github.com/aitgon/vtam/releases/download/data/taxonomy.tsv.gz"
+# coi_blast_db_gz_url = "https://github.com/aitgon/vtam/releases/download/data/coi_blast_db.tar.gz"
+# fastq_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz"
 # sorted_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/data/sorted.tar.gz"
+
+coi_blast_db_gz_url = "https://github.com/aitgon/vtam/releases/download/{}/coi_blast_db.tar.gz".format(__version__)
+fastq_tar_gz_url = "https://github.com/aitgon/vtam/releases/download/{}/fastq.tar.gz".format(__version__)
+taxonomy_tsv_gz_url = "https://github.com/aitgon/vtam/releases/download/{}/taxonomy.tsv.gz".format(__version__)
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

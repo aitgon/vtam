@@ -31,7 +31,7 @@ You can download these FASTQ files from here with this command:
 
 .. code-block:: bash
 
-    wget -nc https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz -O fastq.tar.gz
+    wget -nc https://github.com/aitgon/vtam/releases/latest/download/fastq.tar.gz -O fastq.tar.gz
     tar zxvf fastq.tar.gz
     rm fastq.tar.gz
 
