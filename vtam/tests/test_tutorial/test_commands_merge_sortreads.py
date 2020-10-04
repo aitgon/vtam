@@ -1,8 +1,5 @@
-from urllib import request
-
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import fastq_tar_gz_url
 import filecmp
 import os
 import pathlib
@@ -12,11 +9,8 @@ import subprocess
 import sys
 import tarfile
 import unittest
-import urllib
 
 
-@unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
-                 "This test requires an internet connection!")
 class TestTutorialCommands(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -32,22 +26,13 @@ class TestTutorialCommands(unittest.TestCase):
         shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
         pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
 
-        ################################################################################################################
+        ############################################################################################
         #
         # Download fastq test dataset
         #
-        ################################################################################################################
-
-        # fastq_tar_path = os.path.join(cls.outdir_path, "fastq.tar.gz")
-        # if not os.path.isfile(fastq_tar_path):
-        #     urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
-        # tar = tarfile.open(fastq_tar_path, "r:gz")
-        # tar.extractall(path=cls.outdir_path)
-        # tar.close()
+        ############################################################################################
 
         fastq_tar_path = os.path.join(cls.package_path, "..", "data", "fastq.tar.gz")
-        # if not os.path.isfile(sorted_tar_path):
-        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()

@@ -14,7 +14,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.constants import taxonomy_tsv_gz_url
+from vtam.utils.constants import taxonomy_tsv_gz_url, taxonomy_tsv_latest_gz_url
 
 
 class CommandTaxonomy(object):
@@ -133,8 +133,12 @@ class CommandTaxonomy(object):
 
         if not os.path.isfile(self.taxonomy_tsv_path):
             Logger.instance().info(self.taxonomy_tsv_path)
-            urllib.request.urlretrieve(
-                taxonomy_tsv_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
+            try:
+                urllib.request.urlretrieve(
+                    taxonomy_tsv_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
+            except:
+                urllib.request.urlretrieve(
+                    taxonomy_tsv_latest_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
 
             with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
                 with open(self.taxonomy_tsv_path, 'wb') as fout:
