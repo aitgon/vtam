@@ -9,8 +9,8 @@ import urllib
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Logger import Logger
 from vtam.utils.MyProgressBar import MyProgressBar
-from vtam.utils.constants import fastq_tar_gz_url
 from urllib import request
+from vtam.utils.constants import fastq_tar_gz_url
 
 
 class CommandExample(object):
@@ -36,8 +36,9 @@ class CommandExample(object):
         # tar.close()
 
         fastq_tar_path = os.path.join(package_path, "..", "data", "fastq.tar.gz")
-        # if not os.path.isfile(sorted_tar_path):
-        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
+        if not os.path.isfile(fastq_tar_path):
+            fastq_tar_path = os.path.join(outdir, "fastq.tar.gz")
+            urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=outdir)
         tar.close()
