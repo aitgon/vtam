@@ -1,0 +1,55 @@
+name: Upload assets to release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Upload assets to release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
+    - name: Upload fastq.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/fastq.tar.gz
+        asset_name: fastq.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+    - name: Upload  taxonomy.tsv.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/taxonomy.tsv.gz
+        asset_name:  taxonomy.tsv.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+    - name: Upload coi_blast_db.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/coi_blast_db.tar.gz
+        asset_name: coi_blast_db.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+    - name: Upload coi_blast_db_20200420.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/coi_blast_db_20200420.tar.gz
+        asset_name: coi_blast_db_20200420.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+    - name: Upload coi_blast_db_20191211.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: data/coi_blast_db_20191211.tar.gz
+        asset_name: coi_blast_db_20191211.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true

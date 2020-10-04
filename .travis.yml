@@ -6,6 +6,8 @@ python:
   - "3.8"
 before_install:
   - python -m pip install --upgrade pip
+  - echo -e "machine github.com\n  login $GITHUB_TOKEN" > ~/.netrc
+  - git lfs pull
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the

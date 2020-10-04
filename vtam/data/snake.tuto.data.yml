@@ -118,7 +118,7 @@ rule fastq:
         fastq3="fastq/zfzr_1_fw.fastq",
         fastq4="fastq/zfzr_3_rv.fastq",
     params:
-        gz="https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz",
+        gz="https://github.com/aitgon/vtam/releases/latest/download/fastq.tar.gz",
     shell:
         """
 wget -N {params.gz} -O fastq.tar.gz;

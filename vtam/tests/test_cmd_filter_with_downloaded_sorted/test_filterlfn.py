@@ -1,6 +1,6 @@
-from urllib import request
+# from urllib import request
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import sorted_tar_gz_url
+# from vtam.utils.constants import sorted_tar_gz_url
 import os
 import pathlib
 import shlex
@@ -9,11 +9,8 @@ import subprocess
 import sys
 import tarfile
 import unittest
-import urllib
 
 
-@unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
-                 "This test requires an internet connection!")
 class TestCmdFilterLFN(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -28,6 +25,7 @@ class TestCmdFilterLFN(unittest.TestCase):
             args = shlex.split(cmd)
         subprocess.run(args=args, check=True, cwd=PathManager.get_project_path())
 
+        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
@@ -40,9 +38,7 @@ class TestCmdFilterLFN(unittest.TestCase):
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(cls.outdir_path, "sorted.tar.gz")
-        if not os.path.isfile(sorted_tar_path):
-            urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
+        sorted_tar_path = os.path.join(cls.package_path, "..", "data", "sorted.tar.gz")
         tar = tarfile.open(sorted_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_data_path)
         tar.close()
