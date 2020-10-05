@@ -7,8 +7,8 @@ from urllib import request
 from vtam.utils.Logger import Logger
 from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import coi_blast_db_gz_url
-
+from vtam.utils.constants import coi_blast_db_gz_url, coi_blast_db_latest_gz_url
+from vtam import __version__
 
 class CommandBlastCOI(object):
 
@@ -19,17 +19,30 @@ class CommandBlastCOI(object):
         self.tempdir = PathManager.instance().get_tempdir()
         pathlib.Path(os.path.join(self.tempdir)).mkdir(exist_ok=True, parents=True)
 
-        self.coi_blast_db_gz_url = os.path.dirname(coi_blast_db_gz_url) + '/{}.tar.gz'.format(self.blastdbname)
+        coi_blast_db_version_gz_url_dir = os.path.dirname(coi_blast_db_gz_url)
+        self.coi_blast_db_version_gz_url = os.path.join(coi_blast_db_version_gz_url_dir, "{}.tar.gz".format(blastdbname))
+
+        self.coi_blast_db_latest_gz_url_dir = os.path.dirname(coi_blast_db_latest_gz_url)
+        self.coi_blast_db_latest_gz_url = os.path.join(self.coi_blast_db_latest_gz_url_dir, "{}.tar.gz".format(blastdbname))
+
+        # self.coi_blast_db_gz_url = os.path.dirname(coi_blast_db_gz_url) + '/{}.tar.gz'.format(self.blastdbname)
         self.coi_blast_db_gz_path = os.path.join(self.tempdir, '{}.tar.gz'.format(self.blastdbname))
 
     def argparse_checker_blast_coi_blastdbname(self):
 
+        """Verifies whether this blastdbname exists"""
+
         try:
-            request.urlopen(self.coi_blast_db_gz_url)
+            request.urlopen(self.coi_blast_db_version_gz_url)
             return self.blastdbname
-        except :
-            raise argparse.ArgumentTypeError(
-                "There is not this COI Blast DB name '{}'. Please check available versions (<version>.tar.gz), for instance 'coi_blast_db', here: '{}'".format(self.blastdbname, os.path.dirname(coi_blast_db_gz_url)))
+        except:
+            try:
+                request.urlopen(self.coi_blast_db_latest_gz_url)
+                return self.blastdbname
+            except:
+                raise argparse.ArgumentTypeError(
+                    "This is not a valid --blastdbname {}. Valid  values are here : '{}'"
+                        .format(self.blastdbname, os.path.dirname(self.coi_blast_db_latest_gz_url_dir)))
 
     def download(self, blastdbdir):
         """
@@ -47,7 +60,11 @@ class CommandBlastCOI(object):
 
         if not os.path.isfile(self.coi_blast_db_gz_path):
             Logger.instance().info(self.coi_blast_db_gz_path)
-            request.urlretrieve(self.coi_blast_db_gz_url, self.coi_blast_db_gz_path, MyProgressBar())
+
+            try:
+                request.urlretrieve(self.coi_blast_db_version_gz_url, self.coi_blast_db_gz_path, MyProgressBar())
+            except:
+                request.urlretrieve(self.coi_blast_db_latest_gz_url, self.coi_blast_db_gz_path, MyProgressBar())
 
         tar = tarfile.open(self.coi_blast_db_gz_path)
         pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)

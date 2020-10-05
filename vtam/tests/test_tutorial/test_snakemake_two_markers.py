@@ -7,16 +7,11 @@ import subprocess
 import sys
 import tarfile
 import unittest
-import urllib
 
 from vtam.utils import pip_install_vtam_for_tests
-from vtam.utils.constants import fastq_tar_gz_url
 from vtam.utils.PathManager import PathManager
-from urllib import request
 
 
-@unittest.skipIf(request.urlopen(fastq_tar_gz_url).getcode() != 200,
-                 "This test requires an internet connection!")
 @unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
 # Not working with windows because of commands in snake.tuto.data
 class TestTutorialSnakemake(unittest.TestCase):
@@ -52,16 +47,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         #
         ############################################################################################
 
-        # fastq_tar_path = os.path.join(cls.outdir_path, "fastq.tar.gz")
-        # if not os.path.isfile(fastq_tar_path):
-        #     urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path)
-        # tar = tarfile.open(fastq_tar_path, "r:gz")
-        # tar.extractall(path=cls.outdir_path)
-        # tar.close()
-
         fastq_tar_path = os.path.join(cls.package_path, "..", "data", "fastq.tar.gz")
-        # if not os.path.isfile(sorted_tar_path):
-        #     urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()
