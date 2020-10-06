@@ -186,7 +186,7 @@ class SampleInformationFile:
     def check_args(self, header):
         """
         Checks that the this input file is in the correct format. It is also used by the argparser.
-        Updated: Mai 8, 2020
+        Updated: Oct 6, 2020
 
         Parameters
         ----------
@@ -212,13 +212,22 @@ class SampleInformationFile:
         elif not os.stat(self.tsv_path).st_size > 0:
             raise argparse.ArgumentTypeError(
                 "The file '{}' is empty!".format(self.tsv_path))
+
         sample_info_df = self.read_tsv_into_df()
-        if set(sample_info_df.columns) >= header:  # contains at least the 'header_lower' columns
-            return self.tsv_path  # return the tsv_path
+
+        # Verify that the file contains at least the 'header_lower' columns
+        if set(sample_info_df.columns) >= set(header):
+            # Verify if combination of run, marker, sample, replicates values are unique
+            if sample_info_df[['run', 'marker', 'sample', 'replicate']].drop_duplicates().shape[0] == sample_info_df[['run', 'marker', 'sample', 'replicate']].shape[0]:
+                return self.tsv_path  # return the tsv_path
+            else:
+                raise argparse.ArgumentTypeError(
+                    "The combinations of columns 'run, marker, sample, replicate' in the file '{}' must be unique."
+                    " Please fix it.".format(self.tsv_path))
         else:
             raise argparse.ArgumentTypeError(
-                "The format of file '{}' is wrong. Please fix it.".format(
-                    self.tsv_path))
+                "The file '{}' must include at least these columns: {}. Please fix it.".format(
+                    self.tsv_path, header))
 
     def to_sqlite(self, session):
         """Takes the sample information stats_df and replaces names with ids

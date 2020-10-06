@@ -23,6 +23,7 @@ class TestArgParser(unittest.TestCase):
         self.foopaths['fileisempty'] = os.path.join(test_path, "test_files", "emptyfile")
         self.foopaths['filenottsv'] = __file__
         self.foopaths['sortedinfo_tsv'] = os.path.join(package_path, "data/example/sortedinfo_mfzr.tsv")
+        self.foopaths['sortedinfo_duplicated_sample_names'] = os.path.join(test_path, "test_argparser", "sortedinfo_mfzr_duplicated_sample_names.tsv")
         self.foopaths['params_yml'] = os.path.join(package_path, "data/example/params_mfzr.yml")
         self.foopaths['params_wrong_yml'] = os.path.join(test_path, "test_params_file/params_wrong.yml")
         self.foopaths['known_occurrences'] = os.path.join(package_path, "data/example/known_occurrences.tsv")
@@ -49,7 +50,7 @@ class TestArgParser(unittest.TestCase):
                 'blastdb'),
             PathManager.get_package_path())
 
-    def test_arg_parser_params(self):
+    def test_argparser_params(self):
 
         args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv --params {params_yml}".format(
             **self.foopaths).split()
@@ -60,18 +61,18 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-    def test_arg_parser_filter(self):
+    def test_argparser_filter(self):
 
         # Ok
         args = "filter --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} --asvtable asvtable.tsv".format(
             **self.foopaths).split()
         self.assertTrue(self.parser.parse_args(args), 0)
 
-        #######################################################################
+        ############################################################################################
         #
         # raises SystemExit
         #
-        #######################################################################
+        ############################################################################################
 
         args = ["filter"]
         with self.assertRaises(SystemExit):
@@ -97,7 +98,12 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-    def test_arg_parser_optimize(self):
+        args = "filter --sortedinfo {sortedinfo_duplicated_sample_names} --sorteddir {foodir} --asvtable asvtable.tsv".format(
+            **self.foopaths).split()
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args(args)
+
+    def test_argparser_optimize(self):
 
         # Ok
         args = "optimize --known_occurrences {known_occurrences} --sortedinfo {sortedinfo_tsv} --sorteddir {foodir} " \
@@ -124,7 +130,7 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-    def test_arg_parser_taxassign(self):
+    def test_argparser_taxassign(self):
 
         # Ok
         args = "taxassign --asvtable {asvtable_tsv} --output {foodir} --blastdbdir {foodir} --blastdbname {filenottsv} " \
@@ -141,7 +147,7 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.parser.parse_args(args)
 
-    def test_arg_parser_taxassign_wrong_header_sequences(self):
+    def test_argparser_taxassign_wrong_header_sequences(self):
 
         #######################################################################
         #
@@ -157,7 +163,7 @@ class TestArgParser(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.assertTrue(self.parser.parse_args(args), 0)
 
-    def test_arg_parser_pool_runmarker(self):
+    def test_argparser_pool_runmarker(self):
 
         # Ok
         args = "pool --db {filenottsv} --runmarker {runmarker_tsv} --asvtable {asvtable_tsv}".format(
