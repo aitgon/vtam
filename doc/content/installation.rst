@@ -1,85 +1,92 @@
 Installation
 =================================================
 
-Dependencies installation
+Linux
 -------------------------------------------------
 
-Miniconda
-~~~~~~~~~~~~~~~~~~~~~~
+The easiest way to install and run vtam is via conda (`<https://docs.conda.io/projects/conda/en/latest/index.html>`_) environment. Download and install Miniconda `<https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_. Use 3.X python version.
+
+Create a conda environment.
 
 .. code-block:: bash
 
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-    bash Miniconda3-latest-Linux-x86_64.sh
-    conda create --name vtam python=3.6
+    conda create --name vtam python=3.7 -y
 
-Use virtual environment:
+Activate the conda environment.
 
 .. code-block:: bash
 
-    source activate vtam
+    conda activate vtam
 
-    source deactivate
-
-Vsearch
-~~~~~~~~~~~~~~~~~~~~~~
-
-The simplest and safest is to install it via Bioconda
+Install Cutadapt, VSEARCH and BLAST in the environment
 
 .. code-block:: bash
 
-    conda install -c bioconda vsearch 
+    conda install -c bioconda blast
+    conda install -c bioconda vsearch
 
-It is also possible to install it directly
-
-.. code-block:: bash
-
-    wget https://github.com/torognes/vsearch/archive/v2.8.0.tar.gz
-    tar xzf v2.8.0.tar.gz
-    cd vsearch-2.8.0
-    ./autogen.sh
-    ./configure
-    make
-    make install  # as root or sudo make install
-
-Wopmars
-~~~~~~~~~~~~~~~~~~~~~~
+Install VTAM via pip
 
 .. code-block:: bash
 
-    pip install wopmars
+    pip install vtam
+    
+You can also verify the BLAST (>=  v2.2.26), CutAdapt (>= 2.10) and VSEARCH (>= 2.15.0) versions:
 
-Package utilisation
+.. code-block:: bash
+
+    blastn -version
+    cutadapt --version
+    vsearch --version
+
+
+Windows
 -------------------------------------------------
 
-Step 1: WopFile personalisation
+You can run VTAM on a windows machine using the Windows Subsystem for Linux (WSL)
 
-Fill path for input files in the WopFile to launch the
-pipeline.
+Install Windows Subsystem for Linux and Ubuntu following these instructions: `<https://docs.microsoft.com/en-us/windows/wsl/install-win10>`_
 
-Step 2: Wopmars command
+Open WSL Ubuntu in a terminal and install conda using Linux instructions: `<https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html>`_
 
-Example:
+If it has not been done, you need to install make and gcc:
 
 .. code-block:: bash
 
-    wopmars -w Wopfile.yml -D "sqlite:///data/db.sqlite" -v -p -F
+    sudo apt-get update
+    sudo apt install make
+    sudo apt-get install gcc
+    conda update -n base -c defaults conda
 
--w: Path to the Wopfile
+Go on with the VTAM installation as described here `Linux`_
 
--D: Path to the database
+.. note::
+    You can access your files Windows system from the */mnt* directory of your WSL. 
+    For example, execute the following command from the Ubuntu terminal to copy the *file.txt* from *c:\temp\file.txt* to your current directory in WSL:
 
--v: Set verbosity level
+.. code-block:: bash
 
--p: Write logs in standard output
+    cp /mnt/c/temp/file.txt ./file.txt
 
--F: Force the execution of the workflow, without checking for previous executions
+.. _example_installation:
 
-In case of problem or for more options write: wopmars -h
+Test your VTAM installation
+-------------------------------------------------
 
+You can verify the installation of vtam by looking at the VTAM version
 
+.. code-block:: bash
 
+    cd vtam
+    conda activate vtam
+    vtam --version
+    
+The **vtam example** command downloads the example files and create a file structure.
+A snakemake command will run the whole pipeline. If you get through without an error message your VTAM installation is fully functional.
 
+.. code-block:: bash
 
-
+    vtam example
+    cd example
+    snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_optimized_taxa
 
