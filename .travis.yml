@@ -4,6 +4,8 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
+notifications:
+  email: false
 before_install:
   - python -m pip install --upgrade pip
   - echo -e "machine github.com\n  login $GITHUB_TOKEN" > ~/.netrc
