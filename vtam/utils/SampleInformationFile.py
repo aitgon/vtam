@@ -222,7 +222,7 @@ class SampleInformationFile:
                 return self.tsv_path  # return the tsv_path
             else:
                 raise argparse.ArgumentTypeError(
-                    "The combinations of columns 'run, marker, sample, replicate' in the file '{}' must be unique."
+                    "The combinations of the columns 'run, marker, sample, replicate' must be unique in this file '{}'."
                     " Please fix it.".format(self.tsv_path))
         else:
             raise argparse.ArgumentTypeError(

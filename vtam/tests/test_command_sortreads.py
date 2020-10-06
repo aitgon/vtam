@@ -10,15 +10,15 @@ class TestCommandSortReads(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.outdir_path = os.path.join(PathManager.get_test_path(), 'outdir')
+        cls.test_path = PathManager.get_test_path()
+        cls.outdir_path = os.path.join(cls.test_path, 'outdir')
 
     def setUp(self):
-        self.fastainfo = os.path.join(os.path.dirname(__file__), "fastainfo.tsv")
-        self.fastadir = os.path.join(os.path.dirname(__file__), "merged")
-
+        
+        self.fastainfo = os.path.join(self.test_path, "test_files", "mergedinfo.tsv")
+        self.fastadir = os.path.join(self.test_path, "test_files", "merged")
         self.sorted_dir = os.path.join(self.outdir_path, "sorted")
-
-        self.sorted_dir_bak = os.path.join(self.outdir_path, 'sorted')
+        self.sorted_dir_bak = os.path.join(self.test_path, "test_files", "sorted")
 
     def test_01(self):
 
