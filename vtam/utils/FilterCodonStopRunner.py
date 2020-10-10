@@ -21,7 +21,7 @@ class FilterCodonStopRunner(object):
 
             variant_has_stop_codon_df = self.annotate_stop_codon_count(
                 variant_df, genetic_code)
-            variants_with_stop_codons_list = variant_has_stop_codon_df.id[variant_has_stop_codon_df['has_stop_codon'] == 1].tolist(
+            variants_with_stop_codons_list = variant_has_stop_codon_df.index[variant_has_stop_codon_df['has_stop_codon'] == 1].tolist(
             )
 
             variant_read_count_delete_df = self.variant_read_count_df.copy()
@@ -46,22 +46,17 @@ class FilterCodonStopRunner(object):
         variant_has_stop_codon_df['has_stop_codon'] = 0
 
         for row in variant_df.iterrows():
-            id = row[1].id
+            id = row[0]
             sequence = row[1].sequence
             #
-            if self.seq_has_codon_stop(
-                    sequence=sequence,
-                    frame=1,
-                    genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
-                                              id, 'has_stop_codon'] = 1
-            elif self.seq_has_codon_stop(sequence=sequence, frame=2, genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
-                                              id, 'has_stop_codon'] = 1
-            elif self.seq_has_codon_stop(sequence=sequence, frame=3, genetic_code=genetic_code):
-                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.id ==
-                                              id, 'has_stop_codon'] = 1
+            variant_has_stop_codon_frame1 = self.seq_has_codon_stop(sequence=sequence, frame=1, genetic_code=genetic_code)
+            variant_has_stop_codon_frame2 = self.seq_has_codon_stop(sequence=sequence, frame=2, genetic_code=genetic_code)
+            variant_has_stop_codon_frame3 = self.seq_has_codon_stop(sequence=sequence, frame=3, genetic_code=genetic_code)
 
+            # Check if all frames have stop codons
+            if variant_has_stop_codon_frame1 and variant_has_stop_codon_frame2 and variant_has_stop_codon_frame3:
+                variant_has_stop_codon_df.loc[variant_has_stop_codon_df.index ==
+                                              id, 'has_stop_codon'] = 1
         return variant_has_stop_codon_df
 
     def seq_has_codon_stop(self, sequence, frame, genetic_code):
