@@ -90,11 +90,14 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as fin:
 
 CLASSIFIERS = """\
 Development Status :: 4 - Beta
+Environment :: Console
 Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
 Programming Language :: Python
 Programming Language :: Python :: 3
+Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
 Programming Language :: Python :: 3 :: Only
 Topic :: Scientific/Engineering :: Bio-Informatics
 Topic :: Software Development
@@ -111,22 +114,26 @@ def data_files_to_list(directory):
     return paths
 
 data_file_list = data_files_to_list('vtam/data')
-data_test_list = data_files_to_list('vtam/tests')
+# data_test_list = data_files_to_list('vtam/tests')
 
 setup(
     name='vtam',
     version=get_version("vtam/__init__.py"),
-    description="VTAM - Validation and Taxonomic Assignation of Metabarcoding Data",
+    description="VTAM - Validation and Taxonomic Assignation of Metabarcoding Data "
+                "is a metabarcoding pipeline. The analyses start from high throughput "
+                "sequencing (HTS) data of amplicons of one or several metabarcoding "
+                "markers and produce an amplicon sequence variant (ASV) "
+                "table of validated variants assigned to taxonomic groups.",
     author=author,
     author_email=email,
-    url="https://vtam.readthedocs.io/en/latest/",
+    url="https://vtam.readthedocs.io",
     license=license,
     long_description=long_description,
     classifiers=[_f for _f in CLASSIFIERS.split('\n') if _f],
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
     package_data={'vtam': data_file_list},
-    install_requires=['jinja2', 'pyyaml', 'sqlalchemy', 'biopython', 'pandas', 'progressbar', 'termcolor', 'wopmars'],
+    install_requires=['biopython', 'cutadapt', 'jinja2', 'pandas', 'progressbar', 'pyyaml', 'sqlalchemy', 'snakemake', 'termcolor', 'wopmars'],
     entry_points={
         'console_scripts': ['vtam=vtam:main']
     },

@@ -1,6 +1,8 @@
 import multiprocessing
 import yaml
 
+from vtam import __version__
+
 ####################################################################################################
 #
 # Default VTAM parameters_numerical_default
@@ -161,11 +163,27 @@ rank_hierarchy_asv_table = [
     'genus',
     'species']
 
-# public_data_dir = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/"
-taxonomy_tsv_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
-coi_blast_db_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db/coi_blast_db.tar.gz"
-fastq_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
-sorted_tar_gz_url = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/tests/sorted.tar.gz"
+####################################################################################################
+#
+# External data
+#
+####################################################################################################
+
+fastq_tar_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/fastq.tar.gz".format(__version__)
+fastq_tar_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/fastq.tar.gz"
+fastq_tar_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
+
+coi_blast_db_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/coi_blast_db.tar.gz".format(__version__)
+coi_blast_db_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/coi_blast_db.tar.gz".format(__version__)
+coi_blast_db_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz".format(__version__)
+
+taxonomy_tsv_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/taxonomy.tsv.gz".format(__version__)
+taxonomy_tsv_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/taxonomy.tsv.gz"
+taxonomy_tsv_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv.gz"
+
+sorted_tar_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/sorted.tar.gz".format(__version__)
+sorted_tar_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/sorted.tar.gz"
+sorted_tar_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/sorted.tar.gz"
 
 identity_list = [100, 99, 97, 95, 90, 85, 80, 75, 70]
 

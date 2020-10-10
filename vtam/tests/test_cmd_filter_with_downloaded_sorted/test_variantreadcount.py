@@ -6,15 +6,14 @@ import subprocess
 import sys
 import tarfile
 import unittest
-import urllib
+import urllib.request
 
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import sorted_tar_gz_url
-from urllib import request
+from vtam.utils.constants import sorted_tar_gz_url1, sorted_tar_gz_url2, sorted_tar_gz_url3
+from vtam.utils.MyProgressBar import MyProgressBar
 
-@unittest.skipIf(request.urlopen(sorted_tar_gz_url).getcode() != 200,
-                 "This test requires an internet connection!")
+
 class TestCmdVariantReadCount(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
@@ -30,6 +29,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
         pip_install_vtam_for_tests()
 
+        cls.package_path = os.path.join(PathManager.get_package_path())
         cls.test_path = os.path.join(PathManager.get_test_path())
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
@@ -38,13 +38,20 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
         ############################################################################################
         #
-        # Download sorted reads dataset
+        # Download sorted reads dataset (Updated Oct 10, 2020)
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(cls.outdir_path, "sorted.tar.gz")
-        if not os.path.isfile(sorted_tar_path):
-            urllib.request.urlretrieve(sorted_tar_gz_url, sorted_tar_path)
+        sorted_tar_path = os.path.join(cls.package_path, "..", "data", "sorted.tar.gz")
+        # Test first in local dir, otherwise in the remote URLs
+        if not os.path.isfile(sorted_tar_path) or pathlib.Path(sorted_tar_path).stat().st_size < 1000000:
+            try:
+                urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, MyProgressBar())
+            except Exception:
+                try:
+                    urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, MyProgressBar())
+                except Exception:
+                    urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, MyProgressBar())
         tar = tarfile.open(sorted_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_data_path)
         tar.close()

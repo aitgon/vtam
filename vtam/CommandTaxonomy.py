@@ -14,7 +14,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.constants import taxonomy_tsv_gz_url
+from vtam.utils.constants import taxonomy_tsv_gz_url1, taxonomy_tsv_gz_url2, taxonomy_tsv_gz_url3
 
 
 class CommandTaxonomy(object):
@@ -38,6 +38,9 @@ class CommandTaxonomy(object):
             parents=True, exist_ok=True)
 
         self.tempdir = PathManager.instance().get_tempdir()
+
+        package_path = os.path.join(PathManager.get_package_path())
+        self.taxonomy_tsv_gz_path = os.path.join(package_path, "..", "data", "taxonomy.tsv.gz")
 
     def __download_ncbi_taxonomy_dump(self):
         # Download files
@@ -122,7 +125,7 @@ class CommandTaxonomy(object):
 
     def download_precomputed_taxonomy(self):
         """
-        Copy the online TSV taxonomy DB at "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/taxonomy.tsv"
+        Copy the online TSV taxonomy DB
         to the pathname output
         """
         Logger.instance().debug(
@@ -131,12 +134,43 @@ class CommandTaxonomy(object):
 
         taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
 
-        if not os.path.isfile(self.taxonomy_tsv_path):
-            Logger.instance().info(self.taxonomy_tsv_path)
-            urllib.request.urlretrieve(
-                taxonomy_tsv_gz_url, taxonomy_tsv_gz_path, MyProgressBar())
+        # if not os.path.isfile(self.taxonomy_tsv_path):
+        #     Logger.instance().info(self.taxonomy_tsv_path)
+        #     try:
+        #         urllib.request.urlretrieve(
+        #             taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, MyProgressBar())
+        #     except:
+        #         urllib.request.urlretrieve(
+        #             taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path, MyProgressBar())
+        #
+        #
+        #     with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
+        #         with open(self.taxonomy_tsv_path, 'wb') as fout:
+        #             shutil.copyfileobj(fin, fout)
+        #     try:
+        #         pathlib.Path(taxonomy_tsv_gz_path).unlink()
+        #     except FileNotFoundError:
+        #         pass
 
-            with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
+        ############################################################################################
+        #
+        # Download sorted reads dataset
+        #
+        ############################################################################################
+
+        taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
+        # Test first in local dir, otherwise in the remote URLs
+        if not os.path.isfile(self.taxonomy_tsv_path) or pathlib.Path(self.taxonomy_tsv_path).stat().st_size < 1000000:
+            try:
+                urllib.request.urlretrieve(taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, MyProgressBar())
+            except Exception:
+                try:
+                    urllib.request.urlretrieve(taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path,
+                                               MyProgressBar())
+                except Exception:
+                    urllib.request.urlretrieve(taxonomy_tsv_gz_url3, taxonomy_tsv_gz_path,
+                                               MyProgressBar())
+            with gzip.open(taxonomy_tsv_gz_path, 'rb') as fin:
                 with open(self.taxonomy_tsv_path, 'wb') as fout:
                     shutil.copyfileobj(fin, fout)
             try:

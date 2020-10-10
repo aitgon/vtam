@@ -1,3 +1,4 @@
 include Makefile environment.yml environment-dev.yml requirements.txt
 graft vtam/data
 graft vtam/data/example
+prune vtam/tests/
