@@ -1,5 +1,6 @@
 import filecmp
 import os
+import pathlib
 import shlex
 import shutil
 import sys
@@ -27,6 +28,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         cls.args = {}
         cls.args['taxonomy'] = os.path.join(cls.outdir_path, "taxonomy.tsv")
         cls.args['coi_blast_db_dir'] = os.path.join(cls.outdir_path, "coi_blast_db_dir")
+        pathlib.Path(cls.args['coi_blast_db_dir']).mkdir(exist_ok=True, parents=True)
 
         ############################################################################################
         #
@@ -92,10 +94,6 @@ class TestCommandTaxAssign(unittest.TestCase):
             'coi_blast_db_20191211.nsi'})
 
     def test_03_taxassign(self):
-
-        # CommandTaxAssign.main(db=self.db_path, mode='unassigned', asvtable_tsv=self.asvtable,
-        #                       output=self.asvtable_taxa, taxonomy_tsv=self.taxonomy_tsv,
-        #                       blastdb_dir_path=self.coi_blast_db_dir, blastdbname_str='coi_blast_db')
 
         ############################################################################################
         #

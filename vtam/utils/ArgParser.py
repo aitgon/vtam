@@ -12,7 +12,7 @@ from vtam.utils.ParamsFile import ParamsFile
 from vtam.utils.SampleInformationFile import SampleInformationFile
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
-    coi_blast_db_gz_url
+    coi_blast_db_gz_url1
 import vtam
 
 
@@ -575,7 +575,7 @@ class ArgParser:
             dest='blastdbname',
             action='store',
             help="cytochrome C oxidase subunit I (COI) Blast database name among these current possibilities: coi_blast_db, coi_blast_db_20191211, coi_blast_db_20200420. Other versions if available can be found here: {}".format(
-                os.path.dirname(coi_blast_db_gz_url)),
+                os.path.dirname(coi_blast_db_gz_url1)),
             required=False,
             default='coi_blast_db',
             type=lambda x: CommandBlastCOI(x).argparse_checker_blast_coi_blastdbname(),

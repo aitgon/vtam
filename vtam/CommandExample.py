@@ -7,7 +7,7 @@ import urllib
 
 from vtam.utils.PathManager import PathManager
 from urllib import request
-from vtam.utils.constants import fastq_latest_tar_gz_url, fastq_tar_gz_url
+from vtam.utils.constants import fastq_tar_gz_url2, fastq_tar_gz_url1
 from vtam.utils.MyProgressBar import MyProgressBar
 
 
@@ -28,7 +28,7 @@ class CommandExample(object):
         # fastq_tar_path = os.path.join(outdir, "fastq.tar.gz")
         # if not os.path.isfile(fastq_tar_path):
         #     Logger.instance().info(fastq_tar_path)
-        #     urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path, MyProgressBar())
+        #     urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, MyProgressBar())
         # tar = tarfile.open(fastq_tar_path, "r:gz")
         # tar.extractall(path=outdir)
         # tar.close()
@@ -37,9 +37,9 @@ class CommandExample(object):
         if not os.path.isfile(fastq_tar_path):  # in the distribution
             fastq_tar_path = os.path.join(outdir, "fastq.tar.gz")
             try:
-                urllib.request.urlretrieve(fastq_tar_gz_url, fastq_tar_path, MyProgressBar())
+                urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, MyProgressBar())
             except:
-                urllib.request.urlretrieve(fastq_latest_tar_gz_url, fastq_tar_path, MyProgressBar())
+                urllib.request.urlretrieve(fastq_tar_gz_url2, fastq_tar_path, MyProgressBar())
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=outdir)
         tar.close()
