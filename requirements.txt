@@ -7,4 +7,4 @@ pyyaml
 sqlalchemy
 snakemake
 termcolor
-wopmars>=0.1.3
+wopmars>=0.1.4

@@ -12,4 +12,4 @@ sphinx_rtd_theme
 sqlalchemy
 termcolor
 twine
-wopmars>=0.1.3
+wopmars>=0.1.4
