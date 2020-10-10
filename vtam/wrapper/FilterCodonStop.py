@@ -67,7 +67,7 @@ class FilterCodonStop(ToolWrapper):
         #
         # Options
         genetic_code = int(self.option("genetic_code"))
-        skip_filter_codon_stop = bool(int(self.option("genetic_code")))
+        skip_filter_codon_stop = bool(int(self.option("skip_filter_codon_stop")))
         #
         # Output table models
         output_filter_codon_stop_model = self.output_table(

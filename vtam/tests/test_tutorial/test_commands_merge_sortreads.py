@@ -9,6 +9,10 @@ import subprocess
 import sys
 import tarfile
 import unittest
+import urllib.request
+
+from vtam.utils.constants import fastq_tar_gz_url1, fastq_tar_gz_url2, fastq_tar_gz_url3
+from vtam.utils.MyProgressBar import MyProgressBar
 
 
 class TestTutorialCommands(unittest.TestCase):
@@ -33,6 +37,15 @@ class TestTutorialCommands(unittest.TestCase):
         ############################################################################################
 
         fastq_tar_path = os.path.join(cls.package_path, "..", "data", "fastq.tar.gz")
+        # Test first in local dir, otherwise in the remote URLs
+        if not os.path.isfile(fastq_tar_path) or pathlib.Path(fastq_tar_path).stat().st_size < 1000000:
+            try:
+                urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, MyProgressBar())
+            except Exception:
+                try:
+                    urllib.request.urlretrieve(fastq_tar_gz_url2, fastq_tar_path, MyProgressBar())
+                except Exception:
+                    urllib.request.urlretrieve(fastq_tar_gz_url3, fastq_tar_path, MyProgressBar())
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()
