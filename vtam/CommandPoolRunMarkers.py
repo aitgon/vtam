@@ -145,6 +145,7 @@ class CommandPoolRunMarkers(object):
         agg_dic = {}
         for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
             agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
+
         for k in self.sample_names:
             agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
@@ -218,11 +219,11 @@ class CommandPoolRunMarkers(object):
         sample_list = run_marker_file_obj.get_sample_ids(engine)
         sample_list = NameIdConverter(id_name_or_sequence_list=sample_list, engine=engine).to_names(Sample)
 
-        #######################################################################
+        ############################################################################################
         #
         # Compute all variant_read_count_input_df required for ASV table
         #
-        #######################################################################
+        ############################################################################################
 
         variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
             engine=engine, variant_read_count_like_model=FilterCodonStop)
@@ -232,8 +233,65 @@ class CommandPoolRunMarkers(object):
         asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)
 
-        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_df,
-            run_marker_df=run_marker_df)
+        ############################################################################################
+        #
+        # Prefix biosample columns with run name for same biosample name in different runs
+        #
+        ############################################################################################
+
+        asv_table_2_df = asv_table_df.copy()
+        asv_table_2_df_col_list = asv_table_2_df.columns.tolist()
+
+        for biosample_name in asv_table_df.iloc[:, 5:-4].columns.tolist():
+
+            run_name_list = asv_table_df[['run_name', biosample_name]]['run_name'].unique().tolist()
+
+            #  run-biosample not unique
+            if len(run_name_list) > 1:
+
+                for run_name in run_name_list:
+                    # asv_table_2_df[run_name + "," + biosample_name] = 0
+                    asv_table_i_df = asv_table_df.loc[asv_table_df.run_name == run_name][
+                        ['run_name', 'marker_name', 'variant_id', biosample_name]]
+                    asv_table_i_df.rename({biosample_name: run_name + ',' + biosample_name}, axis=1,
+                                          inplace=True)
+                    asv_table_2_df = asv_table_2_df.merge(asv_table_i_df, on=['run_name', 'marker_name', 'variant_id'], how='left')
+
+                    biosample_name_ix = asv_table_2_df_col_list.index(biosample_name)
+                    asv_table_2_df_col_list.insert(biosample_name_ix, run_name + ',' + biosample_name)
+
+                asv_table_2_df_col_list.remove(biosample_name)
+
+        asv_table_2_df = asv_table_2_df[asv_table_2_df_col_list]
+        asv_table_2_df.fillna(0, inplace=True)
+
+        ############################################################################################
+        #
+        # Reorder columns
+        #
+        ############################################################################################
+
+        column_list = asv_table_2_df.columns.tolist()
+        column_list.remove("clusterid")
+        column_list.remove("clustersize")
+        column_list.remove("chimera_borderline")
+        column_list.remove("sequence")
+        column_list = column_list + ['clusterid', 'clustersize', 'chimera_borderline', 'sequence']
+
+        column_list.remove("sequence_length")
+        column_list.remove("read_count")
+        column_list.insert(3, "sequence_length")
+        column_list.insert(4, "read_count")
+
+        asv_table_2_df = asv_table_2_df[column_list]
+
+        ############################################################################################
+        #
+        # Pool markers
+        #
+        ############################################################################################
+
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_2_df, run_marker_df=run_marker_df)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
 
         #######################################################################

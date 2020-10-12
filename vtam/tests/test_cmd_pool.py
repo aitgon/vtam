@@ -83,7 +83,7 @@ class TestCommandPool(unittest.TestCase):
     def test_command_pool(self):
 
         cmd = "vtam pool --runmarker {runmarker} --db {db} --asvtable {asvtable_pooled_default}".format(**self.args)
-        import pdb; pdb.set_trace()
+
         if sys.platform.startswith("win"):
             args = cmd
         else:
