@@ -19,6 +19,7 @@ class CommandExample(object):
     def main(outdir):
 
         package_path = PathManager.get_package_path()
+        pathlib.Path(outdir).mkdir(parents=True, exist_ok=True)
 
         #######################################################################
         #
