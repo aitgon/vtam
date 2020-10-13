@@ -1,6 +1,0 @@
-data/coi_blast_db.tar.gz filter=lfs diff=lfs merge=lfs -text
-data/coi_blast_db_20191211.tar.gz filter=lfs diff=lfs merge=lfs -text
-data/coi_blast_db_20200420.tar.gz filter=lfs diff=lfs merge=lfs -text
-data/fastq.tar.gz filter=lfs diff=lfs merge=lfs -text
-data/sorted.tar.gz filter=lfs diff=lfs merge=lfs -text
-data/taxonomy.tsv.gz filter=lfs diff=lfs merge=lfs -text
