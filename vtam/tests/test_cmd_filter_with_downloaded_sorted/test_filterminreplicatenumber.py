@@ -31,9 +31,10 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         self.package_path = os.path.join(PathManager.get_package_path())
         self.test_path = os.path.join(PathManager.get_test_path())
         self.outdir_path = os.path.join(self.test_path, 'outdir')
+        self.outdir_data_path = os.path.join(self.outdir_path, 'data')
         # during development of the test, this prevents errors
         shutil.rmtree(self.outdir_path, ignore_errors=True)
-        pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.outdir_data_path).mkdir(parents=True, exist_ok=True)
         os.environ['VTAM_LOG_VERBOSITY'] = str(10)
 
         ############################################################################################
@@ -42,7 +43,7 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(self.package_path, "..", "data", "sorted.tar.gz")
+        sorted_tar_path = os.path.join(self.outdir_data_path, "sorted.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(sorted_tar_path) or pathlib.Path(sorted_tar_path).stat().st_size < 1000000:
             try:

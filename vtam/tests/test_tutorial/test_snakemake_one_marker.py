@@ -34,8 +34,9 @@ class TestTutorialSnakemake(unittest.TestCase):
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
+        cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
-        pathlib.Path(cls.outdir_path).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(cls.outdir_data_path).mkdir(parents=True, exist_ok=True)
 
         cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data.yml")
 
@@ -55,7 +56,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         #
         ############################################################################################
 
-        fastq_tar_path = os.path.join(cls.package_path, "..", "data", "fastq.tar.gz")
+        fastq_tar_path = os.path.join(cls.outdir_data_path, "fastq.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(fastq_tar_path) or pathlib.Path(fastq_tar_path).stat().st_size < 1000000:
             try:

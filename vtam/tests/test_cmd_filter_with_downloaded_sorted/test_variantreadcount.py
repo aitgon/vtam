@@ -42,7 +42,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        sorted_tar_path = os.path.join(cls.package_path, "..", "data", "sorted.tar.gz")
+        sorted_tar_path = os.path.join(cls.outdir_data_path, "sorted.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(sorted_tar_path) or pathlib.Path(sorted_tar_path).stat().st_size < 1000000:
             try:
