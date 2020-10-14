@@ -1,3 +1,8 @@
+**Changes In Version 0.1.20-rc.1 (Oct 13, 2020)**
+
+- ENH Keep separated samples from different run in pooled asv table
+- BUG
+
 **Changes In Version 0.1.19 (Oct 10, 2020)**
 
 - BUG fixed filter codon stop and wrapper tests
