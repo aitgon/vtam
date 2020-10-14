@@ -637,7 +637,7 @@ Earlier versions can be downloaded by specifying the name of database:
 
     vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211
 
-The available versions are found here: `<https://github.com/aitgon/vtam/releases/tag/data>`_ 
+The available versions are found here: `<https://github.com/aitgon/vtam/releases/latest>`_
 
 
 Custom database
