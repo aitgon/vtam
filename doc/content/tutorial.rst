@@ -40,7 +40,7 @@ You can download these FASTQ files from here with this command:
 
 .. code-block:: bash
 
-    wget -nc https://github.com/aitgon/vtam/releases/download/data/fastq.tar.gz -O fastq.tar.gz
+    wget -nc https://github.com/aitgon/vtam/releases/latest/download/fastq.tar.gz -O fastq.tar.gz
     tar zxvf fastq.tar.gz
     rm fastq.tar.gz
 
@@ -683,7 +683,7 @@ To setup the pipeline we need the *fastqinfo_mfzr.tsv* file as before and a conf
     blastdbname: 'coi_blast_db_20200420'
     taxonomy: 'vtam_db/taxonomy.tsv'
 
-Make sure the *snakefile.yml* is in the current working directory. The resulting file tree looks like this:
+Make sure the :download:`snakemake.yml <../../vtam/data/snakefile.yml>` is in the current working directory. The resulting file tree looks like this:
 
 .. code-block:: bash
 
