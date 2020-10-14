@@ -65,7 +65,7 @@ The simplest use of vtam is to analyze one sequencing run (run1) and one marker 
 The first step is to :ref:`merge <merge_glossary>` the FASTQ files and transform them into fasta files. It can be skipped, if you have single end reads, or your paired sequences have already been merged and transformed into fasta files.
 
 Create a TSV (tab-separated file), with a header and 10 columns with all the information per FASTQ file pair. 
-We will call it *fastqinfo_mfzr.tsv* in this tutorial and you will find it in the VTAM *doc/data* directory. This TSV file will determine, which file pairs should be merged. These files should be all in the *fastq* directory. This directory can contain other files as well, but they will not be analyzed.
+We will call it *fastqinfo_mfzr.tsv* in this tutorial and you can download it here: :download:`fastqinfo_mfzr.tsv <../../vtam/data/example/fastqinfo_mfzr.tsv>`. This TSV file will determine, which file pairs should be merged. These files should be all in the *fastq* directory. This directory can contain other files as well, but they will not be analyzed.
 
 The following columns are required in the *fastqinfo_mfzr.tsv*:
 
@@ -300,12 +300,12 @@ optimize: Compute optimal filter parameters based on mock and negative samples
 The **optimize** command helps users choose optimal parameters for filtering that are specifically adjusted to the dataset. 
 This optimization is based on mock samples and negative controls.
 
-Users should prepare a TSV file (*known_occurences_mfzr.tsv*) with occurrences to be kept in the results 
+Users should prepare a TSV file (*known_occurrences_mfzr.tsv*) with occurrences to be kept in the results
 (typically expected variants of the mock samples) and occurrences to be clearly deleted 
 (typically all occurrences in negative controls, and unexpected occurrences in the mock samples). 
 For details see the :ref:`Reference section <optimize_reference>`.
 
-The example TSV file for the known occurrences of the MFZR marker can be found in the *doc/data* directory.
+The example TSV file for the known occurrences of the MFZR marker can be found here : :download:`known_occurrences_mfzr.tsv <../../vtam/data/example/known_occurrences_mfzr.tsv>`.
 
 The first lines of this file look like this:
 
@@ -406,7 +406,7 @@ that already has all the variant counts.
 Make a *params_mfzr.yml* file that contains the parameter names and values that differ from the default settings. 
 
 
-The *params_mfzr.yml* can be found in the *doc/data* directory and it looks like this:
+The *params_mfzr.yml* can be found here: :download:`params_mfzr.yml <../../vtam/data/example/params_mfzr.yml>` and it looks like this:
 
 .. code-block:: bash
 
