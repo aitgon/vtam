@@ -250,15 +250,18 @@ class CommandPoolRunMarkers(object):
             if len(run_name_list) > 1:
 
                 for run_name in run_name_list:
+                    colname = run_name + ',' + biosample_name
                     # asv_table_2_df[run_name + "," + biosample_name] = 0
                     asv_table_i_df = asv_table_df.loc[asv_table_df.run_name == run_name][
                         ['run_name', 'marker_name', 'variant_id', biosample_name]]
-                    asv_table_i_df.rename({biosample_name: run_name + ',' + biosample_name}, axis=1,
+                    asv_table_i_df.rename({biosample_name: colname}, axis=1,
                                           inplace=True)
                     asv_table_2_df = asv_table_2_df.merge(asv_table_i_df, on=['run_name', 'marker_name', 'variant_id'], how='left')
+                    asv_table_2_df[run_name + ',' + biosample_name].fillna(0, inplace=True)  # fillna
+                    asv_table_2_df[run_name + ',' + biosample_name] = asv_table_2_df[colname].astype('int')  # convert to int
 
                     biosample_name_ix = asv_table_2_df_col_list.index(biosample_name)
-                    asv_table_2_df_col_list.insert(biosample_name_ix, run_name + ',' + biosample_name)
+                    asv_table_2_df_col_list.insert(biosample_name_ix, colname)
 
                 asv_table_2_df_col_list.remove(biosample_name)
 
