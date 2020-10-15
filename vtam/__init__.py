@@ -1,4 +1,4 @@
-__version__ = "0.1.20-rc.2"
+__version__ = "0.1.20"
 
 import os
 import pathlib
