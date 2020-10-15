@@ -1,9 +1,6 @@
-**Changes In Version 0.1.20-rc.2 (Oct 14, 2020)**
+**Changes In Version 0.1.20 (Oct 15, 2020)**
 
 - DOC
-
-**Changes In Version 0.1.20-rc.1 (Oct 13, 2020)**
-
 - ENH Keep separated samples from different run in pooled asv table
 - BUG
 
