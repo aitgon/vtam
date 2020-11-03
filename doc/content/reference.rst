@@ -567,14 +567,14 @@ A precomputed file can be downloaded using this command. This version in not nec
 
 .. code-block:: bash
 
-    vtam taxonomy -output taxonomy.tsv --precomputed
+    vtam taxonomy --output taxonomy.tsv --precomputed
 
 Alternatively, the command will download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI.
 This is strongly recommended if you are using a recently downloaded version of the ncbi_nt:
 
 .. code-block:: bash
 
-    vtam taxonomy -output taxonomy.tsv
+    vtam taxonomy --output taxonomy.tsv
 
 This step can take several minutes. Make sure you have a steady internet connection. 
 
