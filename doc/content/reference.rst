@@ -563,13 +563,14 @@ These are the columns of the file:
     - name_txt: String with the scientific name.
     - old_tax_id: Optional. Integer with a previous taxonomic ID that will be tried if an entry was not found in the tax_id column.
 
-A precomputed file can be downloaded using this command. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it is likely to work:
+A precomputed file can be downloaded using this command. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it works with our custom database:
 
 .. code-block:: bash
 
     vtam taxonomy -output taxonomy.tsv --precomputed
 
-Alternatively, the command will download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI:
+Alternatively, the command will download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI.
+This is strongly recommended if you are using a recently downloaded version of the ncbi_nt:
 
 .. code-block:: bash
 
