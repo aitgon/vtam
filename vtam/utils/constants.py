@@ -174,8 +174,8 @@ fastq_tar_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/fas
 # fastq_tar_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/fastq.tar.gz"
 fastq_tar_gz_url3 = "https://osf.io/9mvzw/download"
 
-coi_blast_db_gz_url1 = "https://Xgithub.com/aitgon/vtam/releases/download/{}/coi_blast_db.tar.gz".format(__version__)
-coi_blast_db_gz_url2 = "https://Xgithub.com/aitgon/vtam/releases/latest/download/coi_blast_db.tar.gz"
+coi_blast_db_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/coi_blast_db.tar.gz".format(__version__)
+coi_blast_db_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/coi_blast_db.tar.gz"
 # coi_blast_db_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz"
 def get_coi_blast_db_gz_url3(blastdbname):
     if blastdbname == "coi_blast_db_20191211":
