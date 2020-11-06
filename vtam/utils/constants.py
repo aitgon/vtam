@@ -178,9 +178,9 @@ coi_blast_db_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/coi_
 coi_blast_db_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/coi_blast_db.tar.gz"
 # coi_blast_db_gz_url3 = "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz"
 def get_coi_blast_db_gz_url3(blastdbname):
-    if blastdbname == "coi_blast_db_20191211":
-        coi_blast_db_gz_url3 = "https://osf.io/3zjkm/download"
-    elif blastdbname == "coi_blast_db_20200420":
+    # if blastdbname == "coi_blast_db_20191211":
+    #     coi_blast_db_gz_url3 = "https://osf.io/3zjkm/download"
+    if blastdbname == "coi_blast_db_20200420":
         coi_blast_db_gz_url3 = "https://osf.io/kw9ms/download"
     elif blastdbname == "coi_blast_db":
         coi_blast_db_gz_url3 = "https://osf.io/45zfd/download"

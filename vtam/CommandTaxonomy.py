@@ -132,26 +132,6 @@ class CommandTaxonomy(object):
             "file: {}; line: {}; Downloading taxonomy tsv".format(
                 __file__, inspect.currentframe().f_lineno, ))
 
-        taxonomy_tsv_gz_path = '{}.gz'.format(self.taxonomy_tsv_path)
-
-        # if not os.path.isfile(self.taxonomy_tsv_path):
-        #     Logger.instance().info(self.taxonomy_tsv_path)
-        #     try:
-        #         urllib.request.urlretrieve(
-        #             taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, MyProgressBar())
-        #     except:
-        #         urllib.request.urlretrieve(
-        #             taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path, MyProgressBar())
-        #
-        #
-        #     with gzip.open('{}.gz'.format(self.taxonomy_tsv_path), 'rb') as fin:
-        #         with open(self.taxonomy_tsv_path, 'wb') as fout:
-        #             shutil.copyfileobj(fin, fout)
-        #     try:
-        #         pathlib.Path(taxonomy_tsv_gz_path).unlink()
-        #     except FileNotFoundError:
-        #         pass
-
         ############################################################################################
         #
         # Download sorted reads dataset

@@ -636,7 +636,7 @@ Earlier versions can be downloaded by specifying the name of database:
 
 .. code-block:: bash
 
-    vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20191211
+    vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420
 
 The available versions are found here: `<https://github.com/aitgon/vtam/releases/latest>`_
 
