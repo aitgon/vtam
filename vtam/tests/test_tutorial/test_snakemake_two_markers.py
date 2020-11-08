@@ -12,7 +12,9 @@ import urllib.request
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import fastq_tar_gz_url1, fastq_tar_gz_url2, fastq_tar_gz_url3
-from vtam.utils.MyProgressBar import MyProgressBar
+# from vtam.utils.MyProgressBar import MyProgressBar
+from tqdm import tqdm
+from vtam.utils import tqdm_hook
 
 
 @unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
@@ -54,12 +56,21 @@ class TestTutorialSnakemake(unittest.TestCase):
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(fastq_tar_path) or pathlib.Path(fastq_tar_path).stat().st_size < 1000000:
             try:
-                urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, MyProgressBar())
+                # urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, MyProgressBar())
+                with tqdm(...) as t:
+                    t.set_description(os.path.basename(fastq_tar_path))
+                    urllib.request.urlretrieve(fastq_tar_gz_url1, fastq_tar_path, reporthook=tqdm_hook(t))
             except Exception:
                 try:
-                    urllib.request.urlretrieve(fastq_tar_gz_url2, fastq_tar_path, MyProgressBar())
+                    # urllib.request.urlretrieve(fastq_tar_gz_url2, fastq_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(fastq_tar_path))
+                        urllib.request.urlretrieve(fastq_tar_gz_url2, fastq_tar_path, reporthook=tqdm_hook(t))
                 except Exception:
-                    urllib.request.urlretrieve(fastq_tar_gz_url3, fastq_tar_path, MyProgressBar())
+                    # urllib.request.urlretrieve(fastq_tar_gz_url3, fastq_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(fastq_tar_path))
+                        urllib.request.urlretrieve(fastq_tar_gz_url3, fastq_tar_path, reporthook=tqdm_hook(t))
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()

@@ -10,11 +10,14 @@ import urllib
 import urllib.request
 
 from sqlalchemy.exc import OperationalError
+
+from vtam.utils import tqdm_hook
 from vtam.utils.Logger import Logger
-from vtam.utils.MyProgressBar import MyProgressBar
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.constants import taxonomy_tsv_gz_url1, taxonomy_tsv_gz_url2, taxonomy_tsv_gz_url3
+from tqdm import tqdm
+# from vtam.utils.MyProgressBar import MyProgressBar
 
 
 class CommandTaxonomy(object):
@@ -51,7 +54,11 @@ class CommandTaxonomy(object):
             "file: {}; line: {}; Downloading NCBI taxonomy dump".format(
                 __file__, inspect.currentframe().f_lineno))
         if not os.path.isfile(new_taxdump_path):
-            urllib.request.urlretrieve(remotefile, new_taxdump_path, MyProgressBar())
+            Logger.instance().info("Downloading NCBI taxonomy dump")
+            # urllib.request.urlretrieve(remotefile, new_taxdump_path, MyProgressBar())
+            with tqdm(...) as t:
+                t.set_description(os.path.basename(new_taxdump_path))
+                urllib.request.urlretrieve(remotefile, new_taxdump_path, reporthook=tqdm_hook(t))
         return new_taxdump_path
 
     def create_denovo_from_ncbi(self):
@@ -142,14 +149,23 @@ class CommandTaxonomy(object):
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(self.taxonomy_tsv_path) or pathlib.Path(self.taxonomy_tsv_path).stat().st_size < 1000000:
             try:
-                urllib.request.urlretrieve(taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, MyProgressBar())
+                # urllib.request.urlretrieve(taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, MyProgressBar())
+                with tqdm(...) as t:
+                    t.set_description(os.path.basename(taxonomy_tsv_gz_url1))
+                    urllib.request.urlretrieve(taxonomy_tsv_gz_url1, taxonomy_tsv_gz_path, reporthook=tqdm_hook(t))
             except Exception:
                 try:
-                    urllib.request.urlretrieve(taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path,
-                                               MyProgressBar())
+                    # urllib.request.urlretrieve(taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path,
+                    #                            MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(taxonomy_tsv_gz_url2))
+                        urllib.request.urlretrieve(taxonomy_tsv_gz_url2, taxonomy_tsv_gz_path, reporthook=tqdm_hook(t))
                 except Exception:
-                    urllib.request.urlretrieve(taxonomy_tsv_gz_url3, taxonomy_tsv_gz_path,
-                                               MyProgressBar())
+                    # urllib.request.urlretrieve(taxonomy_tsv_gz_url3, taxonomy_tsv_gz_path,
+                    #                            MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(taxonomy_tsv_gz_url1))
+                        urllib.request.urlretrieve(taxonomy_tsv_gz_url3, taxonomy_tsv_gz_path, reporthook=tqdm_hook(t))
             with gzip.open(taxonomy_tsv_gz_path, 'rb') as fin:
                 with open(self.taxonomy_tsv_path, 'wb') as fout:
                     shutil.copyfileobj(fin, fout)

@@ -10,7 +10,9 @@ import urllib.request
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import sorted_tar_gz_url1, sorted_tar_gz_url2, sorted_tar_gz_url3
-from vtam.utils.MyProgressBar import MyProgressBar
+# from vtam.utils.MyProgressBar import MyProgressBar
+from tqdm import tqdm
+from vtam.utils import tqdm_hook
 
 
 class TestCmdFilterLFN(unittest.TestCase):
@@ -45,12 +47,21 @@ class TestCmdFilterLFN(unittest.TestCase):
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(sorted_tar_path) or pathlib.Path(sorted_tar_path).stat().st_size < 1000000:
             try:
-                urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, MyProgressBar())
+                # urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, MyProgressBar())
+                with tqdm(...) as t:
+                    t.set_description(os.path.basename(sorted_tar_path))
+                    urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, reporthook=tqdm_hook(t))
             except Exception:
                 try:
-                    urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, MyProgressBar())
+                    # urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(sorted_tar_path))
+                        urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, reporthook=tqdm_hook(t))
                 except Exception:
-                    urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, MyProgressBar())
+                    # urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(sorted_tar_path))
+                        urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, reporthook=tqdm_hook(t))
         tar = tarfile.open(sorted_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_data_path)
         tar.close()
