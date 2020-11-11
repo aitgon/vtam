@@ -36,8 +36,6 @@ class TestCommandPool(unittest.TestCase):
         self.args = {}
         self.args['runmarker'] = os.path.join(self.package_path, "data/example/pool_run_marker.tsv")
         self.args['db'] = os.path.join(self.outdir_path, "db.sqlite")
-        self.args['asvtable_pooled_default'] = os.path.join(self.outdir_path, "asvtable_pooled_default.tsv")
-        self.args['asvtable_pooled_default_bak'] = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_default.tsv")
 
         ############################################################################################
         #
@@ -82,6 +80,11 @@ class TestCommandPool(unittest.TestCase):
 
     def test_command_pool(self):
 
+        self.args['asvtable_pooled_default'] = os.path.join(
+            self.outdir_path, "asvtable_pooled_default.tsv")
+        self.args['asvtable_pooled_default_bak'] = os.path.join(
+            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_default.tsv")
+
         cmd = "vtam pool --runmarker {runmarker} --db {db} --asvtable {asvtable_pooled_default}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -91,6 +94,24 @@ class TestCommandPool(unittest.TestCase):
         subprocess.run(args=args, check=True)
 
         self.assertTrue(filecmp.cmp(self.args['asvtable_pooled_default'], self.args['asvtable_pooled_default_bak'], shallow=True))
+
+
+    def test_command_pool_readcounts(self):
+
+        self.args['asvtable_pooled_readcount_default'] = os.path.join(
+            self.outdir_path, "asvtable_pooled_readcount_default.tsv")
+        self.args['asvtable_pooled_readcount_default_bak'] = os.path.join(
+            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_readcount_default.tsv")
+
+        cmd = "vtam pool --runmarker {runmarker} --db {db} --readcounts --asvtable {asvtable_pooled_readcount_default}".format(**self.args)
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        subprocess.run(args=args, check=True)
+
+        self.assertTrue(filecmp.cmp(self.args['asvtable_pooled_readcount_default'], self.args['asvtable_pooled_readcount_default_bak'], shallow=True))
 
     def tearDown(self):
         shutil.rmtree(self.outdir_path, ignore_errors=True)

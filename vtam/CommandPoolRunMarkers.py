@@ -26,7 +26,7 @@ class CommandPoolRunMarkers(object):
 
     """Runner class for the 'pool' command"""
 
-    def __init__(self, asv_table_df, readcount, run_marker_df=None):
+    def __init__(self, asv_table_df, readcounts, run_marker_df=None):
         """
         Constructor of the CommandPoolRunMarkers class
 
@@ -66,6 +66,7 @@ class CommandPoolRunMarkers(object):
         self.cluster_path = None  # returned by run_vsearch_to_cluster_sequences
 
         self.cluster_df = None  # returned by get_vsearch_clusters_to_df
+        self.readcounts = readcounts  # returned by get_vsearch_clusters_to_df
 
     def run_vsearch_to_cluster_sequences(self):
         # Define fasta_path tsv_path
@@ -156,10 +157,6 @@ class CommandPoolRunMarkers(object):
                                           self.cluster_df.variant_id, ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
 
-        # Drop some columns
-        def are_reads(x):
-            return int(sum(x) > 0)
-
         pooled_marker_df = self.cluster_df[[
                                                'centroid_variant_id', 'variant_id', 'run_name',
                                                'marker_name'] + self.sample_names]
@@ -182,6 +179,13 @@ class CommandPoolRunMarkers(object):
         # biosamples: aggregation with presence:absence or read_sum according to 'readcounts' options
         #
         ############################################################################################
+
+        # Drop some columns
+        def are_reads(x):
+            if self.readcounts:  # outputs sum
+                return int(sum(x))
+            else:  # outputs absence/presence
+                return int(sum(x) > 0)
 
         agg_dic = {}
         for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
@@ -219,7 +223,26 @@ class CommandPoolRunMarkers(object):
         return pooled_marker_df
 
     @classmethod
-    def main(cls, db, pooled_marker_tsv, run_marker_tsv, params):
+    def main(cls, db, pooled_marker_tsv, run_marker_tsv, params, readcounts):
+
+        """
+
+        Parameters
+        ----------
+        db : str
+            path to DB in sqlite format
+        pooled_marker_tsv : str
+            path to output pooled_marker.tsv file
+        run_marker_tsv : str
+            path to input run_marker.tsv file
+        params
+        readcounts: bool
+            Output absence/presence (False) or sum of read counts (True)
+
+        Returns
+        -------
+
+        """
 
         #######################################################################
         #
@@ -323,7 +346,7 @@ class CommandPoolRunMarkers(object):
         #
         ############################################################################################
 
-        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_2_df, run_marker_df=run_marker_df)
+        pool_marker_runner = CommandPoolRunMarkers(asv_table_df=asv_table_2_df, run_marker_df=run_marker_df, readcounts=readcounts)
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
 
         #######################################################################
