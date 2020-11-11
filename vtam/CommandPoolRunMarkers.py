@@ -23,9 +23,24 @@ from vtam.utils.VTAMexception import VTAMexception
 
 
 class CommandPoolRunMarkers(object):
-    """Class for the Pool Marker wrapper"""
 
-    def __init__(self, asv_table_df, run_marker_df=None):
+    """Runner class for the 'pool' command"""
+
+    def __init__(self, asv_table_df, readcount, run_marker_df=None):
+        """
+        Constructor of the CommandPoolRunMarkers class
+
+        Parameters
+        ----------
+        asv_table_df : pandas dataframe
+            ASV table.
+        readcount : bool
+            Default false.
+            If false, boolean 0/1 is given for presence or absence of variant in pooled table.
+            If true, read integer is given with sum or reads in the pooled runs or markers.
+        run_marker_df: pandas dataframe
+            Output ASV table with pooled variants
+        """
 
         header = {'run_name', 'marker_name', 'variant_id', 'sequence_length', 'read_count'}
         if not set(asv_table_df.columns) >= header:  # contains at least the 'header_lower' columns
@@ -82,13 +97,16 @@ class CommandPoolRunMarkers(object):
         return vsearch_output_centroid_fasta, vsearch_output_cluster_path
 
     def get_vsearch_clusters_to_df(self):
-        """
-        Analysis vsearch cluster output, which a tsv_path that corresponds to the same tsv_path with ticker 0, 1, 2
+        """Analysis vsearch cluster output, which a tsv_path that corresponds to the same tsv_path with ticker 0, 1, 2
 
         For instance, if self.cluster_path=/tmp/tmpibbwi9oc/test_pool_markers.py/cluster.fa,
         then there are /tmp/tmpibbwi9oc/test_pool_markers.py/cluster.fa0, ...1, ...2, etc with the different clusters
 
-        :return: pandas.DataFrame with columns: variant_id_centroid and variant_id
+        :return:
+
+        Returns
+        -------
+        pandas.DataFrame with columns: variant_id_centroid and variant_id
         """
 
         if self.cluster_path is None:
@@ -142,12 +160,6 @@ class CommandPoolRunMarkers(object):
         def are_reads(x):
             return int(sum(x) > 0)
 
-        agg_dic = {}
-        for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
-            agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
-
-        for k in self.sample_names:
-            agg_dic[k] = are_reads
         pooled_marker_df = self.cluster_df[[
                                                'centroid_variant_id', 'variant_id', 'run_name',
                                                'marker_name'] + self.sample_names]
@@ -162,6 +174,23 @@ class CommandPoolRunMarkers(object):
         pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='variant_id',
                                right_on='variant_id')
         pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'pooled_sequences'})
+
+        ############################################################################################
+        #
+        # Dictionnary with aggregation function
+        # 'variant_id', 'run_name', 'marker_name', 'pooled_sequences': concatenante unique values
+        # biosamples: aggregation with presence:absence or read_sum according to 'readcounts' options
+        #
+        ############################################################################################
+
+        agg_dic = {}
+        for k in ['variant_id', 'run_name', 'marker_name', 'pooled_sequences']:
+            agg_dic[k] = lambda x: ','.join(map(str, sorted(list(set(x)))))
+
+        for k in self.sample_names:
+            agg_dic[k] = are_reads
+
+        # Aggregate by centroid_variant_id
 
         pooled_marker_df = pooled_marker_df.groupby(
             'centroid_variant_id').agg(agg_dic).reset_index()

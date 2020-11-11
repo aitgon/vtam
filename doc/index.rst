@@ -95,6 +95,7 @@ Table of Contents
     content/reflist
     content/cite
     content/changelog
+    content/contributing
 
 Indices and tables
 ==================

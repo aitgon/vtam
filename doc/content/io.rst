@@ -1,4 +1,4 @@
-Input/Output files
+Input/Output Files
 ============================
 
 Help on the usage and complete list of I/O arguments of each command can be obtained using the command line help
