@@ -5,9 +5,12 @@ import tarfile
 import urllib.request
 
 from urllib import request
+
+from tqdm import tqdm
+from vtam.utils import tqdm_hook
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import coi_blast_db_gz_url1, coi_blast_db_gz_url2, coi_blast_db_gz_url3
-from vtam.utils.MyProgressBar import MyProgressBar
+from vtam.utils.constants import coi_blast_db_gz_url1, coi_blast_db_gz_url2, get_coi_blast_db_gz_url3
+# from vtam.utils.MyProgressBar import MyProgressBar
 
 class CommandBlastCOI(object):
 
@@ -18,12 +21,21 @@ class CommandBlastCOI(object):
         self.tempdir = PathManager.instance().get_tempdir()
         pathlib.Path(os.path.join(self.tempdir)).mkdir(exist_ok=True, parents=True)
 
+        # Server 1: "https://github.com/aitgon/vtam/releases/download/{}/coi_blast_db.tar.gz".format(__version__)
+
         coi_blast_db_version_gz_url_dir1 = os.path.dirname(coi_blast_db_gz_url1)
         self.coi_blast_db_gz_url1 = os.path.join(coi_blast_db_version_gz_url_dir1, "{}.tar.gz".format(blastdbname))
+
+        # Server 2: "https://github.com/aitgon/vtam/releases/latest/download/coi_blast_db.tar.gz".format(__version__)
+
         coi_blast_db_gz_url_dir2 = os.path.dirname(coi_blast_db_gz_url2)
         self.coi_blast_db_gz_url2 = os.path.join(coi_blast_db_gz_url_dir2, "{}.tar.gz".format(blastdbname))
-        self.coi_blast_db_gz_url_dir3 = os.path.dirname(coi_blast_db_gz_url3)
-        self.coi_blast_db_gz_url3 = os.path.join(self.coi_blast_db_gz_url_dir3, "{}.tar.gz".format(blastdbname))
+
+        # Server 3: "http://pedagogix-tagc.univ-mrs.fr/~gonzalez/vtam/coi_blast_db.tar.gz".format(__version__)
+
+        # self.coi_blast_db_gz_url_dir3 = os.path.dirname(coi_blast_db_gz_url3)
+        # self.coi_blast_db_gz_url3 = os.path.join(self.coi_blast_db_gz_url_dir3, "{}.tar.gz".format(blastdbname))
+        self.coi_blast_db_gz_url3 = get_coi_blast_db_gz_url3(blastdbname)
 
         self.coi_blast_db_gz_path = os.path.join(self.tempdir, '{}.tar.gz'.format(self.blastdbname))
 
@@ -44,8 +56,8 @@ class CommandBlastCOI(object):
                     return self.blastdbname
                 except:
                     raise argparse.ArgumentTypeError(
-                        "This is not a valid --blastdbname {}. Valid  values are here : '{}'"
-                            .format(self.blastdbname, os.path.dirname(self.coi_blast_db_gz_url_dir3)))
+                        "This is not a valid --blastdbname {}. Valid  values are here : 'https://osf.io/tvmf8/'"
+                            .format(self.blastdbname))
 
     def download(self, blastdbdir):
         """
@@ -64,12 +76,21 @@ class CommandBlastCOI(object):
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(self.coi_blast_db_gz_path) or pathlib.Path(self.coi_blast_db_gz_path).stat().st_size < 1000000:
             try:
-                urllib.request.urlretrieve(self.coi_blast_db_gz_url1, self.coi_blast_db_gz_path, MyProgressBar())
+                # urllib.request.urlretrieve(self.coi_blast_db_gz_url1, self.coi_blast_db_gz_path, MyProgressBar())
+                with tqdm(...) as t:
+                    t.set_description(os.path.basename(self.coi_blast_db_gz_path))
+                    urllib.request.urlretrieve(self.coi_blast_db_gz_url1, self.coi_blast_db_gz_path, reporthook=tqdm_hook(t))
             except Exception:
                 try:
-                    urllib.request.urlretrieve(self.coi_blast_db_gz_url2, self.coi_blast_db_gz_path, MyProgressBar())
+                    # urllib.request.urlretrieve(self.coi_blast_db_gz_url2, self.coi_blast_db_gz_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(self.coi_blast_db_gz_path))
+                        urllib.request.urlretrieve(self.coi_blast_db_gz_url2, self.coi_blast_db_gz_path, reporthook=tqdm_hook(t))
                 except Exception:
-                    urllib.request.urlretrieve(self.coi_blast_db_gz_url3, self.coi_blast_db_gz_path, MyProgressBar())
+                    # urllib.request.urlretrieve(self.coi_blast_db_gz_url3, self.coi_blast_db_gz_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(self.coi_blast_db_gz_path))  # this has the name of the file
+                        urllib.request.urlretrieve(self.coi_blast_db_gz_url3, self.coi_blast_db_gz_path, reporthook=tqdm_hook(t))
         tar = tarfile.open(self.coi_blast_db_gz_path)
         pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)
         tar.extractall(blastdbdir)

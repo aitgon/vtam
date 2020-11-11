@@ -2,9 +2,9 @@ biopython
 cutadapt
 jinja2
 pandas
-progressbar
 pyyaml
-sqlalchemy
 snakemake
+sqlalchemy
 termcolor
+tqdm
 wopmars>=0.1.4
