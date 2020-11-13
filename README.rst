@@ -75,7 +75,6 @@ The database of intermediate data is here:
    ReadCountAverageOverReplicates   wom_TypeInputOrOutput
    Run
 
-Documentation
--------------
-
 The `VTAM documentation <http://vtam.readthedocs.org/>`_ is hosted at ReadTheDocs.
+
+VTAM is maintained by Aitor González (aitor dot gonzalez at univ-amu dot fr) and Emese Meglécz (emese dot meglecz at univ-amu dot fr).
