@@ -1,0 +1,5 @@
+marker_id	run_id	sample_id	sample_type	habitat
+1	1	1	mock	terrestrial
+1	1	2	negatif	NA
+1	1	3	real	freshwater
+1	1	4	real	freshwater
