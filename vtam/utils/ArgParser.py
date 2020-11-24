@@ -524,11 +524,20 @@ class ArgParser:
             help=RunMarkerFile.help(),
             required=True,
             type=lambda x: RunMarkerFile(x).check_argument())
+
         parser_vtam_pool_markers.add_argument(
             '--asvtable',
             action='store',
             help="output TSV file with pooled markers and their occurrences in biological samples",
             required=True)
+
+        parser_vtam_pool_markers.add_argument(
+            '--readcounts',
+            action='store_true',
+            help="Default: False. If False, presence/absence of reads in sample is given."
+                 "If True, sum of reads over pooled runs et/ou markers is given",
+            required=False,
+            default=False)
 
         # This attribute will trigger the good command
         parser_vtam_pool_markers.set_defaults(command='pool')
@@ -574,7 +583,7 @@ class ArgParser:
             '--blastdbname',
             dest='blastdbname',
             action='store',
-            help="cytochrome C oxidase subunit I (COI) Blast database name among these current possibilities: coi_blast_db, coi_blast_db_20191211, coi_blast_db_20200420. Other versions if available can be found here: {}".format(
+            help="cytochrome C oxidase subunit I (COI) Blast database name among these current possibilities: coi_blast_db, coi_blast_db_20200420. Other versions if available can be found here: {}".format(
                 os.path.dirname(coi_blast_db_gz_url1)),
             required=False,
             default='coi_blast_db',

@@ -83,7 +83,7 @@ TCTAAATTTCATTTTTGGTGCTTGGGCAGGTATGGTAGGGACCTCATTAAGACTTTTAATTCGAGCCGAGTTGGGTAACC
 CGGGTTCATTAATTGGGGACGATCAAATTTATAACGTAATCGTAACTGCCCATGCCTTTATTATGAttttttttATAGTG
 ATACCTATTATAATT
 """
-        pool_marker_runner = CommandPoolRunMarkers(self.asv_table_df)
+        pool_marker_runner = CommandPoolRunMarkers(self.asv_table_df, readcounts=False)
         vsearch_output_centroid_fasta, vsearch_output_cluster_path = pool_marker_runner.run_vsearch_to_cluster_sequences()
         with open(vsearch_output_centroid_fasta) as fin:
             vsearch_output_centroid_fasta_content = fin.read()

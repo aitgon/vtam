@@ -49,7 +49,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam coi_blast_db --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 ".format(**cls.args)
+        cmd = "vtam coi_blast_db --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 ".format(**cls.args)
 
         if sys.platform.startswith("win"):
             args = cmd
@@ -87,11 +87,11 @@ class TestCommandTaxAssign(unittest.TestCase):
 
     def test_02_command_coi_blast_db(self):
 
-        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20191211.nsi')) >= 536510)
-        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20191211.nsi')) <= 536520)
+        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20200420.nsi')) >= 2915100)
+        self.assertTrue(os.path.getsize(os.path.join(self.args['coi_blast_db_dir'], 'coi_blast_db_20200420.nsi')) <= 2915200)
         self.assertTrue(set(os.listdir(self.args['coi_blast_db_dir'])) >= {
-            'coi_blast_db_20191211.nsd', 'coi_blast_db_20191211.nhr', 'coi_blast_db_20191211.nsq', 'coi_blast_db_20191211.nin', 'coi_blast_db_20191211.nog',
-            'coi_blast_db_20191211.nsi'})
+            'coi_blast_db_20200420.nsd', 'coi_blast_db_20200420.nhr', 'coi_blast_db_20200420.nsq', 'coi_blast_db_20200420.nin', 'coi_blast_db_20200420.nog',
+            'coi_blast_db_20200420.nsi'})
 
     def test_03_taxassign(self):
 
@@ -101,7 +101,7 @@ class TestCommandTaxAssign(unittest.TestCase):
         #
         ############################################################################################
 
-        cmd = "vtam taxassign --asvtable {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20191211 --taxonomy {taxonomy}".format(**self.args)
+        cmd = "vtam taxassign --asvtable {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 --taxonomy {taxonomy}".format(**self.args)
 
         if sys.platform.startswith("win"):
             args = cmd

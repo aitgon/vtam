@@ -3,7 +3,6 @@ coverage
 cutadapt
 jinja2
 pandas
-progressbar
 pygments
 pyyaml
 snakemake
@@ -11,5 +10,6 @@ sphinx
 sphinx_rtd_theme
 sqlalchemy
 termcolor
+tqdm
 twine
 wopmars>=0.1.4

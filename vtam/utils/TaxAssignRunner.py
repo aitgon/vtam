@@ -4,6 +4,7 @@ import pathlib
 
 import pandas
 from Bio.Blast.Applications import NcbiblastnCommandline
+from vtam.utils.VTAMexception import VTAMexception
 
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
@@ -162,8 +163,6 @@ class TaxAssignRunner(object):
                     __file__, inspect.currentframe().f_lineno))
             blast_output_df.target_tax_id = pandas.to_numeric(
                 blast_output_df.target_tax_id)
-            # getting the taxonomy_db to variant_read_count_input_df
-            # taxonomy_tsv_path = taxonomy_tsv
             #
             Logger.instance().debug(
                 "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
@@ -229,36 +228,30 @@ class TaxAssignRunner(object):
 
         """
 
+        # # check if tax_id in taxonomy_df or old_tax_id and if not raise error and exit
+        # if not (tax_id in self.taxonomy_df.index or tax_id in self.old_tax_id_df.old_tax_id.tolist()):
+        #     Logger.instance().error(
+        #         "The taxon ID {} in the Blast database is missing in the taxonomy.tsv. "
+        #         "Consider updating this file with the following command: vtam taxonomy --output taxonomy.tsv. "
+        #         "The workflow will exit.".format(tax_id))
+        #     raise VTAMexception("tax_id {} from Blast database not found in the taxonomy.tsv file".format(tax_id))
+
         lineage_dic = {'tax_id': tax_id}
-        # while tax_id != 1:
-        #     # try to use taxonomy_df.tax_id
-        #     # import pdb; pdb.set_trace()
-        #     # tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.tax_id == tax_id, ]
-        #     if tax_id in self.taxonomy_df.index:
-        #
-        #     try:
-        #         tax_id_row = self.taxonomy_df.loc[tax_id, ]
-        #     except KeyError:
-        #     import pdb; pdb.set_trace()
-        #     # row empty, try to use old_tax_id
-        #     if tax_id_row.shape[0] == 0:
-        #         tax_id_row = self.taxonomy_df.loc[self.taxonomy_df.old_tax_id == tax_id, ]
-        #     rank = tax_id_row['rank'].values[0]
-        #     parent_tax_id = tax_id_row['parent_tax_id'].values[0]
-        #     lineage_dic[rank] = tax_id
-        #     # if return_tax_name: # return tax_name instead of tax_id
-        #     #     tax_name = tax_id_row['name_txt'].values[0]
-        #     #     lineage_dic[rank] = tax_name
-        #     tax_id = parent_tax_id
         while tax_id != 1:
+            # tax_id is found as normal index in the taxonomy file
             if tax_id in self.taxonomy_df.index:
                 tax_id_row = self.taxonomy_df.loc[tax_id, ]
+            # tax_id is found as old_tax_id column in the taxonomy file
             elif tax_id in self.old_tax_id_df.old_tax_id.tolist():  # Try old tax id
                 tax_id2 = self.old_tax_id_df.loc[self.old_tax_id_df.old_tax_id ==
                                                  tax_id, 'old_tax_id'].index[0]
                 tax_id_row = self.taxonomy_df.loc[tax_id2, ]
-            else:
-                return lineage_dic
+            else:  # tax_id not in taxonomy, log error and exit
+                Logger.instance().error(
+                    "The taxon ID {} in the Blast database is missing in the taxonomy.tsv. "
+                    "Consider updating this file with the following command: vtam taxonomy --output taxonomy.tsv. "
+                    "The workflow will exit.".format(tax_id))
+                raise VTAMexception("tax_id {} from Blast database not found in the taxonomy.tsv file".format(tax_id))
             rank = tax_id_row['rank']
             parent_tax_id = tax_id_row['parent_tax_id']
             lineage_dic[rank] = tax_id
@@ -336,6 +329,7 @@ class TaxAssignRunner(object):
         #
         for variant_id in variant_id_list:  #  Loop sorted each variant
             for identity in identity_list:  # For each variant, loop each decreasing identity
+                # select hits of this variant id above identity cutoff
                 tax_lineage_by_variant_id_df = variantid_identity_lineage_df.loc[
                     ((variantid_identity_lineage_df['variant_id'] == variant_id)
                      & (variantid_identity_lineage_df['identity'] >= identity))].copy()
@@ -344,11 +338,11 @@ class TaxAssignRunner(object):
                 # If some hits at this identity level, enter analysis
                 #
                 ###########
-                # If some hits at this identity, enter analysis
+
                 if tax_lineage_by_variant_id_df.shape[0] > 0:
                     ###########
                     #
-                    # Carry out analysis if one of thise case
+                    # Carry out analysis if one of these cases
                     # Case 1: identity >= ltg_rule_threshold
                     # Case 2: identity < ltg_rule_threshold and target_tax_id.unique.count > min_number_of_taxa
                     #
