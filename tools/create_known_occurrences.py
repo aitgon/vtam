@@ -65,13 +65,13 @@ sample_type_df = pandas.read_csv(sample_type_tsv, sep="\t", header=0)
 asv_table_df = pandas.read_csv(asv_table_tsv, sep="\t", header=0)
 
 #%% Delete because in mock sample
-delete1_df = asv_table_df.loc[(asv_table_df.marker == 'MFZR') & (asv_table_df.run == 'run1') & (asv_table_df['tpos1_run1']>0), ['run', 'marker', 'variant']]
+delete1_df = asv_table_df.loc[(asv_table_df.marker == 'MFZR') & (asv_table_df.run == 'run1') & (asv_table_df['tpos1_run1'] > 0), ['run', 'marker', 'variant']]
 delete1_df = occurrences_keep_df[['run', 'marker', 'variant']].merge(delete1_df, on=['run', 'marker', 'variant'], how='right', indicator=True)
 delete1_df = delete1_df.loc[delete1_df._merge=='right_only', ['run', 'marker', 'variant']]
 delete1_df['sample'] = 'tpos1_run1'
 
 #%% Delete because in negative sample
-delete2_df = asv_table_df.loc[(asv_table_df.marker == 'MFZR') & (asv_table_df.run == 'run1') & (asv_table_df['tnegtag_run1']>0), ['run', 'marker', 'variant', 'sequence']]
+delete2_df = asv_table_df.loc[(asv_table_df.marker == 'MFZR') & (asv_table_df.run == 'run1') & (asv_table_df['tnegtag_run1'] > 0), ['run', 'marker', 'variant']]
 delete2_df['sample'] = 'tnegtag_run1'
 
 #%%
