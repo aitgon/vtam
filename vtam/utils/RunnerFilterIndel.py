@@ -1,4 +1,4 @@
-class FilterIndelRunner:
+class RunnerFilterIndel:
 
     def __init__(self, variant_read_count_df):
 

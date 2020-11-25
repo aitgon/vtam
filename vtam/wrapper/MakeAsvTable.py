@@ -1,8 +1,8 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 
-from vtam.utils.AsvTableRunner import AsvTableRunner
-from vtam.utils.KnownOccurrences import KnownOccurrences
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.RunnerAsvTable import RunnerAsvTable
+from vtam.utils.FileKnownOccurrences import FileKnownOccurrences
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.models.FilterCodonStop import FilterCodonStop
 
 
@@ -80,21 +80,21 @@ class MakeAsvTable(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             FilterCodonStop, engine=engine)
 
         ############################################################################################
         #
-        # KnownOccurrences
+        # FileKnownOccurrences
         #
         ############################################################################################
 
         if known_occurrences_tsv == 'None' or known_occurrences_tsv is None:
             known_occurrences_df = None
         else:
-            known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
+            known_occurrences_df = FileKnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
             known_occurrences_df = known_occurrences_df.loc[
                 (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
 
@@ -105,7 +105,7 @@ class MakeAsvTable(ToolWrapper):
         #######################################################################
 
         sample_list = sample_info_tsv_obj.read_tsv_into_df()['sample'].drop_duplicates(keep='first').tolist()
-        asvtable_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
+        asvtable_runner = RunnerAsvTable(variant_read_count_df=variant_read_count_df,
                                          engine=engine, sample_list=sample_list,
                                          cluster_identity=cluster_identity,
                                          known_occurrences_df=known_occurrences_df)

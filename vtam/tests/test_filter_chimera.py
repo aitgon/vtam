@@ -2,7 +2,7 @@ import multiprocessing
 import pathlib
 from unittest import TestCase
 from vtam.utils.PathManager import PathManager
-from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
+from vtam.utils.RunnerFilterChimera import RunnerFilterChimera
 import os
 import pandas
 
@@ -72,7 +72,7 @@ and 50 (2.9%) borderline sequences in 1750 total sequences"""
         os.environ['VTAM_THREADS'] = str(multiprocessing.cpu_count())
 
     def test_filter_chimera_runner(self):
-        filter_chimera_runner = FilterChimeraRunner(
+        filter_chimera_runner = RunnerFilterChimera(
             variant_read_count_df=self.variant_read_count_df)
         filter_output_df, filter_borderline_output_df = filter_chimera_runner.get_variant_read_count_delete_df(
             variant_df=self.variant_df, uchime3_denovo_abskew=16)

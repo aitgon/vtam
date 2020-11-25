@@ -10,7 +10,7 @@ from vtam.utils.constants import header_known_occurrences
 from vtam.utils.NameIdConverter import NameIdConverter
 
 
-class KnownOccurrences(object):
+class FileKnownOccurrences(object):
 
     def __init__(self, known_occurrences_tsv):
         """

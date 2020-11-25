@@ -1,7 +1,7 @@
-from vtam.utils.FilterMinReplicateNumberRunner import FilterMinReplicateNumberRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
+from vtam.utils.RunnerFilterMinReplicateNumber import RunnerFilterMinReplicateNumber
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
+from vtam.utils.ModelVariantReadCountLike import ModelVariantReadCountLike
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -81,7 +81,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
@@ -97,7 +97,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         #######################################################################
 
-        variant_read_count_delete_df = FilterMinReplicateNumberRunner(
+        variant_read_count_delete_df = RunnerFilterMinReplicateNumber(
             variant_read_count_df) .get_variant_read_count_delete_df(min_replicate_number)
 
         #######################################################################
@@ -108,7 +108,7 @@ class FilterMinReplicateNumber(ToolWrapper):
         #
         #######################################################################
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_min_replicate_model)
 
         for output_table_i in self.specify_output_table():

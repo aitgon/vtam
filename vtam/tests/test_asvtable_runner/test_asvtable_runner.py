@@ -11,7 +11,7 @@ from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.Variant import Variant
-from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.RunnerAsvTable import RunnerAsvTable
 from vtam.utils.PathManager import PathManager
 
 
@@ -59,7 +59,7 @@ class TestAsvtableRunner(unittest.TestCase):
 
         asvtable_default_path = os.path.join(self.outdir_path, 'asvtable_default.tsv')
         asvtable_default_bak_path = os.path.join(os.path.dirname(__file__), "asvtable_default.tsv")
-        asvtable_runner = AsvTableRunner(variant_read_count_df=self.filter_codon_stop_df,
+        asvtable_runner = RunnerAsvTable(variant_read_count_df=self.filter_codon_stop_df,
                                          engine=self.engine, sample_list=self.sample_list, cluster_identity=0.97)
         asvtable_runner.to_tsv(asvtable_default_path)
 

@@ -8,9 +8,9 @@ import sqlalchemy
 from vtam.models.TaxAssign import TaxAssign
 from vtam.models.Variant import Variant
 from vtam.utils.Logger import Logger
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
-from vtam.utils.TaxAssignRunner import TaxAssignRunner
+from vtam.utils.RunnerTaxAssign import RunnerTaxAssign
 from vtam.utils.TaxLineage import TaxLineage
 
 
@@ -52,7 +52,7 @@ class CommandTaxAssign(object):
         #######################################################################
 
         # params_dic = constants.get_params_default_dic()
-        params_dic = ParamsFile(params).get_params_dic()
+        params_dic = FileParams(params).get_params_dic()
 
         ltg_rule_threshold = params_dic['ltg_rule_threshold']
         include_prop = params_dic['include_prop']
@@ -159,7 +159,7 @@ class CommandTaxAssign(object):
 
         #######################################################################
         #
-        # Run TaxAssignRunner for variant_not_tax_assigned
+        # Run RunnerTaxAssign for variant_not_tax_assigned
         #
         #######################################################################
 
@@ -172,7 +172,7 @@ class CommandTaxAssign(object):
             taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
             taxonomy_df.set_index('tax_id', drop=True, inplace=True)
             sequence_list = blast_variant_df.sequence.tolist()
-            tax_assign_runner = TaxAssignRunner(
+            tax_assign_runner = RunnerTaxAssign(
                 sequence_list=sequence_list,
                 taxonomy_df=taxonomy_df,
                 blast_db_dir=blastdb_dir_path,

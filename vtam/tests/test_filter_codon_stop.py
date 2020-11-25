@@ -2,7 +2,7 @@ import pandas
 import unittest
 import io
 
-from vtam.utils.FilterCodonStopRunner import FilterCodonStopRunner
+from vtam.utils.RunnerFilterCodonStop import RunnerFilterCodonStop
 
 
 class TestFilterCodonStop(unittest.TestCase):
@@ -38,7 +38,7 @@ seq_stop2_code5_stop4_code1_frame2_TAA_TAG	ATAAGTATTTTTTCTCCTTATGCCTGCTTTAATAGGT
 seq_stop2_code5_stop5_code1_frame1_TAA_TAG_TGA	TAAGTATTTTGACTCCTTATGCCTGCTTTAATAGGTGGTTTTGGTAATTGAATAGTTCCTGTTCTAATTGGTTCTATTGATATGGCTTACCCTAGATTAAATAATATTAGTTTTTGATTATTGCCCCCTAGTTTATTATAATTAGTTGG"""
         self.variant_df = pandas.read_csv(
             io.StringIO(variant_str), sep="\t", header=0)
-        self.filter_codon_stop_runner_obj = FilterCodonStopRunner(
+        self.filter_codon_stop_runner_obj = RunnerFilterCodonStop(
             variant_read_count_df=None)
 
     def test_count_codon_stop_nb_one_seq(self):

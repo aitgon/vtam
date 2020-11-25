@@ -5,7 +5,7 @@ import sys
 from vtam.utils.Logger import Logger
 
 
-class VSearch(object):
+class RunnerVSearch(object):
 
     def __init__(self, parameters):
         """Creates a vsearch object based on the parameters

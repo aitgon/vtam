@@ -21,16 +21,16 @@ import pandas
 
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 
 
-class FilterLFNrunner:
+class RunnerFilterLFN:
 
     def __init__(self, variant_read_count_df):
         self.variant_read_count_df = variant_read_count_df[[
             'marker_id', 'run_id', 'variant_id', 'sample_id', 'replicate', 'read_count']]
         #  Instance for all the calculations N_i, N_ij, etc
-        self.variant_read_count_lfn_df = VariantReadCountLikeDF(
+        self.variant_read_count_lfn_df = DataframeVariantReadCountLike(
             variant_read_count_df)
         #
         if self.variant_read_count_df.shape[1] != 6:

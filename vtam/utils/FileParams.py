@@ -1,16 +1,14 @@
 import argparse
 import os
 import sys
-
 import yaml
 
 from vtam.utils.VTAMexception import VTAMexception
-
 from vtam.utils.Logger import Logger
-
 from vtam.utils import constants
 
-class ParamsFile:
+
+class FileParams:
 
     def __init__(self, params_path=None):
 

@@ -3,12 +3,12 @@ import os
 import pathlib
 import tempfile
 
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.Singleton import Singleton
 
 
-class WopmarsRunner(Singleton):
+class RunnerWopmars(Singleton):
 
     def __init__(self, command, cli_args_dic):
         """
@@ -23,7 +23,7 @@ class WopmarsRunner(Singleton):
 
         # Add user params_lfn_variant.yml parameters
 
-        params_dic = ParamsFile(cli_args_dic['params']).get_params_dic()
+        params_dic = FileParams(cli_args_dic['params']).get_params_dic()
         self.cli_args_and_numerical_params.update(params_dic)
 
         self.wopfile_path = None

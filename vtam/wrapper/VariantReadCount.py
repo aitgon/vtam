@@ -1,9 +1,9 @@
 from Bio import SeqIO
 from sqlalchemy import select, bindparam, func
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 from wopmars.models.ToolWrapper import ToolWrapper
 import inspect
 import os
@@ -104,7 +104,7 @@ class VariantReadCount(ToolWrapper):
         # 3. Read tsv file with sorted reads
         # 4. Group by read sequence
         # 5. Delete variants if below global_read_count_cutoff
-        # 6. Insert into Variant and VariantReadCountLikeDF tables
+        # 6. Insert into Variant and DataframeVariantReadCountLike tables
         #
         #######################################################################
 
@@ -177,7 +177,7 @@ class VariantReadCount(ToolWrapper):
 
         # fasta_info_obj = FastaInformationTSV(input_file_sortedinfo, engine=engine)
         # sample_info_ids_df = fasta_info_obj.get_ids_df()
-        sample_info_tsv_obj = SampleInformationFile(
+        sample_info_tsv_obj = FileSampleInformation(
             tsv_path=input_file_sortedinfo)
         sample_info_ids_df = sample_info_tsv_obj.to_identifier_df(engine=engine)
 
@@ -269,7 +269,7 @@ class VariantReadCount(ToolWrapper):
         #
         #######################################################################
 
-        variant_read_count_like_df_obj = VariantReadCountLikeDF(variant_read_count_df)
+        variant_read_count_like_df_obj = DataframeVariantReadCountLike(variant_read_count_df)
         Logger.instance().debug(
             "file: {}; line: {}; Remove variants with global read count lower than parameter 'global_read_count_cutoff'".format(
                 __file__, inspect.currentframe().f_lineno))

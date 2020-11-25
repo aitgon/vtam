@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 
 
@@ -15,14 +15,14 @@ class TestParamsFile(unittest.TestCase):
 
     def test_is_valid(self):
 
-        self.assertTrue(ParamsFile(self.params).is_valid())
+        self.assertTrue(FileParams(self.params).is_valid())
 
     def test_params_is_not_valid(self):
 
         with self.assertRaises(SystemExit):
-            ParamsFile(self.params_wrong).is_valid()
+            FileParams(self.params_wrong).is_valid()
 
     def test_get_params_dic(self):
 
-        self.assertTrue(ParamsFile(self.params).get_params_dic()['lfn_sample_replicate_cutoff']
+        self.assertTrue(FileParams(self.params).get_params_dic()['lfn_sample_replicate_cutoff']
                         == 0.003)

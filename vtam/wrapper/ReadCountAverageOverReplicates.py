@@ -2,8 +2,8 @@
 import pandas
 
 from wopmars.models.ToolWrapper import ToolWrapper
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.ModelVariantReadCountLike import ModelVariantReadCountLike
 
 
 class ReadCountAverageOverReplicates(ToolWrapper):
@@ -69,7 +69,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # #######################################################################
         #
         # # fasta_info_tsv = FastaInformationTSV(engine=engine, fasta_info_tsv=input_file_sortedinfo)
-        # sample_info_tsv_obj = SampleInformationFile(tsv_path=input_file_sortedinfo)
+        # sample_info_tsv_obj = FileSampleInformation(tsv_path=input_file_sortedinfo)
         #
         # #######################################################################
         # #
@@ -80,7 +80,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         # #     # conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         # #     conn.execute(consensus_model.__table__.delete(), sample_instance_list)
         # #
-        # variant_read_count_like_utils = VariantReadCountLikeTable(
+        # variant_read_count_like_utils = ModelVariantReadCountLike(
         #     variant_read_count_like_model=consensus_model, engine=engine)
         # sample_record_list = sample_info_tsv_obj.to_identifier_df(
         #     engine=engine).to_dict('records')
@@ -113,7 +113,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=consensus_model)
@@ -137,7 +137,7 @@ class ReadCountAverageOverReplicates(ToolWrapper):
         #
         #######################################################################
 
-        record_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
+        record_list = ModelVariantReadCountLike.filter_delete_df_to_dict(
             variant_read_count_delete_df)
         with engine.connect() as conn:
 

@@ -6,7 +6,7 @@ import yaml
 
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.PathManager import PathManager
-from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.RunnerWopmars import RunnerWopmars
 
 
 class TestWorpmarsRunnerFilter(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
+        wopmars_runner = RunnerWopmars(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
 
         with open(os.path.join(os.path.dirname(__file__), "wopfile_filter.yml")) as fin:
@@ -63,7 +63,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
+        wopmars_runner = RunnerWopmars(command='filter', cli_args_dic=vars(args))
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile()
 
         self.assertFalse('lfn_variant_cutoff' in yaml.load(wopfile_content, Loader=yaml.SafeLoader)['rule FilterLFN']['params'])
@@ -79,7 +79,7 @@ class TestWorpmarsRunnerFilter(unittest.TestCase):
         args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
-        wopmars_runner = WopmarsRunner(command='filter', cli_args_dic=vars(args))
+        wopmars_runner = RunnerWopmars(command='filter', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(PathManager.get_package_path(), "tests/output/wopfile"), PathManager.get_package_path())
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 

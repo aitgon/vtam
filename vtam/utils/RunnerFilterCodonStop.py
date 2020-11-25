@@ -1,7 +1,7 @@
 import Bio
 
 
-class FilterCodonStopRunner(object):
+class RunnerFilterCodonStop(object):
 
     def __init__(self, variant_read_count_df):
         """Carries out a chimera analysis"""

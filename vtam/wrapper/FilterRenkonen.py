@@ -1,11 +1,11 @@
 import pandas
 import sys
 
-from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
+from vtam.utils.RunnerFilterRenkonen import RunnerFilterRenkonen
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 from wopmars.models.ToolWrapper import ToolWrapper
 
 
@@ -80,7 +80,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ############################################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_renkonen_model)
@@ -107,7 +107,7 @@ class FilterRenkonen(ToolWrapper):
 
             if variant_read_count_per_run_marker_df.replicate.unique(
             ).shape[0] > 1:  # if more than one replicate
-                filter_renkonen_runner_obj = FilterRenkonenRunner(
+                filter_renkonen_runner_obj = RunnerFilterRenkonen(
                     variant_read_count_per_run_marker_df)
                 filter_output_i_df = filter_renkonen_runner_obj.get_variant_read_count_delete_df(
                     renkonen_distance_quantile)
@@ -126,7 +126,7 @@ class FilterRenkonen(ToolWrapper):
         #
         ############################################################################################
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_renkonen_model)
 
         for output_table_i in self.specify_output_table():

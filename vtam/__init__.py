@@ -15,13 +15,13 @@ from vtam.CommandSortReads import CommandSortReads
 from vtam.CommandTaxAssign import CommandTaxAssign
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.ArgParser import ArgParser
-from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
+from vtam.utils.FileCutoffSpecific import FileCutoffSpecific
 from vtam.utils.Logger import Logger
 from vtam.utils.Logger import LoggerArguments
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.RunnerWopmars import RunnerWopmars
 from vtam.utils.constants import FilterLFNreference_records
 
 
@@ -126,7 +126,7 @@ class VTAM(object):
                     if arg_parser_dic['lfn_variant_replicate']:  # lfn_variant_replicate
 
                         # cutoff_specific for lfn_variant
-                        if not CutoffSpecificFile(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
+                        if not FileCutoffSpecific(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
                             Logger.instance().error('The --lfn_variant_replicate argument is incompatible with the cutoff_specific file {}.'.format(
                                     arg_parser_dic['cutoff_specific']))
                             sys.exit(1)
@@ -134,7 +134,7 @@ class VTAM(object):
                     else: # lfn_variant
 
                         # cutoff_specific for lfn_variant_replicate
-                        if CutoffSpecificFile(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
+                        if FileCutoffSpecific(arg_parser_dic['cutoff_specific']).is_compatible_lfn_variant_replicate():
 
                             Logger.instance().error('The cutoff_specific file {} requires the --lfn_variant_replicate argument.'.format(
                                     arg_parser_dic['cutoff_specific']))

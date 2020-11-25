@@ -5,12 +5,12 @@ from Bio import SeqIO
 
 from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VariantDF import VariantDF
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VSearch import VSearch
+from vtam.utils.DataframeVariant import DataframeVariant
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
+from vtam.utils.RunnerVSearch import RunnerVSearch
 
 
-class FilterChimeraRunner(object):
+class RunnerFilterChimera(object):
 
     def __init__(self, variant_read_count_df):
         """Carries out a chimera analysis"""
@@ -41,7 +41,7 @@ class FilterChimeraRunner(object):
             variant_read_count_df = self.variant_read_count_df.loc[(self.variant_read_count_df.run_id == run_id) & (
                 self.variant_read_count_df.marker_id == marker_id) & (self.variant_read_count_df.sample_id == sample_id)]
 
-            variant_read_count_df_obj = VariantReadCountLikeDF(
+            variant_read_count_df_obj = DataframeVariantReadCountLike(
                 variant_read_count_df=variant_read_count_df)
             N_i_df = variant_read_count_df_obj.get_N_i_df()
 
@@ -61,7 +61,7 @@ class FilterChimeraRunner(object):
             variant_size_df.sort_values(
                 by='size', ascending=False, inplace=True)
 
-            variant_df_utils_obj = VariantDF(variant_size_df)
+            variant_df_utils_obj = DataframeVariant(variant_size_df)
 
             uchime_fasta_path = os.path.join(
                 temp_dir, 'run_{}_marker_{}_sample_{}.fasta' .format(
@@ -93,7 +93,7 @@ class FilterChimeraRunner(object):
                                   'chimeras': uchime_chimeras_fasta_path,
                                   'abskew': uchime3_denovo_abskew,
                                   }
-            vsearch_cluster = VSearch(parameters=vsearch_parameters)
+            vsearch_cluster = RunnerVSearch(parameters=vsearch_parameters)
             vsearch_cluster.run()
 
             ###################################################################

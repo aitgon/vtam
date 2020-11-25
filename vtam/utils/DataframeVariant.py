@@ -1,4 +1,4 @@
-class VariantDF:
+class DataframeVariant:
     """
     Functions to manipulate a variant_df
     """

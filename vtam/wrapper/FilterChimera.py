@@ -1,10 +1,10 @@
 import sys
 
-from vtam.utils.FilterChimeraRunner import FilterChimeraRunner
+from vtam.utils.RunnerFilterChimera import RunnerFilterChimera
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 from wopmars.models.ToolWrapper import ToolWrapper
 
 
@@ -85,7 +85,7 @@ class FilterChimera(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_chimera_model)
@@ -106,7 +106,7 @@ class FilterChimera(ToolWrapper):
 
         variant_df = sample_info_tsv_obj.get_variant_df(
             variant_read_count_like_model=input_filter_pcr_error_model, engine=engine)
-        filter_chimera_runner = FilterChimeraRunner(
+        filter_chimera_runner = RunnerFilterChimera(
             variant_read_count_df=variant_read_count_df)
         filter_output_chimera_df, filter_borderline_output_df = \
             filter_chimera_runner.get_variant_read_count_delete_df(
@@ -120,10 +120,10 @@ class FilterChimera(ToolWrapper):
         #
         #######################################################################
 
-        VariantReadCountLikeDF(filter_output_chimera_df).to_sql(
+        DataframeVariantReadCountLike(filter_output_chimera_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_chimera_model)
 
-        VariantReadCountLikeDF(filter_borderline_output_df).to_sql(
+        DataframeVariantReadCountLike(filter_borderline_output_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_borderline_model)
 
         for output_table_i in self.specify_output_table():

@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 from vtam.utils.Logger import Logger
-from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.RunnerWopmars import RunnerWopmars
 from vtam.utils.constants import FilterLFNreference_records
 
 
@@ -40,7 +40,7 @@ class CommandFilterOptimize(object):
                         filter_lfn_reference.insert().values(
                             **filter_rec))
 
-        wopmars_runner = WopmarsRunner(command=arg_parser_dic['command'], cli_args_dic=arg_parser_dic)
+        wopmars_runner = RunnerWopmars(command=arg_parser_dic['command'], cli_args_dic=arg_parser_dic)
         wopmars_command = wopmars_runner.get_wopmars_command()
 
         ########################################################################################

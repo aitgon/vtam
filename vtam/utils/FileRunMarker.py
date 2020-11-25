@@ -2,7 +2,6 @@ import argparse
 import pandas
 import sqlalchemy
 
-from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.models.SampleInformation import SampleInformation
@@ -10,7 +9,7 @@ from vtam.utils.ArgParser import ArgParserChecker
 from vtam.utils.NameIdConverter import NameIdConverter
 
 
-class RunMarkerFile(object):
+class FileRunMarker(object):
 
     def __init__(self, tsv_path):
         self.tsv_path = tsv_path

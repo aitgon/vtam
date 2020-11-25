@@ -2,7 +2,7 @@ import itertools
 import pandas
 
 
-class FilterRenkonenRunner(object):
+class RunnerFilterRenkonen(object):
     """Has attributes and methods to run_name the Renkonen error Filter"""
 
     def __init__(self, variant_read_count_df):

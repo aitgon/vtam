@@ -16,9 +16,9 @@ except ImportError:
 
 from Bio.Seq import Seq
 from vtam.utils.Logger import Logger
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 
 
 class CommandSortReads(object):
@@ -36,7 +36,7 @@ class CommandSortReads(object):
         #
         ############################################################################################
 
-        params_dic = ParamsFile(params).get_params_dic()
+        params_dic = FileParams(params).get_params_dic()
 
         cutadapt_error_rate = params_dic['cutadapt_error_rate']
         cutadapt_minimum_length = params_dic['cutadapt_minimum_length']
@@ -48,7 +48,7 @@ class CommandSortReads(object):
         #
         ############################################################################################
 
-        merged_fastainfo_df = SampleInformationFile(fastainfo).read_tsv_into_df()
+        merged_fastainfo_df = FileSampleInformation(fastainfo).read_tsv_into_df()
 
         pathlib.Path(sorteddir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()

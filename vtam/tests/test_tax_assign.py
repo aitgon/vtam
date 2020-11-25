@@ -8,8 +8,8 @@ import unittest
 from vtam.utils.PathManager import PathManager
 from vtam.CommandTaxonomy import CommandTaxonomy
 from vtam.utils.Logger import Logger
-from vtam.utils.VariantDF import VariantDF
-from vtam.utils.TaxAssignRunner import f06_select_ltg
+from vtam.utils.DataframeVariant import DataframeVariant
+from vtam.utils.RunnerTaxAssign import f06_select_ltg
 
 
 class TestTaxAssign(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestTaxAssign(unittest.TestCase):
             os.path.basename(__file__))
         pathlib.Path(this_tempdir).mkdir(exist_ok=True)
         variant_fasta = os.path.join(this_tempdir, 'variant.fasta')
-        variant_df_utils = VariantDF(variant_df)
+        variant_df_utils = DataframeVariant(variant_df)
         variant_df_utils.to_fasta(fasta_path=variant_fasta)
         #
         variant_fasta_content_expected = """>57\nACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC\n>107\nACTTTATTTCATTTTCGGAACATTTGCAGGAGTTGTAGGAACTTTACTTTCATTATTTATTCGTCTTGAATTAGCTTATCCAGGAAATCAATTTTTTTTAGGAAATCACCAACTTTATAATGTGGTTGTGACAGCACATGCTTTTATCATGATTTTTTTCATGGTTATGCCGATTTTAATC\n"""

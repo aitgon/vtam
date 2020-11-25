@@ -12,12 +12,11 @@ from vtam.models.Run import Run
 from vtam.models.Marker import Marker
 from vtam.models.Sample import Sample
 from vtam.models.Variant import Variant
-from vtam.models.FilterChimeraBorderline import FilterChimeraBorderline
 from vtam.models.SampleInformation import SampleInformation
 from vtam.models.SortedReadFile import SortedReadFile
 
 
-class SampleInformationFile:
+class FileSampleInformation:
     """Sample information file (paired fastq, merged fasta and sorted read fasta)"""
 
     def __init__(self, tsv_path):
@@ -191,7 +190,7 @@ class SampleInformationFile:
         Parameters
         ----------
         header: list
-            List of header fields in lower case of SampleInformationFile
+            List of header fields in lower case of FileSampleInformation
 
         Returns
         -------
@@ -248,25 +247,25 @@ class SampleInformationFile:
             #
             # Insert run_name
             run_obj = {'name': run_name}
-            run_instance = SampleInformationFile.get_or_create(
+            run_instance = FileSampleInformation.get_or_create(
                 session, Run, **run_obj)
             run_id = run_instance.id
             #
             # Insert marker_id
             marker_obj = {'name': marker_name}
-            marker_instance = SampleInformationFile.get_or_create(
+            marker_instance = FileSampleInformation.get_or_create(
                 session, Marker, **marker_obj)
             marker_id = marker_instance.id
             #
             # Insert Biosamples
             sample_obj = {'name': sample_name}
-            sample_instance = SampleInformationFile.get_or_create(
+            sample_instance = FileSampleInformation.get_or_create(
                 session, Sample, **sample_obj)
             sample_id = sample_instance.id
             #
             # Insert file output
             fasta_obj = {'name': sorted_read_file, 'run_id': run_id}
-            fasta_instance = SampleInformationFile.get_or_create(
+            fasta_instance = FileSampleInformation.get_or_create(
                 session, SortedReadFile, **fasta_obj)
             fasta_id = fasta_instance.id
 
@@ -277,7 +276,7 @@ class SampleInformationFile:
                 'run_id': run_id}
             sample_information_obj['sortedreadfile_id'] = fasta_id
             sample_information_obj['marker_id'] = marker_id
-            SampleInformationFile.get_or_create(
+            FileSampleInformation.get_or_create(
                 session, SampleInformation, **sample_information_obj)
 
     def get_variant_df(

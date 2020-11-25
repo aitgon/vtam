@@ -1,7 +1,7 @@
 import pandas
 
 
-class FilterMinReplicateNumberRunner:
+class RunnerFilterMinReplicateNumber:
 
     def __init__(self, variant_read_count_df):
         """Carries out a chimera analysis"""
