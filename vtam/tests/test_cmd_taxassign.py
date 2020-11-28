@@ -51,6 +51,7 @@ class TestCommandTaxAssign(unittest.TestCase):
 
         cmd = "vtam coi_blast_db --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 ".format(**cls.args)
 
+        # if not (os.path.isfile(os.path.join(cls.args['coi_blast_db_dir'], "coi_blast_db_20200420.nhr"))):
         if sys.platform.startswith("win"):
             args = cmd
         else:
