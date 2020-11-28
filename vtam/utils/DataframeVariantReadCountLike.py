@@ -4,7 +4,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
 
 
-class VariantReadCountLikeDF(object):
+class DataframeVariantReadCountLike(object):
     """
     Takes as input a variant_read_count_input_df (run_id, marker_id, sample_id, replicate, N_ijk) and returns
     the different LFN calculation, that is N_i, N_ik, ...

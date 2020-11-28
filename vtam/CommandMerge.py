@@ -4,10 +4,9 @@ import pandas
 import pathlib
 import sys
 
-from vtam.utils.ParamsFile import ParamsFile
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.SummaryFile import SummaryFileMerge
-from vtam.utils.VSearch import VSearch
+from vtam.utils.FileParams import FileParams
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.RunnerVSearch import RunnerVSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
 
@@ -24,7 +23,7 @@ class CommandMerge(object):
         #
         ############################################################################################
 
-        params_dic = ParamsFile(params).get_params_dic()
+        params_dic = FileParams(params).get_params_dic()
 
         ############################################################################################
         #
@@ -32,7 +31,7 @@ class CommandMerge(object):
         #
         ############################################################################################
 
-        fastqinfo_df = SampleInformationFile(fastqinfo).read_tsv_into_df()
+        fastqinfo_df = FileSampleInformation(fastqinfo).read_tsv_into_df()
 
         pathlib.Path(
             os.path.dirname(fastainfo)).mkdir(
@@ -110,7 +109,7 @@ class CommandMerge(object):
             vsearch_args_dic['fastaout'] = out_fasta_path
             vsearch_args_dic['threads'] = num_threads
 
-            vsearch_cluster = VSearch(parameters=vsearch_args_dic)
+            vsearch_cluster = RunnerVSearch(parameters=vsearch_args_dic)
             vsearch_cluster.run()
 
             fastq_info_df_i = fastq_info_df_i[['run', 'marker', 'sample', 'replicate', 'tagfwd',

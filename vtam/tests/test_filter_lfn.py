@@ -4,7 +4,7 @@ import unittest
 
 import pandas
 
-from vtam.utils.FilterLFNRunner import FilterLFNrunner
+from vtam.utils.RunnerFilterLFN import RunnerFilterLFN
 from vtam.utils.PathManager import PathManager
 
 
@@ -56,7 +56,7 @@ class TestFilterLFN(unittest.TestCase):
         })
         self.marker_id = 1
         #
-        self.filter_lfn_runner = FilterLFNrunner(self.variant_read_count_df)
+        self.filter_lfn_runner = RunnerFilterLFN(self.variant_read_count_df)
 
     def test_filter_lfn_runner_run(self):
         lfn_variant_cutoff = 0.001

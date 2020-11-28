@@ -11,7 +11,7 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import rank_hierarchy, identity_list
 
 
-class TaxAssignRunner(object):
+class RunnerTaxAssign(object):
     """Will assign variants to a taxon"""
 
     def __init__(
@@ -52,7 +52,7 @@ class TaxAssignRunner(object):
             "file: {}; line: {}; Create SortedReadFile from Variants".format(
                 __file__, inspect.currentframe().f_lineno))
         variant_fasta = os.path.join(self.this_temp_dir, 'variant.fasta')
-        # variant_df_utils = VariantDF(variant_df)
+        # variant_df_utils = DataframeVariant(variant_df)
         # variant_df_utils.to_fasta(variant_fasta)
         with open(variant_fasta, 'w') as fout:
             for seq in sequence_list:

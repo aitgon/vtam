@@ -3,7 +3,7 @@ import pandas
 import unittest
 
 from vtam.utils.constants import get_params_default_dic
-from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
+from vtam.utils.RunnerFilterLFNreplicateRemain import RunnerFilterLFNreplicateRemain
 
 
 class TestFilterLFNreplicateRemainRunner(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestFilterLFNreplicateRemainRunner(unittest.TestCase):
 
         for i, lfn_ni_cutoff in enumerate(lfn_ni_cutoff_lst):
             self.optimize_params_dic['lfn_ni_cutoff'] = lfn_ni_cutoff
-            count_keep, count_delete = FilterLFNreplicateRemainRunner(nijk_df=self.nijk_df, **self.optimize_params_dic)\
+            count_keep, count_delete = RunnerFilterLFNreplicateRemain(nijk_df=self.nijk_df, **self.optimize_params_dic)\
                 .count_keep_delete(known_occurrences_df=self.known_occurrs_run_marker_df)
             self.assertEqual(count_keep, count_keep_lst[i])
 
@@ -51,6 +51,6 @@ class TestFilterLFNreplicateRemainRunner(unittest.TestCase):
 
         for i, lfn_nik_cutoff in enumerate(lfn_nik_cutoff_lst):
             self.optimize_params_dic['lfn_nik_cutoff'] = lfn_nik_cutoff
-            count_keep, count_delete = FilterLFNreplicateRemainRunner(nijk_df=self.nijk_df, **self.optimize_params_dic)\
+            count_keep, count_delete = RunnerFilterLFNreplicateRemain(nijk_df=self.nijk_df, **self.optimize_params_dic)\
                 .count_keep_delete(known_occurrences_df=self.known_occurrs_run_marker_df)
             self.assertEqual(count_keep, count_keep_lst[i])

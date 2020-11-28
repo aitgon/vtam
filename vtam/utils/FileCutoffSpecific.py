@@ -1,25 +1,18 @@
 import argparse
 import os
 import sys
-
 import pandas
+
 from vtam.utils.Logger import Logger
-
 from vtam.utils.VTAMexception import VTAMexception
-
-from vtam.models.Sample import Sample
-
 from vtam.models.Marker import Marker
-
 from vtam.models.Run import Run
-
 from vtam.utils.NameIdConverter import NameIdConverter
-
 from vtam.utils.constants import header_cutoff_specific_variant_replicate, \
     header_cutoff_specific_variant
 
 
-class CutoffSpecificFile(object):
+class FileCutoffSpecific(object):
 
     def __init__(self, cutoff_specific_tsv):
         """

@@ -1,8 +1,8 @@
-from vtam.utils.FilterLFNRunner import FilterLFNrunner
-from vtam.utils.FilterMinReplicateNumberRunner import FilterMinReplicateNumberRunner
+from vtam.utils.RunnerFilterLFN import RunnerFilterLFN
+from vtam.utils.RunnerFilterMinReplicateNumber import RunnerFilterMinReplicateNumber
 
 
-class FilterLFNreplicateRemainRunner:
+class RunnerFilterLFNreplicateRemain:
     """This is the filter(s) used by OptimizeLFNreadCountAndLFNvariant"""
 
     def __init__(self, nijk_df, lfn_ni_cutoff, lfn_nik_cutoff, lfn_njk_cutoff, lfn_nijk_cutoff,
@@ -38,7 +38,7 @@ class FilterLFNreplicateRemainRunner:
 
     def get_nijk_remain_df(self):
 
-        lfn_filter_runner = FilterLFNrunner(self.nijk_df)
+        lfn_filter_runner = RunnerFilterLFN(self.nijk_df)
 
         ############################################################################################
         #
@@ -90,11 +90,11 @@ class FilterLFNreplicateRemainRunner:
 
         ############################################################################################
         #
-        # FilterMinReplicateNumberRunner
+        # RunnerFilterMinReplicateNumber
         #
         ############################################################################################
 
-        nijk_remain_df = FilterMinReplicateNumberRunner(
+        nijk_remain_df = RunnerFilterMinReplicateNumber(
             nijk_remain_df).get_variant_read_count_delete_df(self.min_replicate_number)
         nijk_remain_df = nijk_remain_df.loc[
             (nijk_remain_df.filter_delete == 0)]

@@ -2,7 +2,7 @@ import os
 import pandas
 import unittest
 
-from vtam.utils.FilterRenkonenRunner import FilterRenkonenRunner
+from vtam.utils.RunnerFilterRenkonen import RunnerFilterRenkonen
 
 
 class TestFilterRenkonen(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestFilterRenkonen(unittest.TestCase):
         self.variant_read_count_output_df = pandas.read_csv(test_filter_renkonen_output_tsv_path,
                                                             sep="\t", header=0)
 
-        self.filter_renkonen_runner_obj = FilterRenkonenRunner(self.variant_read_count_input_df)
+        self.filter_renkonen_runner_obj = RunnerFilterRenkonen(self.variant_read_count_input_df)
 
     def test_renkonen_distance(self):
         run = 1

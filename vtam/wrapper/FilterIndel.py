@@ -1,7 +1,7 @@
-from vtam.utils.FilterIndelRunner import FilterIndelRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
+from vtam.utils.RunnerFilterIndel import RunnerFilterIndel
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
+from vtam.utils.ModelVariantReadCountLike import ModelVariantReadCountLike
 from vtam.utils.Logger import Logger
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
@@ -82,7 +82,7 @@ class FilterIndel(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_indel_model)
@@ -100,7 +100,7 @@ class FilterIndel(ToolWrapper):
 
         variant_df = sample_info_tsv_obj.get_variant_df(
             variant_read_count_like_model=input_filter_renkonen_model, engine=engine)
-        variant_read_count_delete_df = FilterIndelRunner(
+        variant_read_count_delete_df = RunnerFilterIndel(
             variant_read_count_df).get_variant_read_count_delete_df(variant_df, skip_filter_indel)
 
         #######################################################################
@@ -111,7 +111,7 @@ class FilterIndel(ToolWrapper):
         #
         #######################################################################
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_indel_model)
 
         for output_table_i in self.specify_output_table():

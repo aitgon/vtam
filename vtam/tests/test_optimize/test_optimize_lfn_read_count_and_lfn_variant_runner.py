@@ -2,8 +2,8 @@ import os
 import pandas
 import unittest
 
-from vtam.utils.OptimizeLFNreadCountAndVariantRunMarkerRunner import \
-    OptimizeLFNreadCountAndVariantRunMarkerRunner
+from vtam.utils.RunnerOptimizeLFNreadCountAndVariantRunMarker import \
+    RunnerOptimizeLFNreadCountAndVariantRunMarker
 from vtam.utils.constants import get_params_default_dic
 
 
@@ -36,10 +36,10 @@ class TestOptimizeLFNreadCountAndLFNvariantRunner(unittest.TestCase):
         self.lfn_nijk_cutoff = params_default_dic['lfn_read_count_cutoff']
         self.min_replicate_number = params_default_dic['min_replicate_number']
 
-        lfn_nijk_cutoff_lst = OptimizeLFNreadCountAndVariantRunMarkerRunner.get_lfn_nijk_cutoff_lst(150, 200, 3)
-        lfn_ni_nik_cutoff_lst = OptimizeLFNreadCountAndVariantRunMarkerRunner.get_lfn_ni_nik_cutoff_lst(0.01, 0.51, 3)
+        lfn_nijk_cutoff_lst = RunnerOptimizeLFNreadCountAndVariantRunMarker.get_lfn_nijk_cutoff_lst(150, 200, 3)
+        lfn_ni_nik_cutoff_lst = RunnerOptimizeLFNreadCountAndVariantRunMarker.get_lfn_ni_nik_cutoff_lst(0.01, 0.51, 3)
 
-        self.optim_run_marker_obj = OptimizeLFNreadCountAndVariantRunMarkerRunner(
+        self.optim_run_marker_obj = RunnerOptimizeLFNreadCountAndVariantRunMarker(
             nijk_df=self.nijk_df, known_occurrences_df=self.known_occurrences_df,
             lfn_nijk_cutoff_lst=lfn_nijk_cutoff_lst, lfn_ni_nik_cutoff_lst=lfn_ni_nik_cutoff_lst)
 

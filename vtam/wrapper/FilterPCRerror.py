@@ -1,9 +1,9 @@
 from wopmars.models.ToolWrapper import ToolWrapper
 from vtam import Logger
-from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
+from vtam.utils.RunnerFilterPCRerror import RunnerFilterPCRerror
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
+from vtam.utils.ModelVariantReadCountLike import ModelVariantReadCountLike
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 
@@ -90,7 +90,7 @@ class FilterPCRerror(ToolWrapper):
         #
         ############################################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_pcr_error_model)
@@ -134,7 +134,7 @@ class FilterPCRerror(ToolWrapper):
             #
             ########################################################################################
 
-            filter_pcr_error_runner = FilterPCRerrorRunner(
+            filter_pcr_error_runner = RunnerFilterPCRerror(
                 variant_expected_df=variant_per_sample_df,
                 variant_unexpected_df=variant_per_sample_df,
                 variant_read_count_df=variant_read_count_per_sample_df)
@@ -147,7 +147,7 @@ class FilterPCRerror(ToolWrapper):
             #
             ########################################################################################
 
-            record_per_sample_list = VariantReadCountLikeTable.filter_delete_df_to_dict(
+            record_per_sample_list = ModelVariantReadCountLike.filter_delete_df_to_dict(
                 filter_output_per_sample_df)
             record_list = record_list + record_per_sample_list
 
@@ -162,7 +162,7 @@ class FilterPCRerror(ToolWrapper):
         #
         #######################################################################
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_pcr_error_model)
 
         for output_table_i in self.specify_output_table():

@@ -4,10 +4,10 @@ import sqlalchemy
 from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 
 
-class OptimizeLFNsampleReplicateRunner:
+class RunnerOptimizeLFNsampleReplicate:
 
     def __init__(self, variant_read_count_df, known_occurrences_df):
 
@@ -22,7 +22,7 @@ class OptimizeLFNsampleReplicateRunner:
         #
         ############################################################################################
 
-        N_jk_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_jk_df()
+        N_jk_df = DataframeVariantReadCountLike(self.variant_read_count_df).get_N_jk_df()
 
         # Append N_jk
         optimize_df = self.variant_read_count_df.merge(N_jk_df, on=['run_id', 'marker_id', 'sample_id', 'replicate'])

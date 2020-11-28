@@ -6,7 +6,7 @@ import yaml
 
 from vtam.utils.ArgParser import ArgParser
 from vtam.utils.PathManager import PathManager
-from vtam.utils.WopmarsRunner import WopmarsRunner
+from vtam.utils.RunnerWopmars import RunnerWopmars
 
 
 class TestWorpmarsRunnerOptimize(unittest.TestCase):
@@ -36,7 +36,7 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
         args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
-        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
+        wopmars_runner = RunnerWopmars(command='optimize', cli_args_dic=vars(args))
         wopfile_path = "tests/output/wopfile"
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 
@@ -56,7 +56,7 @@ class TestWorpmarsRunnerOptimize(unittest.TestCase):
         args = ArgParser.get_main_arg_parser().parse_args(cmd.split(" "))
         os.chdir(cwd)
 
-        wopmars_runner = WopmarsRunner(command='optimize', cli_args_dic=vars(args))
+        wopmars_runner = RunnerWopmars(command='optimize', cli_args_dic=vars(args))
         wopfile_path = os.path.relpath(os.path.join(self.package_path, "tests/output/wopfile"), self.package_path)
         wopfile_path, wopfile_content = wopmars_runner.create_wopfile(path=wopfile_path)
 

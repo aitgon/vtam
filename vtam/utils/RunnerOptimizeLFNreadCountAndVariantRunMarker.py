@@ -2,11 +2,11 @@ import pandas
 import numpy
 from vtam.utils.VTAMexception import VTAMexception
 
-from vtam.utils.FilterLFNreplicateRemainRunner import FilterLFNreplicateRemainRunner
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.RunnerFilterLFNreplicateRemain import RunnerFilterLFNreplicateRemain
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 
 
-class OptimizeLFNreadCountAndVariantRunMarkerRunner:
+class RunnerOptimizeLFNreadCountAndVariantRunMarker:
 
     """This the Runner for Optimize LFN readcount and variant/variantReplicate
     in the presence of one run-marker combination"""
@@ -58,7 +58,7 @@ class OptimizeLFNreadCountAndVariantRunMarkerRunner:
 
         for lfn_nijk_cutoff_item in self.lfn_nijk_cutoff_lst:
 
-            count_keep, count_delete = FilterLFNreplicateRemainRunner(
+            count_keep, count_delete = RunnerFilterLFNreplicateRemain(
                 nijk_df=self.nijk_df, lfn_ni_cutoff=lfn_ni_cutoff, lfn_nik_cutoff=lfn_nik_cutoff, lfn_njk_cutoff=lfn_njk_cutoff, lfn_nijk_cutoff=lfn_nijk_cutoff_item,
                            min_replicate_number=min_replicate_number)\
                 .count_keep_delete(known_occurrences_df=self.known_occurrences_df)
@@ -81,12 +81,12 @@ class OptimizeLFNreadCountAndVariantRunMarkerRunner:
         for lfn_ni_nik_cutoff_item in self.lfn_ni_nik_cutoff_lst:
 
             if lfn_nik_cutoff is None:
-                count_keep, count_delete = FilterLFNreplicateRemainRunner(
+                count_keep, count_delete = RunnerFilterLFNreplicateRemain(
                     nijk_df=self.nijk_df, lfn_ni_cutoff=lfn_ni_nik_cutoff_item, lfn_nik_cutoff=lfn_nik_cutoff, lfn_njk_cutoff=lfn_njk_cutoff, lfn_nijk_cutoff=lfn_nijk_cutoff,
                                min_replicate_number=min_replicate_number)\
                     .count_keep_delete(known_occurrences_df=self.known_occurrences_df)
             else:
-                count_keep, count_delete = FilterLFNreplicateRemainRunner(
+                count_keep, count_delete = RunnerFilterLFNreplicateRemain(
                     nijk_df=self.nijk_df, lfn_ni_cutoff=lfn_ni_cutoff, lfn_nik_cutoff=lfn_ni_nik_cutoff_item, lfn_njk_cutoff=lfn_njk_cutoff, lfn_nijk_cutoff=lfn_nijk_cutoff,
                                min_replicate_number=min_replicate_number)\
                     .count_keep_delete(known_occurrences_df=self.known_occurrences_df)
@@ -118,14 +118,14 @@ class OptimizeLFNreadCountAndVariantRunMarkerRunner:
             for lfn_ni_nik_cutoff_item in lfn_ni_nik_cutoff_lst:
 
                 if lfn_nik_cutoff is None:
-                    count_keep, count_delete = FilterLFNreplicateRemainRunner(
+                    count_keep, count_delete = RunnerFilterLFNreplicateRemain(
                         nijk_df=self.nijk_df, lfn_ni_cutoff=lfn_ni_nik_cutoff_item,
                         lfn_nik_cutoff=lfn_nik_cutoff, lfn_njk_cutoff=lfn_njk_cutoff,
                         lfn_nijk_cutoff=lfn_nijk_cutoff_item,
                         min_replicate_number=min_replicate_number) \
                         .count_keep_delete(known_occurrences_df=self.known_occurrences_df)
                 else:
-                    count_keep, count_delete = FilterLFNreplicateRemainRunner(
+                    count_keep, count_delete = RunnerFilterLFNreplicateRemain(
                         nijk_df=self.nijk_df, lfn_ni_cutoff=lfn_ni_cutoff,
                         lfn_nik_cutoff=lfn_ni_nik_cutoff_item, lfn_njk_cutoff=lfn_njk_cutoff,
                         lfn_nijk_cutoff=lfn_nijk_cutoff_item,
@@ -167,7 +167,7 @@ class OptimizeLFNreadCountAndVariantRunMarkerRunner:
         nijk_run_marker_delete_df = self.nijk_df.merge(
             delete_run_marker_sample_variant_df, on=['run_id', 'marker_id', 'sample_id',
                                                         'variant_id'])
-        nijk_df_i_obj = VariantReadCountLikeDF(self.nijk_df)
+        nijk_df_i_obj = DataframeVariantReadCountLike(self.nijk_df)
 
         if lfn_nik_cutoff is None:  # optimize lfn variant
             N_i_df = nijk_df_i_obj.get_N_i_df()

@@ -6,10 +6,10 @@ import pandas
 import yaml
 
 from vtam import CommandBlastCOI
-from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
-from vtam.utils.KnownOccurrences import KnownOccurrences
-from vtam.utils.ParamsFile import ParamsFile
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileCutoffSpecific import FileCutoffSpecific
+from vtam.utils.FileKnownOccurrences import FileKnownOccurrences
+from vtam.utils.FileParams import FileParams
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils import constants
 from vtam.utils.constants import header_merged_fasta, header_paired_fastq, header_sortedread_fasta, \
     coi_blast_db_gz_url1
@@ -139,7 +139,7 @@ class ArgParser:
     parser_params = argparse.ArgumentParser(add_help=False)
     parser_params.add_argument(
         '--params', action='store', default=None, help="YML file with parameter values",
-        required=False, type=lambda x: ParamsFile(
+        required=False, type=lambda x: FileParams(
             params_path=x).argparse_checker_params_file())
 
     parser_log = argparse.ArgumentParser(add_help=False)
@@ -248,7 +248,7 @@ class ArgParser:
         parser_vtam_merge.add_argument('--fastqinfo', action='store',
                                        help="input TSV file with paired FASTQ file information",
                                        required=True,
-                                       type=lambda x: SampleInformationFile(x).check_args(
+                                       type=lambda x: FileSampleInformation(x).check_args(
                                            header=header_paired_fastq))
 
         parser_vtam_merge.add_argument('--fastainfo',
@@ -286,7 +286,7 @@ class ArgParser:
             action='store',
             help="input TSV file with FASTA file information",
             required=True,
-            type=lambda x: SampleInformationFile(x).check_args(
+            type=lambda x: FileSampleInformation(x).check_args(
                 header=header_merged_fasta))
 
         parser_vtam_sortreads.add_argument(
@@ -320,7 +320,7 @@ class ArgParser:
             action='store',
             help="input TSV file with information about FASTA files containing sorted reads",
             required=True,
-            type=lambda x: SampleInformationFile(x).check_args(
+            type=lambda x: FileSampleInformation(x).check_args(
                 header=header_sortedread_fasta)
         )
         parser_vtam_filter.add_argument(
@@ -341,7 +341,7 @@ class ArgParser:
                                         required=False,
                                         help="TSV file with variant (col1: variant; col2: cutoff) or variant-replicate "
                                              "(col1: variant; col2: replicate; col3: cutoff)specific cutoffs",
-                                        type=lambda x: CutoffSpecificFile(x).argparse_checker())
+                                        type=lambda x: FileCutoffSpecific(x).argparse_checker())
 
         parser_vtam_filter.add_argument(
             '--lfn_variant_replicate',
@@ -355,7 +355,7 @@ class ArgParser:
             action='store',
             help="TSV file with expected (keep) occurrences",
             required=False,
-            type=lambda x: KnownOccurrences(x).argparse_checker_known_occurrences())
+            type=lambda x: FileKnownOccurrences(x).argparse_checker_known_occurrences())
 
         parser_vtam_filter.add_argument(
             '-U',
@@ -450,7 +450,7 @@ class ArgParser:
             action='store',
             help="input TSV file with information about FASTA files containing sorted (trimmed and demultiplexed) reads",
             required=True,
-            type=lambda x: SampleInformationFile(x).check_args(
+            type=lambda x: FileSampleInformation(x).check_args(
                 header=header_sortedread_fasta))
 
         parser_vtam_optimize.add_argument(
@@ -473,7 +473,7 @@ class ArgParser:
             action='store',
             help="TSV file with known variants",
             required=True,
-            type=lambda x: KnownOccurrences(x).argparse_checker_known_occurrences())
+            type=lambda x: FileKnownOccurrences(x).argparse_checker_known_occurrences())
 
         parser_vtam_optimize.add_argument(
             '--lfn_variant_replicate',
@@ -516,14 +516,14 @@ class ArgParser:
         parser_vtam_pool_markers.add_argument(
             '--db', action='store', required=True, help="SQLITE file with DB")
 
-        from vtam.utils.RunMarkerFile import RunMarkerFile
+        from vtam.utils.FileRunMarker import FileRunMarker
         parser_vtam_pool_markers.add_argument(
             '--runmarker',
             action='store',
             default=None,
-            help=RunMarkerFile.help(),
+            help=FileRunMarker.help(),
             required=True,
-            type=lambda x: RunMarkerFile(x).check_argument())
+            type=lambda x: FileRunMarker(x).check_argument())
 
         parser_vtam_pool_markers.add_argument(
             '--asvtable',

@@ -3,10 +3,10 @@ from vtam.models.Marker import Marker
 from vtam.models.Run import Run
 from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.SequenceClusterer import SequenceClusterer
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 
 
-class AsvTableRunner(object):
+class RunnerAsvTable(object):
 
     def __init__(self, variant_read_count_df, engine, sample_list, cluster_identity, known_occurrences_df=None):
 
@@ -97,7 +97,7 @@ class AsvTableRunner(object):
 4        1          1        1309         755  CTTATATTTTATTTTTGGTGCTTGATCAGGGATAGTGGGAACTTCT...              175               False       1309            2
             """
 
-        asvtable_variant_info_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_i_df()
+        asvtable_variant_info_df = DataframeVariantReadCountLike(self.variant_read_count_df).get_N_i_df()
         asvtable_variant_info_df.rename({'N_i': 'read_count'}, axis=1, inplace=True)
 
         asvtable_variant_info_df['sequence'] = NameIdConverter(
@@ -139,7 +139,7 @@ sample  run_id  marker_id  variant_id  tpos1_run1  tnegtag_run1  14ben01  14ben0
 7               1          1        4134           0             0        0      990
             """
 
-        asvtable_2nd_df = VariantReadCountLikeDF(self.variant_read_count_df).get_N_ij_df()
+        asvtable_2nd_df = DataframeVariantReadCountLike(self.variant_read_count_df).get_N_ij_df()
         asvtable_2nd_df.sample_id = NameIdConverter(id_name_or_sequence_list=asvtable_2nd_df.sample_id.tolist(), engine=self.engine)\
             .to_names(Sample)
         asvtable_2nd_df.rename({'sample_id': 'sample'}, axis=1, inplace=True)

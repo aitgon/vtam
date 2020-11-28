@@ -1,17 +1,17 @@
 import pathlib
 
-from vtam.utils.CutoffSpecificFile import CutoffSpecificFile
+from vtam.utils.FileCutoffSpecific import FileCutoffSpecific
 
-from vtam.utils.FilterLFNRunner import FilterLFNrunner
+from vtam.utils.RunnerFilterLFN import RunnerFilterLFN
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
 from wopmars.models.ToolWrapper import ToolWrapper
 
 import sys
 
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
-from vtam.utils.VariantReadCountLikeTable import VariantReadCountLikeTable
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
+from vtam.utils.ModelVariantReadCountLike import ModelVariantReadCountLike
 
 
 class FilterLFN(ToolWrapper):
@@ -97,7 +97,7 @@ class FilterLFN(ToolWrapper):
         #
         ############################################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_lfn_model)
@@ -107,11 +107,11 @@ class FilterLFN(ToolWrapper):
 
         lfn_variant_specific_cutoff_df = None
         if (not (lfn_variant_cutoff is None)) and pathlib.Path(lfn_variant_specific_cutoff).stat().st_size > 0:
-            lfn_variant_specific_cutoff_df = CutoffSpecificFile(lfn_variant_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=False)
+            lfn_variant_specific_cutoff_df = FileCutoffSpecific(lfn_variant_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=False)
 
         lfn_variant_replicate_specific_cutoff_df = None
         if (not (lfn_variant_replicate_cutoff is None)) and pathlib.Path(lfn_variant_replicate_specific_cutoff).stat().st_size > 0:
-            lfn_variant_replicate_specific_cutoff_df = CutoffSpecificFile(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=True)
+            lfn_variant_replicate_specific_cutoff_df = FileCutoffSpecific(lfn_variant_replicate_specific_cutoff).to_identifier_df(engine=engine, is_lfn_variant_replicate=True)
 
         ############################################################################################
         #
@@ -119,7 +119,7 @@ class FilterLFN(ToolWrapper):
         #
         ############################################################################################
 
-        variant_read_count_delete_df = FilterLFNrunner(variant_read_count_df).get_variant_read_count_delete_df(
+        variant_read_count_delete_df = RunnerFilterLFN(variant_read_count_df).get_variant_read_count_delete_df(
             lfn_variant_cutoff=lfn_variant_cutoff,
             lfn_variant_specific_cutoff=lfn_variant_specific_cutoff_df,
             lfn_variant_replicate_cutoff=lfn_variant_replicate_cutoff,
@@ -127,7 +127,7 @@ class FilterLFN(ToolWrapper):
             lfn_sample_replicate_cutoff=lfn_sample_replicate_cutoff,
             lfn_read_count_cutoff=lfn_read_count_cutoff)
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_lfn_model)
 
         for output_table_i in self.specify_output_table():

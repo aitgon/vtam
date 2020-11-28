@@ -1,5 +1,5 @@
 from wopmars.models.ToolWrapper import ToolWrapper
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 
 
 class SampleInformation(ToolWrapper):
@@ -45,7 +45,7 @@ class SampleInformation(ToolWrapper):
         # input file paths
         csv_path = self.input_file(SampleInformation.__input_file_csv)
 
-        SampleInformationFile(csv_path).to_sqlite(session=session)
+        FileSampleInformation(csv_path).to_sqlite(session=session)
 
         #######################################################################
         #

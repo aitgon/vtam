@@ -1,8 +1,8 @@
-from vtam.utils.FilterCodonStopRunner import FilterCodonStopRunner
+from vtam.utils.RunnerFilterCodonStop import RunnerFilterCodonStop
 from vtam.utils.Logger import Logger
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 from wopmars.models.ToolWrapper import ToolWrapper
 import sys
 
@@ -81,7 +81,7 @@ class FilterCodonStop(ToolWrapper):
         #
         #######################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
 
         sample_info_tsv_obj.delete_from_db(
             engine=engine, variant_read_count_like_model=output_filter_codon_stop_model)
@@ -97,7 +97,7 @@ class FilterCodonStop(ToolWrapper):
 
         variant_df = sample_info_tsv_obj.get_variant_df(
             variant_read_count_like_model=input_filter_indel_model, engine=engine)
-        variant_read_count_delete_df = FilterCodonStopRunner(
+        variant_read_count_delete_df = RunnerFilterCodonStop(
             variant_read_count_df=variant_read_count_df).get_variant_read_count_delete_df(
             variant_df=variant_df,
             genetic_code=genetic_code,
@@ -111,7 +111,7 @@ class FilterCodonStop(ToolWrapper):
         #
         #######################################################################
 
-        VariantReadCountLikeDF(variant_read_count_delete_df).to_sql(
+        DataframeVariantReadCountLike(variant_read_count_delete_df).to_sql(
             engine=engine, variant_read_count_like_model=output_filter_codon_stop_model)
 
         for output_table_i in self.specify_output_table():

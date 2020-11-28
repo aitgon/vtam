@@ -7,18 +7,18 @@ import sqlalchemy
 from Bio import SeqIO
 
 from sqlalchemy.ext.automap import automap_base
-from vtam.utils.ParamsFile import ParamsFile
+from vtam.utils.FileParams import FileParams
 
 from vtam.models.Sample import Sample
 from vtam.models.FilterCodonStop import FilterCodonStop
-from vtam.utils.AsvTableRunner import AsvTableRunner
+from vtam.utils.RunnerAsvTable import RunnerAsvTable
 from vtam.utils.Logger import Logger
 from vtam.utils.NameIdConverter import NameIdConverter
 from vtam.utils.PathManager import PathManager
-from vtam.utils.RunMarkerFile import RunMarkerFile
+from vtam.utils.FileRunMarker import FileRunMarker
 from vtam.utils.SequenceClusterer import SequenceClusterer
-from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDF import VariantDF
+from vtam.utils.RunnerVSearch import RunnerVSearch
+from vtam.utils.DataframeVariant import DataframeVariant
 from vtam.utils.VTAMexception import VTAMexception
 
 
@@ -77,7 +77,7 @@ class CommandPoolRunMarkers(object):
         variant_df.columns = ['id', 'sequence', 'size']
         variant_df.set_index('id', inplace=True)
         # Create fasta_path file from asv_table_df
-        variant_df_utils = VariantDF(variant_df)
+        variant_df_utils = DataframeVariant(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
         vsearch_output_centroid_fasta = os.path.join(
@@ -92,7 +92,7 @@ class CommandPoolRunMarkers(object):
                               'centroids': vsearch_output_centroid_fasta,
                               "threads": int(os.getenv('VTAM_THREADS')),
                               }
-        vsearch_cluster = VSearch(parameters=vsearch_parameters)
+        vsearch_cluster = RunnerVSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
         self.cluster_path = vsearch_output_cluster_path
         return vsearch_output_centroid_fasta, vsearch_output_cluster_path
@@ -251,11 +251,11 @@ class CommandPoolRunMarkers(object):
         #######################################################################
 
         # params_dic = constants.get_params_default_dic()
-        params_dic = ParamsFile(params).get_params_dic()
+        params_dic = FileParams(params).get_params_dic()
 
         cluster_identity = params_dic['cluster_identity']
 
-        run_marker_file_obj = RunMarkerFile(tsv_path=run_marker_tsv)
+        run_marker_file_obj = FileRunMarker(tsv_path=run_marker_tsv)
 
         # run_marker_tsv_reader = RunMarkerTSVreader(db=db, run_marker_tsv_path=run_marker_tsv)
         if not (run_marker_tsv is None):
@@ -280,7 +280,7 @@ class CommandPoolRunMarkers(object):
         variant_read_count_df = run_marker_file_obj.get_variant_read_count_df(
             engine=engine, variant_read_count_like_model=FilterCodonStop)
 
-        asv_table_runner = AsvTableRunner(variant_read_count_df=variant_read_count_df,
+        asv_table_runner = RunnerAsvTable(variant_read_count_df=variant_read_count_df,
                                           engine=engine, sample_list=sample_list, cluster_identity=cluster_identity)
         asv_table_df = asv_table_runner.create_asvtable_df()
         asv_table_df.rename({'run': 'run_name', 'marker': 'marker_name', 'variant': 'variant_id'}, axis=1, inplace=True)

@@ -3,11 +3,11 @@ import pandas
 from vtam.models.Sample import Sample
 from vtam.models.Marker import Marker
 from vtam.models.Run import Run
-from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
+from vtam.utils.RunnerFilterPCRerror import RunnerFilterPCRerror
 from vtam.utils.NameIdConverter import NameIdConverter
 
 
-class OptimizePCRerrorRunner:
+class RunnerOptimizePCRerror:
     """Algorithm:
 
     1. Run algorithm per run-marker-sample
@@ -75,7 +75,7 @@ class OptimizePCRerrorRunner:
             #
             ########################################################################################
 
-            filter_pcr_error_runner = FilterPCRerrorRunner(
+            filter_pcr_error_runner = RunnerFilterPCRerror(
                 variant_expected_df=variant_expected_df, variant_unexpected_df=variant_unexpected_df,
                 variant_read_count_df=variant_read_count_per_sample_df)
 

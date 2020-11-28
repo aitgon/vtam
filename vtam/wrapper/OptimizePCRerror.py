@@ -2,10 +2,10 @@ import os
 import pathlib
 
 from vtam.models.VariantReadCount import VariantReadCount
-from vtam.utils.KnownOccurrences import KnownOccurrences
-from vtam.utils.OptimizePCRerrorRunner import OptimizePCRerrorRunner
+from vtam.utils.FileKnownOccurrences import FileKnownOccurrences
+from vtam.utils.RunnerOptimizePCRerror import RunnerOptimizePCRerror
 from vtam.utils.PathManager import PathManager
-from vtam.utils.SampleInformationFile import SampleInformationFile
+from vtam.utils.FileSampleInformation import FileSampleInformation
 from wopmars.models.ToolWrapper import ToolWrapper
 
 
@@ -82,11 +82,11 @@ class OptimizePCRerror(ToolWrapper):
         #
         ############################################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             VariantReadCount, engine=engine)
 
-        known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
+        known_occurrences_df = FileKnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
 
         ############################################################################################
         #
@@ -94,6 +94,6 @@ class OptimizePCRerror(ToolWrapper):
         #
         ############################################################################################
 
-        optimize_pcr_error_runner = OptimizePCRerrorRunner(
+        optimize_pcr_error_runner = RunnerOptimizePCRerror(
             variant_read_count_df=variant_read_count_df, known_occurrences_df=known_occurrences_df)
         optimize_pcr_error_runner.to_tsv(optimize_path=output_optimize_path, engine=engine)

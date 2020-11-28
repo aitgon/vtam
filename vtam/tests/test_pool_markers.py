@@ -8,8 +8,8 @@ import unittest
 
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDF import VariantDF
+from vtam.utils.RunnerVSearch import RunnerVSearch
+from vtam.utils.DataframeVariant import DataframeVariant
 
 
 class TestPoolMarkers(unittest.TestCase):
@@ -41,7 +41,7 @@ class TestPoolMarkers(unittest.TestCase):
             'variant_id', 'sequence', 'read_count']].drop_duplicates(inplace=False)
         variant_df.columns = ['id', 'sequence', 'size']
         # Create fasta_path file from asv_table_df
-        variant_df_utils = VariantDF(variant_df)
+        variant_df_utils = DataframeVariant(variant_df)
         variant_df_utils.to_fasta(fasta_path, add_column='size')
         # Define vsearch output tsv_path
         vsearch_output_path = os.path.join(
@@ -62,7 +62,7 @@ class TestPoolMarkers(unittest.TestCase):
                               '--centroids': vsearch_output_path,
                               "--threads": int(os.getenv('VTAM_THREADS')),
                               }
-        vsearch_cluster = VSearch(parameters=vsearch_parameters)
+        vsearch_cluster = RunnerVSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
     def test_cluster_sequences_with_vsearch(self):

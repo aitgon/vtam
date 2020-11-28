@@ -5,7 +5,7 @@ import pathlib
 import pandas
 from unittest import TestCase
 
-from vtam.utils.FilterPCRerrorRunner import FilterPCRerrorRunner
+from vtam.utils.RunnerFilterPCRerror import RunnerFilterPCRerror
 from vtam.utils.PathManager import PathManager
 
 
@@ -42,7 +42,7 @@ class TestFilterPCRError(TestCase):
 
     def test_get_vsearch_alignement_df(self):
 
-        filter_pcr_error_runner = FilterPCRerrorRunner(
+        filter_pcr_error_runner = RunnerFilterPCRerror(
             variant_expected_df=self.variant_df,
             variant_unexpected_df=self.variant_df,
             variant_read_count_df=self.variant_read_count_df)
@@ -57,7 +57,7 @@ class TestFilterPCRError(TestCase):
 
     def test_get_filter_output_df(self):
 
-        filter_pcr_error_runner = FilterPCRerrorRunner(
+        filter_pcr_error_runner = RunnerFilterPCRerror(
             variant_expected_df=self.variant_df,
             variant_unexpected_df=self.variant_df,
             variant_read_count_df=self.variant_read_count_df)

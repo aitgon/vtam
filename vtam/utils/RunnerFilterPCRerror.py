@@ -5,12 +5,12 @@ import pandas
 import pathlib
 
 from vtam.utils.PathManager import PathManager
-from vtam.utils.VSearch import VSearch
-from vtam.utils.VariantDF import VariantDF
-from vtam.utils.VariantReadCountLikeDF import VariantReadCountLikeDF
+from vtam.utils.RunnerVSearch import RunnerVSearch
+from vtam.utils.DataframeVariant import DataframeVariant
+from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 
 
-class FilterPCRerrorRunner(object):
+class RunnerFilterPCRerror(object):
     """Has attributes and methods to run_name the PCR error Filter"""
 
     def __init__(
@@ -69,14 +69,14 @@ class FilterPCRerrorRunner(object):
 
         variant_expected_fasta_path = os.path.join(
             self.__tmp_dir, '{}.fasta'.format("variant_expected"))
-        variant_expected_df_utils_obj = VariantDF(
+        variant_expected_df_utils_obj = DataframeVariant(
             variant_df=self.__variant_expected_df)
         variant_expected_df_utils_obj.to_fasta(
             fasta_path=variant_expected_fasta_path)
 
         variant_unexpected_fasta_path = os.path.join(
             self.__tmp_dir, '{}.fasta'.format("variant_unexpected"))
-        variant_unexpected_df_utils_obj = VariantDF(
+        variant_unexpected_df_utils_obj = DataframeVariant(
             variant_df=self.__variant_unexpected_df)
         variant_unexpected_df_utils_obj.to_fasta(
             fasta_path=variant_unexpected_fasta_path)
@@ -99,7 +99,7 @@ class FilterPCRerrorRunner(object):
             'userfields': "query+target+alnlen+ids+mism+gaps",
             'threads': num_threads,
         }
-        vsearch_cluster = VSearch(parameters=vsearch_parameters)
+        vsearch_cluster = RunnerVSearch(parameters=vsearch_parameters)
         vsearch_cluster.run()
 
         column_names = [
@@ -139,7 +139,7 @@ class FilterPCRerrorRunner(object):
         #
         ############################################################################################
 
-        variant_read_count_lfn_instance = VariantReadCountLikeDF(self.__variant_read_count_df)
+        variant_read_count_lfn_instance = DataframeVariantReadCountLike(self.__variant_read_count_df)
         N_ij_df = variant_read_count_lfn_instance.get_N_ij_df()
 
         pcr_error_df = pcr_error_df.merge(N_ij_df, left_on=['variant_id_expected'], right_on=['variant_id'])

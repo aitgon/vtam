@@ -1,7 +1,7 @@
 import pandas
 import unittest
 
-from vtam.utils.FilterIndelRunner import FilterIndelRunner
+from vtam.utils.RunnerFilterIndel import RunnerFilterIndel
 
 
 class TestIndel(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestIndel(unittest.TestCase):
 
     def test_01(self):
 
-        variant_read_count_delete_df = FilterIndelRunner(
+        variant_read_count_delete_df = RunnerFilterIndel(
             self.variant_read_count_df).get_variant_read_count_delete_df(
             variant_df=self.variant_df, skip_filter_indel=0)
 

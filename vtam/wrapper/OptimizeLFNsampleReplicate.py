@@ -1,6 +1,6 @@
-from vtam.utils.OptimizeLFNsampleReplicateRunner import OptimizeLFNsampleReplicateRunner
-from vtam.utils.SampleInformationFile import SampleInformationFile
-from vtam.utils.KnownOccurrences import KnownOccurrences
+from vtam.utils.RunnerOptimizeLFNsampleReplicate import RunnerOptimizeLFNsampleReplicate
+from vtam.utils.FileSampleInformation import FileSampleInformation
+from vtam.utils.FileKnownOccurrences import FileKnownOccurrences
 from wopmars.models.ToolWrapper import ToolWrapper
 from vtam.models.VariantReadCount import VariantReadCount
 
@@ -72,10 +72,10 @@ class OptimizeLFNsampleReplicate(ToolWrapper):
         #
         ############################################################################################
 
-        sample_info_tsv_obj = SampleInformationFile(tsv_path=fasta_info_tsv)
+        sample_info_tsv_obj = FileSampleInformation(tsv_path=fasta_info_tsv)
         variant_read_count_df = sample_info_tsv_obj.get_nijk_df(
             VariantReadCount, engine=engine)
-        known_occurrences_df = KnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
+        known_occurrences_df = FileKnownOccurrences(known_occurrences_tsv).to_identifier_df(engine)
         known_occurrences_df = known_occurrences_df.loc[
             (known_occurrences_df.mock == 1) & (known_occurrences_df.action == 'keep'), ]
 
@@ -85,7 +85,7 @@ class OptimizeLFNsampleReplicate(ToolWrapper):
         #
         ############################################################################################
 
-        optimize_lfn_sample_replicate_runner = OptimizeLFNsampleReplicateRunner(
+        optimize_lfn_sample_replicate_runner = RunnerOptimizeLFNsampleReplicate(
             variant_read_count_df=variant_read_count_df, known_occurrences_df=known_occurrences_df)
         optimize_lfn_sample_replicate_runner.to_tsv(optimize_path=output_optimize_path, engine=engine)
 

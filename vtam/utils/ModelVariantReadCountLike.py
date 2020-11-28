@@ -2,7 +2,7 @@ import pandas
 import sqlalchemy
 
 
-class VariantReadCountLikeTable(object):
+class ModelVariantReadCountLike(object):
     """Takes a any type of VariantReadCount models/table with at least run_id, marker_id, sample_id, replicate, variant_id
     attributes/columns and performs various operations on it"""
 
