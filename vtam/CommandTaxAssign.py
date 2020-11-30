@@ -52,12 +52,12 @@ class CommandTaxAssign(object):
         #######################################################################
 
         # params_dic = constants.get_params_default_dic()
-        params_dic = FileParams(params).get_params_dic()
+        # params_dic = FileParams(params).get_params_dic()
 
-        ltg_rule_threshold = params_dic['ltg_rule_threshold']
-        include_prop = params_dic['include_prop']
-        min_number_of_taxa = params_dic['min_number_of_taxa']
-        qcov_hsp_perc = params_dic['qcov_hsp_perc']
+        # ltg_rule_threshold = params_dic['ltg_rule_threshold']
+        # include_prop = params_dic['include_prop']
+        # min_number_of_taxa = params_dic['min_number_of_taxa']
+        # qcov_hsp_perc = params_dic['qcov_hsp_perc']
 
         #######################################################################
         #
@@ -177,11 +177,12 @@ class CommandTaxAssign(object):
                 taxonomy_df=taxonomy_df,
                 blast_db_dir=blastdb_dir_path,
                 blast_db_name=blastdbname_str,
-                ltg_rule_threshold=ltg_rule_threshold,
-                include_prop=include_prop,
-                min_number_of_taxa=min_number_of_taxa,
                 num_threads=num_threads,
-                qcov_hsp_perc=qcov_hsp_perc)
+                params = None)
+                # ltg_rule_threshold=ltg_rule_threshold,
+                # include_prop=include_prop,
+                # min_number_of_taxa=min_number_of_taxa,
+                # # qcov_hsp_perc=qcov_hsp_perc)
             ltg_blast_df = tax_assign_runner.ltg_df
 
             ######################################################
@@ -242,6 +243,7 @@ class CommandTaxAssign(object):
                     sqlalchemy.select(
                         [TaxAssign]) .where(
                         tax_assign_declarative_table.c.variant_id == variant_id)).first()
+                # import pdb; pdb.set_trace()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
                     ltg_row_dic = ltg_row._asdict()
                     ltg_row_dic['variant_id'] = variant_id

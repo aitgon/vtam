@@ -15,16 +15,15 @@ from Bio.Blast.Applications import NcbiblastnCommandline
 class RunnerBlast(object):
     """Runs Blast. Used by Taxassign"""
 
-    def __init__(self, variant_fasta, blast_db_dir, blast_db_name,
-            ltg_rule_threshold, include_prop, min_number_of_taxa, num_threads,
+    def __init__(self, variant_fasta, blast_db_dir, blast_db_name, num_threads,
             qcov_hsp_perc):
 
         self.variant_fasta = variant_fasta
         self.blast_db_dir = blast_db_dir
         self.blast_db_name = blast_db_name
-        self.ltg_rule_threshold = ltg_rule_threshold
-        self.include_prop = include_prop
-        self.min_number_of_taxa = min_number_of_taxa
+        # self.ltg_rule_threshold = ltg_rule_threshold
+        # self.include_prop = include_prop
+        # self.min_number_of_taxa = min_number_of_taxa
         self.num_threads = num_threads
         self.qcov_hsp_perc = qcov_hsp_perc
 
