@@ -1,4 +1,6 @@
 import os
+import shutil
+
 import pandas
 import pathlib
 import unittest
@@ -40,3 +42,6 @@ class TestRunnerLTGselection(unittest.TestCase):
             variantid_identity_lineage_df=self.variantid_identity_lineage_df, taxonomy_df=self.taxonomy_df, params=None)
         ltg_df = runner_ltg_selection.blast_output_to_ltg_tax_id()
         pandas._testing.assert_frame_equal(self.ltg_bak_df, ltg_df)
+
+    def tearDown(self):
+        shutil.rmtree(self.outdir_path, ignore_errors=True)
