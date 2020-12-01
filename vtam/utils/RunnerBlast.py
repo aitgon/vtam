@@ -72,7 +72,6 @@ class RunnerBlast(object):
     def process_blast_result(blast_output_tsv):
         """Reads blast_output_tsv and creates a DF that is compatible to the following taxassign. If this DF is empty, vtam will exit with a warning
 
-
         """
 
         Logger.instance().debug(

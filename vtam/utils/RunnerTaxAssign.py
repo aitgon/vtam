@@ -99,13 +99,13 @@ class RunnerTaxAssign(object):
             "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(
                 __file__, inspect.currentframe().f_lineno))
         # Merge local blast output with tax_id_to_lineage_df
-        # variantid_identity_lineage_df = blast_output_df.merge(
+        # variant_identity_lineage_df = blast_output_df.merge(
         #     tax_id_to_lineage_df, left_on='target_tax_id', right_on='tax_id')
         variantid_identity_lineage_df = blast_output_df.merge(
             tax_id_to_lineage_df, left_on='target_tax_id', right_index=True)
-        # variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
+        # variant_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
 
-        """(Pdb) variantid_identity_lineage_df.columns  
+        """(Pdb) variant_identity_lineage_df.columns  
 Index(['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
        'target_tax_id', 'no rank', 'species', 'genus', 'family', 'order',
        'class', 'subphylum', 'phylum', 'subkingdom', 'kingdom', 'superkingdom',
@@ -117,7 +117,7 @@ Index(['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
 
         #######################################################################
         #
-        #  blast_output_to_ltg_tax_id
+        #  several_variants_to_ltg
         # this function returns a data frame containing the Ltg rank and Ltg Tax_id for each variant
         #
         #######################################################################
@@ -127,6 +127,7 @@ Index(['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
             "compute the whole set of ltg_tax_id and ltg_rank for each variant_id"
             "to a dataframe".format(
                 __file__, inspect.currentframe().f_lineno))
-        runner_ltg_selection = RunnerLTGselection(variantid_identity_lineage_df=variantid_identity_lineage_df,
-                                                  taxonomy_df=self.taxonomy_df, params=params)
-        self.ltg_df = runner_ltg_selection.blast_output_to_ltg_tax_id()
+        runner_ltg_selection = RunnerLTGselection(
+            variant_identity_lineage_df=variantid_identity_lineage_df,
+            taxonomy_df=self.taxonomy_df, params=params)
+        self.ltg_df = runner_ltg_selection.several_variants_to_ltg()

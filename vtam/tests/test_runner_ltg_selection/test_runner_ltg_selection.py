@@ -16,8 +16,8 @@ class TestRunnerLTGselection(unittest.TestCase):
     def setUp(self):
 
         test_path = os.path.join(PathManager.get_test_path())
-        self.variantid_identity_lineage_df = pandas.read_csv(os.path.join(test_path, "test_runner_ltg_selection/variantid_identity_lineage.tsv"), sep="\t", header=0)
-        self.ltg_bak_df = pandas.read_csv(os.path.join(test_path, "test_runner_ltg_selection/ltg_bak.tsv"), sep="\t")
+        self.variantid_identity_lineage_df = pandas.read_csv(os.path.join(test_path, "test_runner_ltg_selection", "variantid_identity_lineage.tsv"), sep="\t", header=0)
+        self.ltg_bak_df = pandas.read_csv(os.path.join(test_path, "test_runner_ltg_selection", "ltg_bak.tsv"), sep="\t")
 
         # create_vtam_data_dir()
         testdir_path = os.path.join(PathManager.get_test_path())
@@ -36,11 +36,11 @@ class TestRunnerLTGselection(unittest.TestCase):
         taxonomy = Taxonomy(taxonomy_tsv_path)
         self.taxonomy_df = taxonomy.df
 
-    def test_01(self):
+    def test_blast_output_to_ltg_tax_id(self):
 
         runner_ltg_selection = RunnerLTGselection(
-            variantid_identity_lineage_df=self.variantid_identity_lineage_df, taxonomy_df=self.taxonomy_df, params=None)
-        ltg_df = runner_ltg_selection.blast_output_to_ltg_tax_id()
+            variant_identity_lineage_df=self.variantid_identity_lineage_df, taxonomy_df=self.taxonomy_df, params=None)
+        ltg_df = runner_ltg_selection.several_variants_to_ltg()
         pandas._testing.assert_frame_equal(self.ltg_bak_df, ltg_df)
 
     def tearDown(self):
