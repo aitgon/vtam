@@ -28,11 +28,6 @@ class RunnerTaxAssign(object):
 
         """
 
-        # self.variant_df = variant_df
-        # stores tax_id and old_tax_id
-        # self.old_tax_id_df = taxonomy_df[['old_tax_id']].drop_duplicates()
-        # self.taxonomy_df = taxonomy_df[[
-        #     'parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
         self.old_tax_id_df = taxonomy.old_tax_df
         self.taxonomy_df = taxonomy.df
         self.blast_db_dir = blast_db_dir
@@ -50,10 +45,6 @@ class RunnerTaxAssign(object):
 
         params_dic = FileParams(params).get_params_dic()
         qcov_hsp_perc = params_dic['qcov_hsp_perc']
-
-        self.ltg_rule_threshold = params_dic['ltg_rule_threshold']
-        self.include_prop = params_dic['include_prop']
-        self.min_number_of_taxa = params_dic['min_number_of_taxa']
 
         #######################################################################
         #
@@ -84,9 +75,7 @@ class RunnerTaxAssign(object):
 
         #######################################################################
         #
-        # Read target_tax_id
-        # Compute lineages for each unique target_tax_id
-        # Create a DF with these columns: tax_id and its lineage in wide format
+        # Compute tax lineages for Blast target tax ids
         #
         #######################################################################
 
@@ -97,17 +86,8 @@ class RunnerTaxAssign(object):
         Logger.instance().debug(
             "file: {}; line: {}; Annotate each target_tax_id with its lineage as columns in wide format".format(
                 __file__, inspect.currentframe().f_lineno))
-        lineage_list = []
-        for target_tax_id_i, target_tax_id in enumerate(
-                blast_output_df.target_tax_id.unique().tolist()):
-            if target_tax_id_i % 100 == 0:
-                Logger.instance().debug(
-                    "Get lineage of {}-th tax id {} (Total {} tax ids)".format(
-                        target_tax_id_i, target_tax_id, len(
-                            blast_output_df.target_tax_id.unique().tolist())))
-            # lineage_list.append(self.tax_id_to_taxonomy_lineage(tax_id=target_tax_id))
-            lineage_list.append(taxonomy.create_lineage(tax_id=target_tax_id))
-        tax_id_to_lineage_df = pandas.DataFrame(lineage_list)
+        tax_id_list = blast_output_df.target_tax_id.unique().tolist()
+        tax_id_to_lineage_df = taxonomy.get_several_tax_id_lineages(tax_id_list)
 
         #######################################################################
         #
@@ -119,11 +99,13 @@ class RunnerTaxAssign(object):
             "file: {}; line: {}; Merge blast result including tax_id with their lineages".format(
                 __file__, inspect.currentframe().f_lineno))
         # Merge local blast output with tax_id_to_lineage_df
+        # variantid_identity_lineage_df = blast_output_df.merge(
+        #     tax_id_to_lineage_df, left_on='target_tax_id', right_on='tax_id')
         variantid_identity_lineage_df = blast_output_df.merge(
-            tax_id_to_lineage_df, left_on='target_tax_id', right_on='tax_id')
-        variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
+            tax_id_to_lineage_df, left_on='target_tax_id', right_index=True)
+        # variantid_identity_lineage_df.drop('tax_id', axis=1, inplace=True)
 
-        """(Pdb) variantid_identity_lineage_df.columns
+        """(Pdb) variantid_identity_lineage_df.columns  
 Index(['variant_id', 'target_id', 'identity', 'evalue', 'coverage',
        'target_tax_id', 'no rank', 'species', 'genus', 'family', 'order',
        'class', 'subphylum', 'phylum', 'subkingdom', 'kingdom', 'superkingdom',

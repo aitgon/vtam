@@ -22,31 +22,27 @@ class Taxonomy(object):
         self.df = self.df.drop(['old_tax_id'], axis=1, inplace=False).drop_duplicates()
         self.df.set_index('tax_id', drop=True, inplace=True, verify_integrity=True)
 
-
-
-    def create_lineage(self, tax_id):
+    def get_one_tax_id_lineage(self, tax_id):
         """
-        Takes a tax_id and creates a dictionary with the taxonomy lineage
+        Takes a tax_id and creates a dictionary with the taxonomy lineage in
+        this form {'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
+     'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
+     'superkingdom': 2759}
 
-        :param tax_id: Identifier of taxon
-        :type tax_id: int
-        :param return_tax_name: (pandas.DataFrame: DataFrame with taxonomy information
-        :type return_tax_name: str
+        Parameters
+        ----------
+        tax_id : int
+            NCBI taxon id
 
-        :return: Dic with ranks/keys and tax_id/values
-        :rtype: list
-        Args:
-            tax_id (Integer): Identifier of taxon
-            taxonomy_df (pandas.DataFrame: DataFrame with taxonomy information
-
-        Returns:
-            Dictionnary: with taxonomy information for given tax_id, {'tax_id': 183142, 'species': 183142, 'genus': 10194, 'family': 10193, 'order': 84394,
-                             'superorder': 1709201, 'class': 10191, 'phylum': 10190, 'no rank': 131567, 'kingdom': 33208,
-                             'superkingdom': 2759}
+        Returns
+        -------
+        dic
+        Dictionnary with taxonomy lineage for given tax_id
 
         """
 
-        lineage_dic = {'tax_id': tax_id}
+        # lineage_dic = {'tax_id': tax_id}
+        lineage_dic = {}
         while tax_id != 1:
             # tax_id is found as normal index in the taxonomy file
             if tax_id in self.df.index:
@@ -68,3 +64,36 @@ class Taxonomy(object):
             lineage_dic[rank] = tax_id
             tax_id = parent_tax_id
         return lineage_dic
+
+    def get_several_tax_id_lineages(self, tax_id_list):
+        """
+        Takes a list of tax_id's and creates a DataFrame with the taxonomy lineages in columns
+        and the tax_id as index
+
+tax_id (index)  no rank    species     genus     family     order     class
+1246992   131567   741276.0    5533.0  1799696.0  231213.0  162481.0    29000.0
+1112827   131567  1112827.0    6220.0   941271.0    6219.0    6218.0
+
+        Parameters
+        ----------
+        tax_id : int
+            NCBI taxon id
+
+        Returns
+        -------
+        DataFrame
+        DataFrame with lineages in columns and tax_id as index
+
+        """
+
+        lineage_list = []
+        for target_tax_id_i, target_tax_id in enumerate(tax_id_list):
+            if target_tax_id_i % 100 == 0:
+                Logger.instance().debug(
+                    "Get lineage of {}-th tax id {} (Total {} tax ids)".format(
+                        target_tax_id_i, target_tax_id, len(tax_id_list)))
+            lineage_list.append({**{'tax_id': target_tax_id},
+                                 **self.get_one_tax_id_lineage(tax_id=target_tax_id)})
+        tax_id_lineage_df = pandas.DataFrame(lineage_list)
+        tax_id_lineage_df.set_index('tax_id', drop=True, inplace=True, verify_integrity=True)
+        return tax_id_lineage_df

@@ -106,6 +106,6 @@ class TestCommandTaxAssign(unittest.TestCase):
 
         self.assertTrue(filecmp.cmp(self.asvtable_taxa, self.asvtable_taxa_bak, shallow=True))
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.outdir_path, ignore_errors=True)
+    # @classmethod
+    # def tearDownClass(cls):
+    #     shutil.rmtree(cls.outdir_path, ignore_errors=True)
