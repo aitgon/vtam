@@ -170,8 +170,6 @@ class CommandTaxAssign(object):
         if len(variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
 
             blast_variant_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
-            # taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
-            # taxonomy_df.set_index('tax_id', drop=True, inplace=True)
             taxonomy = Taxonomy(tsv=taxonomy_tsv)
             sequence_list = blast_variant_df.sequence.tolist()
             tax_assign_runner = RunnerTaxAssign(

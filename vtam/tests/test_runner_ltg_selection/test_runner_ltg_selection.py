@@ -1,17 +1,12 @@
-import inspect
-import numpy
 import os
 import pandas
 import pathlib
 import unittest
 
 from vtam.utils.RunnerLTGselection import RunnerLTGselection
-
 from vtam.utils.PathManager import PathManager
 from vtam.CommandTaxonomy import CommandTaxonomy
-from vtam.utils.Logger import Logger
-from vtam.utils.DataframeVariant import DataframeVariant
-# from vtam.utils.RunnerTaxAssign import select_ltg
+from vtam.utils.Taxonomy import Taxonomy
 
 
 class TestRunnerLTGselection(unittest.TestCase):
@@ -36,6 +31,8 @@ class TestRunnerLTGselection(unittest.TestCase):
         self.taxonomy_df.set_index('tax_id', drop=True, inplace=True)
         self.taxonomy_df = self.taxonomy_df[[
             'parent_tax_id', 'rank', 'name_txt']].drop_duplicates()
+        taxonomy = Taxonomy(taxonomy_tsv_path)
+        self.taxonomy_df = taxonomy.df
 
     def test_01(self):
 
