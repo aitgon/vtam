@@ -96,12 +96,6 @@ class TestCommandTaxAssign(unittest.TestCase):
 
     def test_03_taxassign(self):
 
-        ############################################################################################
-        #
-        # COI Blast DB
-        #
-        ############################################################################################
-
         cmd = "vtam taxassign --asvtable {asvtable} --output {asvtable_taxa} --db {db} --blastdbdir {coi_blast_db_dir} --blastdbname coi_blast_db_20200420 --taxonomy {taxonomy}".format(**self.args)
 
         if sys.platform.startswith("win"):

@@ -12,6 +12,7 @@ from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunnerTaxAssign import RunnerTaxAssign
 from vtam.utils.TaxLineage import TaxLineage
+from vtam.utils.Taxonomy import Taxonomy
 
 
 class CommandTaxAssign(object):
@@ -169,12 +170,13 @@ class CommandTaxAssign(object):
         if len(variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
 
             blast_variant_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
-            taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
-            taxonomy_df.set_index('tax_id', drop=True, inplace=True)
+            # taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
+            # taxonomy_df.set_index('tax_id', drop=True, inplace=True)
+            taxonomy = Taxonomy(tsv=taxonomy_tsv)
             sequence_list = blast_variant_df.sequence.tolist()
             tax_assign_runner = RunnerTaxAssign(
                 sequence_list=sequence_list,
-                taxonomy_df=taxonomy_df,
+                taxonomy=taxonomy,
                 blast_db_dir=blastdb_dir_path,
                 blast_db_name=blastdbname_str,
                 num_threads=num_threads,

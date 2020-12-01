@@ -17,7 +17,6 @@ from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.constants import taxonomy_tsv_gz_url1, taxonomy_tsv_gz_url2, taxonomy_tsv_gz_url3
 from tqdm import tqdm
-# from vtam.utils.MyProgressBar import MyProgressBar
 
 
 class CommandTaxonomy(object):

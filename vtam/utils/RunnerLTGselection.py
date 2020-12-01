@@ -1,6 +1,6 @@
 import pandas
-from vtam.utils.FileParams import FileParams
 
+from vtam.utils.FileParams import FileParams
 from vtam.utils.constants import rank_hierarchy, identity_list
 
 
