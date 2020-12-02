@@ -48,7 +48,7 @@ class Taxonomy(object):
             if tax_id in self.df.index:
                 tax_id_row = self.df.loc[tax_id, ]
             # tax_id is found as old_tax_id column in the taxonomy file
-            elif tax_id in self.old_tax_df.old_tax_id.tolist():  # Try old tax id
+            elif tax_id in self.old_tax_df.index.tolist():  # Try old tax id
                 tax_id_new = self.old_tax_df.loc[tax_id, 'tax_id']
                 tax_id_row = self.df.loc[tax_id_new, ]
             # tax_id is not found in the taxonomy file.
@@ -56,8 +56,7 @@ class Taxonomy(object):
             else:
                 Logger.instance().warning(
                     "The taxon ID {} in the Blast database is missing in the taxonomy.tsv. "
-                    "Consider updating this file with the following command: vtam taxonomy --output taxonomy.tsv. "
-                    "The workflow will exit.".format(tax_id))
+                    "Consider updating this file with the following command: vtam taxonomy --output taxonomy.tsv.".format(tax_id))
                 # raise VTAMexception("tax_id {} from Blast database not found in the taxonomy.tsv file".format(tax_id))
                 return lineage_dic
             rank = tax_id_row['rank']
