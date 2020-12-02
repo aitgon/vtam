@@ -370,6 +370,8 @@ class CommandPoolRunMarkers(object):
         for col in pooled_marker_df.columns[4:-4]:
             pooled_marker_df[col] = pooled_marker_df[col].astype(int)
 
+        # TODO verify here if the run-sample exists in the sampleinformation database
+
         #######################################################################
         #
         # To tsv
