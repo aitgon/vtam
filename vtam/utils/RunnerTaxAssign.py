@@ -9,7 +9,6 @@ from vtam.utils.Logger import Logger
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunnerBlast import RunnerBlast
 from vtam.utils.RunnerLTGselection import RunnerLTGselection
-from vtam.utils.VTAMexception import VTAMexception
 
 
 class RunnerTaxAssign(object):

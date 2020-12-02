@@ -34,7 +34,7 @@ class TestCommandPool(unittest.TestCase):
         pathlib.Path(self.outdir_path).mkdir(parents=True, exist_ok=True)
 
         self.args = {}
-        self.args['runmarker'] = os.path.join(self.package_path, "data/example/pool_run_marker.tsv")
+        self.args['runmarker'] = os.path.join(self.package_path, "data", "example", "pool_run_marker.tsv")
         self.args['db'] = os.path.join(self.outdir_path, "db.sqlite")
 
         ############################################################################################
@@ -44,11 +44,11 @@ class TestCommandPool(unittest.TestCase):
         ############################################################################################
 
         filter_codon_stop_path = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/filter_codon_stop.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "filter_codon_stop.tsv")
         variant_path = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/variant_filter_codon_stop.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "variant_filter_codon_stop.tsv")
         sample_information_path = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/sample_information.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sample_information.tsv")
 
         self.engine = sqlalchemy.create_engine('sqlite:///{}'.format(self.args['db']), echo=False)
 
@@ -71,7 +71,7 @@ class TestCommandPool(unittest.TestCase):
         filter_codon_stop_df.to_sql(name=FilterCodonStop.__tablename__, con=self.engine.connect(), if_exists='replace')
 
         filter_chimera_borderline_path = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/filter_chimera_borderline_and_filter_codon_stop.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "filter_chimera_borderline_and_filter_codon_stop.tsv")
         filter_chimera_borderline_db = pandas.read_csv(filter_chimera_borderline_path, sep="\t", header=0)
         filter_chimera_borderline_db.to_sql(name=FilterChimeraBorderline.__tablename__, con=self.engine.connect(), if_exists='replace')
 
@@ -83,7 +83,7 @@ class TestCommandPool(unittest.TestCase):
         self.args['asvtable_pooled_default'] = os.path.join(
             self.outdir_path, "asvtable_pooled_default.tsv")
         self.args['asvtable_pooled_default_bak'] = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_default.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_pooled_default.tsv")
 
         cmd = "vtam pool --runmarker {runmarker} --db {db} --asvtable {asvtable_pooled_default}".format(**self.args)
 
@@ -101,7 +101,7 @@ class TestCommandPool(unittest.TestCase):
         self.args['asvtable_pooled_readcount_default'] = os.path.join(
             self.outdir_path, "asvtable_pooled_readcount_default.tsv")
         self.args['asvtable_pooled_readcount_default_bak'] = os.path.join(
-            self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/asvtable_pooled_readcount_default.tsv")
+            self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "asvtable_pooled_readcount_default.tsv")
 
         cmd = "vtam pool --runmarker {runmarker} --db {db} --readcounts --asvtable {asvtable_pooled_readcount_default}".format(**self.args)
 

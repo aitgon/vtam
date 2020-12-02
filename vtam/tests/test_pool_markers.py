@@ -125,5 +125,4 @@ ATACCTATTATAATT
 
         pooled_marker_df = pool_marker_runner.get_pooled_marker_df()
 
-        pandas.testing.assert_frame_equal(
-            pooled_marker_df, pooled_marker_bak_df)
+        pandas.testing.assert_frame_equal(pooled_marker_df, pooled_marker_bak_df)

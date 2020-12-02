@@ -157,9 +157,7 @@ class CommandPoolRunMarkers(object):
                                           self.cluster_df.variant_id, ['centroid_variant_id']]
         centroid_df.drop_duplicates(inplace=True)
 
-        pooled_marker_df = self.cluster_df[[
-                                               'centroid_variant_id', 'variant_id', 'run_name',
-                                               'marker_name'] + self.sample_names]
+        pooled_marker_df = self.cluster_df[['centroid_variant_id', 'variant_id', 'run_name', 'marker_name'] + self.sample_names]
 
         ############################################################################################
         #
@@ -168,8 +166,9 @@ class CommandPoolRunMarkers(object):
         #
         ############################################################################################
 
-        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']], left_on='variant_id',
-                               right_on='variant_id')
+        pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['run_name', 'marker_name', 'variant_id', 'sequence']],
+                                                  on=['run_name', 'marker_name', 'variant_id'])
+        pooled_marker_df.fillna(0, inplace=True)
         pooled_marker_df = pooled_marker_df.rename(columns={'sequence': 'pooled_sequences'})
 
         ############################################################################################
@@ -196,8 +195,7 @@ class CommandPoolRunMarkers(object):
 
         # Aggregate by centroid_variant_id
 
-        pooled_marker_df = pooled_marker_df.groupby(
-            'centroid_variant_id').agg(agg_dic).reset_index()
+        pooled_marker_df = pooled_marker_df.groupby('centroid_variant_id').agg(agg_dic).reset_index()
 
         pooled_marker_df = pooled_marker_df.merge(centroid_df, on='centroid_variant_id')
         pooled_marker_df = pooled_marker_df.merge(self.asv_table_df[['variant_id', 'sequence']],
@@ -219,7 +217,6 @@ class CommandPoolRunMarkers(object):
         sequence_centroid_list = pooled_marker_df.sequence.tolist()
         pooled_marker_df.drop('sequence', axis=1, inplace=True)
         pooled_marker_df['sequence'] = sequence_centroid_list
-
         return pooled_marker_df
 
     @classmethod
@@ -292,33 +289,22 @@ class CommandPoolRunMarkers(object):
         ############################################################################################
 
         asv_table_2_df = asv_table_df.copy()
-        asv_table_2_df_col_list = asv_table_2_df.columns.tolist()
 
-        for biosample_name in asv_table_df.iloc[:, 5:-4].columns.tolist():
+        for run_name_i, run_name in enumerate(asv_table_df.run_name.unique()):
+            asv_table_runi_df = (asv_table_df.loc[asv_table_df.run_name == run_name]).copy()
 
-            run_name_list = asv_table_df[['run_name', biosample_name]]['run_name'].unique().tolist()
+            for biosample in asv_table_runi_df.iloc[:, 5:-4].columns.tolist():
+                asv_table_runi_df.rename({biosample: run_name + '-' + biosample}, axis=1, inplace=True)
 
-            #  run-biosample not unique
-            if len(run_name_list) > 1:
+            if run_name_i == 0:
+                asv_table_2_df = asv_table_runi_df
+            else:
 
-                for run_name in run_name_list:
-                    colname = run_name + ',' + biosample_name
-                    # asv_table_2_df[run_name + "," + biosample_name] = 0
-                    asv_table_i_df = asv_table_df.loc[asv_table_df.run_name == run_name][
-                        ['run_name', 'marker_name', 'variant_id', biosample_name]]
-                    asv_table_i_df.rename({biosample_name: colname}, axis=1,
-                                          inplace=True)
-                    asv_table_2_df = asv_table_2_df.merge(asv_table_i_df, on=['run_name', 'marker_name', 'variant_id'], how='left')
-                    asv_table_2_df[run_name + ',' + biosample_name].fillna(0, inplace=True)  # fillna
-                    asv_table_2_df[run_name + ',' + biosample_name] = asv_table_2_df[colname].astype('int')  # convert to int
+                asv_table_2_df = pandas.concat([asv_table_2_df, pandas.DataFrame(columns=asv_table_runi_df.columns)])
+                asv_table_2_df = asv_table_2_df.fillna(0)
+                asv_table_2_df = pandas.concat([asv_table_2_df, asv_table_runi_df], axis=0, join='outer')
 
-                    biosample_name_ix = asv_table_2_df_col_list.index(biosample_name)
-                    asv_table_2_df_col_list.insert(biosample_name_ix, colname)
-
-                asv_table_2_df_col_list.remove(biosample_name)
-
-        asv_table_2_df = asv_table_2_df[asv_table_2_df_col_list]
-        asv_table_2_df.fillna(0, inplace=True)
+            del (asv_table_runi_df)
 
         ############################################################################################
         #
@@ -327,6 +313,9 @@ class CommandPoolRunMarkers(object):
         ############################################################################################
 
         column_list = asv_table_2_df.columns.tolist()
+        column_list.remove("run_name")
+        column_list.insert(0, "run_name")
+
         column_list.remove("clusterid")
         column_list.remove("clustersize")
         column_list.remove("chimera_borderline")
@@ -365,7 +354,6 @@ class CommandPoolRunMarkers(object):
 
         pooled_marker_df = pooled_marker_df.merge(cluster_count_df, on='variant_id')
         pooled_marker_df.drop(['read_count'], axis=1, inplace=True)
-
         ############################################################################################
         #
         # Reorder columns
@@ -377,6 +365,10 @@ class CommandPoolRunMarkers(object):
         column_list.remove("sequence")
         column_list = column_list + ['pooled_sequences', 'sequence']
         pooled_marker_df = pooled_marker_df[column_list]
+
+        # change dtypes
+        for col in pooled_marker_df.columns[4:-4]:
+            pooled_marker_df[col] = pooled_marker_df[col].astype(int)
 
         #######################################################################
         #
