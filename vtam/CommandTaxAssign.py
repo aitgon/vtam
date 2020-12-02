@@ -12,6 +12,7 @@ from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunnerTaxAssign import RunnerTaxAssign
 from vtam.utils.TaxLineage import TaxLineage
+from vtam.utils.Taxonomy import Taxonomy
 
 
 class CommandTaxAssign(object):
@@ -52,12 +53,12 @@ class CommandTaxAssign(object):
         #######################################################################
 
         # params_dic = constants.get_params_default_dic()
-        params_dic = FileParams(params).get_params_dic()
+        # params_dic = FileParams(params).get_params_dic()
 
-        ltg_rule_threshold = params_dic['ltg_rule_threshold']
-        include_prop = params_dic['include_prop']
-        min_number_of_taxa = params_dic['min_number_of_taxa']
-        qcov_hsp_perc = params_dic['qcov_hsp_perc']
+        # ltg_rule_threshold = params_dic['ltg_rule_threshold']
+        # include_prop = params_dic['include_prop']
+        # min_number_of_taxa = params_dic['min_number_of_taxa']
+        # qcov_hsp_perc = params_dic['qcov_hsp_perc']
 
         #######################################################################
         #
@@ -169,19 +170,19 @@ class CommandTaxAssign(object):
         if len(variant_not_tax_assigned) > 0:  # Run blast for variants that need tax assignation
 
             blast_variant_df = pandas.DataFrame.from_records(variant_not_tax_assigned, index='id')
-            taxonomy_df = pandas.read_csv(taxonomy_tsv, sep="\t", header=0, dtype={'tax_id': 'int', 'parent_tax_id': 'int', 'old_tax_id': 'float'}).drop_duplicates()
-            taxonomy_df.set_index('tax_id', drop=True, inplace=True)
+            taxonomy = Taxonomy(tsv=taxonomy_tsv)
             sequence_list = blast_variant_df.sequence.tolist()
             tax_assign_runner = RunnerTaxAssign(
                 sequence_list=sequence_list,
-                taxonomy_df=taxonomy_df,
+                taxonomy=taxonomy,
                 blast_db_dir=blastdb_dir_path,
                 blast_db_name=blastdbname_str,
-                ltg_rule_threshold=ltg_rule_threshold,
-                include_prop=include_prop,
-                min_number_of_taxa=min_number_of_taxa,
                 num_threads=num_threads,
-                qcov_hsp_perc=qcov_hsp_perc)
+                params = None)
+                # ltg_rule_threshold=ltg_rule_threshold,
+                # include_prop=include_prop,
+                # min_number_of_taxa=min_number_of_taxa,
+                # # qcov_hsp_perc=qcov_hsp_perc)
             ltg_blast_df = tax_assign_runner.ltg_df
 
             ######################################################
@@ -242,6 +243,7 @@ class CommandTaxAssign(object):
                     sqlalchemy.select(
                         [TaxAssign]) .where(
                         tax_assign_declarative_table.c.variant_id == variant_id)).first()
+                # import pdb; pdb.set_trace()
                 if select_row is None:  # variant_id IS NOT in the database, so INSERT it
                     ltg_row_dic = ltg_row._asdict()
                     ltg_row_dic['variant_id'] = variant_id

@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import os
 import pathlib
 import tarfile
@@ -74,7 +75,11 @@ class CommandBlastCOI(object):
         """
 
         # Test first in local dir, otherwise in the remote URLs
-        if not os.path.isfile(self.coi_blast_db_gz_path) or pathlib.Path(self.coi_blast_db_gz_path).stat().st_size < 1000000:
+
+        blast_files = [".".join(l) for l in itertools.product([self.blastdbname], ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq'])]
+
+        # Run if blast files do not exist
+        if not [*os.walk(blastdbdir)][0][2] >= blast_files or pathlib.Path(os.path.join(blastdbdir, "%s.nsq"%self.blastdbname)).stat().st_size < 4000000:
             try:
                 # urllib.request.urlretrieve(self.coi_blast_db_gz_url1, self.coi_blast_db_gz_path, MyProgressBar())
                 with tqdm(...) as t:
@@ -91,7 +96,7 @@ class CommandBlastCOI(object):
                     with tqdm(...) as t:
                         t.set_description(os.path.basename(self.coi_blast_db_gz_path))  # this has the name of the file
                         urllib.request.urlretrieve(self.coi_blast_db_gz_url3, self.coi_blast_db_gz_path, reporthook=tqdm_hook(t))
-        tar = tarfile.open(self.coi_blast_db_gz_path)
-        pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)
-        tar.extractall(blastdbdir)
-        tar.close()
+            tar = tarfile.open(self.coi_blast_db_gz_path)
+            pathlib.Path(os.path.join(blastdbdir)).mkdir(exist_ok=True, parents=True)
+            tar.extractall(blastdbdir)
+            tar.close()
