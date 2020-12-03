@@ -206,13 +206,13 @@ family          941271.0                   8                88.888889
 genus             6220.0                   8                88.888889
 species        1112827.0                   4                44.444444
 """
-        ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
-                                         self.include_prop, 'putative_ltg_id'].tail(1).values[0]
-        ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >=
-                                       self.include_prop, 'putative_ltg_id'].index[-1]
+        if putative_ltg_df.putative_ltg_percentage.max() >= self.include_prop:
 
-        if not (ltg_tax_id is None):
+            ltg_tax_id = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= self.include_prop, 'putative_ltg_id'].tail(1).values[0]
+            ltg_rank = putative_ltg_df.loc[putative_ltg_df.putative_ltg_percentage >= self.include_prop, 'putative_ltg_id'].index[-1]
 
-            return int(ltg_tax_id), str(ltg_rank)
+            if not (ltg_tax_id is None):
+
+                return int(ltg_tax_id), str(ltg_rank)
 
         return None, None
