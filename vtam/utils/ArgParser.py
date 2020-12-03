@@ -553,15 +553,15 @@ class ArgParser:
             '--output',
             dest='output',
             action='store',
-            help="path to TSV taxonomy file",
+            help="default: taxonomy.tsv. Path to TSV taxonomy file",
             required=False,
-        default=os.getcwd())
+        default=os.path.join(os.getcwd(), 'taxonomy.tsv'))
         parser_vtam_taxonomy.add_argument(
             '--precomputed',
             dest='precomputed',
             action='store_true',
             default=False,
-            help="downloads precomputed taxonomy database, "
+            help="default: False. Downloads precomputed taxonomy database, "
                  "which is likely an older database",
             required=False)
         # This attribute will trigger the good command
@@ -579,7 +579,7 @@ class ArgParser:
             action='store',
             help="output directory with custom Blast database files of the cytochrome C oxidase subunit I (COI) marker files",
             required=False,
-            default='.')
+            default='blastdb')
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbname',
             dest='blastdbname',
