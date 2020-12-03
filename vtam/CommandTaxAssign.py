@@ -8,7 +8,6 @@ import sqlalchemy
 from vtam.models.TaxAssign import TaxAssign
 from vtam.models.Variant import Variant
 from vtam.utils.Logger import Logger
-from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.RunnerTaxAssign import RunnerTaxAssign
 from vtam.utils.TaxLineage import TaxLineage
@@ -179,10 +178,6 @@ class CommandTaxAssign(object):
                 blast_db_name=blastdbname_str,
                 num_threads=num_threads,
                 params = None)
-                # ltg_rule_threshold=ltg_rule_threshold,
-                # include_prop=include_prop,
-                # min_number_of_taxa=min_number_of_taxa,
-                # # qcov_hsp_perc=qcov_hsp_perc)
             ltg_blast_df = tax_assign_runner.ltg_df
 
             ######################################################
@@ -202,6 +197,7 @@ class CommandTaxAssign(object):
 
             ltg_blast_df = ltg_blast_df.reindex(
                 sorted(ltg_blast_df.columns), axis=1)  # sort columns
+        del(blast_variant_df)  
 
         #######################################################################
         #
@@ -223,6 +219,7 @@ class CommandTaxAssign(object):
             ltg_df = ltg_db_df.copy()
         elif ltg_blast_df.shape[0] > 0:
             ltg_df = ltg_blast_df.copy()
+        del(ltg_blast_df)
 
         #######################################################################
         #
@@ -256,11 +253,16 @@ class CommandTaxAssign(object):
 
         #######################################################################
         #
-        # Update data of variant input file
+        # Update LTGs for variant output file
         #
         #######################################################################
 
+        Logger.instance().debug(
+            "file: {}; line: {}; Update LTGs for variant output file".format(
+                __file__, inspect.currentframe().f_lineno))
+
         variant_output_df = variant_input_df.copy()
+        del(variant_input_df)
         # Add ltg columns to variant_df if it do not exist
         for ltg_df_col in ['ltg_tax_id', 'ltg_tax_name', 'ltg_rank', 'identity', 'blast_db']:
             if not (ltg_df_col in variant_output_df.columns):
@@ -296,10 +298,13 @@ class CommandTaxAssign(object):
 
         #######################################################################
         #
-        # Create lineage variant_read_count_input_df given taxonomy_df
-        # Returns: lineage_df for each tax_id
+        # Update tax lineages for variant output file
         #
         #######################################################################
+
+        Logger.instance().debug(
+            "file: {}; line: {}; Update tax lineages for variant output file".format(
+                __file__, inspect.currentframe().f_lineno))
 
         tax_id_list = variant_output_df.ltg_tax_id.unique().tolist()  # unique list of tax ids
         tax_lineage = TaxLineage(taxonomic_tsv_path=taxonomy_tsv)
@@ -311,10 +316,15 @@ class CommandTaxAssign(object):
             tax_lineage_df, left_on='ltg_tax_id', right_on='tax_id', how='left')
         variant_output_df.drop('tax_id', axis=1, inplace=True)
 
+        Logger.instance().debug(
+            "file: {}; line: {}; Reorder columns".format(
+                __file__, inspect.currentframe().f_lineno))
         # Move sequence column to end
         variant_df_columns = variant_output_df.columns.tolist()
-        variant_df_columns.append(
-            variant_df_columns.pop(
-                variant_df_columns.index('sequence')))
+        variant_df_columns.append(variant_df_columns.pop(variant_df_columns.index('sequence')))
         variant_output_df = variant_output_df[variant_df_columns]
+        Logger.instance().debug(
+            "file: {}; line: {}; Write to TSV".format(
+                __file__, inspect.currentframe().f_lineno))
         variant_output_df.to_csv(output, sep='\t', index=False, header=True)
+
