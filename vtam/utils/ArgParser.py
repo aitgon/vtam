@@ -554,7 +554,8 @@ class ArgParser:
             dest='output',
             action='store',
             help="path to TSV taxonomy file",
-            required=True)
+            required=False,
+        default=os.getcwd())
         parser_vtam_taxonomy.add_argument(
             '--precomputed',
             dest='precomputed',
