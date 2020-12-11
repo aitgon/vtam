@@ -1,8 +1,9 @@
-**Changes In Version 0.1.21.rc.1 (Nov 24, 2020)**
+**Changes In Version 0.1.21 (Dec 11, 2020)**
 
 - ENH added '--countreads' option to 'vtam pool'
 - ENH using OSF database for VTAM files
 - DOC
+- BUG bugs
 
 **Changes In Version 0.1.20 (Oct 15, 2020)**
 
