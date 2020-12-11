@@ -11,7 +11,6 @@ import urllib.request
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.constants import sorted_tar_gz_url1, sorted_tar_gz_url2, sorted_tar_gz_url3
-# from vtam.utils.MyProgressBar import MyProgressBar
 from tqdm import tqdm
 from vtam.utils import tqdm_hook
 

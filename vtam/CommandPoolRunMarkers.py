@@ -371,7 +371,7 @@ class CommandPoolRunMarkers(object):
             pooled_marker_df[col] = pooled_marker_df[col].astype(int)
 
         # TODO verify here if the run-sample exists in the sampleinformation database
-
+        # import pdb; pdb.set_trace()
         #######################################################################
         #
         # To tsv

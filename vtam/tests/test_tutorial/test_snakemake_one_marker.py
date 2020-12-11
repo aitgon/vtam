@@ -11,14 +11,13 @@ import urllib.request
 from vtam.utils.PathManager import PathManager
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.constants import fastq_tar_gz_url1, fastq_tar_gz_url2, fastq_tar_gz_url3
-# from vtam.utils.MyProgressBar import MyProgressBar
 from tqdm import tqdm
 from vtam.utils import tqdm_hook
 
 
 @unittest.skipUnless(not sys.platform.startswith("win"), "Test does not work with Windows")
 # Not working with windows because of commands in snake.tuto.data
-class TestTutorialSnakemake(unittest.TestCase):
+class TestTutorialSnakemakeOneMarker(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
@@ -35,10 +34,14 @@ class TestTutorialSnakemake(unittest.TestCase):
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = PathManager.get_test_path()
+
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
-        cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
         shutil.rmtree(cls.outdir_path, ignore_errors=True)
+        cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
         pathlib.Path(cls.outdir_data_path).mkdir(parents=True, exist_ok=True)
+
+        cls.outdir_download_path = os.path.join(cls.test_path, 'outdir_download')
+        pathlib.Path(cls.outdir_download_path).mkdir(parents=True, exist_ok=True)
 
         cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data.yml")
 
@@ -58,7 +61,7 @@ class TestTutorialSnakemake(unittest.TestCase):
         #
         ############################################################################################
 
-        fastq_tar_path = os.path.join(cls.outdir_data_path, "fastq.tar.gz")
+        fastq_tar_path = os.path.join(cls.outdir_download_path, "fastq.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(fastq_tar_path) or pathlib.Path(fastq_tar_path).stat().st_size < 1000000:
             try:
