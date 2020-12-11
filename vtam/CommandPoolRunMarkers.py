@@ -10,6 +10,8 @@ from sqlalchemy.ext.automap import automap_base
 from vtam.utils.FileParams import FileParams
 
 from vtam.models.Sample import Sample
+from vtam.models.SampleInformation import SampleInformation
+from vtam.models.Run import Run
 from vtam.models.FilterCodonStop import FilterCodonStop
 from vtam.utils.RunnerAsvTable import RunnerAsvTable
 from vtam.utils.Logger import Logger
@@ -370,8 +372,23 @@ class CommandPoolRunMarkers(object):
         for col in pooled_marker_df.columns[4:-4]:
             pooled_marker_df[col] = pooled_marker_df[col].astype(int)
 
-        # TODO verify here if the run-sample exists in the sampleinformation database
-        # import pdb; pdb.set_trace()
+        # verify here if the run-sample exists in the sampleinformation database
+        # and drop if not
+        run_biosample_cols = pooled_marker_df.columns[4:-4]
+        # run_biosample_item = run_biosample_cols[0]
+        from sqlalchemy.orm import sessionmaker
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        for run_biosample_item in run_biosample_cols:
+            thisrun, thisbiosample = run_biosample_item.split('-')
+            rowcount = session.query(SampleInformation, Sample, Run).filter(
+                SampleInformation.sample_id == Sample.id).filter(
+                SampleInformation.run_id == Run.id).filter(
+                Run.name == thisrun).filter(Sample.name == thisbiosample).count()
+            if rowcount <= 0:
+                pooled_marker_df.drop([run_biosample_item], axis=1,
+                                      inplace=True)
+
         #######################################################################
         #
         # To tsv

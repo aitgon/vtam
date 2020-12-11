@@ -19,7 +19,7 @@ import sys
 import unittest
 
 
-class TestCommandPool(unittest.TestCase):
+class TestCommandPoolTwoRuns(unittest.TestCase):
 
     """Will test main commands based on a complete test dataset"""
 
