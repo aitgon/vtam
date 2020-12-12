@@ -63,3 +63,16 @@ jobs:
         asset_name: coi_blast_db.tar.gz
         tag: ${{ github.ref }}
         overwrite: true
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O coi_blast_db_20200420.tar.gz https://osf.io/kw9ms/download
+    - name: wget coi_blast_db_20200420.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: coi_blast_db_20200420.tar.gz
+        asset_name: coi_blast_db_20200420.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
