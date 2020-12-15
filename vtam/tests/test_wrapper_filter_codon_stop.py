@@ -84,7 +84,7 @@ TAS2	IIICBR	S21	1	TAS2-R1_S1_L001_R1_001_000.fasta"""
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         stmt_select = sqlalchemy.select([FilterCodonStop.__table__.c.filter_delete])
         with self.engine.connect() as conn2:

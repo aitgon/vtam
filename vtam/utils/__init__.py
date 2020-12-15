@@ -14,7 +14,7 @@ def pip_install_vtam_for_tests():
         args = cmd
     else:
         args = shlex.split(cmd)
-    subprocess.run(args=args, check=True, cwd=PathManager.instance().get_project_path())
+    subprocess.run(args=args, cwd=PathManager.instance().get_project_path())
 
 def tqdm_hook(t):
     """Wraps tqdm instance.

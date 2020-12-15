@@ -42,7 +42,7 @@ class RunnerVSearch(object):
             args = cmd
         else:
             args = shlex.split(cmd)
-        run_result = subprocess.run(args=args, capture_output=True)
+        run_result = subprocess.run(args=args, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
 
         Logger.instance().info(run_result.stdout.decode())
-        Logger.instance().info(run_result.stderr.decode())
