@@ -35,7 +35,7 @@ class SequenceClusterer(object):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=tempcluster_dir)
+        subprocess.run(args=args, cwd=tempcluster_dir)
 
         otutabout_path = os.path.join(tempcluster_dir, "otutabout.txt")
         otutabout_df = pandas.read_csv(otutabout_path, sep="\t")

@@ -31,7 +31,7 @@ class TestCommandExample(unittest.TestCase):
         else:
             args = shlex.split(cmd)
 
-        result = subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        result = subprocess.run(args=args, cwd=self.outdir_path)
         self.assertEqual(result.returncode, 0)
 
     def tearDown(self):

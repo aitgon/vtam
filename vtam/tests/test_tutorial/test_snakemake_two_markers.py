@@ -92,7 +92,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
+        subprocess.run(args=args, cwd=cls.outdir_path)
 
     def test_01_filter(self):
 
@@ -102,7 +102,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
         pass
 
     def test_02_optimize(self):
@@ -113,7 +113,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
         optimize_pcr_error = os.path.join(self.outdir_path, "asper2/run1/optimize_pcr_error.tsv")
         optimize_pcr_error_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_pcr_error.tsv")
@@ -127,7 +127,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_03_mfzr_taxassign_optimized(self):
 
@@ -139,7 +139,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_04_zfzr_filter_optimized(self):
 
@@ -151,7 +151,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_05_zfzr_taxassign_optimized(self):
 
@@ -163,7 +163,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_07_pool(self):
 
@@ -173,7 +173,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_08_pool_taxa(self):
 
@@ -185,7 +185,7 @@ class TestTutorialSnakemakeTwoMarkers(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):

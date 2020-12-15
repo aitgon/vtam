@@ -43,7 +43,7 @@ class TestCommandTaxAssign(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True)
+        subprocess.run(args=args)
 
         ############################################################################################
         #
@@ -58,7 +58,7 @@ class TestCommandTaxAssign(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True)
+        subprocess.run(args=args)
 
     def setUp(self):
 
@@ -104,7 +104,7 @@ class TestCommandTaxAssign(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True)
+        subprocess.run(args=args)
 
         self.assertTrue(filecmp.cmp(self.asvtable_taxa, self.asvtable_taxa_bak, shallow=True))
 
