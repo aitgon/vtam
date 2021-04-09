@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+# sudo singularity build out/vtam.sif singularity_vtam.def
+# singularity exec out/vtam.sif vtam --help
+# singularity exec out/vtam.sif python -m unittest
+# singularity exec vtam.sif vtam example
+# cd example
+# singularity exec ../out/vtam.sif snakemake  --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa
+
+%post
+    apt-get update && apt-get install -y rsync
+    /opt/conda/bin/conda create --name vtam python=3.9 -y
+    /opt/conda/bin/conda install -c bioconda blast
+    /opt/conda/bin/conda install -c bioconda vsearch
+    /opt/conda/bin/python3 -m pip install --upgrade vtam
+
+%environment
+    export LC_ALL=C
+    export PATH=/vtam/bin:$PATH
+
