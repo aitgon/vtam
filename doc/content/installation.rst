@@ -42,20 +42,19 @@ You can also verify the BLAST (>=  v2.2.26), CutAdapt (>= 2.10) and VSEARCH (>= 
 Singularity
 -------------------------------------------------
 
-We provide a singularity container that can be retrieve in the VTAM github: https://github.com/aitgon/vtam . First you build the image with this command as root:
+We provide a singularity container in the VTAM github: https://github.com/aitgon/vtam .
+First you build the image with this command as root:
 
 .. code-block:: bash
 
-    sudo singularity build out/vtam.sif singularity_vtam.def
+    sudo singularity build vtam.sif vtam.singularity
 
 Then you can use VTAM directly from the singularity image:
 
 .. code-block:: bash
 
-    singularity exec vtam.sif vtam --help
-    singularity exec vtam.sif vtam example
-    cd example
-    singularity exec ../vtam.sif snakemake  --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile asper1/user_input/snakeconfig_mfzr.yml --until asvtable_taxa
+    singularity run --app vtam vtam.sif --help
+    singularity run --app vtam vtam.sif merge --help
 
 Windows
 -------------------------------------------------

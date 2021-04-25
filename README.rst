@@ -32,10 +32,16 @@ Commands for a quick installation:
 .. code-block:: bash
 
     conda create --name vtam python=3.9 -y
-    python3 -m pip install --upgrade cutadapt
-    conda install -c bioconda blast
-    conda install -c bioconda vsearch
-    python3 -m pip install --upgrade vtam
+    conda activate vtam
+
+Then install dependencies
+
+.. code-block:: bash
+
+    python3 -m pip install cutadapt
+    conda install -c bioconda blast -y
+    conda install -c bioconda vsearch -y
+    python3 -m pip install vtam
 
 Commands for a quick working example:
 
