@@ -39,6 +39,6 @@ jobs:
         $CONDA/bin/vsearch --version
         $CONDA/bin/cutadapt --version
         $CONDA/bin/blastn -version
-        $CONDA/bin/python -version
+        $CONDA/bin/python --version
 #        $CONDA/bin/python -m unittest discover -v -f
 
