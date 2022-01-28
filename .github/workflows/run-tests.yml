@@ -25,20 +25,19 @@ jobs:
     - name: Setup environment
       run: |
           # export PATH="/usr/share/miniconda/bin:$PATH"
-          # conda create -q -n vtam
+          $CONDA/conda create -q -n vtam python=${{ matrix.python-version }}
           # source activate vtam
-          $CONDA/bin/conda env update -f environment.yml --name base
-          echo "$CONDA"
+          $CONDA/bin/conda env update -f environment.yml --name vtam
     - name: Run tests
       env:
         CI: true
       run: |
         # activate conda env
-        export PATH="$CONDA/bin:$PATH"
+        export PATH="$CONDA/envs/vtam/bin:$PATH"
         #source activate base
-        $CONDA/bin/vsearch --version
-        $CONDA/bin/cutadapt --version
-        $CONDA/bin/blastn -version
-        $CONDA/bin/python --version
-#        $CONDA/bin/python -m unittest discover -v -f
+        $CONDA/envs/vtam/bin/vsearch --version
+        $CONDA/envs/vtam/bin/cutadapt --version
+        $CONDA/envs/vtam/bin/blastn -version
+        $CONDA/envs/vtam/bin/python --version
+        #$CONDA/bin/python -m unittest discover -v -f
 
