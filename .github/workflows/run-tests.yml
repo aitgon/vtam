@@ -34,7 +34,7 @@ jobs:
       run: |
         # activate conda env
         # export PATH="/usr/share/miniconda/bin:$PATH"
-        # source activate vtam
+        source activate base
         $CONDA/bin/vsearch --version
         $CONDA/bin/cutadapt --version
         $CONDA/bin/blastn -version
