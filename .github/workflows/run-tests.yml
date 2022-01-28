@@ -28,13 +28,14 @@ jobs:
           # conda create -q -n vtam
           # source activate vtam
           $CONDA/bin/conda env update -f environment.yml --name base
+          echo "$CONDA"
     - name: Run tests
       env:
         CI: true
       run: |
         # activate conda env
-        # export PATH="/usr/share/miniconda/bin:$PATH"
-        source activate base
+        export PATH="$CONDA/bin:$PATH"
+        #source activate base
         $CONDA/bin/vsearch --version
         $CONDA/bin/cutadapt --version
         $CONDA/bin/blastn -version
