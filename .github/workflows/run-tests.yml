@@ -39,5 +39,5 @@ jobs:
         $CONDA/envs/vtam/bin/cutadapt --version
         $CONDA/envs/vtam/bin/blastn -version
         $CONDA/envs/vtam/bin/python --version
-        #$CONDA/bin/python -m unittest discover -v -f
+        $CONDA/bin/python -m unittest discover -v -f
 
