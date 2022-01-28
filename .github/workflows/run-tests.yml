@@ -25,7 +25,7 @@ jobs:
     - name: Setup environment
       run: |
           # export PATH="/usr/share/miniconda/bin:$PATH"
-          $CONDA/conda create -q -n vtam python=${{ matrix.python-version }}
+          $CONDA/bin/conda create -q --name vtam python=${{ matrix.python-version }}
           # source activate vtam
           $CONDA/bin/conda env update -f environment.yml --name vtam
     - name: Run tests
