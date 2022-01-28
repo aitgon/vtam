@@ -7,5 +7,5 @@ dependencies:
   - vsearch
   - pip
   - pip:
-    - -r file:requirements-dev.txt
+    - -r requirements-dev.txt
 

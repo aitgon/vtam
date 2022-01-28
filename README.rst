@@ -14,8 +14,8 @@ VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 .. image:: https://github.com/aitgon/vtam/workflows/CI/badge.svg
     :target: https://github.com/aitgon/vtam/actions?query=branch%3Amaster+workflow%3ACI
 
-.. image:: https://travis-ci.org/aitgon/vtam.svg?branch=master
-    :target: https://travis-ci.org/aitgon/vtam
+.. image:: https://travis-ci.com/aitgon/vtam.svg?branch=master
+    :target: https://app.travis-ci.com/aitgon/vtam
 
 .. image:: https://codecov.io/gh/aitgon/vtam/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/aitgon/vtam
