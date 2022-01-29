@@ -238,8 +238,9 @@ class VariantReadCount(ToolWrapper):
                 variant_read_count_df_sorted_i = variant_read_count_df_sorted_i.groupby(
                     ['run_id', 'marker_id', 'sample_id', 'replicate', 'read_sequence']).sum().reset_index()
 
-                variant_read_count_df = variant_read_count_df.append(
-                    variant_read_count_df_sorted_i)
+                #variant_read_count_df = variant_read_count_df.append(
+                #    variant_read_count_df_sorted_i)
+                variant_read_count_df = pandas.concat([variant_read_count_df, variant_read_count_df_sorted_i], axis=0)
 
             else:
                 Logger.instance().warning('This file {} doest not exists'.format(read_fasta_path))
