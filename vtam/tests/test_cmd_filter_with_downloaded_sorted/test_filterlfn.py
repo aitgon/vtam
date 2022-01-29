@@ -22,7 +22,7 @@ class TestCmdFilterLFN(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
+        cmd = '{} -m pip install . -q --upgrade --use-feature=in-tree-build'.format(sys.executable)
         if sys.platform.startswith("win"):
             args = cmd
         else:
