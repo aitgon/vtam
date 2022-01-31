@@ -1,5 +1,5 @@
 biopython
-cutadapt==2.10
+cutadapt
 jinja2
 pandas
 pyyaml

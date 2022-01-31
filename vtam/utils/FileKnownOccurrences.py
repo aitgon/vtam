@@ -35,12 +35,12 @@ class FileKnownOccurrences(object):
 
         known_occurrences_df = pandas.read_csv(
             self.known_occurrences_tsv, sep="\t", header=0)
-        known_occurrences_df.columns = known_occurrences_df.columns.str.lower()
-        known_occurrences_df = known_occurrences_df[header_known_occurrences]
-        known_occurrences_df.rename({'run': 'run_name', 'marker': 'marker_name',
+        known_occurrences_df.columns = known_occurrences_df.columns.str.lower().copy()
+        known_occurrences_df = known_occurrences_df[list(header_known_occurrences)]
+        known_occurrences_df = known_occurrences_df.rename({'run': 'run_name', 'marker': 'marker_name',
                                      'sample': 'sample_name', 'variant': 'variant_id',
                                      'sequence': 'variant_sequence'}, axis=1,
-                                    inplace=True)
+                                    inplace=False).copy()
         return known_occurrences_df
 
     def argparse_checker_known_occurrences(self):
@@ -75,15 +75,16 @@ class FileKnownOccurrences(object):
         """
         instance_list = []
         df = self.read_tsv_into_df()
+        id_df = df.copy()
 
-        df.run_name = NameIdConverter(df.run_name.tolist(), engine).to_ids(Run)
-        df.marker_name = NameIdConverter(df.marker_name.tolist(), engine).to_ids(Marker)
-        df.sample_name = NameIdConverter(df.sample_name.tolist(), engine).to_ids(Sample)
-        df['variant_id'] = NameIdConverter(df.variant_sequence.tolist(), engine)\
+        id_df.run_name = NameIdConverter(df.run_name.tolist(), engine).to_ids(Run)
+        id_df.marker_name = NameIdConverter(df.marker_name.tolist(), engine).to_ids(Marker)
+        id_df.sample_name = NameIdConverter(df.sample_name.tolist(), engine).to_ids(Sample)
+        id_df['variant_id'] = NameIdConverter(df.variant_sequence.tolist(), engine)\
             .variant_sequence_to_id()
-        df.rename({'run_name': 'run_id', 'marker_name': 'marker_id',
+        id_df.rename({'run_name': 'run_id', 'marker_name': 'marker_id',
                    'sample_name': 'sample_id'}, axis=1, inplace=True)
-        return df
+        return id_df
 
     def get_run_marker_sample_variant_df(self, engine, action):
         """

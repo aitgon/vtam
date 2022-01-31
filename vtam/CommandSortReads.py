@@ -108,10 +108,9 @@ class CommandSortReads(object):
                 args = cmd_cutadapt_tag_str
             else:
                 args = shlex.split(cmd_cutadapt_tag_str)
-            run_result = subprocess.run(args=args, capture_output=True, check=True)
+            run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             Logger.instance().info(run_result.stdout.decode())
-            Logger.instance().info(run_result.stderr.decode())
 
             ########################################################################################
             #
@@ -158,10 +157,10 @@ class CommandSortReads(object):
                 args = cmd_cutadapt_primer_str
             else:
                 args = shlex.split(cmd_cutadapt_primer_str)
-            run_result = subprocess.run(args=args, capture_output=True)
+            run_result = subprocess.run(args=args, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
 
             Logger.instance().info(run_result.stdout.decode())
-            Logger.instance().info(run_result.stderr.decode())
 
             ########################################################################################
             #
@@ -202,10 +201,9 @@ class CommandSortReads(object):
                 args = cmd_cutadapt_tag_str
             else:
                 args = shlex.split(cmd_cutadapt_tag_str)
-            run_result = subprocess.run(args=args, capture_output=True)
+            run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             Logger.instance().info(run_result.stdout.decode())
-            Logger.instance().info(run_result.stderr.decode())
 
             ###################################################################
             #
@@ -251,10 +249,9 @@ class CommandSortReads(object):
                 args = cmd_cutadapt_primer_str
             else:
                 args = shlex.split(cmd_cutadapt_primer_str)
-            run_result = subprocess.run(args=args, capture_output=True)
+            run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             Logger.instance().info(run_result.stdout.decode())
-            Logger.instance().info(run_result.stderr.decode())
 
             ###################################################################
             #

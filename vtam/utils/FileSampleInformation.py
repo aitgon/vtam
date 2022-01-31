@@ -156,8 +156,9 @@ class FileSampleInformation:
                 del new_row_dic["marker"]
                 del new_row_dic["sample"]
 
-                sample_info_df = sample_info_df.append(
-                    pandas.DataFrame(new_row_dic, index=[0]), sort=False)
+                #sample_info_df = sample_info_df.append(
+                #    pandas.DataFrame(new_row_dic, index=[0]), sort=False)
+                sample_info_df = pandas.concat([sample_info_df, pandas.DataFrame(new_row_dic, index=[0])], axis=0)
 
         sample_info_df.columns = sample_info_df.columns.str.lower()
         return sample_info_df

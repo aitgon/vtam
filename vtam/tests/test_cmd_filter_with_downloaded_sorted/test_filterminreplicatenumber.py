@@ -23,12 +23,12 @@ class TestFilterMinReplicateNumber(unittest.TestCase):
     def setUp(self):
 
         # vtam needs to be in the tsv_path
-        cmd = '{} -m pip install . -q --upgrade'.format(sys.executable)
+        cmd = '{} -m pip install . -q --upgrade --use-feature=in-tree-build'.format(sys.executable)
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=PathManager.get_project_path())
+        subprocess.run(args=args, cwd=PathManager.get_project_path())
 
         self.package_path = os.path.join(PathManager.get_package_path())
         self.test_path = os.path.join(PathManager.get_test_path())

@@ -14,9 +14,6 @@ VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 .. image:: https://github.com/aitgon/vtam/workflows/CI/badge.svg
     :target: https://github.com/aitgon/vtam/actions?query=branch%3Amaster+workflow%3ACI
 
-.. image:: https://travis-ci.org/aitgon/vtam.svg?branch=master
-    :target: https://travis-ci.org/aitgon/vtam
-
 .. image:: https://codecov.io/gh/aitgon/vtam/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/aitgon/vtam
 
@@ -31,11 +28,17 @@ Commands for a quick installation:
 
 .. code-block:: bash
 
-    conda create --name vtam python=3.7 -y
-    python3 -m pip install --upgrade cutadapt
-    conda install -c bioconda blast
-    conda install -c bioconda vsearch
-    python3 -m pip install --upgrade vtam
+    conda create --name vtam python=3.9 -y
+    conda activate vtam
+
+Then install dependencies
+
+.. code-block:: bash
+
+    python3 -m pip install cutadapt
+    conda install -c bioconda blast -y
+    conda install -c bioconda vsearch -y
+    python3 -m pip install vtam
 
 Commands for a quick working example:
 

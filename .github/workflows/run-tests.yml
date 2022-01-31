@@ -10,7 +10,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9, "3.10"]
 
     steps:
     - uses: actions/checkout@v2
@@ -24,19 +24,20 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Setup environment
       run: |
-          export PATH="/usr/share/miniconda/bin:$PATH"
-          conda create -q -n vtam
-          source activate vtam
-          conda env update -f environment.yml
+          # export PATH="/usr/share/miniconda/bin:$PATH"
+          $CONDA/bin/conda create -y -q --name vtam python=${{ matrix.python-version }}
+          # source activate vtam
+          $CONDA/bin/conda env update -f environment.yml --name vtam
     - name: Run tests
       env:
         CI: true
       run: |
         # activate conda env
-        export PATH="/usr/share/miniconda/bin:$PATH"
-        source activate vtam
-        vsearch --version
-        cutadapt --version
-        blastn -version
-        python -m unittest discover -v -f
+        export PATH="$CONDA/envs/vtam/bin:$PATH"
+        #source activate base
+        $CONDA/envs/vtam/bin/vsearch --version
+        $CONDA/envs/vtam/bin/cutadapt --version
+        $CONDA/envs/vtam/bin/blastn -version
+        $CONDA/envs/vtam/bin/python --version
+        $CONDA/envs/vtam/bin/python -m unittest discover -v -f
 

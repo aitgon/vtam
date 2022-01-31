@@ -1,0 +1,78 @@
+# https://osf.io/tvmf8 files to github release assets
+name: OSF data to release assets
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Upload assets to release
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O fastq.tar.gz https://osf.io/9mvzw/download
+    - name: wget fastq.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: fastq.tar.gz
+        asset_name: fastq.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O sorted.tar.gz https://osf.io/dhk5g/download
+    - name: wget sorted.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: sorted.tar.gz
+        asset_name: sorted.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O taxonomy.tsv.gz https://osf.io/uzk87/download
+    - name: wget taxonomy.tsv.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: taxonomy.tsv.gz
+        asset_name: taxonomy.tsv.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O coi_blast_db.tar.gz https://osf.io/45zfd/download
+    - name: wget coi_blast_db.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: coi_blast_db.tar.gz
+        asset_name: coi_blast_db.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true
+
+    - name: wget
+      uses: wei/wget@v1
+      with:
+        args: -O coi_blast_db_20200420.tar.gz https://osf.io/kw9ms/download
+    - name: wget coi_blast_db_20200420.tar.gz to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: coi_blast_db_20200420.tar.gz
+        asset_name: coi_blast_db_20200420.tar.gz
+        tag: ${{ github.ref }}
+        overwrite: true

@@ -97,7 +97,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
+        subprocess.run(args=args, cwd=cls.outdir_path)
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
                   "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
@@ -106,7 +106,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
+        subprocess.run(args=args, cwd=cls.outdir_path)
 
     def test_01_mfzr_filter(self):
 
@@ -117,7 +117,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_02_mfzr_optimize(self):
 
@@ -128,7 +128,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_03_mfzr_filter_optimized(self):
 
@@ -139,7 +139,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_04_zfzr_filter(self):
 
@@ -150,7 +150,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_05_zfzr_optimize(self):
 
@@ -161,7 +161,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_06_zfzr_filter_optimized(self):
 
@@ -172,7 +172,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_07_pool(self):
 
@@ -187,7 +187,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     def test_08_pool_taxa(self):
 
@@ -206,7 +206,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=self.outdir_path)
+        subprocess.run(args=args, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):
