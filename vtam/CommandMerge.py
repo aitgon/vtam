@@ -9,6 +9,7 @@ from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.RunnerVSearch import RunnerVSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
+from utils.FileCompression import FileCompression
 
 
 class CommandMerge(object):
@@ -16,7 +17,6 @@ class CommandMerge(object):
 
     @staticmethod
     def main(fastqinfo, fastqdir, fastainfo, fastadir, params=None, num_threads=multiprocessing.cpu_count()):
-
         ############################################################################################
         #
         # params.yml parameters
@@ -130,7 +130,18 @@ class CommandMerge(object):
             stats_df = pandas.concat([stats_df, pandas.DataFrame({
                 'FastqFwd': [fastq_fw_abspath], 'FastqRev': [fastq_fw_linecount],
                 'NbReadsFwd': [fastq_rv_abspath], 'NbReadsRev': [fastq_rv_linecount], 'FastaMerged': [out_fasta_path], 'NbMergedReads': [fasta_merged_linecount]})])
+    
+        for mergedfasta in fastainfo_df[['mergedfasta']].values: 
+            mergedfasta = mergedfasta[0]
+            fasta_merged_abspath = os.path.join(fastadir, mergedfasta)
+            mergedfasta_compressor = FileCompression(fasta_merged_abspath)
+            mergedfasta_c = mergedfasta_compressor.gzip_compression()
+            fastainfo_df.loc[fastainfo_df['mergedfasta'] == mergedfasta, 'mergedfasta'] = mergedfasta_c
+            mergedfasta_compressor.delete_file()
 
+            #fastq_info_df_i['mergedfasta'] = fasta_merged_basename
+
+        
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
         # SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
 
