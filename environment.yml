@@ -2,10 +2,9 @@ channels:
   - defaults
   - bioconda
 dependencies:
-  - python=3.7
   - blast
   - vsearch
   - pip
   - pip:
-    - -r file:requirements.txt
+    - -r requirements.txt
 

@@ -77,5 +77,5 @@ class CommandExample(object):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, check=True, cwd=outdir)
+        subprocess.run(args=args, cwd=outdir)
 

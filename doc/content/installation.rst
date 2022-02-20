@@ -39,6 +39,22 @@ You can also verify the BLAST (>=  v2.2.26), CutAdapt (>= 2.10) and VSEARCH (>= 
     cutadapt --version
     vsearch --version
 
+Singularity
+-------------------------------------------------
+
+We provide a singularity container in the VTAM github: https://github.com/aitgon/vtam .
+First you build the image with this command as root:
+
+.. code-block:: bash
+
+    sudo singularity build vtam.sif vtam.singularity
+
+Then you can use VTAM directly from the singularity image:
+
+.. code-block:: bash
+
+    singularity run --app vtam vtam.sif --help
+    singularity run --app vtam vtam.sif merge --help
 
 Windows
 -------------------------------------------------
