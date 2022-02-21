@@ -79,6 +79,5 @@ class PathManager(Singleton):
 
         :return: the output leading to the tests output of the project
         """
-
         test_path = os.path.join(cls.get_package_path(), "tests")
         return test_path

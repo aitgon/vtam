@@ -22,6 +22,7 @@ from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.RunnerWopmars import RunnerWopmars
+from vtam.utils.FileCompression import FileCompression
 from vtam.utils.constants import FilterLFNreference_records
 
 
