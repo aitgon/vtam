@@ -2,7 +2,7 @@ import gzip
 import shutil
 import os 
 
-class FileDeompression(object):
+class FileDecompression(object):
     """ Decompress file to from .gz format """
 
     def __init__(self, file_path):
@@ -21,7 +21,7 @@ class FileDeompression(object):
             return self.file_path
 
         if self.file_path.endswith('.gz'):
-            path_to_decompressed_file = self.file_path
+            path_to_decompressed_file = self.file_path[:-3]
         else:
             return(self.path)
 
@@ -31,7 +31,7 @@ class FileDeompression(object):
         
         if os.path.exists(path_to_decompressed_file):
             self.decompressed = path_to_decompressed_file
-            return path_to_decompressed_file
+            return self.decompressed
         return self.file_path
 
     def delete_file(self):

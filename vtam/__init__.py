@@ -8,7 +8,7 @@ import yaml
 from vtam import CommandExample
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandExample import CommandExample
-from vtam.CommandFilterOptimize import CommandFilterOptimize
+from CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandSortReads import CommandSortReads
@@ -22,7 +22,6 @@ from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.RunnerWopmars import RunnerWopmars
-from vtam.utils.FileCompression import FileCompression
 from vtam.utils.constants import FilterLFNreference_records
 
 
@@ -154,6 +153,8 @@ class VTAM(object):
                         pathlib.Path(cutoff_specific_tsv).touch(exist_ok=False)
                     arg_parser_dic['cutoff_specific'] = cutoff_specific_tsv
 
+            print(f'arg_parser_dic:\n {arg_parser_dic}\n')
+
             CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
 
         ############################################################################################
@@ -272,3 +273,5 @@ def main():
     if not sys.argv[1:]:  # if not arguments, print help
         VTAM(['--help'])
     VTAM(sys.argv[1:])
+
+main()
