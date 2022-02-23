@@ -274,4 +274,3 @@ def main():
         VTAM(['--help'])
     VTAM(sys.argv[1:])
 
-main()
