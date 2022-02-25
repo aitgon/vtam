@@ -2,12 +2,16 @@ import filecmp
 import os
 import shutil
 import unittest
+import hashlib
 
 from vtam import CommandMerge
 from vtam.utils.PathManager import PathManager
 
 
 class TestCommandMerge(unittest.TestCase):
+
+    @staticmethod
+    def 
 
     @classmethod
     def setUpClass(cls):
@@ -30,7 +34,6 @@ class TestCommandMerge(unittest.TestCase):
 
         CommandMerge.main(fastqinfo=self.fastqinfo, fastqdir=self.fastqdir, fastainfo=self.fastainfo,
                           fastadir=self.fastadir)
-        import pdb; pdb.set_trace()
         self.assertTrue(filecmp.cmp(self.fastainfo, self.fastainfo_bak, shallow=True))
         self.assertTrue(filecmp.cmpfiles(self.fastadir, self.fastadir_bak, common=[
             'MFZR_14Ben01_1_fw_48.fasta', 'MFZR_14Ben01_2_fw_48.fasta'], shallow=True))
