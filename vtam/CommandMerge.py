@@ -139,7 +139,7 @@ class CommandMerge(object):
                 mergedfasta_compressor = FileCompression(fasta_merged_abspath)
             
                 if mergedfasta.endswith('.gz'):
-                    mergedfasta_c = mergedfasta_compressor.gzip_compression()
+                    mergedfasta_c = mergedfasta_compressor.pigz_compression()
                     
                 elif mergedfasta.endswith('.bz2'):
                     mergedfasta_c = mergedfasta_compressor.bz2_compression()

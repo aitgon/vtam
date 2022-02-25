@@ -52,6 +52,7 @@ class FileCompression(object):
             return self.file_path
 
         if self.file_path.endswith(".gz"):
+            os.rename(self.file_path, self.file_path[:-3])
             self.file_path = self.file_path[:-3]
 
         cmd = "pigz " + self.file_path
@@ -88,7 +89,7 @@ class FileCompression(object):
         return self.file_path
     
     def delete_file(self):
-        if self.file_path and self.compressed != self.file_path:
+        if os.path.exists(self.file_path) and self.file_path and self.compressed != self.file_path:
             os.remove(self.file_path)
         return self.file_path
          
