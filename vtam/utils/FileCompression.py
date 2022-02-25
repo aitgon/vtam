@@ -42,8 +42,8 @@ class FileCompression(object):
             return path_to_compressed_file
         return self.file_path
     
-    def bz_compression(self):
-        ''' take a file and compress it to .bz format using the bz2 package'''
+    def bz2_compression(self):
+        ''' take a file and compress it to .bz2 format using the bz2 package'''
 
         if not self.file_path:
             return self.file_path

@@ -133,13 +133,21 @@ class CommandMerge(object):
     
         for mergedfasta in fastainfo_df[['mergedfasta']].drop_duplicates().values:
             mergedfasta = mergedfasta[0]
-            if mergedfasta.endswith('.gz'):
+
+            if mergedfasta.endswith('.bz2') or  mergedfasta.endswith('.gz'):
                 fasta_merged_abspath = os.path.join(fastadir, mergedfasta)
                 mergedfasta_compressor = FileCompression(fasta_merged_abspath)
-                mergedfasta_c = mergedfasta_compressor.gzip_compression()
+            
+                if mergedfasta.endswith('.gz'):
+                    mergedfasta_c = mergedfasta_compressor.gzip_compression()
+                    
+                elif mergedfasta.endswith('.bz2'):
+                    mergedfasta_c = mergedfasta_compressor.bz2_compression()
+                    
                 mergedfasta_compressor.delete_file()
                 _, relPath = os.path.split(mergedfasta_c)
                 fastainfo_df.loc[fastainfo_df['mergedfasta'] == mergedfasta, 'mergedfasta'] = relPath
+                
             else: 
                 fastq_info_df_i['mergedfasta'] = fasta_merged_basename
 
