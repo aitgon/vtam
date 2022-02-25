@@ -12,18 +12,18 @@ class TestCommandMerge(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cls.test_path = PathManager.get_test_path()
-        cls.outdir_path = os.path.join(cls.test_path, 'outdir')
+        cls.test_path = PathManager.get_test_path() # return the path vtam.test_path__path__[0]/tests
+        cls.outdir_path = os.path.join(cls.test_path, 'outdir_bz2')
 
     def setUp(self):
 
-        self.fastqinfo = os.path.join(self.test_path, "test_files", "fastqinfo.tsv")
-        self.fastqdir = os.path.join(self.test_path, "test_files", "fastq")
+        self.fastqinfo = os.path.join(self.test_path, "test_files", "fastqinfo_bz2.tsv")
+        self.fastqdir = os.path.join(self.test_path, "test_files", "fastq_bz2")
 
-        self.fastainfo = os.path.join(self.outdir_path, "fastainfo.tsv")
-        self.fastadir = os.path.join(self.outdir_path, "merged")
+        self.fastainfo = os.path.join(self.outdir_path, "fastainfo_bz2.tsv")
+        self.fastadir = os.path.join(self.outdir_path, "merged_bz2")
 
-        self.fastainfo_bak = os.path.join(self.test_path, "test_files", "fastainfo.tsv")
+        self.fastainfo_bak = os.path.join(self.test_path, "test_files", "fastainfo_bz2.tsv")
         self.fastadir_bak = self.outdir_path
 
     def test_01(self):
@@ -32,7 +32,7 @@ class TestCommandMerge(unittest.TestCase):
                           fastadir=self.fastadir)
         self.assertTrue(filecmp.cmp(self.fastainfo, self.fastainfo_bak, shallow=True))
         self.assertTrue(filecmp.cmpfiles(self.fastadir, self.fastadir_bak, common=[
-            'MFZR_14Ben01_1_fw_48.fasta', 'MFZR_14Ben01_2_fw_48.fasta'], shallow=True))
+            'MFZR_14Ben01_1_fw_48.fasta.bz2', 'MFZR_14Ben01_2_fw_48.fasta'], shallow=True))
 
     def tearDown(self):
         shutil.rmtree(self.outdir_path, ignore_errors=True)

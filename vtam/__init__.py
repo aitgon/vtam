@@ -8,7 +8,7 @@ import yaml
 from vtam import CommandExample
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandExample import CommandExample
-from CommandFilterOptimize import CommandFilterOptimize
+from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandSortReads import CommandSortReads
