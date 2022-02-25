@@ -2,6 +2,10 @@ import gzip
 import bz2
 import shutil
 import os 
+import shlex
+import sys
+import subprocess
+
 
 class FileCompression(object):
     """ compress file to desired format """
@@ -41,6 +45,27 @@ class FileCompression(object):
             self.compressed = path_to_compressed_file
             return path_to_compressed_file
         return self.file_path
+    
+    def pigz_compression(self):
+
+        if not self.file_path:
+            return self.file_path
+
+        if self.file_path.endswith(".gz"):
+            self.file_path = self.file_path[:-3]
+
+        cmd = "pigz " + self.file_path
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        try :
+            subprocess.run(args=args, check=True)
+            self.compressed = self.file_path + ".gz"
+            return self.compressed
+        except:
+            self.gzip_compression()
     
     def bz2_compression(self):
         ''' take a file and compress it to .bz2 format using the bz2 package'''
