@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 import shlex
+import bz2
 
 class FileDecompression(object):
     """ Decompress file to from .gz format """
@@ -56,8 +57,31 @@ class FileDecompression(object):
         except:
             return None
 
+    def bz2_decompression(self):
+        ''' take a file and decompress it from .bz2 format using the bz2 package'''
+        
+        self.decompressed = None
+
+        if not self.file_path:
+            return self.file_path
+
+        if self.file_path.endswith('.bz2'):
+            path_to_decompressed_file = self.file_path[:-3]
+        else:
+            path_to_decompressed_file = self.file_path
+
+        with bz2.open(self.file_path, 'rb') as f_in:
+            with open(path_to_decompressed_file, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        
+        if os.path.exists(path_to_decompressed_file):
+            self.decompressed = path_to_decompressed_file
+            return path_to_decompressed_file
+       
+        return self.file_path
+
     def delete_file(self):
-        if os.path.exists(self.file_path) and self.file_path and self.decompressed != self.file_path:
+        if self.file_path and self.decompressed != self.file_path:
             os.remove(self.file_path)
         return self.file_path
          
