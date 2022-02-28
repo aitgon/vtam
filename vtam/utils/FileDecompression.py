@@ -1,6 +1,9 @@
 import gzip
 import shutil
 import os 
+import sys
+import subprocess
+import shlex
 
 class FileDecompression(object):
     """ Decompress file to from .gz format """
@@ -15,7 +18,7 @@ class FileDecompression(object):
     #TODO add checks if file exists, read file extension (may be already compressed to another format) 
 
     def gzip_decompression(self):
-        """ take a file and decompress it to .gz format using the gzip package """
+        """ take a file and decompress it from .gz format using the gzip package """
 
         if not self.file_path:
             return self.file_path
@@ -34,8 +37,27 @@ class FileDecompression(object):
             return self.decompressed
         return self.file_path
 
+    def pigz_decompression(self):
+        """ take a file and decompress it from .gz format using the pigz utility """
+
+        if not self.file_path:
+            return self.file_path
+
+        cmd = "pigz --decompress " + self.file_path
+
+        if sys.platform.startswith("win"):
+            args = cmd
+        else:
+            args = shlex.split(cmd)
+        try :
+            subprocess.run(args=args, check=True)
+            self.decompressed = self.file_path[:-3]
+            return self.decompressed
+        except:
+            return None
+
     def delete_file(self):
-        if self.file_path and self.decompressed != self.file_path:
+        if os.path.exists(self.file_path) and self.file_path and self.decompressed != self.file_path:
             os.remove(self.file_path)
         return self.file_path
          
