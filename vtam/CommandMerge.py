@@ -140,6 +140,9 @@ class CommandMerge(object):
             
                 if mergedfasta.endswith('.gz'):
                     mergedfasta_c = mergedfasta_compressor.pigz_compression()
+                    if mergedfasta_c is None:
+                        mergedfasta_c = mergedfasta_compressor.gzip_compression()
+
                     
                 elif mergedfasta.endswith('.bz2'):
                     mergedfasta_c = mergedfasta_compressor.bz2_compression()
@@ -155,4 +158,4 @@ class CommandMerge(object):
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
         # SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
 
-# CommandMerge.main(fastadir='../../fastaMixed', fastainfo='../../fastainfoMixed.tsv', fastqdir='../../merge/fastqMixed', fastqinfo='../../merge/fastqinfoMixed_mfzr.tsv')
+##CommandMerge.main(fastadir='../../fastaMixed', fastainfo='../../fastainfoMixed.tsv', fastqdir='../../merge/fastqMixed', fastqinfo='../../merge/fastqinfoMixed_mfzr.tsv')

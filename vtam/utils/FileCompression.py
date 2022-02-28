@@ -66,7 +66,7 @@ class FileCompression(object):
             self.compressed = self.file_path + ".gz"
             return self.compressed
         except:
-            self.gzip_compression()
+            return None
     
     def bz2_compression(self):
         ''' take a file and compress it to .bz2 format using the bz2 package'''
@@ -92,4 +92,3 @@ class FileCompression(object):
         if os.path.exists(self.file_path) and self.file_path and self.compressed != self.file_path:
             os.remove(self.file_path)
         return self.file_path
-         
