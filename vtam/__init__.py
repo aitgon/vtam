@@ -273,4 +273,3 @@ def main():
     if not sys.argv[1:]:  # if not arguments, print help
         VTAM(['--help'])
     VTAM(sys.argv[1:])
-
