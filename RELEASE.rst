@@ -1,3 +1,7 @@
+**Changes In Version 0.1.23 (Mar 02, 2022)**
+
+- Added compressed file handling
+
 **Changes In Version 0.1.22 (Jan 31, 2022)**
 
 - Updated and tested with python 3.9 and 3.10
