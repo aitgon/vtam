@@ -1,0 +1,140 @@
+project = config['project']
+subproject = config['subproject']
+fastqinfo = config['fastqinfo']
+fastqdir = config['fastqdir']
+known_occurrences = config['known_occurrences']
+if 'params' in config:
+    params = config['params']
+blastdbdir = config['blastdbdir']
+blastdbname = config['blastdbname']
+taxonomy = config['taxonomy']
+
+outdir = os.path.join(project, subproject)
+
+rule all:
+    input:
+        variant_taxa=expand("{outdir}/asvtable_default_taxa.tsv", outdir=outdir),
+
+rule optimize:
+    input:
+        optimize_lfn_sample_replicate=expand("{outdir}/optimize_lfn_sample_replicate.tsv", outdir=outdir),
+        optimize_lfn_read_count_and_lfn_variant=expand("{outdir}/optimize_lfn_read_count_and_lfn_variant.tsv", outdir=outdir),
+        optimize_lfn_variant_specific=expand("{outdir}/optimize_lfn_variant_specific.tsv", outdir=outdir),
+        optimize_pcr_error=expand("{outdir}/optimize_pcr_error.tsv", outdir=outdir),
+
+rule asvtable_taxa:
+    input:
+        variant_taxa=expand("{outdir}/asvtable_default_taxa.tsv", outdir=outdir),
+
+rule asvtable_optimized_taxa:
+    input:
+        variant_taxa=expand("{outdir}/asvtable_optimized_taxa.tsv", outdir=outdir),
+
+rule optimize_tmp:
+    input:
+        asvtable="{outdir}/asvtable_default_taxa.tsv",
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
+        known_occurrences=known_occurrences,
+    output:
+        optimize_lfn_sample_replicate="{outdir}/optimize_lfn_sample_replicate.tsv",
+        optimize_lfn_read_count_and_lfn_variant="{outdir}/optimize_lfn_read_count_and_lfn_variant.tsv",
+        optimize_lfn_variant_specific="{outdir}/optimize_lfn_variant_specific.tsv",
+        optimize_pcr_error="{outdir}/optimize_pcr_error.tsv",
+    resources:
+        db=1
+    params:
+        db=os.path.join(project, 'db.sqlite'),
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam optimize --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --known_occurrences  {input.known_occurrences} --outdir $(dirname {output.optimize_lfn_sample_replicate}) -v --log {params.log}"
+
+rule asvtable_taxa_tmp:
+    input:
+        nhr="{}/{}.nhr".format(blastdbdir, blastdbname),
+        nin="{}/{}.nin".format(blastdbdir, blastdbname),
+        nog="{}/{}.nog".format(blastdbdir, blastdbname),
+        nsd="{}/{}.nsd".format(blastdbdir, blastdbname),
+        nsi="{}/{}.nsi".format(blastdbdir, blastdbname),
+        nsq="{}/{}.nsq".format(blastdbdir, blastdbname),
+        taxonomy=taxonomy,
+        asvtable="{outdir}/asvtable_default.tsv",
+    output:
+        variant_taxa="{outdir}/asvtable_default_taxa.tsv",
+    params:
+        blastdbname=blastdbname,
+        db=os.path.join(project, 'db.sqlite'),
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam taxassign --db {params.db} --asvtable {input.asvtable} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr})  --blastdbname {params.blastdbname} -v --log {params.log}"
+
+rule asvtable_optimized_taxa_tmp:
+    input:
+        nhr="{}/{}.nhr".format(blastdbdir, blastdbname),
+        nin="{}/{}.nin".format(blastdbdir, blastdbname),
+        nog="{}/{}.nog".format(blastdbdir, blastdbname),
+        nsd="{}/{}.nsd".format(blastdbdir, blastdbname),
+        nsi="{}/{}.nsi".format(blastdbdir, blastdbname),
+        nsq="{}/{}.nsq".format(blastdbdir, blastdbname),
+        taxonomy=taxonomy,
+        asvtable="{outdir}/asvtable_optimized.tsv",
+    output:
+        variant_taxa="{outdir}/asvtable_optimized_taxa.tsv",
+    params:
+        blastdbname=blastdbname,
+        db=os.path.join(project, 'db.sqlite'),
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam taxassign --db {params.db} --asvtable {input.asvtable} --output {output.variant_taxa} --taxonomy {input.taxonomy} --blastdbdir $(dirname {input.nhr}) --blastdbname {params.blastdbname} -v --log {params.log}"
+
+rule filter_params:
+    input:
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
+        params=params,
+    output:
+        asvtable="{outdir}/asvtable_optimized.tsv",
+    resources:
+        db=1
+    params:
+        db=os.path.join(project, 'db.sqlite'),
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam filter --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --params {input.params} --asvtable {output.asvtable} -v --log {params.log}"
+
+rule filter:
+    input:
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
+    output:
+        asvtable="{outdir}/asvtable_default.tsv",
+    resources:
+        db=1
+    params:
+        db=os.path.join(project, 'db.sqlite'),
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam filter --db {params.db} --sortedinfo {input.sortedinfo} --sorteddir $(dirname {input.sortedinfo}) --asvtable {output.asvtable} -v --log {params.log}"
+
+rule sortreads:
+    input:
+        fastainfo="{outdir}/fastainfo.tsv",
+    output:
+        sortedinfo="{outdir}/sorted/sortedinfo.tsv",
+    resources:
+        db=1
+    params:
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        """vtam sortreads --fastainfo {input.fastainfo} --fastadir $(dirname {input.fastainfo})/merged --sorteddir $(dirname {output.sortedinfo}) -v --log {params.log}"""
+
+rule merge:
+    input:
+        fastqinfo=fastqinfo,
+    output:
+        fastainfo="{outdir}/fastainfo.tsv",
+    resources:
+        db=1
+    params:
+        fastqdir=fastqdir,
+        log=os.path.join(project, "vtam.log"),
+    shell:
+        "vtam merge --fastqinfo {input.fastqinfo} --fastqdir {params.fastqdir} --fastainfo {output.fastainfo} --fastadir $(dirname {output.fastainfo})/merged -v --log {params.log}"
+

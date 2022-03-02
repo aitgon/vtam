@@ -1,4 +1,3 @@
-from bdb import set_trace
 import os
 import pathlib
 import shlex
@@ -11,7 +10,7 @@ import urllib.request
 
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import sorted_gz_tar_gz_url, sorted_tar_gz_url2, sorted_tar_gz_url3
+from vtam.utils.constants import sorted_tar_gz_url1, sorted_tar_gz_url2, sorted_tar_gz_url3
 # from vtam.utils.MyProgressBar import MyProgressBar
 from tqdm import tqdm
 from vtam.utils import tqdm_hook
@@ -45,24 +44,31 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        sorted_gz_tar_path = os.path.join(cls.outdir_data_path, "sortedgz.tar.gz")
+        sorted_tar_path = os.path.join(cls.outdir_data_path, "sorted.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
-        if not os.path.isfile(sorted_gz_tar_path) or pathlib.Path(sorted_gz_tar_path).stat().st_size < 1000000:
+        if not os.path.isfile(sorted_tar_path) or pathlib.Path(sorted_tar_path).stat().st_size < 1000000:
             try:
-                # urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_gz_tar_path, MyProgressBar())
+                # urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, MyProgressBar())
                 with tqdm(...) as t:
-                    t.set_description(os.path.basename(sorted_gz_tar_path))
-                    urllib.request.urlretrieve(sorted_gz_tar_gz_url, sorted_gz_tar_path, reporthook=tqdm_hook(t))
-            except Exception as e:
-                print(f"Could not download {sorted_gz_tar_path}:\n {e} ")
-                return 
-        print(f"sorted_gz_tar_path: {sorted_gz_tar_path}")
-        tar = tarfile.open(sorted_gz_tar_path, "r:gz")
+                    t.set_description(os.path.basename(sorted_tar_path))
+                    urllib.request.urlretrieve(sorted_tar_gz_url1, sorted_tar_path, reporthook=tqdm_hook(t))
+            except Exception:
+                try:
+                    # urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(sorted_tar_path))
+                        urllib.request.urlretrieve(sorted_tar_gz_url2, sorted_tar_path, reporthook=tqdm_hook(t))
+                except Exception:
+                    # urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, MyProgressBar())
+                    with tqdm(...) as t:
+                        t.set_description(os.path.basename(sorted_tar_path))
+                        urllib.request.urlretrieve(sorted_tar_gz_url3, sorted_tar_path, reporthook=tqdm_hook(t))
+        tar = tarfile.open(sorted_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_data_path)
         tar.close()
 
     def setUp(self):
-        self.outdir_thistest_path = os.path.join(self.outdir_path, 'GZ_test')
+        self.outdir_thistest_path = os.path.join(self.outdir_path, 'thistest')
         # during development of the test, this prevents errors
         pathlib.Path(self.outdir_thistest_path).mkdir(parents=True, exist_ok=True)
         os.environ['VTAM_LOG_VERBOSITY'] = str(10)
@@ -73,11 +79,11 @@ class TestCmdVariantReadCount(unittest.TestCase):
         #
         ############################################################################################
 
-        self.asvtable_path = os.path.join(self.outdir_path, "asvtable_gz_default.tsv")
+        self.asvtable_path = os.path.join(self.outdir_path, "asvtable_default.tsv")
 
         self.args = {}
-        self.args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo_gz.tsv")
-        self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sortedgz')
+        self.args['sortedinfo'] = os.path.join(os.path.dirname(__file__), "sortedinfo.tsv")
+        self.args['sorteddir'] = os.path.join(self.outdir_data_path, 'sorted')
         self.args['optimize_lfn_variant_specific'] = os.path.join(
             self.test_path, "test_files_dryad.f40v5_small/run1_mfzr_zfzr/optimize_lfn_variant_specific.tsv")
         self.args['optimize_lfn_variant_replicate_specific'] = os.path.join(
@@ -94,7 +100,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv  --until VariantReadCount " \
+              "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -114,7 +120,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv  --until VariantReadCount " \
+              "--asvtable asvtable_default.tsv  --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -134,10 +140,9 @@ class TestCmdVariantReadCount(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \
+              "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
-        import pdb; pdb.set_trace()
         if sys.platform.startswith("win"):
             args = cmd
         else:
@@ -155,7 +160,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \
+              "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -170,7 +175,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
     def test_read_fasta(self):
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \
+              "--asvtable asvtable_default.tsv --until VariantReadCount " \
               "--cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
