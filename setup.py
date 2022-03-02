@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 __author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
-__copyright__ = "Copyright 2018-2020, Aitor Gonzalez, Emese Meglecz"
+__copyright__ = "Copyright 2018-2022, Aitor Gonzalez, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
 
@@ -57,6 +57,7 @@ Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
 Programming Language :: Python :: 3.8
 Programming Language :: Python :: 3.9
+Programming Language :: Python :: 3.10
 Programming Language :: Python :: 3 :: Only
 Topic :: Scientific/Engineering :: Bio-Informatics
 Topic :: Software Development

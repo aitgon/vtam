@@ -93,7 +93,7 @@ exec /opt/miniconda/envs/myenv/bin/"$@"
 ################################################################################
 
 %post
-/opt/miniconda/envs/myenv/bin/pip install vtam==0.1.21
+/opt/miniconda/envs/myenv/bin/pip install vtam==0.1.22
 
 # Executables in this folder will be called with:
 # singularity run out/mycontainer.sif myexecutable

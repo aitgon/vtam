@@ -1,0 +1,23 @@
+{% macro rule_optimize_lfn_readcount_and_lfn_variant_replicate(lfn_variant_cutoff, lfn_variant_replicate_cutoff, sortedinfo, known_occurrences, lfn_sample_replicate_cutoff, lfn_read_count_cutoff, min_replicate_number, optimize_lfn_read_count_and_lfn_variant, optimize_lfn_variant_specific, optimize_lfn_read_count_and_lfn_variant_replicate, optimize_lfn_variant_replicate_specific) -%}
+rule OptimizeLFNreadCountAndLFNvariant:
+    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+        file:
+            sortedinfo: {{sortedinfo}}
+            known_occurrences: {{known_occurrences}}
+    output:
+        file:
+            optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}
+            optimize_lfn_variant_specific: {{optimize_lfn_variant_specific}}
+    params:
+        {% if lfn_variant_replicate_cutoff is none %}lfn_variant_cutoff: {{lfn_variant_cutoff}}{% else %}lfn_variant_replicate_cutoff: {{lfn_variant_replicate_cutoff}}{% endif %}
+        lfn_sample_replicate_cutoff: {{lfn_sample_replicate_cutoff}}
+        lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
+        min_replicate_number: {{min_replicate_number}}
+{%- endmacro%}

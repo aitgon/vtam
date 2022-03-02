@@ -1,0 +1,3 @@
+TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Sample	Replicate	Run	FastqFwd	FastqRev
+gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	mfzr	14ben01	1	run1	MFZR_14Ben01_1_fw_48.fastq.bz2	MFZR_14Ben01_1_rv_48.fastq.bz2
+gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	mfzr	14ben01	2	run1	MFZR_14Ben01_2_fw_48.fastq	MFZR_14Ben01_2_rv_48.fastq

@@ -1,3 +1,7 @@
+**Changes In Version 0.1.22 (Jan 31, 2022)**
+
+- Updated and tested with python 3.9 and 3.10
+
 **Changes In Version 0.1.21 (Dec 11, 2020)**
 
 - ENH added '--countreads' option to 'vtam pool'
