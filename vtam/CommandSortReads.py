@@ -8,6 +8,7 @@ import shlex
 import shutil
 import subprocess
 import gzip 
+import bz2
 from functools import partial
 import shlex
 
@@ -293,9 +294,19 @@ class CommandSortReads(object):
             #                             f_out.write("%s\n" % str(
             #                             Seq(line.strip()).reverse_complement()))
 
-                    
-            _open = partial(gzip.open) if out_final_fasta_path.endswith(".gz") else open
-            _open2 = partial(gzip.open) if out_rc_fasta_path.endswith(".gz") else open
+            if out_final_fasta_path.endswith(".gz"):      
+                _open = partial(gzip.open) 
+            elif out_final_fasta_path.endswith(".bz2"):
+                _open = partial(bz2.open)
+            else:
+                _open = open
+
+            if out_rc_fasta_path.endswith(".gz"):
+                _open2 = partial(gzip.open) 
+            elif out_rc_fasta_path.endswith(".bz2"):
+                _open2 = partial(bz2.open) 
+            else: 
+                _open2 = open
             
             with _open(out_final_fasta_path, 'at') as fout:
                 with _open2(out_rc_fasta_path, 'rt') as fin:
