@@ -1,0 +1,5 @@
+run	marker	sample	replicate	tagfwd	primerfwd	tagrev	primerrev	mergedfasta
+run1	mfzr	tpos1_run1	1	tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR_14Ben01_Tpos1_1_fw_48.fasta.gz
+run1	mfzr	14ben01	1	gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR_14Ben01_Tpos1_1_fw_48.fasta.gz
+run1	mfzr	tpos1_run1	2	tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR_14Ben01_Tpos1_2_fw_48.fasta.gz
+run1	mfzr	14ben01	2	gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR_14Ben01_Tpos1_2_fw_48.fasta.gz

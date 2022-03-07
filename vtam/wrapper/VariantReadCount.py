@@ -81,11 +81,10 @@ class VariantReadCount(ToolWrapper):
         """
         handles reading file from compressed or uncompressed file
         """
-
-        print("\n\n get_sorted_read_list \n\n")
         _open = partial(gzip.open, mode='rt') if file_path.endswith(".gz") else open
         with _open(file_path) as handle:
-            return [str(seq_record.seq).upper() for seq_record in SeqIO.parse(handle, "fasta", alphabet=generic_dna)]
+            res = [str(seq_record.seq).upper() for seq_record in SeqIO.parse(handle, "fasta", alphabet=generic_dna)]
+            return res
   
 
 
