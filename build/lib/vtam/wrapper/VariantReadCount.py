@@ -3,6 +3,7 @@ import inspect
 import os
 import sys
 import gzip 
+import bz2
 from functools import partial
 
 #third party imports
@@ -81,11 +82,16 @@ class VariantReadCount(ToolWrapper):
         """
         handles reading file from compressed or uncompressed file
         """
+        if file_path.endswith(".gz"):
+            _open = partial(gzip.open, mode='rt')
+        elif file_path.endswith(".bz2"):
+            _open = partial(bz2.open, mode='rt') 
+        else:
+            _open = open
 
-        print("\n\n get_sorted_read_list \n\n")
-        _open = partial(gzip.open, mode='rt') if file_path.endswith(".gz") else open
         with _open(file_path) as handle:
-            return [str(seq_record.seq).upper() for seq_record in SeqIO.parse(handle, "fasta", alphabet=generic_dna)]
+            res = [str(seq_record.seq).upper() for seq_record in SeqIO.parse(handle, "fasta", alphabet=generic_dna)]
+            return res
   
 
 

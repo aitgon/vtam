@@ -11,7 +11,7 @@ import urllib.request
 
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
-from vtam.utils.constants import sorted_gz_tar_gz_url, sorted_tar_gz_url2, sorted_tar_gz_url3
+from vtam.utils.constants import sorted_gz_tar_gz_url
 # from vtam.utils.MyProgressBar import MyProgressBar
 from tqdm import tqdm
 from vtam.utils import tqdm_hook
@@ -94,7 +94,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         ############################################################################################
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
-              "--asvtable asvtable_gz_default.tsv  --until VariantReadCount " \
+              "--asvtable asvtable_bz2_default.tsv  --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_specific}".format(**self.args)
 
         if sys.platform.startswith("win"):
@@ -137,7 +137,6 @@ class TestCmdVariantReadCount(unittest.TestCase):
               "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \
               "--lfn_variant_replicate --cutoff_specific {optimize_lfn_variant_replicate_specific}".format(**self.args)
 
-        import pdb; pdb.set_trace()
         if sys.platform.startswith("win"):
             args = cmd
         else:
@@ -168,6 +167,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
 
     def test_read_fasta(self):
+        import pdb; pdb.set_trace()
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \

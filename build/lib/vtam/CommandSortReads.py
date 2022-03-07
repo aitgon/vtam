@@ -7,6 +7,10 @@ import pathlib
 import shlex
 import shutil
 import subprocess
+import gzip 
+import bz2
+from functools import partial
+import shlex
 
 # Compatible with both pre- and post Biopython 1.78:
 try:
@@ -266,8 +270,46 @@ class CommandSortReads(object):
             shutil.copy(out_fasta_path, out_final_fasta_path)
 
             Logger.instance().debug("Pooling fwd and rc reads...")
-            with open(out_final_fasta_path, 'a') as fout:
-                with open(out_rc_fasta_path, 'r') as fin:
+
+            # if out_final_fasta_path.endswith(".gz"):
+            #     _open = partial(gzip.open) #for use of gzip
+            #     with _open(out_final_fasta_path, 'at') as f_out:
+            #         if out_rc_fasta_path.endswith(".gz"):
+            #             cmd = f"pigz -dkcv {out_rc_fasta_path}"
+            #             if sys.platform.startswith("win"):
+            #                 args = cmd
+            #             else:
+            #                 args = shlex.split(cmd)
+            #             pigzRead = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, bufsize=1, text=True)
+            #             with pigzRead.stdout as f_in:
+            #                 while True:
+            #                     line = f_in.readline()
+            #                     if not line:
+            #                         break
+            #                     if not line.startswith('>'):
+            #                         if generic_dna:  # Biopython <1.78
+            #                             f_out.write("%s\n" % str(
+            #                             Seq(line.strip(), generic_dna).reverse_complement()))
+            #                         else:  # Biopython =>1.78
+            #                             f_out.write("%s\n" % str(
+            #                             Seq(line.strip()).reverse_complement()))
+
+            if out_final_fasta_path.endswith(".gz"):      
+                _open = partial(gzip.open) 
+            elif out_final_fasta_path.endswith(".bz2"):
+                _open = partial(bz2.open)
+            else:
+                _open = open
+
+            if out_rc_fasta_path.endswith(".gz"):
+                _open2 = partial(gzip.open) 
+            elif out_rc_fasta_path.endswith(".bz2"):
+                _open2 = partial(bz2.open) 
+            else: 
+                _open2 = open
+            
+            with _open(out_final_fasta_path, 'at') as fout:
+                with _open2(out_rc_fasta_path, 'rt') as fin:
                     for line in fin:
                         if not line.startswith('>'):
 
