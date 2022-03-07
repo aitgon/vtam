@@ -17,15 +17,6 @@ class FileCompression(object):
 
         self.compressed = None
 
-    # def find_files(path_to_folder):
-    #     ''' iterates over a folder content and return a list of its content '''
-
-    #     list_of_file = listdir(path_to_folder)
-
-    #     return list_of_file
-
-    #TODO add checks if file exists, read file extension (may be already compressed to another format) 
-
     def gzip_compression(self):
         ''' take a file and compress it to gz format using the gzip package'''
 

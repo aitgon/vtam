@@ -239,18 +239,6 @@ class VariantReadCount(ToolWrapper):
                 ####################################################################################
                 
                 sorted_read_list = VariantReadCount.get_sorted_read_list(read_fasta_path, generic_dna)
-                #if generic_dna:  # Biopython <1.78
-                    # sorted_read_list = [str(seq_record.seq).upper() for
-                    #                     seq_record in
-                    #                     SeqIO.parse(read_fasta_path,
-                    #                                 format="fasta",
-                    #                                 alphabet=generic_dna)]
-                #else:  # Biopython =>1.78
-                    # sorted_read_list = [str(seq_record.seq).upper() for
-                    #                     seq_record in
-                    #                     SeqIO.parse(read_fasta_path,
-                    #                                 format="fasta",
-                    #                                 alphabet=generic_dna)]
 
                 variant_read_count_df_sorted_i = pandas.DataFrame(
                     {

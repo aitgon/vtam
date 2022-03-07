@@ -271,29 +271,6 @@ class CommandSortReads(object):
 
             Logger.instance().debug("Pooling fwd and rc reads...")
 
-            # if out_final_fasta_path.endswith(".gz"):
-            #     _open = partial(gzip.open) #for use of gzip
-            #     with _open(out_final_fasta_path, 'at') as f_out:
-            #         if out_rc_fasta_path.endswith(".gz"):
-            #             cmd = f"pigz -dkcv {out_rc_fasta_path}"
-            #             if sys.platform.startswith("win"):
-            #                 args = cmd
-            #             else:
-            #                 args = shlex.split(cmd)
-            #             pigzRead = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, bufsize=1, text=True)
-            #             with pigzRead.stdout as f_in:
-            #                 while True:
-            #                     line = f_in.readline()
-            #                     if not line:
-            #                         break
-            #                     if not line.startswith('>'):
-            #                         if generic_dna:  # Biopython <1.78
-            #                             f_out.write("%s\n" % str(
-            #                             Seq(line.strip(), generic_dna).reverse_complement()))
-            #                         else:  # Biopython =>1.78
-            #                             f_out.write("%s\n" % str(
-            #                             Seq(line.strip()).reverse_complement()))
-
             if out_final_fasta_path.endswith(".gz"):      
                 _open = partial(gzip.open) 
             elif out_final_fasta_path.endswith(".bz2"):

@@ -41,7 +41,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
         ############################################################################################
         #
-        # Download sorted reads dataset (Updated Oct 10, 2020)
+        # Download sorted reads dataset (Updated Mar, 2022)
         #
         ############################################################################################
 
@@ -167,7 +167,6 @@ class TestCmdVariantReadCount(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
 
     def test_read_fasta(self):
-        import pdb; pdb.set_trace()
 
         cmd = "vtam filter --db db.sqlite --sortedinfo {sortedinfo} --sorteddir {sorteddir} " \
               "--asvtable asvtable_gz_default.tsv --until VariantReadCount " \

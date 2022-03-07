@@ -158,4 +158,3 @@ class CommandMerge(object):
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
         # SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
 
-##CommandMerge.main(fastadir='../../fastaMixed', fastainfo='../../fastainfoMixed.tsv', fastqdir='../../merge/fastqMixed', fastqinfo='../../merge/fastqinfoMixed_mfzr.tsv')

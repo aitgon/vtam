@@ -40,7 +40,7 @@ class TestCmdVariantReadCount(unittest.TestCase):
 
         ############################################################################################
         #
-        # Download sorted reads dataset (Updated Oct 10, 2020)
+        # Download sorted reads dataset (Updated Mar 2022)
         #
         ############################################################################################
 
