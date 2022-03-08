@@ -38,6 +38,8 @@ class RunnerVSearch(object):
         """
         cmd = self.create_command()
 
+        print(f"vsearch command : \n {cmd}")
+
         if sys.platform.startswith("win"):
             args = cmd
         else:
