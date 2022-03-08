@@ -153,8 +153,6 @@ class VTAM(object):
                         pathlib.Path(cutoff_specific_tsv).touch(exist_ok=False)
                     arg_parser_dic['cutoff_specific'] = cutoff_specific_tsv
 
-            print(f'arg_parser_dic:\n {arg_parser_dic}\n')
-
             CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
 
         ############################################################################################
