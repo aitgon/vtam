@@ -7,7 +7,6 @@ import sys
 from vtam.utils.Logger import Logger
 from vtam.utils.RunnerWopmars import RunnerWopmars
 from vtam.utils.constants import FilterLFNreference_records
-from vtam.utils.FileDecompression import FileDecompression
 from vtam.utils.FileSampleInformation import FileSampleInformation
 
 class CommandFilterOptimize(object):
