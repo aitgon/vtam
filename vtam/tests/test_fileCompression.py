@@ -79,6 +79,7 @@ class TestFileCompression(unittest.TestCase):
         try:
             output = self.compressed.endswith('.gz')
             output2 = self.compressed.endswith('.gz.gz')
+            stop_test = False
         except AttributeError:
             stop_test = True
             output = True
