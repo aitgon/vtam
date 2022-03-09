@@ -13,3 +13,4 @@ out
 vtam.egg-info
 vtam/tests/outdir
 vtam/tests/outdir_download/
+build
