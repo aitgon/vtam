@@ -177,6 +177,9 @@ sorted_tar_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/sorted
 sorted_tar_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/sorted.tar.gz"
 sorted_tar_gz_url3 = "https://osf.io/dhk5g/download"
 
+sorted_gz_tar_gz_url = "https://osf.io/734pf/download"
+
+sorted_tar_bz2_url = "https://osf.io/3umhf/download"
 
 taxonomy_tsv_gz_url1 = "https://github.com/aitgon/vtam/releases/download/{}/taxonomy.tsv.gz".format(__version__)
 taxonomy_tsv_gz_url2 = "https://github.com/aitgon/vtam/releases/latest/download/taxonomy.tsv.gz"

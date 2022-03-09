@@ -9,6 +9,7 @@ from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.RunnerVSearch import RunnerVSearch
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.Logger import Logger
+from vtam.utils.FileCompression import FileCompression
 
 
 class CommandMerge(object):
@@ -16,7 +17,6 @@ class CommandMerge(object):
 
     @staticmethod
     def main(fastqinfo, fastqdir, fastainfo, fastadir, params=None, num_threads=multiprocessing.cpu_count()):
-
         ############################################################################################
         #
         # params.yml parameters
@@ -130,7 +130,31 @@ class CommandMerge(object):
             stats_df = pandas.concat([stats_df, pandas.DataFrame({
                 'FastqFwd': [fastq_fw_abspath], 'FastqRev': [fastq_fw_linecount],
                 'NbReadsFwd': [fastq_rv_abspath], 'NbReadsRev': [fastq_rv_linecount], 'FastaMerged': [out_fasta_path], 'NbMergedReads': [fasta_merged_linecount]})])
+    
+        for mergedfasta in fastainfo_df[['mergedfasta']].drop_duplicates().values:
+            mergedfasta = mergedfasta[0]
 
+            if mergedfasta.endswith('.bz2') or  mergedfasta.endswith('.gz'):
+                fasta_merged_abspath = os.path.join(fastadir, mergedfasta)
+                mergedfasta_compressor = FileCompression(fasta_merged_abspath)
+            
+                if mergedfasta.endswith('.gz'):
+                    mergedfasta_c = mergedfasta_compressor.pigz_compression()
+                    if mergedfasta_c is None:
+                        mergedfasta_c = mergedfasta_compressor.gzip_compression()
+
+                    
+                elif mergedfasta.endswith('.bz2'):
+                    mergedfasta_c = mergedfasta_compressor.bz2_compression()
+                    
+                mergedfasta_compressor.delete_file()
+                _, relPath = os.path.split(mergedfasta_c)
+                fastainfo_df.loc[fastainfo_df['mergedfasta'] == mergedfasta, 'mergedfasta'] = relPath
+                
+            else: 
+                fastq_info_df_i['mergedfasta'] = fasta_merged_basename
+
+        
         fastainfo_df.to_csv(fastainfo, sep="\t", header=True, index=False)
         # SummaryFileMerge(params_dic=vsearch_args_dic, stats_df=stats_df).write('summary.txt')
 

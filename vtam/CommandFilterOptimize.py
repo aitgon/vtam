@@ -1,4 +1,5 @@
 import os
+import pandas
 import sqlalchemy
 import subprocess
 import sys
@@ -6,7 +7,7 @@ import sys
 from vtam.utils.Logger import Logger
 from vtam.utils.RunnerWopmars import RunnerWopmars
 from vtam.utils.constants import FilterLFNreference_records
-
+from vtam.utils.FileSampleInformation import FileSampleInformation
 
 class CommandFilterOptimize(object):
     """Class for the Merge command"""
@@ -54,4 +55,6 @@ class CommandFilterOptimize(object):
             os.environ['VTAM_THREADS'] = str(arg_parser_dic['threads'])
         Logger.instance().info(wopmars_command)
         run_result = subprocess.run(wopmars_command, shell=True)
+
+
         sys.exit(run_result.returncode)
