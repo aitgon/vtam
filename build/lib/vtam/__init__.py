@@ -1,4 +1,4 @@
-__version__ = "0.1.22"
+__version__ = "0.1.23"
 
 import os
 import pathlib
@@ -152,8 +152,6 @@ class VTAM(object):
                     if not os.path.isfile(cutoff_specific_tsv):
                         pathlib.Path(cutoff_specific_tsv).touch(exist_ok=False)
                     arg_parser_dic['cutoff_specific'] = cutoff_specific_tsv
-
-            print(f'arg_parser_dic:\n {arg_parser_dic}\n')
 
             CommandFilterOptimize.main(arg_parser_dic=arg_parser_dic)
 

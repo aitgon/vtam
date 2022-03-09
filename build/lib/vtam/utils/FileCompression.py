@@ -17,15 +17,6 @@ class FileCompression(object):
 
         self.compressed = None
 
-    # def find_files(path_to_folder):
-    #     ''' iterates over a folder content and return a list of its content '''
-
-    #     list_of_file = listdir(path_to_folder)
-
-    #     return list_of_file
-
-    #TODO add checks if file exists, read file extension (may be already compressed to another format) 
-
     def gzip_compression(self):
         ''' take a file and compress it to gz format using the gzip package'''
 
@@ -33,9 +24,10 @@ class FileCompression(object):
             return self.file_path
 
         if self.file_path.endswith('.gz'):
-            path_to_compressed_file = self.file_path
-        else:
-            path_to_compressed_file = self.file_path + '.gz'
+            os.rename(self.file_path, self.file_path[:-3])
+            self.file_path = self.file_path[:-3]
+
+        path_to_compressed_file = self.file_path + '.gz'
 
         with open(self.file_path, 'rb') as f_in:
             with gzip.open(path_to_compressed_file, 'wb') as f_out:
@@ -75,9 +67,10 @@ class FileCompression(object):
             return self.file_path
 
         if self.file_path.endswith('.bz2'):
-            path_to_compressed_file = self.file_path
-        else:
-            path_to_compressed_file = self.file_path + '.bz2'
+            os.rename(self.file_path, self.file_path[:-4]) 
+            self.file_path = self.file_path[:-4] 
+
+        path_to_compressed_file = self.file_path + '.bz2'
 
         with open(self.file_path, 'rb') as f_in:
             with bz2.open(path_to_compressed_file, 'wb') as f_out:
