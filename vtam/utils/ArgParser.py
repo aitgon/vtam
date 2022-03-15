@@ -304,6 +304,12 @@ class ArgParser:
             required=True)
         # This attribute will trigger the good command
 
+        parser_vtam_sortreads.add_argument(
+            "--no_reverse", 
+            action="store_false",
+            help="don't check reverse sequences",
+            required=False)
+
         parser_vtam_sortreads.set_defaults(command='sortreads')
 
     @classmethod
