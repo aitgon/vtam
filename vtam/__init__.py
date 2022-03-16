@@ -194,8 +194,11 @@ class VTAM(object):
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
             no_reverse = arg_parser_dic['no_reverse']
+            tag_to_end = arg_parser_dic['tag_to_end']
+            primer_to_end = arg_parser_dic['primer_to_end']
             CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
-                                  num_threads=num_threads, sorteddir=sorteddir, no_reverse=no_reverse)
+                                  num_threads=num_threads, sorteddir=sorteddir, no_reverse=no_reverse, 
+                                  tag_to_end=tag_to_end, primer_to_end=primer_to_end)
 
         ############################################################################################
         #

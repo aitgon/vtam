@@ -30,7 +30,8 @@ class CommandSortReads(object):
     """Class for the Merge command"""
 
     @staticmethod
-    def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count(), no_reverse=False):
+    def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count(), 
+        no_reverse=False, tag_to_end=False, primer_to_end=False):
 
         if sys.platform.startswith('win'):
             num_threads = 1
