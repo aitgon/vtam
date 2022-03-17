@@ -8,13 +8,13 @@ except ImportError:
 from Bio.Seq import Seq
 
 
-
 class FilesInputCutadapt(object):
     """ make fasta files to use as input for cutadapt demultiplexing """
 
-    def __init__(self, file_path, tag_to_end=False, primer_to_end=False):
+    def __init__(self, file_path, mergedFasta, tag_to_end=False, primer_to_end=False):
 
         self.file_path = file_path
+        self.mergedFasta = mergedFasta
         
         self.tag_to_end = tag_to_end
         self.primer_to_end = primer_to_end
@@ -23,13 +23,13 @@ class FilesInputCutadapt(object):
         self.columns = self.df.columns.str.lower()
         self.length = self.df.shape[0]
 
-        self.sampleName = [self.df.iloc[i].sampleName for i in range(self.length)]
+        self.sample = [self.df.iloc[i]['sample'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
-        self.tag_fwd = [self.df.iloc[i].tagfwd for i in range(self.length)]
-        self.tag_rev = [self.df.iloc[i].tagrev for i in range(self.length)]
+        self.tag_fwd = [self.df.iloc[i].tagfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
+        self.tag_rev = [self.df.iloc[i].tagrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
-        self.primer_fwd = [self.df.iloc[i].primerfwd for i in range(self.length)]
-        self.primer_rev = [self.df.iloc[i].primerrev for i in range(self.length)]
+        self.primer_fwd = [self.df.iloc[i].primerfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
+        self.primer_rev = [self.df.iloc[i].primerrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
             
     def tags_file(self):
@@ -38,16 +38,16 @@ class FilesInputCutadapt(object):
         self.tagsFile = os.path.join(relPath + 'tagsFile.fasta')
 
         with open(self.tagsFile, 'at') as tags:
-            for tagFwd, tagRev, sampleName  in zip(self.tag_fwd, self.tag_rev, self.sampleName):
+            for tagFwd, tagRev, sample  in zip(self.tag_fwd, self.tag_rev, self.sample):
                 if generic_dna:  # Biopython <1.78
                     tagRevRC = str(Seq(tagRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
                     tagRevRC = str(Seq(tagRev).reverse_complement())
                 
                 if self.tag_to_end:
-                    tags.write(f">{sampleName}\n ^{tagFwd}...{tagRevRC}$\n")
+                    tags.write(f">{sample}\n ^{tagFwd}...{tagRevRC}$\n")
                 else:
-                    tags.write(f">{sampleName}\n {tagFwd}...{tagRevRC}\n")
+                    tags.write(f">{sample}\n {tagFwd}...{tagRevRC}\n")
     
         self.tagsFile
 
@@ -58,16 +58,16 @@ class FilesInputCutadapt(object):
         self.primersFile = os.path.join(relPath + 'primersFile.fasta')
     
         with open('./primers.fasta', 'at') as primers:
-            for primerFwd, primerRev, sampleName in zip(self.primer_fwd, self.primer_rev, self.sampleName):
+            for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
                 if generic_dna:  # Biopython <1.78
                     primerRevRC = str(Seq(primerRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
                     primerRevRC = str(Seq(primerRev).reverse_complement())
 
                 if self.primer_to_end:
-                    primers.write(f">{sampleName}\n ^{primerFwd}...{primerRevRC}$\n")
+                    primers.write(f">{sample}\n ^{primerFwd}...{primerRevRC}$\n")
                 else:
-                    primers.write(f">{sampleName}\n{primerFwd}...{primerRevRC}\n")
+                    primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
         
         self.primersFile
 

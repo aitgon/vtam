@@ -24,7 +24,7 @@ from vtam.utils.Logger import Logger
 from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.FileSampleInformation import FileSampleInformation
-
+from vtam.utils.FilesInputCutadapt import FilesInputCutadapt
 
 class CommandSortReads(object):
     """Class for the Merge command"""
@@ -54,26 +54,23 @@ class CommandSortReads(object):
         #
         ############################################################################################
 
-        merged_fastainfo_df = FileSampleInformation(fastainfo).read_tsv_into_df()
-
+        merged_fastainfo_df = pandas.read_csv(fastainfo, sep='\t', header=0)
         pathlib.Path(sorteddir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
 
         sorted_read_info_df = pandas.DataFrame()
+        print(merged_fastainfo_df.loc[:,'mergedfasta'].to_list())
+        for mergedfasta in merged_fastainfo_df.loc[:,'mergedfasta'].to_list():
 
-        for i in range(0, merged_fastainfo_df.shape[0]):
-            fasta_info_series = merged_fastainfo_df.iloc[i]
+            inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, tag_to_end, primer_to_end)
+            
+            tagFile = inputFiles.tags_file()
+            primerFile = inputFiles.primers_file()
 
-            tag_fwd = fasta_info_series.tagfwd
-            tag_rev = fasta_info_series.tagrev
-            primer_fwd = fasta_info_series.primerfwd
-            primer_rev = fasta_info_series.primerrev
-            in_fasta_basename = fasta_info_series.mergedfasta
+            Logger.instance().debug("Analysing FASTA file: {}".format(mergedfasta))
 
-            Logger.instance().debug("Analysing FASTA file: {}".format(in_fasta_basename))
-
-            fasta_info_df_i = fasta_info_series.to_frame().T
-            in_raw_fasta_path = os.path.join(fastadir, in_fasta_basename)
+            #fasta_info_df_i = fasta_info_series.to_frame().T
+            in_raw_fasta_path = os.path.join(fastadir, mergedfasta)
 
             ########################################################################################
             #
@@ -83,30 +80,25 @@ class CommandSortReads(object):
             # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_sorted_000.fasta
             # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
+            #   cutadapt --cores=0 -e 0 --no-indels --trimmed-only -g tagFile:$tagfile --overlap length -o "tagtrimmed.{name}.fasta" in_raw_fasta_path
             ########################################################################################
 
-            if generic_dna:  # Biopython <1.78
-                tag_rev_rc = str(Seq(tag_rev, generic_dna).reverse_complement())
-            else:  # Biopython =>1.78
-                tag_rev_rc = str(Seq(tag_rev).reverse_complement())
 
             out_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
-                '.fasta', '_sorted_%03d.fasta' % i)
+                '.fasta', f'_sorted_{mergedfasta}')
+
             out_fasta_path = os.path.join(tempdir, out_fasta_basename)
 
             cmd_cutadapt_tag_dic = {
-                'tag_fwd': tag_fwd,
-                'tag_fwd_len': len(tag_fwd),
-                'tag_rev_rc': tag_rev_rc,
-                'tag_rev_rc_len': len(tag_rev_rc),
                 'in_fasta_path': in_raw_fasta_path,
                 'out_fasta': out_fasta_path,
                 'num_threads': num_threads,
+                'tagFile': tagFile,
             }
 
             cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
-                '--front "{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}" ' \
-                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_tag_dic)
+                '-g file:{tagFile} --overlap --output {out_fasta}.{{name}}.fasta {in_fasta_path}' \
+                .format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
@@ -128,34 +120,22 @@ class CommandSortReads(object):
             #
             ########################################################################################
 
-            if generic_dna:  # Biopython <1.78
-                primer_rev_rc = str(Seq(primer_rev, generic_dna).reverse_complement())
-            else:  # Biopython =>1.78
-                primer_rev_rc = str(Seq(primer_rev).reverse_complement())
-
             in_fasta_path = out_fasta_path
             out_fasta_basename = os.path.basename(in_fasta_path).replace(
-                '_sorted_%03d.fasta' % i, '_sorted_trimmed_%03d.fasta' % i)
+                f'_sorted_{mergedfasta}', f'_sorted_trimmed_{mergedfasta}')
             out_fasta_path = os.path.join(tempdir, out_fasta_basename)
 
             cmd_cutadapt_primer_dic = {
-                'primer_fwd': primer_fwd,
-                'primer_fwd_len': len(primer_fwd),
-                'primer_rev_rc': primer_rev_rc,
-                'primer_rev_rc_len': len(primer_rev_rc),
                 'in_fasta_path': in_fasta_path,
                 'out_fasta': out_fasta_path,
                 'error_rate': cutadapt_error_rate,
-                'read_min_length': cutadapt_minimum_length,
-                'read_max_length': cutadapt_maximum_length,
                 'num_threads': num_threads,
+                'primerFile': primerFile,
             }
 
             cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
-                                      '--minimum-length {read_min_length} ' \
-                                      '--maximum-length {read_max_length} --trimmed-only  ' \
-                                      '--front "{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}" '  \
-                '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_primer_dic)
+                '--trimmed-only --g file:{primerFile} --output {out_fasta}.{{name}}.fasta {in_fasta_path}'\
+                .format(**cmd_cutadapt_primer_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 
@@ -177,7 +157,7 @@ class CommandSortReads(object):
             # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
             #
             #######################################################################################
-            if no_reverse:
+            if no_reverse: #no_reverse stores False, if the option is selected no_reverse == False
                 if generic_dna:  # Biopython <1.78
                     tag_fwd_rc = str(Seq(tag_fwd, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
