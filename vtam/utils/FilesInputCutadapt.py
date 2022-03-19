@@ -31,7 +31,8 @@ class FilesInputCutadapt(object):
         self.primer_fwd = [self.df.iloc[i].primerfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
         self.primer_rev = [self.df.iloc[i].primerrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
-            
+        self.mergedfasta_list = [self.df.iloc[i].mergedfasta for i in range(self.length)]
+
     def tags_file(self):
         
         relPath, _ = os.path.split(self.file_path)
@@ -49,7 +50,7 @@ class FilesInputCutadapt(object):
                 else:
                     tags.write(f">{sample}\n {tagFwd}...{tagRevRC}\n")
     
-        self.tagsFile
+        return self.tagsFile
 
 
     def primers_file(self):
@@ -57,7 +58,7 @@ class FilesInputCutadapt(object):
         relPath, _ = os.path.split(self.file_path)
         self.primersFile = os.path.join(relPath + 'primersFile.fasta')
     
-        with open('./primers.fasta', 'at') as primers:
+        with open(self.primersFile, 'at') as primers:
             for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
                 if generic_dna:  # Biopython <1.78
                     primerRevRC = str(Seq(primerRev, generic_dna).reverse_complement())
@@ -69,8 +70,16 @@ class FilesInputCutadapt(object):
                 else:
                     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
         
-        self.primersFile
+        return self.primersFile
 
+
+    def get_sample_names(self):
+
+        return self.sample
+
+    def get_mergedfasta(self):
+
+        return self.mergedfasta_list
 
     def remove_tags_file(self):
         if os.path.exists(self.tagsFile):
