@@ -11,13 +11,14 @@ from Bio.Seq import Seq
 class FilesInputCutadapt(object):
     """ make fasta files to use as input for cutadapt demultiplexing """
 
-    def __init__(self, file_path, mergedFasta, tag_to_end=False, primer_to_end=False):
+    def __init__(self, file_path, mergedFasta, no_reverse=False, tag_to_end=False, primer_to_end=False):
 
         self.file_path = file_path
         self.mergedFasta = mergedFasta
         
         self.tag_to_end = tag_to_end
         self.primer_to_end = primer_to_end
+        self.no_reverse = no_reverse
 
         self.df = pd.read_csv(file_path, sep='\t', header=0)
         self.columns = self.df.columns.str.lower()
@@ -49,7 +50,18 @@ class FilesInputCutadapt(object):
                     tags.write(f">{sample}\n ^{tagFwd}...{tagRevRC}$\n")
                 else:
                     tags.write(f">{sample}\n {tagFwd}...{tagRevRC}\n")
-    
+                
+                if self.no_reverse:
+                    if generic_dna:  # Biopython <1.78
+                        tagFwdRC = str(Seq(tagFwd, generic_dna).reverse_complement())
+                    else:  # Biopython =>1.78
+                        tagFwdRC = str(Seq(tagFwd).reverse_complement())
+                
+                    if self.tag_to_end:
+                        tags.write(f">{sample}_reversed \n ^{tagFwdRC}...{tagRev}$\n")
+                    else:
+                        tags.write(f">{sample}_reversed \n {tagFwdRC}...{tagRev}\n")
+
         return self.tagsFile
 
 
@@ -69,11 +81,29 @@ class FilesInputCutadapt(object):
                     primers.write(f">{sample}\n ^{primerFwd}...{primerRevRC}$\n")
                 else:
                     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
+                
+                if self.no_reverse:
+                    if generic_dna:  # Biopython <1.78
+                        primersFwdRC = str(Seq(primerFwd, generic_dna).reverse_complement())
+                    else:  # Biopython =>1.78
+                        primersFwdRC = str(Seq(primerFwd).reverse_complement())
+
+                    if self.primer_to_end:
+                        primers.write(f">{sample}_reversed \n ^{primersFwdRC}...{primerRev}$\n")
+                    else:
+                        primers.write(f">{sample}_reversed \n{primersFwdRC}...{primerRev}\n")
         
         return self.primersFile
 
 
     def get_sample_names(self):
+
+        if self.no_reverse:
+            samples = []
+            for name in self.sample:
+                samples.append(name)
+                samples.append(name + "_reversed")
+            return samples
 
         return self.sample
 
