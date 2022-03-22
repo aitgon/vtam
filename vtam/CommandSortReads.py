@@ -176,10 +176,13 @@ class CommandSortReads(object):
                         'primerRev': primerRev,
                         'lenPrimerFwd': lenPrimerFwd,
                         'lenPrimerRev': lenPrimerRev,
+                        'read_min_length': cutadapt_minimum_length,
+                        'read_max_length': cutadapt_maximum_length,
                     }
 
                     if primer_to_end:
                         cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
+                            '--minimum-length {read_min_length} --maximum-length{read_max_length} ' \
                             '--trimmed-only -g "^{primerFwd}...{primerRev}$" --output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
                     else:
