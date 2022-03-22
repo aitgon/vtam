@@ -32,6 +32,8 @@ class CommandSortReads(object):
     def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count(), 
         no_reverse=False, tag_to_end=False, primer_to_end=False):
 
+        print(f' OPTIONS:\n no_reverse: {no_reverse} \n tag_to_end {tag_to_end} \n primer_to_end {primer_to_end} ')
+
         if sys.platform.startswith('win'):
             num_threads = 1
 
@@ -112,6 +114,8 @@ class CommandSortReads(object):
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
+            print(f'cmd_cutadapt_tag_str:\n{cmd_cutadapt_tag_str}\n')
+
             if sys.platform.startswith("win"):
                 args = cmd_cutadapt_tag_str
             else:
@@ -133,7 +137,6 @@ class CommandSortReads(object):
 
             #filelist = os.listdir(tempdir)
             for sample_name in sample_list:
-                print('sample_name', sample_name)
 
                 in_fasta_path = out_fasta_path + "_" + sample_name + "." + base_suffix
 
@@ -141,10 +144,8 @@ class CommandSortReads(object):
                     out_fasta_path_new = out_fasta_path
                     if "_reversed" in sample_name:
                         out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reversed_" + str(i) + "_" + sample_name  + "." + base_suffix)
-                        print("out_fasta_path_new", out_fasta_path_new)
                     else:
                         out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + str(i) + "_" + sample_name  + "." + base_suffix)
-                        print("out_fasta_path_new", out_fasta_path_new)
 
                     results_list.append(out_fasta_path_new) 
                     
@@ -181,15 +182,16 @@ class CommandSortReads(object):
 
                     if primer_to_end:
                         cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
-                            '--minimum-length {read_min_length} --maximum-length{read_max_length} ' \
-                            '--trimmed-only -g "^{primerFwd}...{primerRev}$" --output {out_fasta} {in_fasta_path}'\
+                            '--minimum-length {read_min_length} --maximum-length {read_max_length} ' \
+                            '--trimmed-only --front "^{primerFwd}...{primerRev}$" --output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
                     else:
                         cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
-                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
+                            '--minimum-length {read_min_length} --maximum-length {read_max_length} ' \
+                            '--trimmed-only --front "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
 
-
+                    print(f'cmd_cutadapt_primer_str:\n{cmd_cutadapt_primer_str}\n')
                     Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 
                     if sys.platform.startswith("win"):
@@ -299,10 +301,7 @@ class CommandSortReads(object):
         #
         # Reverse complement back rc fasta and pool
         #
-        ###################################################################
-        
-        print('file in tempdir', os.listdir(tempdir))
-        
+        ###################################################################        
         for file in os.listdir(tempdir):
             if "trimmed" in file:
                 out_final_fasta_path = os.path.join(sorteddir, os.path.split(file)[-1])
@@ -323,7 +322,6 @@ class CommandSortReads(object):
                     _open2 = open
 
                 if "_reversed" in file:
-                    print("REVERSED",file)
                     Logger.instance().debug("Pooling fwd and rc reads...")
 
                     out_final_fasta_path = out_final_fasta_path.replace("_reversed", "")

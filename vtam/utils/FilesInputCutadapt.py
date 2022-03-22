@@ -11,7 +11,7 @@ from Bio.Seq import Seq
 class FilesInputCutadapt(object):
     """ make fasta files to use as input for cutadapt demultiplexing """
 
-    def __init__(self, file_path, mergedFasta, no_reverse=False, tag_to_end=False, primer_to_end=False):
+    def __init__(self, file_path, mergedFasta, no_reverse, tag_to_end, primer_to_end):
 
         self.file_path = file_path
         self.mergedFasta = mergedFasta
@@ -52,20 +52,17 @@ class FilesInputCutadapt(object):
                     tagRevRC = str(Seq(tagRev).reverse_complement())
                 
                 if not self.tag_to_end:
-                    print("self.tag_to_end 1", self.tag_to_end)
                     tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
                 else:
-                    print("self.tag_to_end 2", self.tag_to_end)
                     tags.write(f">{sample}\n{tagFwd};min_overlap={str(len(tagFwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
                 
                 if self.no_reverse:
-                    print("self.no_reverse", self.no_reverse)
                     if generic_dna:  # Biopython <1.78
                         tagFwdRC = str(Seq(tagFwd, generic_dna).reverse_complement())
                     else:  # Biopython =>1.78
                         tagFwdRC = str(Seq(tagFwd).reverse_complement())
                 
-                    if self.tag_to_end:
+                    if not self.tag_to_end:
                         tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
                     else:
                         tags.write(f">{sample}_reversed\n{tagRev};min_overlap={str(len(tagRev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
@@ -86,8 +83,8 @@ class FilesInputCutadapt(object):
             primerRev = primerRev.strip()
             sample = sample.strip()
 
-            if not (primerFwd, primerRev, len(primerFwd), len(primerRev)) in self.primers_result:
-                self.primers_result.append((primerFwd, primerRev, len(primerFwd), len(primerRev)))
+            if not (primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))) in self.primers_result:
+                self.primers_result.append((primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))))
                 
 
                 # if not self.primer_to_end:
