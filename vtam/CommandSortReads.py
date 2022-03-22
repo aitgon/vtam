@@ -73,7 +73,7 @@ class CommandSortReads(object):
 
             inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end, primer_to_end)
             tagFile_path = inputFiles.tags_file()
-            primerFile_path = inputFiles.primers_file()
+            primers_list = inputFiles.primers_file()
             sample_list = inputFiles.get_sample_names()
 
             Logger.instance().debug("Analysing FASTA file: {}".format(mergedfasta))
@@ -98,12 +98,18 @@ class CommandSortReads(object):
                 'out_fasta': out_fasta_path,
                 'num_threads': num_threads,
                 'tagFile': tagFile_path,
-                'base_suffix': base_suffix
+                'base_suffix': base_suffix,
+                'overlap':'10'
             }
 
-            cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
-                '-g file:{tagFile} --overlap 10 --output {out_fasta}_{{name}}.{base_suffix} {in_fasta_path}' \
-                .format(**cmd_cutadapt_tag_dic)
+            if tag_to_end:
+                cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
+                    '-g file:{tagFile} --output {out_fasta}_{{name}}.{base_suffix} {in_fasta_path}' \
+                    .format(**cmd_cutadapt_tag_dic)
+            else:
+                cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
+                    '-g file:{tagFile} --overlap={overlap} --output {out_fasta}_{{name}}.{base_suffix} {in_fasta_path}' \
+                    .format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
@@ -130,32 +136,66 @@ class CommandSortReads(object):
             for sample_name in sample_list:
 
                 in_fasta_path = out_fasta_path + "_" + sample_name + "." + base_suffix
-                out_fasta_path_new = out_fasta_path
-                out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + sample_name  + "." + base_suffix)
-                results_list.append(out_fasta_path_new) 
 
-                cmd_cutadapt_primer_dic = {
-                    'in_fasta_path': in_fasta_path,
-                    'out_fasta': out_fasta_path_new,
-                    'error_rate': cutadapt_error_rate,
-                    'num_threads': num_threads,
-                    'primerFile': primerFile_path,
-                }
+                for i, primers in enumerate(primers_list):
+                    out_fasta_path_new = out_fasta_path
+                    if "_reversed" in sample_name:
+                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reverse_" + i + "_" + sample_name  + "." + base_suffix)
+                    else:
+                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + i + "_" + sample_name  + "." + base_suffix)
+                    
+                    results_list.append(out_fasta_path_new) 
+                    
+                    if not "_reversed" in sample_name:
+                        if generic_dna:  # Biopython <1.78
+                            primerRev = str(Seq(primers[1], generic_dna).reverse_complement())
+                        else:  # Biopython =>1.78
+                            primerRev = str(Seq(primers[1]).reverse_complement())
+                        primerFwd = primers[0]
+                        lenPrimerFwd = primers[2],
+                        lenPrimerRev = primers[3]
+                    else:
+                        if generic_dna:  # Biopython <1.78
+                            primerRev = str(Seq(primers[0], generic_dna).reverse_complement())
+                        else:  # Biopython =>1.78
+                            primerRev = str(Seq(primers[0]).reverse_complement())
+                        primerFwd = primers[1]
+                        lenPrimerFwd = primers[3],
+                        lenPrimerRev = primers[2]
 
-                cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
-                    '--trimmed-only -g file:{primerFile} --overlap 10 --output {out_fasta} {in_fasta_path}'\
-                    .format(**cmd_cutadapt_primer_dic)
 
-                Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
+                    cmd_cutadapt_primer_dic = {
+                        'in_fasta_path': in_fasta_path,
+                        'out_fasta': out_fasta_path_new,
+                        'error_rate': cutadapt_error_rate,
+                        'num_threads': num_threads,
+                        'primerFwd': primerFwd,
+                        'primerRev': primerRev,
+                        'lenPrimerFwd': lenPrimerFwd,
+                        'lenPrimerRev': lenPrimerRev,
+                    }
 
-                if sys.platform.startswith("win"):
-                    args = cmd_cutadapt_primer_str
-                else:
-                    args = shlex.split(cmd_cutadapt_primer_str)
+                    if primer_to_end:
+                        cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
+                            '--trimmed-only -g "^{primerFwd}...{primerRev}$" --output {out_fasta} {in_fasta_path}'\
+                            .format(**cmd_cutadapt_primer_dic)
+                    else:
+                        cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
+                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
+                            .format(**cmd_cutadapt_primer_dic)
 
-                run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-                Logger.instance().info(run_result.stdout.decode())
+                    Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
+
+                    if sys.platform.startswith("win"):
+                        args = cmd_cutadapt_primer_str
+                    else:
+                        args = shlex.split(cmd_cutadapt_primer_str)
+
+                    run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+                    Logger.instance().info(run_result.stdout.decode())
+
 
             ########################################################################################
             #

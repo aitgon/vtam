@@ -75,42 +75,40 @@ class FilesInputCutadapt(object):
         return self.tagsFile
 
 
-    def primers_file(self):
+    def primers(self):
         
         relPath, _ = os.path.split(self.file_path)
         self.primersFile = os.path.join(relPath + 'primersFile.fasta')
     
-        with open(self.primersFile, 'at') as primers:
-            for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
+        # with open(self.primersFile, 'at') as primers:
+        self.primers_result = []
+        for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
+            
+            primerFwd = primerFwd.strip()
+            primerRev = primerRev.strip()
+            sample = sample.strip()
+
+            if not (primerFwd, primerRev, len(primerFwd), len(primerRev)) in self.primers_result:
+                self.primers_result.append((primerFwd, primerRev, len(primerFwd), len(primerRev)))
                 
-                primerFwd = primerFwd.strip()
-                primerRev = primerRev.strip()
-                sample = sample.strip()
 
-                print(f'len(self.primer_fwd) : {len(self.primer_fwd)}')
-
-                if generic_dna:  # Biopython <1.78
-                    primerRevRC = str(Seq(primerRev, generic_dna).reverse_complement())
-                else:  # Biopython =>1.78
-                    primerRevRC = str(Seq(primerRev).reverse_complement())
-
-                if not self.primer_to_end:
-                    primers.write(f">{sample}\n^{primerFwd}...{primerRevRC}$\n")
-                else:
-                    primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
+                # if not self.primer_to_end:
+                #     primers.write(f">{sample}\n^{primerFwd}...{primerRevRC}$\n")
+                # else:
+                #     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
                 
-                if self.no_reverse:
-                    if generic_dna:  # Biopython <1.78
-                        primersFwdRC = str(Seq(primerFwd, generic_dna).reverse_complement())
-                    else:  # Biopython =>1.78
-                        primersFwdRC = str(Seq(primerFwd).reverse_complement())
+                # if self.no_reverse:
+                #     if generic_dna:  # Biopython <1.78
+                #         primersFwdRC = str(Seq(primerFwd, generic_dna).reverse_complement())
+                #     else:  # Biopython =>1.78
+                #         primersFwdRC = str(Seq(primerFwd).reverse_complement())
 
-                    if self.primer_to_end:
-                        primers.write(f">{sample}_reversed\n^{primerRev}...{primersFwdRC}$\n")
-                    else:
-                        primers.write(f">{sample}_reversed \n{primerRev}...{primersFwdRC}\n")
+                    # if self.primer_to_end:
+                    #     primers.write(f">{sample}_reversed\n^{primerRev}...{primersFwdRC}$\n")
+                    # else:
+                    #     primers.write(f">{sample}_reversed \n{primerRev}...{primersFwdRC}\n")
         
-        return self.primersFile
+        return self.primers_result
 
 
     def get_sample_names(self):
