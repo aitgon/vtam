@@ -41,26 +41,36 @@ class FilesInputCutadapt(object):
 
         with open(self.tagsFile, 'at') as tags:
             for tagFwd, tagRev, sample  in zip(self.tag_fwd, self.tag_rev, self.sample):
+
+                tagFwd = tagFwd.strip()
+                tagRev = tagRev.strip()
+                sample = sample.strip()
+
+                print(f'len(self.tag_fwd) : {len(self.tag_fwd)}')
+
                 if generic_dna:  # Biopython <1.78
                     tagRevRC = str(Seq(tagRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
                     tagRevRC = str(Seq(tagRev).reverse_complement())
                 
-                if self.tag_to_end:
-                    tags.write(f">{sample}\n ^{tagFwd}...{tagRevRC}$\n")
+                if not self.tag_to_end:
+                    print("self.tag_to_end 1", self.tag_to_end)
+                    tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
                 else:
-                    tags.write(f">{sample}\n {tagFwd}...{tagRevRC}\n")
+                    print("self.tag_to_end 2", self.tag_to_end)
+                    tags.write(f">{sample}\n{tagFwd}...{tagRevRC}\n")
                 
                 if self.no_reverse:
+                    print("self.no_reverse", self.no_reverse)
                     if generic_dna:  # Biopython <1.78
                         tagFwdRC = str(Seq(tagFwd, generic_dna).reverse_complement())
                     else:  # Biopython =>1.78
                         tagFwdRC = str(Seq(tagFwd).reverse_complement())
                 
                     if self.tag_to_end:
-                        tags.write(f">{sample}_reversed \n ^{tagFwdRC}...{tagRev}$\n")
+                        tags.write(f">{sample}_reversed\n ^{tagRev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed \n {tagFwdRC}...{tagRev}\n")
+                        tags.write(f">{sample}_reversed\n {tagRev}...{tagFwdRC}\n")
 
         return self.tagsFile
 
@@ -72,13 +82,20 @@ class FilesInputCutadapt(object):
     
         with open(self.primersFile, 'at') as primers:
             for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
+                
+                primerFwd = primerFwd.strip()
+                primerRev = primerRev.strip()
+                sample = sample.strip()
+
+                print(f'len(self.primer_fwd) : {len(self.primer_fwd)}')
+
                 if generic_dna:  # Biopython <1.78
                     primerRevRC = str(Seq(primerRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
                     primerRevRC = str(Seq(primerRev).reverse_complement())
 
-                if self.primer_to_end:
-                    primers.write(f">{sample}\n ^{primerFwd}...{primerRevRC}$\n")
+                if not self.primer_to_end:
+                    primers.write(f">{sample}\n^{primerFwd}...{primerRevRC}$\n")
                 else:
                     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
                 
@@ -89,9 +106,9 @@ class FilesInputCutadapt(object):
                         primersFwdRC = str(Seq(primerFwd).reverse_complement())
 
                     if self.primer_to_end:
-                        primers.write(f">{sample}_reversed \n ^{primersFwdRC}...{primerRev}$\n")
+                        primers.write(f">{sample}_reversed\n^{primerRev}...{primersFwdRC}$\n")
                     else:
-                        primers.write(f">{sample}_reversed \n{primersFwdRC}...{primerRev}\n")
+                        primers.write(f">{sample}_reversed \n{primerRev}...{primersFwdRC}\n")
         
         return self.primersFile
 
