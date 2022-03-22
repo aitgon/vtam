@@ -73,7 +73,7 @@ class CommandSortReads(object):
 
             inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end, primer_to_end)
             tagFile_path = inputFiles.tags_file()
-            primers_list = inputFiles.primers_file()
+            primers_list = inputFiles.primers()
             sample_list = inputFiles.get_sample_names()
 
             Logger.instance().debug("Analysing FASTA file: {}".format(mergedfasta))
@@ -134,16 +134,19 @@ class CommandSortReads(object):
 
             #filelist = os.listdir(tempdir)
             for sample_name in sample_list:
+                print('sample_name', sample_name)
 
                 in_fasta_path = out_fasta_path + "_" + sample_name + "." + base_suffix
 
                 for i, primers in enumerate(primers_list):
                     out_fasta_path_new = out_fasta_path
                     if "_reversed" in sample_name:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reverse_" + i + "_" + sample_name  + "." + base_suffix)
+                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reversed_" + str(i) + "_" + sample_name  + "." + base_suffix)
+                        print("out_fasta_path_new", out_fasta_path_new)
                     else:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + i + "_" + sample_name  + "." + base_suffix)
-                    
+                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + str(i) + "_" + sample_name  + "." + base_suffix)
+                        print("out_fasta_path_new", out_fasta_path_new)
+
                     results_list.append(out_fasta_path_new) 
                     
                     if not "_reversed" in sample_name:

@@ -68,9 +68,9 @@ class FilesInputCutadapt(object):
                         tagFwdRC = str(Seq(tagFwd).reverse_complement())
                 
                     if self.tag_to_end:
-                        tags.write(f">{sample}_reversed\n ^{tagRev}...{tagFwdRC}$\n")
+                        tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed\n {tagRev}...{tagFwdRC}\n")
+                        tags.write(f">{sample}_reversed\n{tagRev}...{tagFwdRC}\n")
 
         return self.tagsFile
 
@@ -131,7 +131,7 @@ class FilesInputCutadapt(object):
             os.remove(self.tagsFile)
 
 
-    def remove_primers_file(self):
-        if os.path.exists(self.primersFile):
-            os.remove(self.primersFile)
+    # def remove_primers_file(self):
+    #     if os.path.exists(self.primersFile):
+    #         os.remove(self.primersFile)
         
