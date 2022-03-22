@@ -46,8 +46,6 @@ class FilesInputCutadapt(object):
                 tagRev = tagRev.strip()
                 sample = sample.strip()
 
-                print(f'len(self.tag_fwd) : {len(self.tag_fwd)}')
-
                 if generic_dna:  # Biopython <1.78
                     tagRevRC = str(Seq(tagRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
@@ -58,7 +56,7 @@ class FilesInputCutadapt(object):
                     tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
                 else:
                     print("self.tag_to_end 2", self.tag_to_end)
-                    tags.write(f">{sample}\n{tagFwd}...{tagRevRC}\n")
+                    tags.write(f">{sample}\n{tagFwd};min_overlap={len(tagFwd)}...{tagRevRC};min_overlap={len(tagRevRC)}\n")
                 
                 if self.no_reverse:
                     print("self.no_reverse", self.no_reverse)
@@ -70,7 +68,7 @@ class FilesInputCutadapt(object):
                     if self.tag_to_end:
                         tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed\n{tagRev}...{tagFwdRC}\n")
+                        tags.write(f">{sample}_reversed\n{tagRev};min_overlap={len(tagRev)}...{tagFwdRC};min_overlap={len(tagFwdRC)}\n")
 
         return self.tagsFile
 

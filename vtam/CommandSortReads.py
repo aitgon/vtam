@@ -99,7 +99,6 @@ class CommandSortReads(object):
                 'num_threads': num_threads,
                 'tagFile': tagFile_path,
                 'base_suffix': base_suffix,
-                'overlap':'10'
             }
 
             if tag_to_end:
@@ -108,7 +107,7 @@ class CommandSortReads(object):
                     .format(**cmd_cutadapt_tag_dic)
             else:
                 cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
-                    '-g file:{tagFile} --overlap={overlap} --output {out_fasta}_{{name}}.{base_suffix} {in_fasta_path}' \
+                    '-g file:{tagFile}  --output {out_fasta}_{{name}}.{base_suffix} {in_fasta_path}' \
                     .format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
