@@ -56,7 +56,7 @@ class FilesInputCutadapt(object):
                     tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
                 else:
                     print("self.tag_to_end 2", self.tag_to_end)
-                    tags.write(f">{sample}\n{tagFwd};min_overlap={len(tagFwd)}...{tagRevRC};min_overlap={len(tagRevRC)}\n")
+                    tags.write(f">{sample}\n{tagFwd};min_overlap={str(len(tagFwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
                 
                 if self.no_reverse:
                     print("self.no_reverse", self.no_reverse)
@@ -68,7 +68,7 @@ class FilesInputCutadapt(object):
                     if self.tag_to_end:
                         tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed\n{tagRev};min_overlap={len(tagRev)}...{tagFwdRC};min_overlap={len(tagFwdRC)}\n")
+                        tags.write(f">{sample}_reversed\n{tagRev};min_overlap={str(len(tagRev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
 
         return self.tagsFile
 

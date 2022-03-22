@@ -120,7 +120,7 @@ class CommandSortReads(object):
 
             Logger.instance().info(run_result.stdout.decode())
 
-            inputFiles.remove_tags_file()
+            # inputFiles.remove_tags_file()
 
             ########################################################################################
             #
