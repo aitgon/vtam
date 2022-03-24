@@ -16,6 +16,7 @@ class FilesInputCutadapt(object):
         self.file_path = file_path
         self.mergedFasta = mergedFasta
         
+        print(f'mergedFasta: \n {mergedFasta}')
         self.tag_to_end = tag_to_end
         self.primer_to_end = primer_to_end
         self.no_reverse = no_reverse
@@ -86,23 +87,6 @@ class FilesInputCutadapt(object):
             if not (primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))) in self.primers_result:
                 self.primers_result.append((primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))))
                 
-
-                # if not self.primer_to_end:
-                #     primers.write(f">{sample}\n^{primerFwd}...{primerRevRC}$\n")
-                # else:
-                #     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
-                
-                # if self.no_reverse:
-                #     if generic_dna:  # Biopython <1.78
-                #         primersFwdRC = str(Seq(primerFwd, generic_dna).reverse_complement())
-                #     else:  # Biopython =>1.78
-                #         primersFwdRC = str(Seq(primerFwd).reverse_complement())
-
-                    # if self.primer_to_end:
-                    #     primers.write(f">{sample}_reversed\n^{primerRev}...{primersFwdRC}$\n")
-                    # else:
-                    #     primers.write(f">{sample}_reversed \n{primerRev}...{primersFwdRC}\n")
-        
         return self.primers_result
 
 
@@ -117,16 +101,14 @@ class FilesInputCutadapt(object):
 
         return self.sample
 
+
     def get_mergedfasta(self):
 
         return self.mergedfasta_list
+
 
     def remove_tags_file(self):
         if os.path.exists(self.tagsFile):
             os.remove(self.tagsFile)
 
-
-    # def remove_primers_file(self):
-    #     if os.path.exists(self.primersFile):
-    #         os.remove(self.primersFile)
         
