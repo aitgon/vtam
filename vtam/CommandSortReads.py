@@ -30,8 +30,8 @@ class CommandSortReads(object):
     @staticmethod
     def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count(), 
         no_reverse=False, tag_to_end=False, primer_to_end=False):
-
-        print(f' OPTIONS:\n no_reverse: {not no_reverse} \n tag_to_end {not tag_to_end} \n primer_to_end {not primer_to_end} ')
+        
+        Logger.instance().info(f"OPTIONS:\n no_reverse: {not no_reverse} \n tag_to_end {not tag_to_end} \n primer_to_end {not primer_to_end}")
 
         if sys.platform.startswith('win'):
             num_threads = 1
@@ -107,8 +107,6 @@ class CommandSortReads(object):
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
 
-            print(f'cmd_cutadapt_tag_str:\n{cmd_cutadapt_tag_str}\n')
-
             if sys.platform.startswith("win"):
                 args = cmd_cutadapt_tag_str
             else:
@@ -183,7 +181,6 @@ class CommandSortReads(object):
                             '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
 
-                    print(f'cmd_cutadapt_primer_str:\n{cmd_cutadapt_primer_str}\n')
                     Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 
                     if sys.platform.startswith("win"):
