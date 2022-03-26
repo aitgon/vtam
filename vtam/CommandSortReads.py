@@ -69,13 +69,16 @@ class CommandSortReads(object):
             if merged_fastainfo_df.iloc[i].mergedfasta not in merged_fasta_list:
                 merged_fasta_list.append(merged_fastainfo_df.iloc[i].mergedfasta)
 
+        sample_info = []
             
         for mergedfasta in merged_fasta_list:
 
             inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end, primer_to_end)
+            
             tagFile_path = inputFiles.tags_file()
             primers_list = inputFiles.primers()
             sample_list = inputFiles.get_sample_names()
+            sample_info = sample_info + inputFiles.get_sample_info()
 
             Logger.instance().debug("Analysing FASTA file: {}".format(mergedfasta))
 
@@ -125,7 +128,6 @@ class CommandSortReads(object):
             # --output input_path + {name} + suffix outputfile
             #
             ########################################################################################
-
             for sample_name in sample_list:
 
                 in_fasta_path = out_fasta_path + "_" + sample_name + "." + base_suffix
@@ -133,9 +135,9 @@ class CommandSortReads(object):
                 for i, primers in enumerate(primers_list):
                     out_fasta_path_new = out_fasta_path
                     if "_reversed" in sample_name:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reversed_" + str(i) + "_" + sample_name  + "." + base_suffix)
+                        out_fasta_path_new = os.path.join(tempdir, sample_name + "_trimmed_reversed" "." + base_suffix)
                     else:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + str(i) + "_" + sample_name  + "." + base_suffix)
+                        out_fasta_path_new = os.path.join(tempdir, sample_name  + "_trimmed" + "." + base_suffix)
 
                     results_list.append(out_fasta_path_new) 
                     
@@ -243,10 +245,28 @@ class CommandSortReads(object):
                             fout.write(text)
         
         results_list = [os.path.split(result)[-1] for result in results_list if "_reversed" not in result]
-        fasta_info_df_i = merged_fastainfo_df[[
-            'run', 'marker', 'sample', 'replicate']].copy()
         
-        fasta_info_df_i['sortedfasta'] = results_list
+        final_result = []
+        for res in results_list:
+            if res not in final_result:
+                final_result.append(res)
+
+        sample_info_dict  = {
+            "run": [],
+            "marker": [],
+            "sample": [],
+            "replicate": [],
+        }
+
+        for info in sample_info:
+            sample_info_dict["run"].append(info[0])
+            sample_info_dict["marker"].append(info[1])
+            sample_info_dict["sample"].append(info[2])
+            sample_info_dict["replicate"].append(info[3])
+
+        sample_info_df = pandas.DataFrame(sample_info_dict)
+
+        sample_info_df['sortedfasta'] = final_result
 
         fasta_trimmed_info_tsv = os.path.join(sorteddir, 'sortedinfo.tsv')
-        fasta_info_df_i.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
+        sample_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)

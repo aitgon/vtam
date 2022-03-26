@@ -16,7 +16,6 @@ class FilesInputCutadapt(object):
         self.file_path = file_path
         self.mergedFasta = mergedFasta
         
-        print(f'mergedFasta: \n {mergedFasta}')
         self.tag_to_end = tag_to_end
         self.primer_to_end = primer_to_end
         self.no_reverse = no_reverse
@@ -25,8 +24,13 @@ class FilesInputCutadapt(object):
         self.columns = self.df.columns.str.lower()
         self.length = self.df.shape[0]
 
+        self.run = [self.df.iloc[i]['run'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
+        self.marker = [self.df.iloc[i]['marker'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
         self.sample = [self.df.iloc[i]['sample'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
+        self.replicate = [self.df.iloc[i]['replicate'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
+        self.sampleInfo = [(run.strip(), marker.strip(), sample.strip(), str(replicate)) for run, marker, sample, replicate 
+            in zip(self.run, self.marker,  self.sample, self.replicate)]
         self.tag_fwd = [self.df.iloc[i].tagfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
         self.tag_rev = [self.df.iloc[i].tagrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
 
@@ -38,24 +42,20 @@ class FilesInputCutadapt(object):
     def tags_file(self):
         
         relPath, _ = os.path.split(self.file_path)
-        self.tagsFile = os.path.join(relPath + 'tagsFile.fasta')
+        self.tagsFile = os.path.join(relPath, 'tagsFile.fasta')
 
         with open(self.tagsFile, 'at') as tags:
-            for tagFwd, tagRev, sample  in zip(self.tag_fwd, self.tag_rev, self.sample):
-
-                tagFwd = tagFwd.strip()
-                tagRev = tagRev.strip()
-                sample = sample.strip()
-
+            for sample_info, tagFwd, tagRev  in zip(self.sampleInfo, self.tag_fwd, self.tag_rev):
+                
                 if generic_dna:  # Biopython <1.78
                     tagRevRC = str(Seq(tagRev, generic_dna).reverse_complement())
                 else:  # Biopython =>1.78
                     tagRevRC = str(Seq(tagRev).reverse_complement())
                 
                 if not self.tag_to_end:
-                    tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
+                    tags.write(f">{sample_info}\n^{tagFwd}...{tagRevRC}$\n")
                 else:
-                    tags.write(f">{sample}\n{tagFwd};min_overlap={str(len(tagFwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
+                    tags.write(f">{sample_info}\n{tagFwd};min_overlap={str(len(tagFwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
                 
                 if self.no_reverse:
                     if generic_dna:  # Biopython <1.78
@@ -64,9 +64,9 @@ class FilesInputCutadapt(object):
                         tagFwdRC = str(Seq(tagFwd).reverse_complement())
                 
                     if not self.tag_to_end:
-                        tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
+                        tags.write(f">{sample_info}_reversed\n^{tagRev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed\n{tagRev};min_overlap={str(len(tagRev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
+                        tags.write(f">{sample_info}_reversed\n{tagRev};min_overlap={str(len(tagRev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
 
         return self.tagsFile
 
@@ -91,21 +91,26 @@ class FilesInputCutadapt(object):
 
 
     def get_sample_names(self):
+        sample_names = [f"{info[0]}_{info[1]}_{info[2]}_{info[3]}" for info 
+            in self.sampleInfo]
 
         if self.no_reverse:
-            samples = []
-            for name in self.sample:
-                samples.append(name)
-                samples.append(name + "_reversed")
-            return samples
+            samples_names_revered = []
+            for name in sample_names:
+                samples_names_revered.append(name)
+                samples_names_revered.append(name + "_reversed")
+            return samples_names_revered
+            
+        return sample_names
 
-        return self.sample
-
+    def get_sample_info(self):
+        return self.sampleInfo
 
     def get_mergedfasta(self):
-
         return self.mergedfasta_list
 
+    def get_df_info(self):
+        return 
 
     def remove_tags_file(self):
         if os.path.exists(self.tagsFile):

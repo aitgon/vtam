@@ -1,0 +1,4 @@
+>run1_mfzr_14ben01_1
+gtcgatcatgtca;min_overlap=13...cgtacgtcgatgt;min_overlap=13
+>run1_mfzr_14ben01_1_reversed
+acatcgacgtacg;min_overlap=13...tgacatgatcgac;min_overlap=13
