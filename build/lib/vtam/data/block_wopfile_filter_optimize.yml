@@ -1,0 +1,33 @@
+rule SampleInformation:
+    tool: vtam.wrapper.SampleInformation
+    input:
+        file:
+            sortedinfo: {{sortedinfo}}
+    output:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            SortedReadFile: vtam.models.SortedReadFile
+            SampleInformation: vtam.models.SampleInformation
+
+
+rule VariantReadCount:
+    tool: vtam.wrapper.VariantReadCount
+    input:
+        file:
+            sortedinfo: {{sortedinfo}}
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+    output:
+        table:
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+    params:
+        read_dir: {{sorteddir}}
+        global_read_count_cutoff: {{global_read_count_cutoff}}
+
+
+{% block wopfile_asv %}{% endblock %}{% block wopfile_optimize %}{% endblock %}

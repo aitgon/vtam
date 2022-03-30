@@ -209,8 +209,6 @@ class ArgParser:
 
         cls.add_parser_merge(subparsers=subparsers)
 
-        cls.add_parser_randomize(subparsers=subparsers)
-
         cls.add_parser_sortreads(subparsers=subparsers)
 
         cls.add_parser_filter(subparsers=subparsers)
@@ -275,37 +273,6 @@ class ArgParser:
         parser_vtam_merge.set_defaults(command='merge')
 
     @classmethod
-    def add_parser_randomize(cls, subparsers):
-
-        parser_vtam_randomize = subparsers.add_parser(
-            'randomize', add_help=True,
-            parents=[cls.parser_params, cls.parser_log,
-            cls.parser_threads, cls.parser_verbosity],
-            help="make a folder with sample files containing 'size' number of sequences randomly selected from the files in input folder")
-
-        parser_vtam_randomize.add_argument(
-            '--fastadir',
-            action='store',
-            help="input directory with FASTA files",
-            required=True,
-            type=ArgParserChecker.check_dir_exists_and_is_nonempty)
-        
-        parser_vtam_randomize.add_argument(
-            '--sampleddir',
-            action='store',
-            help="output directory with sampled and randomized FASTA files",
-            required=True)
-        
-        parser_vtam_randomize.add_argument(
-            '--samplesize',
-            action='store',
-            help="number of sequences to be selected from the input files",
-            type= int,
-            required=True)
-        
-        parser_vtam_randomize.set_defaults(command='randomize')
-
-    @classmethod
     def add_parser_sortreads(cls, subparsers):
         parser_vtam_sortreads = subparsers.add_parser(
             'sortreads',
@@ -336,6 +303,24 @@ class ArgParser:
             default="out",
             required=True)
         # This attribute will trigger the good command
+
+        parser_vtam_sortreads.add_argument(
+            "--no_reverse", 
+            action="store_false",
+            help="don't check reverse sequences",
+            required=False)
+
+        parser_vtam_sortreads.add_argument(
+            "--tag_to_end", 
+            action="store_false",
+            help="look for tags only at the edges of the sequence",
+            required=False)
+
+        parser_vtam_sortreads.add_argument(
+            "--primer_to_end", 
+            action="store_false",
+            help="look for primers only at the edges of the sequence",
+            required=False)
 
         parser_vtam_sortreads.set_defaults(command='sortreads')
 

@@ -10,7 +10,6 @@ from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandExample import CommandExample
 from vtam.CommandFilterOptimize import CommandFilterOptimize
 from vtam.CommandMerge import CommandMerge
-from vtam.CommandRandomize import CommandRandomize
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
 from vtam.CommandSortReads import CommandSortReads
 from vtam.CommandTaxAssign import CommandTaxAssign
@@ -23,7 +22,6 @@ from vtam.utils.FileParams import FileParams
 from vtam.utils.PathManager import PathManager
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.RunnerWopmars import RunnerWopmars
-from vtam.utils.FileCompression import FileCompression
 from vtam.utils.constants import FilterLFNreference_records
 
 
@@ -185,18 +183,6 @@ class VTAM(object):
 
         ############################################################################################
         #
-        # Subcommand: randomize
-        #
-        ############################################################################################
-
-        elif arg_parser_dic['command'] == 'randomize':
-            fastadir = arg_parser_dic['fastadir']
-            sampleddir = arg_parser_dic['sampleddir']
-            samplesize = arg_parser_dic['samplesize']
-            CommandRandomize.main(fastadir=fastadir, sampleddir=sampleddir, samplesize=samplesize)
-
-        ############################################################################################
-        #
         # Subcommand: sortreads
         #
         ############################################################################################
@@ -207,8 +193,12 @@ class VTAM(object):
             sorteddir = arg_parser_dic['sorteddir']
             num_threads = arg_parser_dic['threads']
             params = arg_parser_dic['params']
+            no_reverse = arg_parser_dic['no_reverse']
+            tag_to_end = arg_parser_dic['tag_to_end']
+            primer_to_end = arg_parser_dic['primer_to_end']
             CommandSortReads.main(fastainfo=fastainfo, fastadir=fastadir, params=params,
-                                  num_threads=num_threads, sorteddir=sorteddir)
+                                  num_threads=num_threads, sorteddir=sorteddir, no_reverse=no_reverse, 
+                                  tag_to_end=tag_to_end, primer_to_end=primer_to_end)
 
         ############################################################################################
         #
