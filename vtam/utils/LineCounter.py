@@ -26,6 +26,6 @@ class LineCounter():
 
             f = open(filename, 'rb')
             f_gen = _make_gen(f.raw.read)
-            return sum( buf.count(b'>') for buf in f_gen )
+            return sum( buf.count(b">") for buf in f_gen )
         
         return rawgencount(self.filename)

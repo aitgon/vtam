@@ -185,15 +185,17 @@ class VTAM(object):
 
         ############################################################################################
         #
-        # Subcommand: randomize
+        # Subcommand: random_seq
         #
         ############################################################################################
 
-        elif arg_parser_dic['command'] == 'randomize':
+        elif arg_parser_dic['command'] == 'random_seq':
             fastadir = arg_parser_dic['fastadir']
-            sampleddir = arg_parser_dic['sampleddir']
+            random_seqdir = arg_parser_dic['random_seqdir']
+            fastainfo = arg_parser_dic['fastainfo']
+            random_seqinfo = arg_parser_dic['random_seqinfo']
             samplesize = arg_parser_dic['samplesize']
-            CommandRandomize.main(fastadir=fastadir, sampleddir=sampleddir, samplesize=samplesize)
+            CommandRandomize.main(fastadir=fastadir, random_seqdir=random_seqdir, fastainfo=fastainfo, random_seqinfo=random_seqinfo, samplesize=samplesize)
 
         ############################################################################################
         #
