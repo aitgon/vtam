@@ -139,23 +139,30 @@ class CommandSortReads(object):
 
                 for tag_sample in tags_samples:
 
-                    in_fasta_path = out_fasta_path + "_" + tag_sample + "." + base_suffix
+                    name, marker2, sample, _, _ = tag_sample
+                    
+                    if marker not in marker2:
+                        continue
+
+                    in_fasta_path = out_fasta_path + "_" + name + "." + base_suffix
 
                     for i in range(len(info['marker'])):
-                        if info['marker'][i] == marker and info['sample'][i] == tag_sample.replace("_reversed", ""):
+                        if info['marker'][i] == marker and info['sample'][i] == sample:
                             run = info['run'][i]
                             break
                         else:
                             run = "marker-not-found"
 
                     baseMerge =  mergedfasta.split(".")[0]
-                    outname = run + "_" + marker + "_" + tag_sample + "_" + baseMerge + "_trimmed"
-
+                                        
+                    outname = run + "_" + marker + "_" + sample + "_" + baseMerge + "_trimmed"
+                    if name.endswith("_reversed"):
+                        outname = outname + "_reversed"
                     out_fasta_path_new = os.path.join(tempdir, outname + "." + base_suffix)
 
-                    results_list.append(out_fasta_path_new) 
+                    results_list.append(out_fasta_path_new)
                     
-                    if not "_reversed" in tag_sample:
+                    if not "_reversed" in name:
                         if generic_dna:  # Biopython <1.78
                             primerRev = str(Seq(primerrev, generic_dna).reverse_complement())
                         else:  # Biopython =>1.78
@@ -194,7 +201,8 @@ class CommandSortReads(object):
                     else:
                         cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
                             '--minimum-length {read_min_length} --maximum-length {read_max_length} ' \
-                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
+                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" '\
+                            '--output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
 
                     Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))

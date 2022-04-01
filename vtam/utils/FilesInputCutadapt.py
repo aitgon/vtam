@@ -36,34 +36,32 @@ class FilesInputCutadapt(object):
 
         with open(self.tagsFile, 'at') as tags:
 
-            for i, name in enumerate(sample_names):
+            for sample_name in sample_names:
 
-                if self.no_reverse:
-                    y = i // 2
-                else:
-                    y = i
+                name, _, _, fwd, rev = sample_name
+
                 
                 if not "_reversed" in name:
                     if generic_dna:  # Biopython <1.78
-                        tagRevRC = str(Seq(self.dict['tagrev'][y], generic_dna).reverse_complement())
+                        tagRevRC = str(Seq(rev, generic_dna).reverse_complement())
                     else:  # Biopython =>1.78
-                        tagRevRC = str(Seq(self.dict['tagrev'][y]).reverse_complement())
+                        tagRevRC = str(Seq(rev).reverse_complement())
                     
                     if not self.tag_to_end:
-                        tags.write(f">{name}\n^{self.dict['tagfwd'][y]}...{tagRevRC}$\n")
+                        tags.write(f">{name}\n^{fwd}...{tagRevRC}$\n")
                     else:
-                        tags.write(f">{name}\n{self.dict['tagfwd'][y]};min_overlap={str(len(self.dict['tagfwd'][y]))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
+                        tags.write(f">{name}\n{fwd};min_overlap={str(len(fwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
                     
                 else:
                     if generic_dna:  # Biopython <1.78
-                        tagFwdRC = str(Seq(self.dict['tagfwd'][y], generic_dna).reverse_complement())
+                        tagFwdRC = str(Seq(fwd, generic_dna).reverse_complement())
                     else:  # Biopython =>1.78
-                        tagFwdRC = str(Seq(self.dict['tagfwd'][y]).reverse_complement())
+                        tagFwdRC = str(Seq(fwd).reverse_complement())
                 
                     if not self.tag_to_end:
-                        tags.write(f">{name}\n^{self.dict['tagrev'][y]}...{tagFwdRC}$\n")
+                        tags.write(f">{name}\n^{rev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{name}\n{self.dict['tagrev'][y]};min_overlap={str(len(self.dict['tagrev'][y]))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
+                        tags.write(f">{name}\n{rev};min_overlap={str(len(rev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
 
         return self.tagsFile
 
@@ -73,11 +71,11 @@ class FilesInputCutadapt(object):
         self.primers_result = []
 
         for i in range(self.length):
-            primerFwd = self.dict["primerfwd"][i] 
-            primerRev = self.dict["primerrev"][i] 
-            marker = self.dict["marker"][i]
-            primer = (marker, primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev)))
-            if not  primer in self.primers_result:
+            primerFwd =f'{self.dict["primerfwd"][i]}'
+            primerRev =f'{self.dict["primerrev"][i]}'
+            marker =f'{self.dict["marker"][i]}'            
+            primer = (marker, primerFwd, primerRev, len(primerFwd), len(primerRev))
+            if not primer in self.primers_result:
                 self.primers_result.append(primer)
 
         return self.primers_result
@@ -87,16 +85,22 @@ class FilesInputCutadapt(object):
         
             sample_names = []
             for i in range(self.length):
-                name = f'{self.dict["sample"][i]}'
+                sample = f'{self.dict["sample"][i]}'
+                marker = f'{self.dict["marker"][i]}'
+                fwd = f'{self.dict["tagfwd"][i]}'
+                rev = f'{self.dict["tagrev"][i]}'
+
+                name = (f"marker[{marker}]sample[{sample}]fwd[{fwd}]rev[{rev}]", marker, sample, fwd, rev)
+
                 if name not in sample_names:
                     sample_names.append(name)
-                
 
             if self.no_reverse:
                 samples_names_revered = []
                 for name in sample_names:
                     samples_names_revered.append(name)
-                    samples_names_revered.append(name + "_reversed")
+                    name_reversed = (name[0] + "_reversed",  name[1], name[2],  name[3], name[4])
+                    samples_names_revered.append(name_reversed)
                 return samples_names_revered
                 
             return sample_names
