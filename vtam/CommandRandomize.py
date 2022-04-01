@@ -83,6 +83,10 @@ class CommandRandomize(object):
             base, ext = input_file.split(".", 1)
             output_file = os.path.join(random_seqdir, base + "_sampled." + ext)
 
+            #if the file already exists delete it 
+            if os.path.exists(output_file):
+                os.remove(output_file)
+                
             # check extension
             if input_file.endswith(".gz"):
                 _open = partial(gzip.open) 
