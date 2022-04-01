@@ -11,13 +11,12 @@ from Bio.Seq import Seq
 class FilesInputCutadapt(object):
     """ make fasta files to use as input for cutadapt demultiplexing """
 
-    def __init__(self, file_path, mergedFasta, no_reverse, tag_to_end, primer_to_end):
+    def __init__(self, file_path, mergedFasta, no_reverse, tag_to_end):
 
         self.file_path = file_path
         self.mergedFasta = mergedFasta
         
         self.tag_to_end = tag_to_end
-        self.primer_to_end = primer_to_end
         self.no_reverse = no_reverse
 
         self.df = pd.read_csv(file_path, sep='\t', header=0)

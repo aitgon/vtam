@@ -70,7 +70,7 @@ class CommandSortReads(object):
             
         for mergedfasta in merged_fasta_list:
 
-            inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end, primer_to_end)
+            inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end)
             
             tagFile_path = inputFiles.tags_file()
             info = inputFiles.get_df_info()
