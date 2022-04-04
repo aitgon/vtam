@@ -1,15 +1,27 @@
+#standard imports
+import inspect
+import os
+import sys
+import gzip 
+import bz2
+from functools import partial
+
+#third party imports
 from Bio import SeqIO
+import pandas
+import sqlalchemy
 from sqlalchemy import select, bindparam, func
+
+
+#local imports
 from vtam.utils.Logger import Logger
 from vtam.utils.FileSampleInformation import FileSampleInformation
 from vtam.utils.VTAMexception import VTAMexception
 from vtam.utils.DataframeVariantReadCountLike import DataframeVariantReadCountLike
 from wopmars.models.ToolWrapper import ToolWrapper
-import inspect
-import os
-import pandas
-import sqlalchemy
-import sys
+
+
+
 
 # Compatible with both pre- and post Biopython 1.78:
 try:
@@ -64,6 +76,24 @@ class VariantReadCount(ToolWrapper):
             "read_dir": "str",
             "global_read_count_cutoff": "int",
         }
+
+    @staticmethod
+    def get_sorted_read_list(file_path, generic_dna=None):
+        """
+        handles reading file from compressed or uncompressed file
+        """
+        if file_path.endswith(".gz"):
+            _open = partial(gzip.open, mode='rt')
+        elif file_path.endswith(".bz2"):
+            _open = partial(bz2.open, mode='rt') 
+        else:
+            _open = open
+
+        with _open(file_path) as handle:
+            res = [str(seq_record.seq).upper() for seq_record in SeqIO.parse(handle, "fasta", alphabet=generic_dna)]
+            return res
+  
+
 
     def run(self):
         session = self.session
@@ -207,19 +237,8 @@ class VariantReadCount(ToolWrapper):
                 # Read FASTA
                 #
                 ####################################################################################
-
-                if generic_dna:  # Biopython <1.78
-                    sorted_read_list = [str(seq_record.seq).upper() for
-                                        seq_record in
-                                        SeqIO.parse(read_fasta_path,
-                                                    format="fasta",
-                                                    alphabet=generic_dna)]
-                else:  # Biopython =>1.78
-                    sorted_read_list = [str(seq_record.seq).upper() for
-                                        seq_record in
-                                        SeqIO.parse(read_fasta_path,
-                                                    format="fasta",
-                                                    alphabet=generic_dna)]
+                
+                sorted_read_list = VariantReadCount.get_sorted_read_list(read_fasta_path, generic_dna)
 
                 variant_read_count_df_sorted_i = pandas.DataFrame(
                     {
