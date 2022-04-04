@@ -19,13 +19,23 @@ class LineCounter():
 
             if filename.endswith(".gz"):      
                 _open = partial(gzip.open) 
-            elif filename.endswith(".bz2"):
-                _open = partial(bz2.open)
+            # elif filename.endswith(".bz2"):
+            #     _open = partial(bz2.open)
             else:
                 _open = open
 
-            f = open(filename, 'rb')
-            f_gen = _make_gen(f.raw.read)
+
+            if filename.endswith(".bz2"):
+                with bz2.open(filename, 'rt') as f_in:
+                    count = 0
+                    for line in f_in:
+                        if line.startswith('>'):
+                            count += 1
+                return count
+
+
+            f = _open(filename, 'rb')
+            f_gen = _make_gen(f.read)
             return sum( buf.count(b">") for buf in f_gen )
         
         return rawgencount(self.filename)
