@@ -17,6 +17,9 @@ VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 .. image:: https://codecov.io/gh/aitgon/vtam/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/aitgon/vtam
 
+.. image:: https://static.pepy.tech/personalized-badge/vtam?period=month&units=international_system&left_color=black&right_color=blue&left_text=Downloads
+    :target: https://pepy.tech/project/vtam
+
 VTAM is a metabarcoding package with various commands to process high throughput sequencing (HTS) data of amplicons of one or several metabarcoding markers in FASTQ format and produce a table of amplicon sequence variants (ASVs) assigned to taxonomic groups.
 If you use VTAM in scientific works, **please cite the following article**:
 
