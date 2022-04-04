@@ -1,3 +1,4 @@
+from logging import raiseExceptions
 import os
 import pandas as pd
 try:
@@ -38,9 +39,8 @@ class FilesInputCutadapt(object):
 
             for sample_name in sample_names:
 
-                name, _, _, fwd, rev = sample_name
+                name, _, _, _, _, fwd, rev,  = sample_name
 
-                
                 if not "_reversed" in name:
                     if generic_dna:  # Biopython <1.78
                         tagRevRC = str(Seq(rev, generic_dna).reverse_complement())
@@ -89,17 +89,25 @@ class FilesInputCutadapt(object):
                 marker = f'{self.dict["marker"][i]}'
                 fwd = f'{self.dict["tagfwd"][i]}'
                 rev = f'{self.dict["tagrev"][i]}'
+                run = f'{self.dict["run"][i]}'
+                replicate = f'{self.dict["replicate"][i]}'
 
-                name = (f"marker[{marker}]sample[{sample}]fwd[{fwd}]rev[{rev}]", marker, sample, fwd, rev)
+                name = (f"run[{run}]marker[{marker}]sample[{sample}]replicate[{replicate}]fwd[{fwd}]rev[{rev}]",run, marker, sample, replicate, fwd, rev)
+
+                for sample_name in sample_names:
+                    if sample_name[5] == fwd and sample_name[6] == rev:
+                        raise Exception(f"{name} and {sample_name} lines have different run/marker/sample/replicate combinations but same tag_combination:\n\
+                        ({name[5]}, {name[6]})")
 
                 if name not in sample_names:
                     sample_names.append(name)
 
+                
             if self.no_reverse:
                 samples_names_revered = []
                 for name in sample_names:
                     samples_names_revered.append(name)
-                    name_reversed = (name[0] + "_reversed",  name[1], name[2],  name[3], name[4])
+                    name_reversed = (name[0] + "_reversed",  name[1], name[2],  name[3], name[4], name[5], name[6] )
                     samples_names_revered.append(name_reversed)
                 return samples_names_revered
                 

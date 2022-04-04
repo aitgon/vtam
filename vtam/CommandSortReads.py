@@ -131,7 +131,11 @@ class CommandSortReads(object):
             ########################################################################################
             
             primers = inputFiles.primers()
-            tags_samples = inputFiles.get_sample_names()
+            try:
+                tags_samples = inputFiles.get_sample_names()
+            except Exception as e:
+                Logger.instance().error(e)
+                return 
             
             for primer in primers:
                 
@@ -139,23 +143,23 @@ class CommandSortReads(object):
 
                 for tag_sample in tags_samples:
 
-                    name, marker2, sample, _, _ = tag_sample
+                    name, run, marker2, sample, replicate, _, _ = tag_sample
                     
                     if marker not in marker2:
                         continue
 
                     in_fasta_path = out_fasta_path + "_" + name + "." + base_suffix
 
-                    for i in range(len(info['marker'])):
-                        if info['marker'][i] == marker and info['sample'][i] == sample:
-                            run = info['run'][i]
-                            break
-                        else:
-                            run = "marker-not-found"
+                    # for i in range(len(info['marker'])):
+                    #     if info['marker'][i] == marker and info['sample'][i] == sample:
+                    #         run = info['run'][i]
+                    #         break
+                    #     else:
+                    #         run = "marker-not-found"
 
                     baseMerge =  mergedfasta.split(".")[0]
                                         
-                    outname = run + "_" + marker + "_" + sample + "_" + baseMerge + "_trimmed"
+                    outname = run + "_" + marker + "_" + sample + "_" + replicate + "_" + baseMerge + "_trimmed"
                     if name.endswith("_reversed"):
                         outname = outname + "_reversed"
                     out_fasta_path_new = os.path.join(tempdir, outname + "." + base_suffix)
