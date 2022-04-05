@@ -1,8 +1,6 @@
 import unittest 
-import filecmp
 import os
 from shutil import copyfile
-import hashlib
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.FilesInputCutadapt import FilesInputCutadapt
@@ -16,6 +14,7 @@ class TestFilesInputCutadapt(unittest.TestCase):
         cls.test_path = PathManager.get_test_path() 
         cls.tags_file_path = os.path.join(cls.test_path, "test_files", "FilesInputCutadapt")
         cls.fastainfo = os.path.join(cls.tags_file_path, "fastainfo.tsv")
+        cls.fastainfoNoDuplicates = os.path.join(cls.tags_file_path, "fastainfoNoDuplicates.tsv")
         cls.mergedFasta1 = "14Ben01_1_fw_48.fasta"
 
     @staticmethod
@@ -34,35 +33,45 @@ class TestFilesInputCutadapt(unittest.TestCase):
 
     def test_tags_file_noOption(self):
         # test with no option selected
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, True, True, True)
+        filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, True, True)
         self.tags_file_path_result = os.path.join(self.test_path, filesCutadapt.tags_file())
         self.tags_file_path_ref = os.path.join(self.tags_file_path,"tagsFile1NoOption.fasta")
         
         self.assertTrue(self.compareFileContent(self.tags_file_path_result, self.tags_file_path_ref))
 
+    def test_tags_file_duplicates(self):
+        # test with no option selected            
+        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, True, True)
+        
+        exception = "Exception: ('run[run1]marker[zfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]', 'run1', 'zfzr', '14ben01', '1', 'gtcgatcatgtca', 'acatcgacgtacg') and ('run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]', 'run1', 'mfzr', '14ben01', '1', 'gtcgatcatgtca', 'acatcgacgtacg') lines have different run/marker/sample/replicate combinations but same tag_combination')"
+        self.assertRaises(Exception, filesCutadapt.tags_file)
+
     def test_tags_file_noReverse(self):
         # test with no_reverse selected
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, False, True, True)
+        filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, False, True)
         
         self.tags_file_path_result = os.path.join(self.test_path, filesCutadapt.tags_file())
         self.tags_file_path_ref = os.path.join(self.tags_file_path,"tagsFile1NoReverse.fasta")
-        
+
         self.assertTrue(self.compareFileContent(self.tags_file_path_result, self.tags_file_path_ref))
 
     def test_tags_file_tagToEnd(self):
         # test with no_reverse selected
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, True, False, True)
+        filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, True, False)
         self.tags_file_path_result = os.path.join(self.test_path, filesCutadapt.tags_file())
         self.tags_file_path_ref = os.path.join(self.tags_file_path,"tagsFile1TagToEnd.fasta")
+                
+        print(self.tags_file_path_result)
+        import pdb; pdb.set_trace()
         
         self.assertTrue(self.compareFileContent(self.tags_file_path_result, self.tags_file_path_ref))
 
     def test_primers(self):
         
-        primers_test_no_duplicate = [('mfzr', 'TCCACTAATCACAARGATATTGGTAC', 'WACTAATCAATTWCCAAATCCTCC', '26', '24'), ('zfzr', 'AGATATTGGAACWTTATATTTTATTTTTGG', 'WACTAATCAATTWCCAAATCCTCC', '30', '24')]
+        primers_test_no_duplicate = [('mfzr', 'TCCACTAATCACAARGATATTGGTAC', 'WACTAATCAATTWCCAAATCCTCC', 26, 24), ('zfzr', 'AGATATTGGAACWTTATATTTTATTTTTGG', 'WACTAATCAATTWCCAAATCCTCC', 30, 24)]
         primers_test_duplicate = [primers_test_no_duplicate[0]] + primers_test_no_duplicate
 
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, False, False, False)
+        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, False, False)
         primers = filesCutadapt.primers()
 
         self.assertTrue(primers == primers_test_no_duplicate)
@@ -71,30 +80,32 @@ class TestFilesInputCutadapt(unittest.TestCase):
     def test_get_df_info(self):
 
         dict_test = {
-            'run': ['run1', 'run1', 'run1'],
-            'marker': ['mfzr', 'mfzr', 'zfzr'],
-            'sample': ['14ben01', '14ben01', '14ben01'],
-            'replicate': [1, 1, 1],
-            'tagfwd': ['gtcgatcatgtca', 'gtcgatcatgtca', 'gtcgatcatgtca'],
-            'primerfwd': ['TCCACTAATCACAARGATATTGGTAC', 'TCCACTAATCACAARGATATTGGTAC', 'AGATATTGGAACWTTATATTTTATTTTTGG'],
-            'tagrev': ['acatcgacgtacg', 'acatcgacgtacg', 'acatcgacgtacg'],
-            'primerrev': ['WACTAATCAATTWCCAAATCCTCC', 'WACTAATCAATTWCCAAATCCTCC', 'WACTAATCAATTWCCAAATCCTCC'],
-            'mergedfasta': ['14Ben01_1_fw_48.fasta', '14Ben01_1_fw_48.fasta', '14Ben01_1_fw_48.fasta']
+            'run': ['run1', 'run1'],
+            'marker': ['mfzr', 'zfzr'],
+            'sample': ['14ben01', '14ben01'],
+            'replicate': [1, 1],
+            'tagfwd': ['gtcgatcatgtca', 'gtcgatcatgtca'],
+            'primerfwd': ['TCCACTAATCACAARGATATTGGTAC', 'AGATATTGGAACWTTATATTTTATTTTTGG'],
+            'tagrev': ['acatcgacgtacg', 'acatcgacgtacg'],
+            'primerrev': ['WACTAATCAATTWCCAAATCCTCC', 'WACTAATCAATTWCCAAATCCTCC'],
+            'mergedfasta': ['14Ben01_1_fw_48.fasta','14Ben01_1_fw_48.fasta']
         }
 
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, False, False, False)
+        
 
+        filesCutadapt = FilesInputCutadapt(self.fastainfo , '14Ben01_1_fw_48.fasta', False, False)
         self.assertTrue(dict_test == filesCutadapt.get_df_info())
     
     def test_get_sample_names(self):
-        names_test = ['14ben01']
-        names_test_reversed = ['14ben01', '14ben01_reversed']
+        names_test = [('run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]', 'run1', 'mfzr', '14ben01', '1', 'gtcgatcatgtca', 'acatcgacgtacg')]
+        names_test_reversed = [('run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]', 'run1', 'mfzr', '14ben01', '1', 'gtcgatcatgtca', 'acatcgacgtacg'), 
+        ('run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]_reversed', 'run1', 'mfzr', '14ben01', '1', 'gtcgatcatgtca', 'acatcgacgtacg')]
 
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, False, False, False)
+        filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, False, False)
         names = filesCutadapt.get_sample_names()
         self.assertTrue(names == names_test)
 
-        filesCutadapt = FilesInputCutadapt(self.fastainfo , self.mergedFasta1, True, False, False)
+        filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, True, False)
         names = filesCutadapt.get_sample_names()
         self.assertTrue(names == names_test_reversed)
 

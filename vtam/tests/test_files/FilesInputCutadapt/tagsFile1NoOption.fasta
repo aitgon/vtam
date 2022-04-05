@@ -1,4 +1,4 @@
->14ben01
+>run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]
 gtcgatcatgtca;min_overlap=13...cgtacgtcgatgt;min_overlap=13
->14ben01_reversed
+>run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]_reversed
 acatcgacgtacg;min_overlap=13...tgacatgatcgac;min_overlap=13

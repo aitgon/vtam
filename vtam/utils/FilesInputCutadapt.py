@@ -96,9 +96,7 @@ class FilesInputCutadapt(object):
 
                 for sample_name in sample_names:
                     if sample_name[5] == fwd and sample_name[6] == rev:
-                        raise Exception(f"{name} and {sample_name} lines have different run/marker/sample/replicate combinations but same tag_combination:\n\
-                        ({name[5]}, {name[6]})")
-
+                        raise Exception(f"{name} and {sample_name} lines have different run/marker/sample/replicate combinations but same tag_combination")
                 if name not in sample_names:
                     sample_names.append(name)
 
