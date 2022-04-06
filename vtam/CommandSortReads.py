@@ -150,13 +150,6 @@ class CommandSortReads(object):
 
                     in_fasta_path = out_fasta_path + "_" + name + "." + base_suffix
 
-                    # for i in range(len(info['marker'])):
-                    #     if info['marker'][i] == marker and info['sample'][i] == sample:
-                    #         run = info['run'][i]
-                    #         break
-                    #     else:
-                    #         run = "marker-not-found"
-
                     baseMerge =  mergedfasta.split(".")[0]
                                         
                     outname = run + "_" + marker + "_" + sample + "_" + replicate + "_" + baseMerge + "_trimmed"

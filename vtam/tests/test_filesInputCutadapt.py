@@ -1,6 +1,5 @@
 import unittest 
 import os
-from shutil import copyfile
 
 from vtam.utils.PathManager import PathManager
 from vtam.utils.FilesInputCutadapt import FilesInputCutadapt
@@ -60,9 +59,6 @@ class TestFilesInputCutadapt(unittest.TestCase):
         filesCutadapt = FilesInputCutadapt(self.fastainfoNoDuplicates , self.mergedFasta1, True, False)
         self.tags_file_path_result = os.path.join(self.test_path, filesCutadapt.tags_file())
         self.tags_file_path_ref = os.path.join(self.tags_file_path,"tagsFile1TagToEnd.fasta")
-                
-        print(self.tags_file_path_result)
-        import pdb; pdb.set_trace()
         
         self.assertTrue(self.compareFileContent(self.tags_file_path_result, self.tags_file_path_ref))
 
