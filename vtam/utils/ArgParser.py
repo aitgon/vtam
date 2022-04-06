@@ -304,6 +304,24 @@ class ArgParser:
             required=True)
         # This attribute will trigger the good command
 
+        parser_vtam_sortreads.add_argument(
+            "--no_reverse", 
+            action="store_false",
+            help="don't check reverse sequences",
+            required=False)
+
+        parser_vtam_sortreads.add_argument(
+            "--tag_to_end", 
+            action="store_false",
+            help="look for tags only at the edges of the sequence",
+            required=False)
+
+        parser_vtam_sortreads.add_argument(
+            "--primer_to_end", 
+            action="store_false",
+            help="look for primers only at the edges of the sequence",
+            required=False)
+
         parser_vtam_sortreads.set_defaults(command='sortreads')
 
     @classmethod
