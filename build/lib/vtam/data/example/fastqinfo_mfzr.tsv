@@ -1,0 +1,13 @@
+TagFwd	PrimerFwd	TagRev	PrimerRev	Marker	Sample	Replicate	Run	FastqFwd	FastqRev
+tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tpos1_run1	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
+agatcgtactagct	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tnegtag_run1	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
+gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben01	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
+catcgagtagag	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben02	1	run1	mfzr_1_fw.fastq	mfzr_1_rv.fastq
+tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tpos1_run1	2	run1	mfzr_2_fw.fastq	mfzr_2_rv.fastq
+agatcgtactagct	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tnegtag_run1	2	run1	mfzr_2_fw.fastq	mfzr_2_rv.fastq
+gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben01	2	run1	mfzr_2_fw.fastq	mfzr_2_rv.fastq
+catcgagtagag	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben02	2	run1	mfzr_2_fw.fastq	mfzr_2_rv.fastq
+tcgatcacgatgt	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tpos1_run1	3	run1	mfzr_3_fw.fastq	mfzr_3_rv.fastq
+agatcgtactagct	TCCACTAATCACAARGATATTGGTAC	tgtcgatctacagc	WACTAATCAATTWCCAAATCCTCC	MFZR	tnegtag_run1	3	run1	mfzr_3_fw.fastq	mfzr_3_rv.fastq
+gtcgatcatgtca	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben01	3	run1	mfzr_3_fw.fastq	mfzr_3_rv.fastq
+catcgagtagag	TCCACTAATCACAARGATATTGGTAC	acatcgacgtacg	WACTAATCAATTWCCAAATCCTCC	MFZR	14ben02	3	run1	mfzr_3_fw.fastq	mfzr_3_rv.fastq
