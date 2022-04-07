@@ -1,0 +1,213 @@
+{% extends "block_wopfile_filter_optimize.yml" %}
+{% block wopfile_asv %}rule FilterLFN:
+    tool: vtam.wrapper.FilterLFN
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            VariantReadCount: vtam.models.VariantReadCount
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+            cutoff_specific: {{cutoff_specific}}
+    output:
+        table:
+            FilterLFN: vtam.models.FilterLFN
+    params:
+        {% if lfn_variant_replicate_cutoff is none %}lfn_variant_cutoff: {{lfn_variant_cutoff}}
+        {%- if not (lfn_variant_specific_cutoff is none) %}
+        lfn_variant_specific_cutoff: {{lfn_variant_specific_cutoff}}
+        {% endif %}
+        {%- else %}
+        lfn_variant_replicate_cutoff: {{lfn_variant_replicate_cutoff}}
+        {%- if not (lfn_variant_replicate_specific_cutoff is none) %}
+        lfn_variant_replicate_specific_cutoff: {{lfn_variant_replicate_specific_cutoff}}{% endif %}
+        {%- endif %}
+        lfn_sample_replicate_cutoff: {{lfn_sample_replicate_cutoff}}
+        lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
+
+
+rule FilterMinReplicateNumber:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            FilterLFN: vtam.models.FilterLFN
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
+    params:
+        min_replicate_number: {{min_replicate_number}}
+
+
+rule FilterPCRerror:
+    tool: vtam.wrapper.FilterPCRerror
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterPCRerror: vtam.models.FilterPCRerror
+    params:
+        pcr_error_var_prop: {{pcr_error_var_prop}}
+
+
+rule FilterChimera:
+    tool: vtam.wrapper.FilterChimera
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            FilterPCRerror: vtam.models.FilterPCRerror
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterChimera: vtam.models.FilterChimera
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+    params:
+        uchime3_denovo_abskew: {{uchime3_denovo_abskew}}
+
+
+rule FilterMinReplicateNumber2:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            FilterLFN: vtam.models.FilterChimera
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber2
+    params:
+        min_replicate_number: {{min_replicate_number}}
+
+
+rule FilterRenkonen:
+    tool: vtam.wrapper.FilterRenkonen
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            FilterChimera: vtam.models.FilterMinReplicateNumber2
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterRenkonen: vtam.models.FilterRenkonen
+    params:
+        renkonen_distance_quantile: {{renkonen_distance_quantile}}
+
+
+rule FilterMinReplicateNumber3:
+    tool: vtam.wrapper.FilterMinReplicateNumber
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            FilterLFN: vtam.models.FilterRenkonen
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterMinReplicateNumber: vtam.models.FilterMinReplicateNumber3
+    params:
+        min_replicate_number: {{min_replicate_number}}
+
+
+rule FilterIndel:
+    tool: vtam.wrapper.FilterIndel
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            FilterRenkonen: vtam.models.FilterMinReplicateNumber3
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterIndel: vtam.models.FilterIndel
+    params:
+        skip_filter_indel: {{skip_filter_indel}}
+
+
+rule FilterCodonStop:
+    tool: vtam.wrapper.FilterCodonStop
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            FilterIndel: vtam.models.FilterIndel
+        file:
+            sortedinfo: {{sortedinfo}}
+            params: {{params}}
+    output:
+        table:
+            FilterCodonStop: vtam.models.FilterCodonStop
+    params:
+        genetic_code: {{genetic_code}}
+        skip_filter_codon_stop: {{skip_filter_codon_stop}}
+
+
+rule ReadCountAverageOverReplicates:
+    tool: vtam.wrapper.ReadCountAverageOverReplicates
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            FilterCodonStop: vtam.models.FilterCodonStop
+        file:
+            sortedinfo: {{sortedinfo}}
+    output:
+        table:
+            ReadCountAverageOverReplicates: vtam.models.ReadCountAverageOverReplicates
+
+
+rule MakeAsvTable:
+    tool: vtam.wrapper.MakeAsvTable
+    input:
+        table:
+            Marker: vtam.models.Marker
+            Run: vtam.models.Run
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            FilterChimeraBorderline: vtam.models.FilterChimeraBorderline
+            FilterCodonStop: vtam.models.FilterCodonStop
+        file:
+            sortedinfo: {{sortedinfo}}
+    output:
+        file:
+            ASVTable: {{asvtable}}
+    params:
+        cluster_identity: {{cluster_identity}}
+        known_occurrences: {{known_occurrences}}{% endblock %}

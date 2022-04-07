@@ -1,0 +1,57 @@
+{% extends "block_wopfile_filter_optimize.yml" %}
+{% block wopfile_optimize %}rule OptimizeLFNsampleReplicate:
+    tool: vtam.wrapper.OptimizeLFNsampleReplicate
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+        file:
+            sortedinfo: {{sortedinfo}}
+            known_occurrences: {{known_occurrences}}
+    output:
+        file:
+            optimize_lfn_sample_replicate: {{optimize_lfn_sample_replicate}}
+
+
+rule OptimizePCRerror:
+    tool: vtam.wrapper.OptimizePCRerror
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+        file:
+            sortedinfo: {{sortedinfo}}
+            known_occurrences: {{known_occurrences}}
+    output:
+        file:
+            optimize_pcr_error: {{optimize_pcr_error}}
+
+
+rule OptimizeLFNreadCountAndLFNvariant:
+    tool: vtam.wrapper.OptimizeLFNreadCountAndLFNvariant
+    input:
+        table:
+            Run: vtam.models.Run
+            Marker: vtam.models.Marker
+            Sample: vtam.models.Sample
+            Variant: vtam.models.Variant
+            VariantReadCount: vtam.models.VariantReadCount
+        file:
+            sortedinfo: {{sortedinfo}}
+            known_occurrences: {{known_occurrences}}
+            params: {{params}}
+    output:
+        file:
+            optimize_lfn_read_count_and_lfn_variant: {{optimize_lfn_read_count_and_lfn_variant}}
+            optimize_lfn_variant_specific: {{optimize_lfn_variant_specific}}
+    params:
+        {% if lfn_variant_replicate_cutoff is none %}lfn_variant_cutoff: {{lfn_variant_cutoff}}{% else %}lfn_variant_replicate_cutoff: {{lfn_variant_replicate_cutoff}}{% endif %}
+        lfn_sample_replicate_cutoff: {{lfn_sample_replicate_cutoff}}
+        lfn_read_count_cutoff: {{lfn_read_count_cutoff}}
+        min_replicate_number: {{min_replicate_number}}{% endblock %}

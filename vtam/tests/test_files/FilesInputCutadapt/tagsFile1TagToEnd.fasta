@@ -1,0 +1,4 @@
+>run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]
+^gtcgatcatgtca...cgtacgtcgatgt$
+>run[run1]marker[mfzr]sample[14ben01]replicate[1]fwd[gtcgatcatgtca]rev[acatcgacgtacg]_reversed
+^acatcgacgtacg...tgacatgatcgac$
