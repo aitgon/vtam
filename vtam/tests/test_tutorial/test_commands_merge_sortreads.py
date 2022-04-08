@@ -1,3 +1,4 @@
+from bdb import set_trace
 from vtam.utils import pip_install_vtam_for_tests
 from vtam.utils.PathManager import PathManager
 import filecmp
@@ -28,6 +29,7 @@ class TestTutorialCommands(unittest.TestCase):
 
         cls.package_path = PathManager.get_package_path()
         cls.test_path = os.path.join(PathManager.get_test_path())
+
         cls.outdir_path = os.path.join(cls.test_path, 'outdir')
         cls.outdir_data_path = os.path.join(cls.outdir_path, 'data')
         shutil.rmtree(cls.outdir_path, ignore_errors=True)  # during development of the test, this prevents errors
@@ -39,7 +41,7 @@ class TestTutorialCommands(unittest.TestCase):
         #
         ############################################################################################
 
-        fastq_tar_path = os.path.join(cls.outdir_data_path, "..", "data", "fastq.tar.gz")
+        fastq_tar_path = os.path.join(cls.outdir_data_path, "fastq.tar.gz")
         # Test first in local dir, otherwise in the remote URLs
         if not os.path.isfile(fastq_tar_path) or pathlib.Path(fastq_tar_path).stat().st_size < 1000000:
             try:
@@ -58,6 +60,7 @@ class TestTutorialCommands(unittest.TestCase):
                     with tqdm(...) as t:
                         t.set_description(os.path.basename(fastq_tar_path))
                         urllib.request.urlretrieve(fastq_tar_gz_url3, fastq_tar_path, reporthook=tqdm_hook(t))
+
         tar = tarfile.open(fastq_tar_path, "r:gz")
         tar.extractall(path=cls.outdir_path)
         tar.close()
@@ -131,11 +134,17 @@ class TestTutorialCommands(unittest.TestCase):
         subprocess.run(args=args)
 
         self.sortedinfo_path_bak = os.path.join(self.test_path, "test_files_dryad.f40v5_small", "run1_mfzr_zfzr", "sortedinfo.tsv")
+        
+
         self.assertTrue(filecmp.cmp(self.sortedinfo_path, self.sortedinfo_path_bak, shallow=True))
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_000.fasta')) <= 5155360)
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) >= 909500)  # 909507 linux, 913883 windows
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_023.fasta')) <= 913890)
+
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_trimmed_0_tpos1_run1.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_trimmed_0_tpos1_run1.fasta')) <= 5155360)
+        
+        import pdb; pdb.set_trace()
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_trimmed_0_14ben02.fasta')) >= 909500)  # 909507 linux, 913883 windows
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_trimmed_0_14ben02.fasta')) <= 913890)
+        # 'zfzr_3_fw_023.fasta'
 
     @classmethod
     def tearDownClass(cls):
