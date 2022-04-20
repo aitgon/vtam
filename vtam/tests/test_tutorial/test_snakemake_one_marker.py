@@ -1,3 +1,4 @@
+import filecmp
 import os
 import pathlib
 import shlex
@@ -19,7 +20,7 @@ from vtam.utils import tqdm_hook
 # Not working with windows because of commands in snake.tuto.data
 class TestTutorialSnakemakeOneMarker(unittest.TestCase):
 
-    """Will test main commands based on a complete test dataset"""
+    """Will test snakemake with makeknownoccurrences (Castet)"""
 
     @classmethod
     def setUpClass(cls):
@@ -43,7 +44,7 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
         cls.outdir_download_path = os.path.join(cls.test_path, 'outdir_download')
         pathlib.Path(cls.outdir_download_path).mkdir(parents=True, exist_ok=True)
 
-        cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data.yml")
+        cls.snakefile_tuto_data = os.path.join(cls.package_path, "data/snake.tuto.data_makeknownoccurrences.yml")
 
         ############################################################################################
         #
@@ -91,122 +92,41 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
         ############################################################################################
 
         cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=mfzr " \
-              "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
+              "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker_makeknownoccurrences".format(**cls.args)
 
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=cls.outdir_path)
+        subprocess.run(args=args, check=True, cwd=cls.outdir_path)
 
-        cmd = "snakemake --cores 1 -s {snake_tuto_data} --config MARKER=zfzr " \
-                  "PROJECT=asper1 PACKAGE_PATH={package_path} --until all_one_marker".format(**cls.args)
+    def test_01_mfzr_makeknownoccurrences(self):
 
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=cls.outdir_path)
-
-    def test_01_mfzr_filter(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_taxa".format(snakeconfig)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile_makeknownoccurrences.yml --cores 4 --configfile {} --until makeknownoccurrences".format(snakeconfig)
 
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
-    def test_02_mfzr_optimize(self):
+        known_occurrences_mfzr = os.path.join(self.outdir_path, "asper1", "run1_mfzr", "known_occurrences.tsv")
+        known_occurrences_mfzr_bak = os.path.join(self.test_path, "test_files", "known_occurrences_mfzr.tsv")
+        print(f'\n{known_occurrences_mfzr}\n{known_occurrences_mfzr_bak}\n')
+        import pdb; pdb.set_trace()
+        self.assertTrue(filecmp.cmp(known_occurrences_mfzr, known_occurrences_mfzr_bak, shallow=True))
 
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
+    def test_02_mfzr_makeknownoccurrences_optimize(self):
 
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_03_mfzr_filter_optimized(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_optimized_taxa".format(snakeconfig)
+        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_mfzr_makeknownoccurrences.yml")
+        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile_makeknownoccurrences.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
 
         if sys.platform.startswith("win"):
             args = cmd
         else:
             args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_04_zfzr_filter(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_taxa".format(snakeconfig)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_05_zfzr_optimize(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until optimize".format(snakeconfig)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_06_zfzr_filter_optimized(self):
-
-        snakeconfig = os.path.join("asper1", "user_input", "snakeconfig_zfzr.yml")
-        cmd = "snakemake --printshellcmds --resources db=1 --snakefile snakefile.yml --cores 4 --configfile {} --until asvtable_optimized_taxa".format(snakeconfig)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_07_pool(self):
-
-        db = os.path.join("asper1", "db.sqlite")
-        runmarker = os.path.join("asper1", "user_input", "pool_run_marker.tsv")
-        asvtable_pooled = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
-        log = os.path.join("asper1", "vtam.log")
-        args = {'db': db, 'runmarker': runmarker, 'asvtable_pooled': asvtable_pooled, 'log': log}
-        cmd = "vtam pool --db asper1/db.sqlite --runmarker {runmarker} --asvtable {asvtable_pooled} --log {log} -v".format(**args)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
-
-    def test_08_pool_taxa(self):
-
-        db = os.path.join("asper1", "db.sqlite")
-        asvtable = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr.tsv")
-        output = os.path.join("asper1", "asvtable_pooled_mfzr_zfzr_taxa.tsv")
-        taxonomy = os.path.join("vtam_db", "taxonomy.tsv")
-        blastdbdir = os.path.join("vtam_db", "coi_blast_db")
-        log = os.path.join("asper1", "vtam.log")
-        args = {'db': db, 'asvtable': asvtable, 'output': output, 'taxonomy': taxonomy, 'blastdbdir': blastdbdir, 'log': log}
-        cmd = "vtam taxassign --db {db} --asvtable {asvtable} " \
-              "--output {output} --taxonomy {taxonomy} " \
-              "--blastdbdir {blastdbdir} --blastdbname coi_blast_db_20200420 --log {log} -v".format(**args)
-
-        if sys.platform.startswith("win"):
-            args = cmd
-        else:
-            args = shlex.split(cmd)
-        subprocess.run(args=args, cwd=self.outdir_path)
+        subprocess.run(args=args, check=True, cwd=self.outdir_path)
 
     @classmethod
     def tearDownClass(cls):

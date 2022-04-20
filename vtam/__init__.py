@@ -9,6 +9,7 @@ from vtam import CommandExample
 from vtam.CommandBlastCOI import CommandBlastCOI
 from vtam.CommandExample import CommandExample
 from vtam.CommandFilterOptimize import CommandFilterOptimize
+from vtam.CommandMakeKnownOccurrences import CommandMakeKnownOccurrences
 from vtam.CommandMerge import CommandMerge
 from vtam.CommandRandomize import CommandRandomize
 from vtam.CommandPoolRunMarkers import CommandPoolRunMarkers
@@ -273,7 +274,22 @@ class VTAM(object):
             blastdbname = arg_parser_dic['blastdbname']
             coi_blast_db = CommandBlastCOI(blastdbname=blastdbname)
             coi_blast_db.download(blastdbdir=blastdbdir)
+        
+        #############################################################################################
+        #
+        # Subcommand: make known occurrences
+        #
+        ############################################################################################
 
+        elif arg_parser_dic['command'] == 'make_known_occurrences':
+            asvTable = arg_parser_dic['asvtable']
+            sampleTypes = arg_parser_dic['sample_types']
+            mockComposition = arg_parser_dic['mock_composition']
+            habitat_proportion = arg_parser_dic['habitat_proportion']
+            known_occurrences = arg_parser_dic['known_occurrences']
+            missing_occurrences = arg_parser_dic['missing_occurrences']
+            CommandMakeKnownOccurrences.main(asvTable=asvTable,sampleTypes=sampleTypes,mockComposition=mockComposition,habitat_proportion=habitat_proportion,known_occurrences=known_occurrences,missing_occurrences=missing_occurrences)
+              
         ############################################################################################
         #
         # Else: run_name usage message
