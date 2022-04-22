@@ -217,6 +217,8 @@ class ArgParser:
 
         cls.add_parser_optimize(subparsers=subparsers)
 
+        cls.add_parser_makeKnownOccurrences(subparsers=subparsers)
+
         cls.add_parser_pool(subparsers=subparsers)
 
         cls.add_parser_taxassign(subparsers=subparsers)
@@ -568,6 +570,60 @@ class ArgParser:
 
         # This attribute will trigger the good command
         parser_vtam_optimize.set_defaults(command='optimize')
+    
+    @classmethod
+    def add_parser_makeKnownOccurrences(cls, subparsers):
+        parser_vtam_makeKnownOccurrences = subparsers.add_parser('make_known_occurrences', add_help=True,
+                                                  parents=[cls.parser_threads, cls.parser_verbosity],
+                                                  help="create a file with know occurrences")
+
+        parser_vtam_makeKnownOccurrences.add_argument('--asvtable', 
+                                        action='store',
+                                        help="input an ASV table file (tsv format)",
+                                        required=True,
+                                    )
+                                    #    type=lambda x: FileSampleInformation(x).check_args(
+                                    #        header=header_paired_fastq))
+        
+        parser_vtam_makeKnownOccurrences.add_argument('--sample_types',
+                                        action='store',
+                                        help="input a tsv file with the sample types",
+                                        required=True,
+                                    )
+                                    #    type=lambda x: FileSampleInformation(x).check_args(
+                                    #        header=header_paired_fastq))
+
+        parser_vtam_makeKnownOccurrences.add_argument('--mock_composition',
+                                        action='store',
+                                        help="input a tsv file with the mock composition",
+                                        required=True,
+                                    )
+                                    #    type=lambda x: FileSampleInformation(x).check_args(
+                                    #        header=header_paired_fastq))
+        
+        parser_vtam_makeKnownOccurrences.add_argument('--known_occurrences',
+                                        action='store',
+                                        help="Default: ./known_occurrences.tsv. Output a .tsv file with the known occurences",
+                                        required=False,
+                                        default='./known_occurrences.tsv'
+                                    )
+
+        parser_vtam_makeKnownOccurrences.add_argument('--missing_occurrences',
+                                        action='store',
+                                        help="Default: ./missing_occurrences.tsv. Output a .tsv file with the missing occurences",
+                                        required=False,
+                                        default='./missing_occurrences.tsv'
+                                    )
+
+        parser_vtam_makeKnownOccurrences.add_argument('--habitat_proportion',
+                                        action='store',
+                                        help="Default: 0.5. Input a threshold for habitat proportion",
+                                        required=False,
+                                        default= 0.5
+                                    )
+
+        # This attribute will trigger the good command
+        parser_vtam_makeKnownOccurrences.set_defaults(command='make_known_occurrences')
 
     @classmethod
     def add_parser_pool(cls, subparsers):
