@@ -209,6 +209,8 @@ class ArgParser:
 
         cls.add_parser_merge(subparsers=subparsers)
 
+        cls.add_parser_random_seq(subparsers=subparsers)
+
         cls.add_parser_sortreads(subparsers=subparsers)
 
         cls.add_parser_filter(subparsers=subparsers)
@@ -271,6 +273,51 @@ class ArgParser:
         # This attribute will trigger the good command
 
         parser_vtam_merge.set_defaults(command='merge')
+
+    @classmethod
+    def add_parser_random_seq(cls, subparsers):
+
+        parser_vtam_random_seq = subparsers.add_parser(
+            'random_seq', add_help=True,
+            parents=[cls.parser_params, cls.parser_log,
+            cls.parser_threads, cls.parser_verbosity],
+            help="make a folder with sample files containing 'size' number of sequences randomly selected from the files in input folder")
+
+        parser_vtam_random_seq.add_argument(
+            '--fastadir',
+            action='store',
+            help="input directory with FASTA files",
+            required=True,
+            type=ArgParserChecker.check_dir_exists_and_is_nonempty)
+        
+        parser_vtam_random_seq.add_argument(
+            '--random_seqdir',
+            action='store',
+            help="output directory with randomly selected sequences in FASTA format",
+            required=True)
+        
+        parser_vtam_random_seq.add_argument(
+            '--fastainfo',
+            action='store',
+            help="input TSV file with FASTA file information",
+            required=True,
+            type=lambda x: FileSampleInformation(x).check_args(
+                header=header_merged_fasta))
+
+        parser_vtam_random_seq.add_argument(
+            '--random_seqinfo',
+            action='store',
+            help="output TSV file with output FASTA file information",
+            required=True)
+        
+        parser_vtam_random_seq.add_argument(
+            '--samplesize',
+            action='store',
+            help="number of sequences to be selected from the input files",
+            type= int,
+            required=True)
+        
+        parser_vtam_random_seq.set_defaults(command='random_seq')
 
     @classmethod
     def add_parser_sortreads(cls, subparsers):

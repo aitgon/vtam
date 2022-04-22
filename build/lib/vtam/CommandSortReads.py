@@ -5,7 +5,6 @@ import sys
 import pandas
 import pathlib
 import shlex
-import shutil
 import subprocess
 import gzip 
 import bz2
@@ -31,8 +30,8 @@ class CommandSortReads(object):
     @staticmethod
     def main(fastainfo, fastadir, sorteddir, params=None, num_threads=multiprocessing.cpu_count(), 
         no_reverse=False, tag_to_end=False, primer_to_end=False):
-
-        print(f' OPTIONS:\n no_reverse: {no_reverse} \n tag_to_end {tag_to_end} \n primer_to_end {primer_to_end} ')
+        
+        Logger.instance().info(f"OPTIONS:\n no_reverse: {not no_reverse} \n tag_to_end {not tag_to_end} \n primer_to_end {not primer_to_end}")
 
         if sys.platform.startswith('win'):
             num_threads = 1
@@ -60,27 +59,30 @@ class CommandSortReads(object):
         pathlib.Path(sorteddir).mkdir(parents=True, exist_ok=True)
         tempdir = PathManager.instance().get_tempdir()
 
-        sorted_read_info_df = pandas.DataFrame()
-
         merged_fasta_list = []
         results_list = []
+        sample_info = {}
 
         # make sure every file is analysed once.
         for i in range(merged_fastainfo_df.shape[0]):
             if merged_fastainfo_df.iloc[i].mergedfasta not in merged_fasta_list:
                 merged_fasta_list.append(merged_fastainfo_df.iloc[i].mergedfasta)
-
-
+            
         for mergedfasta in merged_fasta_list:
 
-            inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end, primer_to_end)
+            inputFiles = FilesInputCutadapt(fastainfo, mergedfasta, no_reverse, tag_to_end)
+            
             tagFile_path = inputFiles.tags_file()
-            primers_list = inputFiles.primers()
-            sample_list = inputFiles.get_sample_names()
+            info = inputFiles.get_df_info()
+
+            for key in info.keys():
+                if key in sample_info.keys():
+                    sample_info[key] = sample_info[key] + info[key]
+                else:
+                    sample_info[key] = info[key]
 
             Logger.instance().debug("Analysing FASTA file: {}".format(mergedfasta))
 
-            fasta_info_df_i = merged_fastainfo_df
             in_raw_fasta_path = os.path.join(fastadir, mergedfasta)
 
             ########################################################################################
@@ -93,7 +95,7 @@ class CommandSortReads(object):
             base = os.path.basename(in_raw_fasta_path)
             base, base_suffix = base.split('.', 1)
             
-            out_fasta_path = os.path.join(tempdir, base + "_sorted") 
+            out_fasta_path = os.path.join(tempdir, "sorted") 
 
             cmd_cutadapt_tag_dic = {
                 'in_fasta_path': in_raw_fasta_path,
@@ -108,8 +110,6 @@ class CommandSortReads(object):
                 .format(**cmd_cutadapt_tag_dic)
 
             Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
-
-            print(f'cmd_cutadapt_tag_str:\n{cmd_cutadapt_tag_str}\n')
 
             if sys.platform.startswith("win"):
                 args = cmd_cutadapt_tag_str
@@ -129,37 +129,52 @@ class CommandSortReads(object):
             # --output input_path + {name} + suffix outputfile
             #
             ########################################################################################
+            
+            primers = inputFiles.primers()
+            try:
+                tags_samples = inputFiles.get_sample_names()
+            except Exception as e:
+                Logger.instance().error(e)
+                return 
+            
+            for primer in primers:
+                
+                marker, primerfwd, primerrev, lenprimerfwd, lenprimerrev = primer
 
-            #filelist = os.listdir(tempdir)
-            for sample_name in sample_list:
+                for tag_sample in tags_samples:
 
-                in_fasta_path = out_fasta_path + "_" + sample_name + "." + base_suffix
-
-                for i, primers in enumerate(primers_list):
-                    out_fasta_path_new = out_fasta_path
-                    if "_reversed" in sample_name:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_reversed_" + str(i) + "_" + sample_name  + "." + base_suffix)
-                    else:
-                        out_fasta_path_new = os.path.join(tempdir, base + "_trimmed_" + str(i) + "_" + sample_name  + "." + base_suffix)
-
-                    results_list.append(out_fasta_path_new) 
+                    name, run, marker2, sample, replicate, _, _ = tag_sample
                     
-                    if not "_reversed" in sample_name:
+                    if marker not in marker2:
+                        continue
+
+                    in_fasta_path = out_fasta_path + "_" + name + "." + base_suffix
+
+                    baseMerge =  mergedfasta.split(".")[0]
+                                        
+                    outname = run + "_" + marker + "_" + sample + "_" + replicate + "_" + baseMerge + "_trimmed"
+                    if name.endswith("_reversed"):
+                        outname = outname + "_reversed"
+                    out_fasta_path_new = os.path.join(tempdir, outname + "." + base_suffix)
+
+                    results_list.append(out_fasta_path_new)
+                    
+                    if not "_reversed" in name:
                         if generic_dna:  # Biopython <1.78
-                            primerRev = str(Seq(primers[1], generic_dna).reverse_complement())
+                            primerRev = str(Seq(primerrev, generic_dna).reverse_complement())
                         else:  # Biopython =>1.78
-                            primerRev = str(Seq(primers[1]).reverse_complement())
-                        primerFwd = primers[0]
-                        lenPrimerFwd = primers[2]
-                        lenPrimerRev = primers[3]
+                            primerRev = str(Seq(primerrev).reverse_complement())
+                        primerFwd = primerfwd
+                        lenPrimerFwd = lenprimerfwd
+                        lenPrimerRev = lenprimerrev
                     else:
                         if generic_dna:  # Biopython <1.78
-                            primerRev = str(Seq(primers[0], generic_dna).reverse_complement())
+                            primerRev = str(Seq(primerfwd, generic_dna).reverse_complement())
                         else:  # Biopython =>1.78
-                            primerRev = str(Seq(primers[0]).reverse_complement())
-                        primerFwd = primers[1]
-                        lenPrimerFwd = primers[3]
-                        lenPrimerRev = primers[2]
+                            primerRev = str(Seq(primerfwd).reverse_complement())
+                        primerFwd = primerrev
+                        lenPrimerFwd = lenprimerrev
+                        lenPrimerRev = lenprimerfwd
 
 
                     cmd_cutadapt_primer_dic = {
@@ -183,10 +198,10 @@ class CommandSortReads(object):
                     else:
                         cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
                             '--minimum-length {read_min_length} --maximum-length {read_max_length} ' \
-                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" --output {out_fasta} {in_fasta_path}'\
+                            '--trimmed-only -g "{primerFwd};min_overlap={lenPrimerFwd}...{primerRev};min_overlap={lenPrimerRev}" '\
+                            '--output {out_fasta} {in_fasta_path}'\
                             .format(**cmd_cutadapt_primer_dic)
 
-                    print(f'cmd_cutadapt_primer_str:\n{cmd_cutadapt_primer_str}\n')
                     Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
 
                     if sys.platform.startswith("win"):
@@ -198,107 +213,15 @@ class CommandSortReads(object):
 
                     Logger.instance().info(run_result.stdout.decode())
 
-
-            ########################################################################################
-            #
-            # Cut adapt tag of reverse-complement reads
-            # cutadapt --cores=8 --no-indels --error-rate 0 --trimmed-only
-            # --front 'tgtcgatctacagc;min_overlap=14...acatcgtgatcga;min_overlap=13'
-            # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_000.fasta
-            # out/control_mfzr/merged/MFZR1_S4_L001_R1_001_merged.fasta
-            #
-            #######################################################################################
-            
-                # if no_reverse: #no_reverse stores False, if the option is selected no_reverse == False
-                #     if generic_dna:  # Biopython <1.78
-                #         tag_fwd_rc = str(Seq(tag_fwd, generic_dna).reverse_complement())
-                #     else:  # Biopython =>1.78
-                #         tag_fwd_rc = str(Seq(tag_fwd).reverse_complement())
-
-                #     out_rc_fasta_basename = os.path.basename(in_raw_fasta_path).replace(
-                #         '.fasta', '_rc_sorted_%03d.fasta' % i)
-                #     out_rc_fasta_path = os.path.join(tempdir, out_rc_fasta_basename)
-
-                #     cmd_cutadapt_tag_dic = {
-                #         'tag_fwd': tag_rev,
-                #         'tag_fwd_len': len(tag_rev),
-                #         'tag_rev_rc': tag_fwd_rc,
-                #         'tag_rev_rc_len': len(tag_fwd_rc),
-                #         'in_fasta_path': in_raw_fasta_path,
-                #         'out_fasta': out_rc_fasta_path,
-                #         'num_threads': num_threads,
-                #     }
-
-                #     cmd_cutadapt_tag_str = 'cutadapt --cores={num_threads} --no-indels --error-rate 0 --trimmed-only ' \
-                #         '--front "{tag_fwd};min_overlap={tag_fwd_len}...{tag_rev_rc};min_overlap={tag_rev_rc_len}" ' \
-                #         '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_tag_dic)
-
-                #     Logger.instance().debug("Running: {}".format(cmd_cutadapt_tag_str))
-
-                    
-                #     if sys.platform.startswith("win"):
-                #         args = cmd_cutadapt_tag_str
-                #     else:
-                #         args = shlex.split(cmd_cutadapt_tag_str)
-                #     run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                #     Logger.instance().info(run_result.stdout.decode())
-
-                #     ###################################################################
-                #     #
-                #     # Trim primers from output
-                #     # cutadapt --cores=8 --no-indels --error-rate 0.1 --minimum-length 50 --maximum-length 500 --trimmed-only
-                #     # --front 'WACTAATCAATTWCCAAATCCTCC;min_overlap=24...GTACCAATATCYTTGTGATTAGTGGA;min_overlap=26'
-                #     # --output /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_trimmed_000.fasta
-                #     # /tmp/tmpcqlhktae/MFZR1_S4_L001_R1_001_merged_rc_sorted_000.fasta
-                #     #
-                #     ###################################################################
-
-                #     if generic_dna:  # Biopython <1.78
-                #         primer_fwd_rc = str(Seq(primer_fwd, generic_dna).reverse_complement())
-                #     else:  # Biopython =>1.78
-                #         primer_fwd_rc = str(Seq(primer_fwd).reverse_complement())
-
-                #     in_fasta_path = out_rc_fasta_path
-                #     out_rc_fasta_basename = os.path.basename(in_fasta_path).replace(
-                #         '_rc_sorted_%03d.fasta' % i, '_rc_sorted_trimmed_%03d.fasta' % i)
-                #     out_rc_fasta_path = os.path.join(tempdir, out_rc_fasta_basename)
-
-                #     cmd_cutadapt_primer_dic = {
-                #         'primer_fwd': primer_rev,
-                #         'primer_fwd_len': len(primer_rev),
-                #         'primer_rev_rc': primer_fwd_rc,
-                #         'primer_rev_rc_len': len(primer_fwd_rc),
-                #         'in_fasta_path': in_fasta_path,
-                #         'out_fasta': out_rc_fasta_path,
-                #         'error_rate': cutadapt_error_rate,
-                #         'read_min_length': cutadapt_minimum_length,
-                #         'read_max_length': cutadapt_maximum_length,
-                #         'num_threads': num_threads,
-                #     }
-                #     cmd_cutadapt_primer_str = 'cutadapt --cores={num_threads} --no-indels --error-rate {error_rate} ' \
-                #         '--minimum-length {read_min_length} ' \
-                #         '--maximum-length {read_max_length} --trimmed-only  ' \
-                #         '--front "{primer_fwd};min_overlap={primer_fwd_len}...{primer_rev_rc};min_overlap={primer_rev_rc_len}" ' \
-                #         '--output {out_fasta} {in_fasta_path}'.format(**cmd_cutadapt_primer_dic)
-
-                #     Logger.instance().debug("Running: {}".format(cmd_cutadapt_primer_str))
-
-                #     if sys.platform.startswith("win"):
-                #         args = cmd_cutadapt_primer_str
-                #     else:
-                #         args = shlex.split(cmd_cutadapt_primer_str)
-                #     run_result = subprocess.run(args=args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-                #     Logger.instance().info(run_result.stdout.decode())
-
         ###################################################################
         #
         # Reverse complement back rc fasta and pool
         #
-        ###################################################################        
-        for file in os.listdir(tempdir):
-            if "trimmed" in file:
+        ###################################################################   
+     
+        for file in results_list:
+            if "_trimmed" in file:
+
                 out_final_fasta_path = os.path.join(sorteddir, os.path.split(file)[-1])
                 in_fasta_path = os.path.join(tempdir, file)
 
@@ -323,9 +246,8 @@ class CommandSortReads(object):
 
                     with _open(out_final_fasta_path, 'at') as fout:
                         with _open2(in_fasta_path, 'rt') as fin:
-                            for line in fin:
+                            for line in fin.readlines():
                                 if not line.startswith('>'):
-
                                     if generic_dna:  # Biopython <1.78
                                         fout.write("%s\n" % str(
                                             Seq(line.strip(), generic_dna).reverse_complement()))
@@ -336,22 +258,22 @@ class CommandSortReads(object):
                                 else:
                                     fout.write(line)
                 else:
-                    #if os.path.exists(out_final_fasta_path):
                     with _open(out_final_fasta_path, 'at') as fout:
                         with _open2(in_fasta_path, 'rt') as fin:
-                            text = fin.read()
-                            fout.write(text)
-                    # else:     
-                    #     shutil.copy(in_fasta_path, out_final_fasta_path)
-
+                            for line in fin.readlines():
+                                fout.write(line)
         
         results_list = [os.path.split(result)[-1] for result in results_list if "_reversed" not in result]
-        fasta_info_df_i = fasta_info_df_i[[
-            'run', 'marker', 'sample', 'replicate']]
-        fasta_info_df_i['sortedfasta'] = results_list
-        sorted_read_info_df = pandas.concat(
-            [sorted_read_info_df, fasta_info_df_i], axis=0)
-            
+
+        del sample_info['mergedfasta']
+        del sample_info['primerrev']
+        del sample_info['primerfwd']
+        del sample_info['tagrev']
+        del sample_info['tagfwd']
+
+        sample_info['sortedfasta'] = results_list
+
+        sample_info_df = pandas.DataFrame(sample_info)
 
         fasta_trimmed_info_tsv = os.path.join(sorteddir, 'sortedinfo.tsv')
-        sorted_read_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
+        sample_info_df.to_csv(fasta_trimmed_info_tsv, sep="\t", header=True, index=False)
