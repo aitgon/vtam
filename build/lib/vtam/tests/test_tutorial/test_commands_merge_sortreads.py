@@ -138,13 +138,10 @@ class TestTutorialCommands(unittest.TestCase):
 
         self.assertTrue(filecmp.cmp(self.sortedinfo_path, self.sortedinfo_path_bak, shallow=True))
 
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_trimmed_0_tpos1_run1.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'mfzr_1_fw_trimmed_0_tpos1_run1.fasta')) <= 5155360)
-        
-        import pdb; pdb.set_trace()
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_trimmed_0_14ben02.fasta')) >= 909500)  # 909507 linux, 913883 windows
-        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'zfzr_3_fw_trimmed_0_14ben02.fasta')) <= 913890)
-        # 'zfzr_3_fw_023.fasta'
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'run1_MFZR_tpos1_run1_1_mfzr_1_fw_trimmed.fasta')) >= 5131890)  # 5131896 linux, 5155350 windows
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'run1_MFZR_tpos1_run1_1_mfzr_1_fw_trimmed.fasta')) <= 5155360)
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'run1_ZFZR_14ben02_3_zfzr_3_fw_trimmed.fasta')) >= 909500)
+        self.assertTrue(os.path.getsize(os.path.join(self.sorted_dir_path, 'run1_ZFZR_14ben02_3_zfzr_3_fw_trimmed.fasta')) <= 913890)
 
     @classmethod
     def tearDownClass(cls):

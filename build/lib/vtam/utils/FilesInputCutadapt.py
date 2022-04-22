@@ -11,123 +11,111 @@ from Bio.Seq import Seq
 class FilesInputCutadapt(object):
     """ make fasta files to use as input for cutadapt demultiplexing """
 
-    def __init__(self, file_path, mergedFasta, no_reverse, tag_to_end, primer_to_end):
+    def __init__(self, file_path, mergedFasta, no_reverse, tag_to_end):
 
         self.file_path = file_path
         self.mergedFasta = mergedFasta
         
         self.tag_to_end = tag_to_end
-        self.primer_to_end = primer_to_end
         self.no_reverse = no_reverse
 
         self.df = pd.read_csv(file_path, sep='\t', header=0)
-        self.columns = self.df.columns.str.lower()
-        self.length = self.df.shape[0]
+        self.df.columns = self.df.columns.str.lower().copy()
 
-        self.sample = [self.df.iloc[i]['sample'] for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
+        self.selected_df = self.df.loc[self.df['mergedfasta'] == self.mergedFasta].copy()
+        self.length = self.selected_df.shape[0]
+        self.dict = self.selected_df.to_dict(orient='list')
+        self.mergedfasta_list = self.dict["mergedfasta"]
 
-        self.tag_fwd = [self.df.iloc[i].tagfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
-        self.tag_rev = [self.df.iloc[i].tagrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
-
-        self.primer_fwd = [self.df.iloc[i].primerfwd for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
-        self.primer_rev = [self.df.iloc[i].primerrev for i in range(self.length) if self.df.iloc[i].mergedfasta == self.mergedFasta]
-
-        self.mergedfasta_list = [self.df.iloc[i].mergedfasta for i in range(self.length)]
 
     def tags_file(self):
         
         relPath, _ = os.path.split(self.file_path)
-        self.tagsFile = os.path.join(relPath + 'tagsFile.fasta')
+        self.tagsFile = os.path.join(relPath, 'tagsFile.fasta')
+        sample_names = self.get_sample_names()
 
         with open(self.tagsFile, 'at') as tags:
-            for tagFwd, tagRev, sample  in zip(self.tag_fwd, self.tag_rev, self.sample):
 
-                tagFwd = tagFwd.strip()
-                tagRev = tagRev.strip()
-                sample = sample.strip()
+            for sample_name in sample_names:
 
-                if generic_dna:  # Biopython <1.78
-                    tagRevRC = str(Seq(tagRev, generic_dna).reverse_complement())
-                else:  # Biopython =>1.78
-                    tagRevRC = str(Seq(tagRev).reverse_complement())
-                
-                if not self.tag_to_end:
-                    tags.write(f">{sample}\n^{tagFwd}...{tagRevRC}$\n")
-                else:
-                    tags.write(f">{sample}\n{tagFwd};min_overlap={str(len(tagFwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
-                
-                if self.no_reverse:
+                name, _, _, _, _, fwd, rev,  = sample_name
+
+                if not "_reversed" in name:
                     if generic_dna:  # Biopython <1.78
-                        tagFwdRC = str(Seq(tagFwd, generic_dna).reverse_complement())
+                        tagRevRC = str(Seq(rev, generic_dna).reverse_complement())
                     else:  # Biopython =>1.78
-                        tagFwdRC = str(Seq(tagFwd).reverse_complement())
+                        tagRevRC = str(Seq(rev).reverse_complement())
+                    
+                    if not self.tag_to_end:
+                        tags.write(f">{name}\n^{fwd}...{tagRevRC}$\n")
+                    else:
+                        tags.write(f">{name}\n{fwd};min_overlap={str(len(fwd))}...{tagRevRC};min_overlap={str(len(tagRevRC))}\n")
+                    
+                else:
+                    if generic_dna:  # Biopython <1.78
+                        tagFwdRC = str(Seq(fwd, generic_dna).reverse_complement())
+                    else:  # Biopython =>1.78
+                        tagFwdRC = str(Seq(fwd).reverse_complement())
                 
                     if not self.tag_to_end:
-                        tags.write(f">{sample}_reversed\n^{tagRev}...{tagFwdRC}$\n")
+                        tags.write(f">{name}\n^{rev}...{tagFwdRC}$\n")
                     else:
-                        tags.write(f">{sample}_reversed\n{tagRev};min_overlap={str(len(tagRev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
+                        tags.write(f">{name}\n{rev};min_overlap={str(len(rev))}...{tagFwdRC};min_overlap={str(len(tagFwdRC))}\n")
 
         return self.tagsFile
 
 
     def primers(self):
-        
-        relPath, _ = os.path.split(self.file_path)
-        self.primersFile = os.path.join(relPath + 'primersFile.fasta')
-    
-        # with open(self.primersFile, 'at') as primers:
+                
         self.primers_result = []
-        for primerFwd, primerRev, sample in zip(self.primer_fwd, self.primer_rev, self.sample):
-            
-            primerFwd = primerFwd.strip()
-            primerRev = primerRev.strip()
-            sample = sample.strip()
 
-            if not (primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))) in self.primers_result:
-                self.primers_result.append((primerFwd, primerRev, str(len(primerFwd)), str(len(primerRev))))
-                
+        for i in range(self.length):
+            primerFwd =f'{self.dict["primerfwd"][i]}'
+            primerRev =f'{self.dict["primerrev"][i]}'
+            marker =f'{self.dict["marker"][i]}'            
+            primer = (marker, primerFwd, primerRev, len(primerFwd), len(primerRev))
+            if not primer in self.primers_result:
+                self.primers_result.append(primer)
 
-                # if not self.primer_to_end:
-                #     primers.write(f">{sample}\n^{primerFwd}...{primerRevRC}$\n")
-                # else:
-                #     primers.write(f">{sample}\n{primerFwd}...{primerRevRC}\n")
-                
-                # if self.no_reverse:
-                #     if generic_dna:  # Biopython <1.78
-                #         primersFwdRC = str(Seq(primerFwd, generic_dna).reverse_complement())
-                #     else:  # Biopython =>1.78
-                #         primersFwdRC = str(Seq(primerFwd).reverse_complement())
-
-                    # if self.primer_to_end:
-                    #     primers.write(f">{sample}_reversed\n^{primerRev}...{primersFwdRC}$\n")
-                    # else:
-                    #     primers.write(f">{sample}_reversed \n{primerRev}...{primersFwdRC}\n")
         return self.primers_result
 
 
     def get_sample_names(self):
+        
+            sample_names = []
+            for i in range(self.length):
+                sample = f'{self.dict["sample"][i]}'
+                marker = f'{self.dict["marker"][i]}'
+                fwd = f'{self.dict["tagfwd"][i]}'
+                rev = f'{self.dict["tagrev"][i]}'
+                run = f'{self.dict["run"][i]}'
+                replicate = f'{self.dict["replicate"][i]}'
 
-        if self.no_reverse:
-            samples = []
-            for name in self.sample:
-                samples.append(name)
-                samples.append(name + "_reversed")
-            return samples
+                name = (f"run[{run}]marker[{marker}]sample[{sample}]replicate[{replicate}]fwd[{fwd}]rev[{rev}]",run, marker, sample, replicate, fwd, rev)
 
-        return self.sample
+                for sample_name in sample_names:
+                    if sample_name[5] == fwd and sample_name[6] == rev:
+                        raise Exception(f"{name} and {sample_name} lines have different run/marker/sample/replicate combinations but same tag_combination")
+                if name not in sample_names:
+                    sample_names.append(name)
+
+                
+            if self.no_reverse:
+                samples_names_revered = []
+                for name in sample_names:
+                    samples_names_revered.append(name)
+                    name_reversed = (name[0] + "_reversed",  name[1], name[2],  name[3], name[4], name[5], name[6] )
+                    samples_names_revered.append(name_reversed)
+                return samples_names_revered
+                
+            return sample_names
 
 
-    def get_mergedfasta(self):
-
-        return self.mergedfasta_list
-
+    def get_df_info(self):
+        return self.dict
 
     def remove_tags_file(self):
         if os.path.exists(self.tagsFile):
             os.remove(self.tagsFile)
 
-
-    # def remove_primers_file(self):
-    #     if os.path.exists(self.primersFile):
-    #         os.remove(self.primersFile)
         
