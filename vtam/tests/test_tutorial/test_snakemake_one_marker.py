@@ -113,8 +113,6 @@ class TestTutorialSnakemakeOneMarker(unittest.TestCase):
 
         known_occurrences_mfzr = os.path.join(self.outdir_path, "asper1", "run1_mfzr", "known_occurrences.tsv")
         known_occurrences_mfzr_bak = os.path.join(self.test_path, "test_files", "known_occurrences_mfzr.tsv")
-        print(f'\n{known_occurrences_mfzr}\n{known_occurrences_mfzr_bak}\n')
-        import pdb; pdb.set_trace()
         self.assertTrue(filecmp.cmp(known_occurrences_mfzr, known_occurrences_mfzr_bak, shallow=True))
 
     def test_02_mfzr_makeknownoccurrences_optimize(self):
