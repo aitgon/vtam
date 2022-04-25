@@ -37,7 +37,10 @@ class CommandMakeKnownOccurrences(object):
             else:
                 occurrences.at[i,'variant'] = 0
             if not row or row[0][moc['sample']] == 0:
-                missing = missing.append({'run':moc['run'],'marker':moc['marker'],'sample':moc['sample'],'sequence':moc['sequence'],'tax_name':moc['tax_name']},ignore_index=True)
+                dfToConcat = pd.DataFrame({'run':moc['run'],'marker':moc['marker'],'sample':moc['sample'],'sequence':moc['sequence'],'tax_name':moc['tax_name']}, index=[0])
+                missing = pd.concat([missing, dfToConcat] ,ignore_index=True)
+                #replaced append by concat; append method deprecated
+                #missing = missing.append({'run':moc['run'],'marker':moc['marker'],'sample':moc['sample'],'sequence':moc['sequence'],'tax_name':moc['tax_name']},ignore_index=True)
         
         # inner function to avoid repetitions
         def addDelete(asvRow, sample, isMock):
@@ -53,7 +56,7 @@ class CommandMakeKnownOccurrences(object):
                 newOccurrence['mock'] = '1'
             else :
                 newOccurrence['mock'] = '0'
-            occurrences = occurrences.append(newOccurrence,ignore_index=True)
+            occurrences = pd.concat([occurrences, pd.DataFrame(newOccurrence, index=[0])], ignore_index=True)
             
         # delete occurrences of unexpected sequences from mock samples and from negative samples
         for _,samp in samples[samples['sample_type'].isin(['mock','negative'])].iterrows():
