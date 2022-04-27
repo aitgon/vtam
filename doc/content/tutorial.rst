@@ -182,7 +182,48 @@ The *sortedinfo.tsv* file looks like this:
     run    marker    sample    replicate    sortedfasta
     run1    MFZR    tpos1_run1    1    mfzr_1_fw_000.fasta
     run1    MFZR    tnegtag_run1    1    mfzr_1_fw_001.fasta
-    
+
+.. _random_seq_tutorial:
+
+random_seq: Create a smaller randomized dataset from the main dataset
+--------------------------------------------------------
+
+The random_seq command is designed to create a smaller randomized dataset with a given number of sequences in each of its output files. This creates a set of files with the number of sequences.
+Sequences are randomly selected from the fasta files from the given fastadir.
+
+
+.. code-block:: bash
+
+    vtam random_seq --fastainfo asper1/run1_mfzr/fastainfo.tsv --fastadir asper1/run1_mfzr/merged --random_seqdir asper1/run1_mfzr/randomized --random_seqinfo asper1/run1_mfzr/random_seq_info.tsv --samplesize 50000 -v
+
+.. note::
+        For info on I/O files see the :ref:`Reference section <random_seq_reference>`
+
+The FASTA files with the randomized reads are written to the *asper1/randomized* directory:
+
+.. code-block:: bash
+
+    asper1
+    |-- run1_mfzr
+    |  |-- fastainfo.tsv
+    |  |-- ...
+    |  `-- randomized
+    |    |-- mfzr_1_fw_000_sampled.fasta
+    |    |-- mfzr_1_fw_001_sampled.fasta
+    |    |-- ...
+    |    `-- random_seq_info.tsv
+    |-- ...
+    ...
+
+In addition, the TSV file *asper1/run1_mfzr/sorted/random_seq_info.tsv* lists the information, *i.e.* run, marker, sample and replicate about each randomized FASTA file. 
+The *random_seq_info.tsv* file looks like this:
+
+.. code-block:: bash
+
+    run    marker    sample    replicate    sortedfasta
+    run1    MFZR    tpos1_run1    1    mfzr_1_fw_000_sampled.fasta
+    run1    MFZR    tnegtag_run1    1    mfzr_1_fw_001_sampled.fasta
+
 .. _filter_tutorial:
 
 filter: Filter variants and create the ASV table
