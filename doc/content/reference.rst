@@ -169,7 +169,7 @@ These are the different actions of the **sortreads** command:
 
 .. random_seq:
 
-The command random_seq
+The command random_seq ( OPTIONNAL )
 --------------------------------
 
 When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workoad on a users machine.
