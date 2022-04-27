@@ -25,8 +25,11 @@ taxonomic coverage (:ref:`One-Locus-Several-Primers (OLSP) <OLSP_glossary>` stra
 **Major steps:**
     - :ref:`Merge <merge_reference>` paired-end reads
     - :ref:`Sort reads <sortreads_reference>` to samples and replicates according to the presence of sequence tags and primers
+    - :ref:`Random_seq <random_seq_reference>` to create a random subset of sequences from fastafiles 
     - :ref:`Optimize <optimize_reference>` filtering parameters
     - :ref:`Filter <filter_reference>` out sequence artefacts (denoising) and produce an ASV table
+    - :ref:`random_seq <random_seq_reference>` to create a random subset of sequences from fastafiles 
+    - :ref:`make_known_occurrences <make_known_occurrences_reference>` to create separate tsv files containing the known occurrences and the missing occurrences
     - :ref:`Assign <taxassign_reference>` ASVs to taxonomic groups.
     - :ref:`Pool <pool_reference>` ASVs from different but overlapping markers 
 

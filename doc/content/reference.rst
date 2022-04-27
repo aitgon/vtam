@@ -125,7 +125,7 @@ The command line arguments of the **merge** command can be obtained with
 The most important arguments are these inputs and outputs:
 
 Inputs:
-    - :ref:`fastqinfo <fastqinfo_io>`: TSV file with files to be merged
+    - :ref:`fastqinfo <fastqinfo_io>`: TSV file with files to be merged. These files can be compressed in .gz or .bz2.
     - **fastqdir**: Path to the directory containing the fastq files
 
 
@@ -153,7 +153,7 @@ The arguments of the **sortreads** command can be obtained with
 The most important arguments are these inputs and outputs:
 
 Inputs:
-    - :ref:`fastainfo <fastainfo_io>`: TSV file created by **merge**. It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
+    - :ref:`fastainfo <fastainfo_io>`: TSV file created by **merge** (allows gzip and bzip2 compressed files). It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
     - **fastadir**: Directory containing the merged fasta files.
 
 Outputs:
@@ -166,10 +166,17 @@ These are the different actions of the **sortreads** command:
     - Trim reads from primers using cutadapt. Mismatches are allowed (**cutadapt_error_rate**), but no indels. The minimum overlap between the primer and the read is the length of the primer.
     - The trimmed sequences are kept if their length is between **cutadapt_minimum_length** and **cutadapt_maximum_length**.
 
+The optionnal argument **no_reverse** can be used if the dataset does not contain any reverse sequence. It makes the run faster.
+
+The optionnal argument **tag_to_end** can be used if the sequences' tags are located at the edges of the sequences.It make the run faster.
+
+The optionnal argument **primer_to_end** can be used if the sequencess primers are located at the edges of the sequences (between the tags and the primers). It makes the run faster.
+
+
 
 .. random_seq:
 
-The command random_seq ( OPTIONNAL )
+The command random_seq (OPTIONNAL)
 --------------------------------
 
 When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workoad on a users machine.
@@ -231,6 +238,32 @@ In a typical run, **filter** should be run twice:
 Once with light filtering parameters (default) to do a prefiltering step and produce a user-friendly :ref:`ASV table <ASVtable_glossary>`. 
 Based on this ASV table users will identify the clearly :ref:`expected <keep_glossary>` and :ref:`unexpected occurrences <delete_glossary>` (e.g. in negative controls and mock samples). 
 Using these occurrences the **optimize** command will suggest a parameter setting that keeps all expected occurrences and eliminates most unexpected ones. Then **filter** should be run again with the optimized parameter settings.
+
+.. _make_known_occurrences_reference:
+
+The command make_known_occurrences (OPTIONNAL)
+--------------------------------
+
+VTAM can create tsv file containing known and missing occurences base on an ASV table, a tsv file containing the samples types and a tsv file containing a mock composition
+A quick introduction to the **vtam merge** command is given in the tutorial :ref:`merge_tutorial`. 
+
+The command line arguments of the **make_known_occurrences** command can be obtained with 
+
+.. code-block:: bash
+
+    vtam make_known_occurrences --help
+
+The most important arguments are these inputs and outputs:
+
+Inputs:
+    - :ref:`asvtable <ASVtable_io>`: TSV file containing variants in the last column (using ‘sequence’ as a header). Typically it is an ASV table. 
+    - **sample_types**: Path to the tsv file containing the sample types
+    - **mock_composition**: Path to the tsv file containing the mock composition
+
+
+Outputs:
+    - **known_occurrences**: path to the file containing the known occurrences.
+    - **missing_occurrences**: path to the file containing the missing occurrences
 
 .. _FilterLFN_reference:
 
