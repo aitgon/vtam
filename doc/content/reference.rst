@@ -167,6 +167,35 @@ These are the different actions of the **sortreads** command:
     - The trimmed sequences are kept if their length is between **cutadapt_minimum_length** and **cutadapt_maximum_length**.
 
 
+.. random_seq:
+
+The command random_seq
+--------------------------------
+
+When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workoad on a users machine.
+
+A quick introduction to the **vtam random_seq** command is given in the tutorial :ref:`random_seq_tutorial`. 
+
+The command line arguments of the **random_seq** command can be obtained with 
+
+.. code-block:: bash
+
+    vtam random_seq --help
+
+The most important arguments are these inputs and outputs:
+
+Inputs:
+    - :ref:`fastainfo <fastainfo_io>`: TSV file with files to take the sequences from
+    - **fastadir**: Path to the directory containing the fasta files
+    - **samplesize**: number of sequences to be randomly selected
+
+
+Outputs:
+    - :ref:`random_seqinfo <random_seqinfo_io>`: TSV file created by vtam random_seq. It contains all the info of :ref:`fastainfo <fastqinfo_io>` completed by the names of the fasta files containing the randomly selected seqquences.
+    - **random_seqdir**: directory with randomly selected sequences in FASTA format
+
+
+
 .. _filter_reference:
 
 The command filter
