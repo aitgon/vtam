@@ -280,6 +280,35 @@ Hereafter are the first lines of the *asvtable_default.tsv*
     Filter can be run with the **known_occurrences** argument that will add an additional column for each mock sample flagging expected variants. 
     This helps in creating the **known_occurrences.tsv** input file for the optimization step. For details see the :ref:`Reference section <MakeAsvTable_reference>`
 
+.. _make_known_occurrences_tutorial:
+
+make_known_occurrences: Create file containing the known occurences and the missing occurrences
+--------------------------------------------------------
+
+The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences.
+
+
+.. code-block:: bash
+
+    vtam make_known_occurrences --asvtable asper1/run1_mfzr/asvtable_default.tsv --sample_types asper1/sample_types.tsv --mock_composition asper1/mock_composition.tsv -v
+
+.. note::
+        For info on I/O files see the :ref:`Reference section <make_known_occurrences_reference>`
+
+The TSV files with the known occurrences and the missing occurrences will be written in the asper1 folder
+
+.. code-block:: bash
+
+    asper1
+    |-- sample_types.tsv
+    |-- mock_composition.tsv
+    |-- known_occurrences.tsv
+    |-- missing_occurrences.tsv
+    |-- run1_mfzr
+    |  |-- asvtable_default.tsv
+    |-- ...
+    ...
+
 .. _taxassign_tutorial:
 
 taxassign: Assign variants of ASV table to taxa

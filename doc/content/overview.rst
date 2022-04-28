@@ -25,11 +25,8 @@ taxonomic coverage (:ref:`One-Locus-Several-Primers (OLSP) <OLSP_glossary>` stra
 **Major steps:**
     - :ref:`Merge <merge_reference>` paired-end reads
     - :ref:`Sort reads <sortreads_reference>` to samples and replicates according to the presence of sequence tags and primers
-    - :ref:`Random_seq <random_seq_reference>` to create a random subset of sequences from fastafiles 
     - :ref:`Optimize <optimize_reference>` filtering parameters
     - :ref:`Filter <filter_reference>` out sequence artefacts (denoising) and produce an ASV table
-    - :ref:`random_seq <random_seq_reference>` to create a random subset of sequences from fastafiles 
-    - :ref:`make_known_occurrences <make_known_occurrences_reference>` to create separate tsv files containing the known occurrences and the missing occurrences
     - :ref:`Assign <taxassign_reference>` ASVs to taxonomic groups.
     - :ref:`Pool <pool_reference>` ASVs from different but overlapping markers 
 
@@ -63,16 +60,16 @@ The pipeline composed of six scripts run as subcommands of vtam:
     - :ref:`vtam taxassign <taxassign_reference>`: Assigns ASVs to taxa
     - :ref:`vtam pool <pool_reference>`: Pools the final ASV tables of different overlapping markers into one
     
-There are two additional commands to prepare data for the vtam taxassign subcommand:
+There are a few additional subcommands to help users:
 
-    - :ref:`vtam taxonomy <taxonomy_reference>`: Creates a taxonomic TSV file
+    - :ref:`vtam random_seq <random_seq_reference>` Creates a random subset of sequences from fastafiles 
+    - :ref:`vtam make_known_occurrences <make_known_occurrences_reference>` to create known occurrence file automatically for the optimize step 
+    - :ref:`vtam taxonomy <taxonomy_reference>`: Creates a taxonomic TSV file for the taxassign
     - :ref:`vtam vtam coi_blast_db <BLAST_database_reference>`: Downloads a precomputed custom BLAST database for the cytochrome C oxidase subunit I (COI) marker gene
-
-Finally there is a last command to help the user start quickly with the tool:
-
     - :ref:`vtam example <example_installation>`: Generates an example dataset for immediate use with VTAM
 
 Although the pipeline can vary in function of the input data format and the experimental design, a typical pipeline is composed of the following steps in this order :
+    
     - merge
     - sortreads
     - filter (with default, low stringency filtering parameters)

@@ -131,7 +131,7 @@ Inputs:
 
 Outputs:
     - :ref:`fastainfo <fastainfo_io>`: TSV file created by vtam merge. It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
-    - **fastadir**: Directory to keep the output merged fasta files.
+    - **fastadir**: Directory to keep the output merged fasta files. If the input files were compressed, the output files will be compressed using the same extension.
 
 The list of numerical parameters can be found in the `The numerical parameter file`_ section.
 
@@ -166,20 +166,18 @@ These are the different actions of the **sortreads** command:
     - Trim reads from primers using cutadapt. Mismatches are allowed (**cutadapt_error_rate**), but no indels. The minimum overlap between the primer and the read is the length of the primer.
     - The trimmed sequences are kept if their length is between **cutadapt_minimum_length** and **cutadapt_maximum_length**.
 
-The optionnal argument **no_reverse** can be used if the dataset does not contain any reverse sequence. It makes the run faster.
+The optionnal argument **no_reverse** can be used if all sequences are correctly oriented and it is not necessary to check the reverse strand. It makes the run faster.
 
-The optionnal argument **tag_to_end** can be used if the sequences' tags are located at the edges of the sequences.It make the run faster.
+The optionnal argument **tag_to_end** can be used if the tags are located at the edges of the sequences. It make the run faster.
 
-The optionnal argument **primer_to_end** can be used if the sequencess primers are located at the edges of the sequences (between the tags and the primers). It makes the run faster.
-
-
+The optionnal argument **primer_to_end** can be used if the primers are located at the edges of the sequences (right after the tags, there is no spacer between them). It makes the run faster.
 
 .. random_seq:
 
 The command random_seq (OPTIONNAL)
 --------------------------------
 
-When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workoad on a users machine.
+When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workload on a users machine.
 
 A quick introduction to the **vtam random_seq** command is given in the tutorial :ref:`random_seq_tutorial`. 
 
@@ -198,7 +196,7 @@ Inputs:
 
 
 Outputs:
-    - :ref:`random_seqinfo <random_seqinfo_io>`: TSV file created by vtam random_seq. It contains all the info of :ref:`fastainfo <fastqinfo_io>` completed by the names of the fasta files containing the randomly selected seqquences.
+    - :ref:`random_seqinfo <random_seqinfo_io>`: TSV file created by vtam random_seq. It contains all the info of :ref:`fastainfo <fastqinfo_io>` completed by the names of the fasta files containing the randomly selected sequences.
     - **random_seqdir**: directory with randomly selected sequences in FASTA format
 
 
@@ -238,32 +236,6 @@ In a typical run, **filter** should be run twice:
 Once with light filtering parameters (default) to do a prefiltering step and produce a user-friendly :ref:`ASV table <ASVtable_glossary>`. 
 Based on this ASV table users will identify the clearly :ref:`expected <keep_glossary>` and :ref:`unexpected occurrences <delete_glossary>` (e.g. in negative controls and mock samples). 
 Using these occurrences the **optimize** command will suggest a parameter setting that keeps all expected occurrences and eliminates most unexpected ones. Then **filter** should be run again with the optimized parameter settings.
-
-.. _make_known_occurrences_reference:
-
-The command make_known_occurrences (OPTIONNAL)
---------------------------------
-
-VTAM can create tsv file containing known and missing occurences base on an ASV table, a tsv file containing the samples types and a tsv file containing a mock composition
-A quick introduction to the **vtam merge** command is given in the tutorial :ref:`merge_tutorial`. 
-
-The command line arguments of the **make_known_occurrences** command can be obtained with 
-
-.. code-block:: bash
-
-    vtam make_known_occurrences --help
-
-The most important arguments are these inputs and outputs:
-
-Inputs:
-    - :ref:`asvtable <ASVtable_io>`: TSV file containing variants in the last column (using ‘sequence’ as a header). Typically it is an ASV table. 
-    - **sample_types**: Path to the tsv file containing the sample types
-    - **mock_composition**: Path to the tsv file containing the mock composition
-
-
-Outputs:
-    - **known_occurrences**: path to the file containing the known occurrences.
-    - **missing_occurrences**: path to the file containing the missing occurrences
 
 .. _FilterLFN_reference:
 
@@ -462,6 +434,37 @@ The *Baetidae sp. BOLD:ACL6167* is not included in the LTG, since the other sequ
 
 These parameters can be passed in a YML file via the **params** argument (See :ref:`Numerical parameter file <numerical_parameter_file_reference>` ).
 
+.. _optimize_reference:
+
+The command make_known_occurrences (OPTIONNAL)
+--------------------------------
+
+VTAM can create TSV file containing known and missing occurrences based on an ASV table, a TSV file containing the sample types and a TSV file containing a mock composition. 
+
+The know_occurrences file will be used as an input for the optimize command. It lists all :ref:`delete occurrences <unexpected-or-delete_occurrence_glossary>` and all :ref:`keep occurreces <expected-or-keep-occurrence_glossary>`. The optimize step will use this file to find a parameter combination, that retains all keep occurrences, and eliminates most delete occurrences.
+
+The missing occurrences file is just a feedback for the users. It lists all expected occurrences that are missing from the input asv table.
+ 
+A quick introduction to the **vtam make_known_occurrences** command is given in the tutorial :ref:`make_known_occurrences_tutorial`. 
+
+The command line arguments of the **make_known_occurrences** command can be obtained with 
+
+.. code-block:: bash
+
+    vtam make_known_occurrences --help
+
+The most important arguments are these inputs and outputs:
+
+Inputs:
+    - :ref:`asvtable <ASVtable_io>`: TSV file containing variants in the last column (using ‘sequence’ as a header). Typically it is an ASV table. 
+    - :ref:`sample_types <sample_types_io>`: Path to the TSV file containing the sample types
+    - :ref:`mock_composition <mock_composition_io>`: Path to the TSV file containing the mock composition
+
+
+Outputs:
+    - :ref:`known_occurrences <known-occurrences_io>`: Path to the file containing the known occurrences.
+    - :ref:`missing_occurrences <missing-occurrences_io>`: Path to the file containing the missing occurrences
+	
 .. _optimize_reference:
 
 The command optimize
