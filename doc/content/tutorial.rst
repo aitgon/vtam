@@ -204,13 +204,14 @@ The FASTA files with the sorted reads are written to the *asper1/sorted* directo
 
 .. code-block:: bash
 
+
     asper1
     |-- run1_mfzr
     |  |-- fastainfo.tsv
     |  |-- ...
     |  `-- sorted
-    |    |-- mfzr_1_fw_000.fasta
-    |    |-- mfzr_1_fw_001.fasta
+    |    |-- run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
+    │    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
     |-- ...
@@ -222,8 +223,8 @@ The *sortedinfo.tsv* file looks like this:
 .. code-block:: bash
 
     run    marker    sample    replicate    sortedfasta
-    run1    MFZR    tpos1_run1    1    mfzr_1_fw_000.fasta
-    run1    MFZR    tnegtag_run1    1    mfzr_1_fw_001.fasta
+    run1    MFZR    tpos1_run1    1    run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
+    run1    MFZR    tnegtag_run1    1    run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
 
 
 
@@ -520,7 +521,7 @@ We finished our first analysis with VTAM! The resulting directory structure look
     |  |-- optimize_lfn_variant_specific.tsv
     |  |-- optimize_pcr_error.tsv
     |  `-- sorted
-    |    |-- mfzr_1_fw_000.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
 
@@ -798,7 +799,7 @@ We find the same directory tree as before:
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ...
     |  `-- sorted
-    |    |-- mfzr_1_fw_002.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
     |-- user_input
@@ -904,7 +905,7 @@ These commands will generate a new folder with the same files for the new marker
     |  |  |-- ...
     |  `-- sorted
     |    |-- sortedinfo.tsv
-    |    |-- zfzr_1_fw_002.fasta
+    |    |-- run1_ZFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
 
 The results of the two markers can be pooled as before:
@@ -991,7 +992,7 @@ The resulting directory tree looks like this:
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ....
     |  `-- sorted
-    |    |-- mfzr_1_fw_002.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    |-- sortedinfo.tsv
     |    |-- ...
