@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-__author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
+__author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Raphael Hebert, Emese Meglecz"
 __copyright__ = "Copyright 2018-2022, Aitor Gonzalez, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
