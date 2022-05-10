@@ -110,13 +110,60 @@ TSV file with the variants (in lines) that passed all filtering steps, samples (
 :ref:`known_occurrences <optimize_reference>`
 ----------------------------------------------------------------
 
-Input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference>`. TSV file with expected occurrences (keep) and known false positives (delete). 
+Input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference>`. Output of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV file with expected occurrences (keep) and known false positives (delete). 
 
     - Marker: Name of the marker (e.g. MFZR) 
     - Run: Name of the sequencing run
     - Sample: Name of the sample
     - Mock: 1 if sample is a mock, 0 otherwise
     - Variant: Varinat ID (can be empty)
+    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
+    - Sequence: Sequence of the variant
+    - Tax_name: optional, not used by optimize
+	
+	
+.. _mock_composition_io:
+
+:ref:`mock_composition <make_known_occurrences_reference>`
+----------------------------------------------------------------
+
+Input of :ref:`filter <make_known_occurrences_reference>`. TSV file with expected sequences in mock samples. 
+
+    - Marker: Name of the marker (e.g. MFZR) 
+    - Run: Name of the sequencing run
+    - Sample: Name of the sample
+    - Mock: 1 if sample is a mock, 0 otherwise
+    - Variant: Variant ID (can be empty)
+    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives) or tolerate (variant present in a mock sample but amplifies badly)
+    - Sequence: Sequence of the variant
+    - Tax_name: optional, not used by optimize
+
+
+.. _sample_types_io:
+
+:ref:`sample_types <make_known_occurrences_reference>`
+----------------------------------------------------------------
+
+Input of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV file. 
+
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+	- sample_type: real/negative(negative control)/mock
+	- habitat: habitat type (e.g. freshwater, marine), NA for negative contol samples. It is used to detect occurrences that do not correspond to the habitat type. 
+
+
+.. _missing_occurrences_io:
+
+:ref:`missing_occurrences <make_known_occurrences_reference>`
+----------------------------------------------------------------
+
+Output of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV file with keep occurrences that are missing from the input ASV table. 
+
+    - Marker: Name of the marker (e.g. MFZR) 
+    - Run: Name of the sequencing run
+    - Sample: Name of the sample
+    - Mock: 1 if sample is a mock, 0 otherwise
+    - Variant: Variant ID (can be empty)
     - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
     - Sequence: Sequence of the variant
     - Tax_name: optional, not used by optimize

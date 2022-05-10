@@ -1,0 +1,5 @@
+run	sample	sample_type	habitat
+run1	tpos1_run1	mock	terrestrial
+run1	tnegtag_run1	negative	NA
+run1	14ben01	real	freshwater
+run1	14ben02	real	freshwater

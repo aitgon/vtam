@@ -125,13 +125,13 @@ The command line arguments of the **merge** command can be obtained with
 The most important arguments are these inputs and outputs:
 
 Inputs:
-    - :ref:`fastqinfo <fastqinfo_io>`: TSV file with files to be merged
+    - :ref:`fastqinfo <fastqinfo_io>`: TSV file with files to be merged. These files can be compressed in .gz or .bz2.
     - **fastqdir**: Path to the directory containing the fastq files
 
 
 Outputs:
     - :ref:`fastainfo <fastainfo_io>`: TSV file created by vtam merge. It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
-    - **fastadir**: Directory to keep the output merged fasta files.
+    - **fastadir**: Directory to keep the output merged fasta files. If the input files were compressed, the output files will be compressed using the same extension.
 
 The list of numerical parameters can be found in the `The numerical parameter file`_ section.
 
@@ -153,7 +153,7 @@ The arguments of the **sortreads** command can be obtained with
 The most important arguments are these inputs and outputs:
 
 Inputs:
-    - :ref:`fastainfo <fastainfo_io>`: TSV file created by **merge**. It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
+    - :ref:`fastainfo <fastainfo_io>`: TSV file created by **merge** (allows gzip and bzip2 compressed files). It contains all the info of :ref:`fastqinfo <fastqinfo_io>` completed by the names of the merged fasta files.
     - **fastadir**: Directory containing the merged fasta files.
 
 Outputs:
@@ -165,6 +165,40 @@ These are the different actions of the **sortreads** command:
     - Sort reads to sample-replicates according to the presence of tags using cutadapt. Exact matches are imposed between reads and tags, and the minimum overlap is the length of the tag.
     - Trim reads from primers using cutadapt. Mismatches are allowed (**cutadapt_error_rate**), but no indels. The minimum overlap between the primer and the read is the length of the primer.
     - The trimmed sequences are kept if their length is between **cutadapt_minimum_length** and **cutadapt_maximum_length**.
+
+The optionnal argument **no_reverse** can be used if all sequences are correctly oriented and it is not necessary to check the reverse strand. It makes the run faster.
+
+The optionnal argument **tag_to_end** can be used if the tags are located at the edges of the sequences. It make the run faster.
+
+The optionnal argument **primer_to_end** can be used if the primers are located at the edges of the sequences (right after the tags, there is no spacer between them). It makes the run faster.
+
+.. random_seq:
+
+The command random_seq (OPTIONNAL)
+--------------------------------
+
+When working with large datasets VTAM can subselect a random set of sequences in order to run with less data to process to reduce the running time and the workload on a users machine.
+
+A quick introduction to the **vtam random_seq** command is given in the tutorial :ref:`random_seq_tutorial`. 
+
+The command line arguments of the **random_seq** command can be obtained with 
+
+.. code-block:: bash
+
+    vtam random_seq --help
+
+The most important arguments are these inputs and outputs:
+
+Inputs:
+    - :ref:`fastainfo <fastainfo_io>`: TSV file with files to take the sequences from
+    - **fastadir**: Path to the directory containing the fasta files
+    - **samplesize**: number of sequences to be randomly selected
+
+
+Outputs:
+    - :ref:`random_seqinfo <random_seqinfo_io>`: TSV file created by vtam random_seq. It contains all the info of :ref:`fastainfo <fastqinfo_io>` completed by the names of the fasta files containing the randomly selected sequences.
+    - **random_seqdir**: directory with randomly selected sequences in FASTA format
+
 
 
 .. _filter_reference:
@@ -400,6 +434,37 @@ The *Baetidae sp. BOLD:ACL6167* is not included in the LTG, since the other sequ
 
 These parameters can be passed in a YML file via the **params** argument (See :ref:`Numerical parameter file <numerical_parameter_file_reference>` ).
 
+.. _optimize_reference:
+
+The command make_known_occurrences (OPTIONNAL)
+--------------------------------
+
+VTAM can create TSV file containing known and missing occurrences based on an ASV table, a TSV file containing the sample types and a TSV file containing a mock composition. 
+
+The know_occurrences file will be used as an input for the optimize command. It lists all :ref:`delete occurrences <unexpected-or-delete_occurrence_glossary>` and all :ref:`keep occurreces <expected-or-keep-occurrence_glossary>`. The optimize step will use this file to find a parameter combination, that retains all keep occurrences, and eliminates most delete occurrences.
+
+The missing occurrences file is just a feedback for the users. It lists all expected occurrences that are missing from the input asv table.
+ 
+A quick introduction to the **vtam make_known_occurrences** command is given in the tutorial :ref:`make_known_occurrences_tutorial`. 
+
+The command line arguments of the **make_known_occurrences** command can be obtained with 
+
+.. code-block:: bash
+
+    vtam make_known_occurrences --help
+
+The most important arguments are these inputs and outputs:
+
+Inputs:
+    - :ref:`asvtable <ASVtable_io>`: TSV file containing variants in the last column (using ‘sequence’ as a header). Typically it is an ASV table. 
+    - :ref:`sample_types <sample_types_io>`: Path to the TSV file containing the sample types
+    - :ref:`mock_composition <mock_composition_io>`: Path to the TSV file containing the mock composition
+
+
+Outputs:
+    - :ref:`known_occurrences <known-occurrences_io>`: Path to the file containing the known occurrences.
+    - :ref:`missing_occurrences <missing-occurrences_io>`: Path to the file containing the missing occurrences
+	
 .. _optimize_reference:
 
 The command optimize

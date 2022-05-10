@@ -139,6 +139,48 @@ The first lines of the *fastainfo_mfzr.tsv* look like this:
     run1    mfzr    tpos1_run1    1    tcgatcacgatgt    TCCACTAATCACAARGATATTGGTAC    tgtcgatctacagc    WACTAATCAATTWCCAAATCCTCC    mfzr_1_fw.fasta
     run1    mfzr    tnegtag_run1    1    agatcgtactagct    TCCACTAATCACAARGATATTGGTAC    tgtcgatctacagc    WACTAATCAATTWCCAAATCCTCC    mfzr_1_fw.fasta
 
+.. _random_seq_tutorial:
+
+random_seq: Create a smaller randomized dataset from the main dataset (Optionnal)
+--------------------------------------------------------
+
+The random_seq command is designed to create a smaller randomized dataset with a given number of sequences in each of its output files. This creates a set of files with the number of sequences.
+Sequences are randomly selected from the fasta files from the given fastadir.
+
+
+.. code-block:: bash
+
+    vtam random_seq --fastainfo asper1/run1_mfzr/fastainfo.tsv --fastadir asper1/run1_mfzr/merged --random_seqdir asper1/run1_mfzr/randomized --random_seqinfo asper1/run1_mfzr/random_seq_info.tsv --samplesize 50000 -v
+
+.. note::
+        For info on I/O files see the :ref:`Reference section <random_seq_reference>`
+
+The FASTA files with the randomized reads are written to the *asper1/randomized* directory:
+
+.. code-block:: bash
+
+    asper1
+    |-- run1_mfzr
+    |  |-- fastainfo.tsv
+    |  |-- ...
+    |  `-- randomized
+    |    |-- mfzr_1_fw_000_sampled.fasta
+    |    |-- mfzr_1_fw_001_sampled.fasta
+    |    |-- ...
+    |    `-- random_seq_info.tsv
+    |-- ...
+    ...
+
+In addition, the TSV file *asper1/run1_mfzr/sorted/random_seq_info.tsv* lists the information, *i.e.* run, marker, sample and replicate about each randomized FASTA file. 
+The *random_seq_info.tsv* file looks like this:
+
+.. code-block:: bash
+
+    run    marker    sample    replicate    tagfwd    primerfwd    tagrev    primerrev    mergedfasta
+    run1    mfzr    tpos1_run1    1    tcgatcacgatgt    TCCACTAATCACAARGATATTGGTAC    tgtcgatctacagc    WACTAATCAATTWCCAAATCCTCC    mfzr_1_fw_sampled.fasta
+    run1    mfzr    tnegtag_run1    1    agatcgtactagct    TCCACTAATCACAARGATATTGGTAC    tgtcgatctacagc    WACTAATCAATTWCCAAATCCTCC    mfzr_1_fw_sampled.fasta
+	
+	
 .. _sortreads_tutorial:
 
 sortreads: Demultiplex and trim the reads
@@ -162,13 +204,14 @@ The FASTA files with the sorted reads are written to the *asper1/sorted* directo
 
 .. code-block:: bash
 
+
     asper1
     |-- run1_mfzr
     |  |-- fastainfo.tsv
     |  |-- ...
     |  `-- sorted
-    |    |-- mfzr_1_fw_000.fasta
-    |    |-- mfzr_1_fw_001.fasta
+    |    |-- run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
+    │    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
     |-- ...
@@ -180,9 +223,11 @@ The *sortedinfo.tsv* file looks like this:
 .. code-block:: bash
 
     run    marker    sample    replicate    sortedfasta
-    run1    MFZR    tpos1_run1    1    mfzr_1_fw_000.fasta
-    run1    MFZR    tnegtag_run1    1    mfzr_1_fw_001.fasta
-    
+    run1    MFZR    tpos1_run1    1    run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
+    run1    MFZR    tnegtag_run1    1    run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
+
+
+
 .. _filter_tutorial:
 
 filter: Filter variants and create the ASV table
@@ -239,6 +284,7 @@ Hereafter are the first lines of the *asvtable_default.tsv*
     Filter can be run with the **known_occurrences** argument that will add an additional column for each mock sample flagging expected variants. 
     This helps in creating the **known_occurrences.tsv** input file for the optimization step. For details see the :ref:`Reference section <MakeAsvTable_reference>`
 
+
 .. _taxassign_tutorial:
 
 taxassign: Assign variants of ASV table to taxa
@@ -291,6 +337,34 @@ This results in an additional file:
     |  |-- asvtable_default.tsv
     |  |-- asvtable_default_taxa.tsv
 
+.. _make_known_occurrences_tutorial:
+
+make_known_occurrences: Create file containing the known_occurences.tsv to be used as an inut for optimize
+--------------------------------------------------------
+
+The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences.
+
+
+.. code-block:: bash
+
+    vtam make_known_occurrences --asvtable asper1/run1_mfzr/asvtable_default.tsv --sample_types asper1/sample_types.tsv --mock_composition asper1/mock_composition.tsv -v
+
+.. note::
+        For info on I/O files see the :ref:`Reference section <make_known_occurrences_reference>`
+
+The TSV files with the known occurrences and the missing occurrences will be written in the asper1 folder
+
+.. code-block:: bash
+
+    asper1
+    |-- sample_types.tsv
+    |-- mock_composition.tsv
+    |-- known_occurrences.tsv
+    |-- missing_occurrences.tsv
+    |-- run1_mfzr
+    |  |-- asvtable_default.tsv
+    |-- ...
+    ...
 
 .. _optimize_tutorial:
 
@@ -447,7 +521,7 @@ We finished our first analysis with VTAM! The resulting directory structure look
     |  |-- optimize_lfn_variant_specific.tsv
     |  |-- optimize_pcr_error.tsv
     |  `-- sorted
-    |    |-- mfzr_1_fw_000.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
 
@@ -725,7 +799,7 @@ We find the same directory tree as before:
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ...
     |  `-- sorted
-    |    |-- mfzr_1_fw_002.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
     |-- user_input
@@ -831,7 +905,7 @@ These commands will generate a new folder with the same files for the new marker
     |  |  |-- ...
     |  `-- sorted
     |    |-- sortedinfo.tsv
-    |    |-- zfzr_1_fw_002.fasta
+    |    |-- run1_ZFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
 
 The results of the two markers can be pooled as before:
@@ -918,7 +992,7 @@ The resulting directory tree looks like this:
     |  |  |-- mfzr_1_fw.fasta
     |  |  |-- ....
     |  `-- sorted
-    |    |-- mfzr_1_fw_002.fasta
+    |    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
     |    |-- ...
     |    |-- sortedinfo.tsv
     |    |-- ...
@@ -939,7 +1013,6 @@ The results of the two markers can be pooled as before:
     vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --log asper2/vtam.log -v
 
     vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
-
 
 
 
