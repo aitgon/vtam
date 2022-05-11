@@ -18,8 +18,9 @@ author = config['metadata']['author']
 email = config['metadata']['email']
 license = config['metadata']['license']
 
-if sys.version_info < (3, 6):
-    print("At least Python 3.6 is required.\n", file=sys.stderr)
+cutoff_version_info = (3, 6)
+if sys.version_info < cutoff_version_info:
+    print("At least Python {}.{} is required.\n".format(cutoff_version_info[0], cutoff_version_info[1]), file=sys.stderr)
     exit(1)
 
 try:
