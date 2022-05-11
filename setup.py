@@ -19,7 +19,7 @@ email = config['metadata']['email']
 license = config['metadata']['license']
 
 if sys.version_info < (3, 6):
-    print("At least Python 3.7 is required.\n", file=sys.stderr)
+    print("At least Python 3.6 is required.\n", file=sys.stderr)
     exit(1)
 
 try:
