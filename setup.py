@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
-__author__ = "Aitor Gonzalez, Thomas Dechatre, Reda Mekdad, Emese Meglecz"
-__copyright__ = "Copyright 2018-2022, Aitor Gonzalez, Emese Meglecz"
+__author__ = "Aitor González, Raphael Hebert, Thomas Dechatre, Reda Mekdad, Ulysse Castet, Emese Meglecz"
+__copyright__ = "Copyright 2018-2022, Aitor González, Emese Meglecz"
 __email__ = "aitor.gonzalez@univ-amu.fr, emese.meglecz@univ-amu.fr"
 __license__ = "MIT"
 
@@ -18,8 +18,9 @@ author = config['metadata']['author']
 email = config['metadata']['email']
 license = config['metadata']['license']
 
-if sys.version_info < (3, 6):
-    print("At least Python 3.6 is required.\n", file=sys.stderr)
+cutoff_version_info = (3, 7)
+if sys.version_info < cutoff_version_info:
+    print("At least Python {}.{} is required.\n".format(cutoff_version_info[0], cutoff_version_info[1]), file=sys.stderr)
     exit(1)
 
 try:
@@ -53,7 +54,6 @@ Intended Audience :: Science/Research
 License :: OSI Approved :: MIT License
 Programming Language :: Python
 Programming Language :: Python :: 3
-Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
 Programming Language :: Python :: 3.8
 Programming Language :: Python :: 3.9

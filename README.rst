@@ -2,20 +2,26 @@
 VTAM - Validation and Taxonomic Assignation of Metabarcoding Data
 =============================================================================================
 
-.. image:: https://img.shields.io/pypi/v/vtam.svg
+.. image:: https://img.shields.io/pypi/v/vtam.svg?color=blue
     :target: https://pypi.python.org/pypi/vtam
 
 .. image:: https://img.shields.io/pypi/pyversions/vtam.svg
     :target: https://www.python.org
 
-.. image:: https://readthedocs.org/projects/vtam/badge/?version=latest
-    :target: http://vtam.readthedocs.io/en/latest/?badge=latest
-
-.. image:: https://github.com/aitgon/vtam/workflows/CI/badge.svg
-    :target: https://github.com/aitgon/vtam/actions?query=branch%3Amaster+workflow%3ACI
+.. image:: https://static.pepy.tech/personalized-badge/vtam?period=month&units=international_system&left_color=gray&right_color=blue&left_text=Downloads
+    :target: https://pepy.tech/project/vtam
 
 .. image:: https://codecov.io/gh/aitgon/vtam/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/aitgon/vtam
+
+.. image:: https://readthedocs.org/projects/vtam/badge/?version=latest
+    :target: http://vtam.readthedocs.io/en/latest/?badge=latest
+
+.. image:: https://app.travis-ci.com/aitgon/vtam.svg?branch=master
+    :target: https://app.travis-ci.com/github/aitgon/vtam
+
+.. image:: https://github.com/aitgon/vtam/workflows/CI/badge.svg
+    :target: https://github.com/aitgon/vtam/actions?query=branch%3Amaster+workflow%3ACI
 
 VTAM is a metabarcoding package with various commands to process high throughput sequencing (HTS) data of amplicons of one or several metabarcoding markers in FASTQ format and produce a table of amplicon sequence variants (ASVs) assigned to taxonomic groups.
 If you use VTAM in scientific works, **please cite the following article**:

@@ -1,3 +1,22 @@
+**Changes In Version 0.2.0 (May 12, 2022)**
+
+- Addressed issues 12, 14, and 19: refactored commands merge sortreads and filter to work with zipped files (.gz and .bz2 format).
+   * Merge and sortreads produce zipped files when zipped files are provided: issues
+   * filter can accept compressed input: issue 19,
+   * sortreads produce compressed output when provided with compressed inputs: issue 14,
+   * merge produce compressed output when provided with compressed: inputs 12.
+
+- Addressed issues 15, 16, 17, 18 (improved demultiplexing with sortreads):
+   * implemented --no_reverse option to check only on strand: issue 15,
+   * use cutadapt v3 to search all tags pairs in parallel: issue 16,
+   * added options --tag_to_end and --primer_to_end to search and trim for tags (issue 17) and primers (issue 18) only at the end of the strands.
+
+- Addressed issue 20:
+   * added command random_seq to produce random samples from a dataset
+
+- Addressed issue 1:
+    * Integrated the make_known_occurrences command to create a .tsv file with the known occurrences.
+
 **Changes In Version 0.1.22 (Jan 31, 2022)**
 
 - Updated and tested with python 3.9 and 3.10
