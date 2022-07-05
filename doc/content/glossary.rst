@@ -1,7 +1,8 @@
 Glossary
 =======================================
 
-Terms are defined as they are used in VTAM. They might not hold or be sufficiently precise in another context outside VTAM.
+
+Terms are defined as they are used in VTAM. They might not hold or be sufficiently precise in another context outside VTAM. __
 
 
 .. _ASV_glossary:
