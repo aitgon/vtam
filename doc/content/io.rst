@@ -148,8 +148,8 @@ Input of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV f
 
     - run: Name of the sequencing run
     - sample: Name of the sample
-	- sample_type: real/negative(negative control)/mock
-	- habitat: habitat type (e.g. freshwater, marine), NA for negative contol samples. It is used to detect occurrences that do not correspond to the habitat type. 
+    - sample_type: real/negative(negative control)/mock
+    - habitat: habitat type (e.g. freshwater, marine), NA for negative contol samples. It is used to detect occurrences that do not correspond to the habitat type. 
 
 
 .. _missing_occurrences_io:
