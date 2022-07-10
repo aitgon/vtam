@@ -79,6 +79,8 @@ class CommandBlastCOI(object):
         blast_files = [".".join(l) for l in itertools.product([self.blastdbname], ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq'])]
 
         # Run if blast files do not exist
+        # TODO: For command w/out dir coi_db: vtam coi_blast_db --blastdbdir coi_db
+        # This [*os.walk(blastdbdir)] raises an index error because [*os.walk(blastdbdir)] empty
         if not [*os.walk(blastdbdir)][0][2] >= blast_files or pathlib.Path(os.path.join(blastdbdir, "%s.nsq"%self.blastdbname)).stat().st_size < 4000000:
             try:
                 # urllib.request.urlretrieve(self.coi_blast_db_gz_url1, self.coi_blast_db_gz_path, MyProgressBar())

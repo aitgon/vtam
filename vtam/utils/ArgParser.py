@@ -231,10 +231,13 @@ class ArgParser:
 
     @classmethod
     def add_parser_example(cls, subparsers):
-        parser_vtam_merge = subparsers.add_parser('example', add_help=True,
-                                                  parents=[cls.parser_params, cls.parser_log,
-                                                           cls.parser_threads, cls.parser_verbosity],
-                                                  help="generates data for quick start")
+        help_str = "Generates data for quick start."
+        parser_vtam_merge = subparsers.add_parser(
+            'example', add_help=True,
+            parents=[cls.parser_params, cls.parser_log,
+                   cls.parser_threads, cls.parser_verbosity],
+            description=help_str,
+            help=help_str)
 
         parser_vtam_merge.add_argument('--outdir', action='store',
                                        help="directory for quick start data",
@@ -244,10 +247,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_merge(cls, subparsers):
-        parser_vtam_merge = subparsers.add_parser('merge', add_help=True,
-                                                  parents=[cls.parser_params, cls.parser_log,
-                                                           cls.parser_threads, cls.parser_verbosity],
-                                                  help="merges paired-end reads")
+        help_str = "Merges paired-end reads."
+        parser_vtam_merge = subparsers.add_parser(
+            'merge',
+            add_help=True,
+            parents=[cls.parser_params, cls.parser_log,
+                   cls.parser_threads, cls.parser_verbosity],
+            description=help_str,
+            help=help_str)
 
         parser_vtam_merge.add_argument('--fastqinfo', action='store',
                                        help="input TSV file with paired FASTQ file information",
@@ -278,12 +285,13 @@ class ArgParser:
 
     @classmethod
     def add_parser_random_seq(cls, subparsers):
-
+        help_str = "Makes a folder with sample files containing 'size' number of sequences randomly selected from the files in input folder."
         parser_vtam_random_seq = subparsers.add_parser(
             'random_seq', add_help=True,
             parents=[cls.parser_params, cls.parser_log,
             cls.parser_threads, cls.parser_verbosity],
-            help="make a folder with sample files containing 'size' number of sequences randomly selected from the files in input folder")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_random_seq.add_argument(
             '--fastadir',
@@ -323,12 +331,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_sortreads(cls, subparsers):
+        help_str = "Sorts (Trims and demultiplexes) reads to biological samples and replicates according to the presence of sequence tags and primers."
         parser_vtam_sortreads = subparsers.add_parser(
             'sortreads',
             add_help=True,
             parents=[cls.parser_params, cls.parser_log,
             cls.parser_threads, cls.parser_verbosity],
-            help="sorts (Trims and demultiplexes) reads to biological samples and replicates according to the presence of sequence tags and primers")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_sortreads.add_argument(
             '--fastainfo',
@@ -375,12 +385,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_filter(cls, subparsers):
+        help_str = "Filters out sequence artifacts and creates an amplicon sequence variant (ASV) table."
         parser_vtam_filter = subparsers.add_parser(
             'filter', add_help=True,
             parents=[cls.parser_params, cls.parser_log,
             cls.parser_threads, cls.parser_verbosity, cls.parser_wopmars_db,
                      cls.parser_wopmars_dryrun, cls.parser_wopmars_forceall],
-            help="filters out sequence artifacts and creates an amplicon sequence variant (ASV) table.")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_filter.add_argument(
             '--sortedinfo',
@@ -449,12 +461,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_taxassign(cls, subparsers):
+        help_str = "Assigns amplicon sequence variants (ASVs) to taxonomic groups."
         parser_vtam_taxassign = subparsers.add_parser(
             'taxassign',
             add_help=True, parents=[cls.parser_params, cls.parser_log,
-                                                           cls.parser_threads, cls.parser_verbosity,
+                                    cls.parser_threads, cls.parser_verbosity,
                                     cls.parser_wopmars_db],
-            help="assigns amplicon sequence variants (ASVs) to taxonomic groups")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_taxassign.add_argument(
             '--asvtable',
@@ -505,12 +519,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_optimize(cls, subparsers):
+        help_str = "Finds out optimal parameters for filtering."
         parser_vtam_optimize = subparsers.add_parser(
             'optimize', add_help=True,
             parents=[cls.parser_params, cls.parser_log,
             cls.parser_threads, cls.parser_verbosity, cls.parser_wopmars_db,
                      cls.parser_wopmars_dryrun, cls.parser_wopmars_forceall],
-            help="finds out optimal parameters for filtering")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_optimize.add_argument(
             '--sortedinfo',
@@ -573,9 +589,13 @@ class ArgParser:
     
     @classmethod
     def add_parser_makeKnownOccurrences(cls, subparsers):
-        parser_vtam_makeKnownOccurrences = subparsers.add_parser('make_known_occurrences', add_help=True,
-                                                  parents=[cls.parser_threads, cls.parser_verbosity],
-                                                  help="create a file with know occurrences")
+        help_str = "Create a file with know occurrences."
+        parser_vtam_makeKnownOccurrences = subparsers.add_parser(
+            'make_known_occurrences',
+            add_help=True,
+            parents=[cls.parser_threads, cls.parser_verbosity],
+            description=help_str,
+            help=help_str)
 
         parser_vtam_makeKnownOccurrences.add_argument('--asvtable', 
                                         action='store',
@@ -627,12 +647,14 @@ class ArgParser:
 
     @classmethod
     def add_parser_pool(cls, subparsers):
+        help_str = "Pools amplicon sequence variants (ASVs) from different but overlapping markers."
         parser_vtam_pool_markers = subparsers.add_parser(
             'pool',
             add_help=True,
-                                                  parents=[cls.parser_params, cls.parser_log,
-                                                           cls.parser_threads, cls.parser_verbosity],
-            help="pools amplicon sequence variants (ASVs) from different but overlapping markers")
+            parents=[cls.parser_params, cls.parser_log,
+                     cls.parser_threads, cls.parser_verbosity],
+            description=help_str,
+            help=help_str)
 
         parser_vtam_pool_markers.add_argument(
             '--db', action='store', required=True, help="SQLITE file with DB")
@@ -665,9 +687,13 @@ class ArgParser:
 
     @classmethod
     def add_parser_taxonomy(cls, subparsers):
-        parser_vtam_taxonomy = subparsers.add_parser('taxonomy', add_help=True,
-                                                  parents=[],
-                                                     help="downloads a TSV file with the NCBI taxonomy information")
+        help_str = "Downloads a TSV file with the NCBI taxonomy information."
+        parser_vtam_taxonomy = subparsers.add_parser(
+            'taxonomy',
+            add_help=True,
+            parents=[],
+            description=help_str,
+            help=help_str,)
 
         parser_vtam_taxonomy.add_argument(
             '-o',
@@ -690,9 +716,11 @@ class ArgParser:
 
     @classmethod
     def add_parser_coiblastdb(cls, subparsers):
+        help_str = "Downloads a precomputed BLAST database for the cytochrome C oxidase subunit I (COI) marker."
         parser_vtam_coi_blast_db = subparsers.add_parser(
             'coi_blast_db', add_help=True,
-            help="downloads a precomputed BLAST database for the cytochrome C oxidase subunit I (COI) marker")
+            description=help_str,
+            help=help_str)
 
         parser_vtam_coi_blast_db.add_argument(
             '--blastdbdir',
