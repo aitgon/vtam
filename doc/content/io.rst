@@ -112,14 +112,14 @@ TSV file with the variants (in lines) that passed all filtering steps, samples (
 
 Input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference>`. Output of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV file with expected occurrences (keep) and known false positives (delete). 
 
-    - Marker: Name of the marker (e.g. MFZR) 
-    - Run: Name of the sequencing run
-    - Sample: Name of the sample
-    - Mock: 1 if sample is a mock, 0 otherwise
-    - Variant: Varinat ID (can be empty)
-    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
-    - Sequence: Sequence of the variant
-    - Tax_name: optional, not used by optimize
+    - marker: Name of the marker (e.g. MFZR) 
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - mock: 1 if sample is a mock, 0 otherwise
+    - variant: Varinat ID (can be empty)
+    - action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
+    - sequence: Sequence of the variant
+    - tax_name: optional, not used by optimize
 	
 	
 .. _mock_composition_io:
@@ -127,16 +127,16 @@ Input of :ref:`filter <filter_reference>` and :ref:`optimize <optimize_reference
 :ref:`mock_composition <make_known_occurrences_reference>`
 ----------------------------------------------------------------
 
-Input of :ref:`filter <make_known_occurrences_reference>`. TSV file with expected sequences in mock samples. 
+Input of :ref:`filter <make_known_occurrences_reference>`. TSV file with expected sequences (keep) in mock samples. 
 
-    - Marker: Name of the marker (e.g. MFZR) 
-    - Run: Name of the sequencing run
-    - Sample: Name of the sample
-    - Mock: 1 if sample is a mock, 0 otherwise
-    - Variant: Variant ID (can be empty)
-    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives) or tolerate (variant present in a mock sample but amplifies badly)
-    - Sequence: Sequence of the variant
-    - Tax_name: optional, not used by optimize
+    - marker: Name of the marker (e.g. MFZR) 
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - mock: 1 if sample is a mock, 0 otherwise
+    - variant: Variant ID (can be empty)
+    - action: keep (occurrences that should be kept after filtering) or delete (clear false positives) or tolerate (variant present in a mock sample but amplifies badly)
+    - sequence: Sequence of the variant
+    - tax_name: optional, not used by optimize
 
 
 .. _sample_types_io:
@@ -159,14 +159,14 @@ Input of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV f
 
 Output of :ref:`make_known_occurrences <make_known_occurrences_reference>`. TSV file with keep occurrences that are missing from the input ASV table. 
 
-    - Marker: Name of the marker (e.g. MFZR) 
-    - Run: Name of the sequencing run
-    - Sample: Name of the sample
-    - Mock: 1 if sample is a mock, 0 otherwise
-    - Variant: Variant ID (can be empty)
-    - Action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
-    - Sequence: Sequence of the variant
-    - Tax_name: optional, not used by optimize
+    - marker: Name of the marker (e.g. MFZR) 
+    - run: Name of the sequencing run
+    - sample: Name of the sample
+    - mock: 1 if sample is a mock, 0 otherwise
+    - variant: Variant ID (can be empty)
+    - action: keep (occurrences that should be kept after filtering) or delete (clear false positives)
+    - sequence: Sequence of the variant
+    - tax_name: optional, not used by optimize
 
 .. _optimize_lfn_sample_replicate_io:
 
