@@ -385,7 +385,7 @@ The first lines of this file look like this:
 
 .. code-block:: bash
 
-    Marker    Run    Sample    Mock    Variant    Action    Sequence
+    marker	run	sample	mock	variant	action	sequence
     MFZR    run1    tpos1_run1    1        keep    ACTATATTTTATTTTTGGGGCTTGATCCGGAATGCTGGGCACCTCTCTAAGCCTTCTAATTCGTGCCGAGCTGGGGCACCCGGGTTCTTTAATTGGCGACGATCAAATTTACAATGTAATCGTCACAGCCCATGCTTTTATTATGATTTTTTTCATGGTTATGCCTATTATAATC
     MFZR    run1    tpos1_run1    1        keep    ACTTTATTTTATTTTTGGTGCTTGATCAGGAATAGTAGGAACTTCTTTAAGAATTCTAATTCGAGCTGAATTAGGTCATGCCGGTTCATTAATTGGAGATGATCAAATTTATAATGTAATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATAGTTATACCTATTTTAATT
 
@@ -395,7 +395,7 @@ The first lines of this file look like this:
 
 .. note::
 
-    It is possible to add extra columns with your notes (for example taxon names) to this file after the *Sequence* column. 
+    It is possible to add extra columns with your notes (for example taxon names) to this file after the *sequence* column. 
     They will be ignored by VTAM.
 
 The **optimize** command is run like this:
