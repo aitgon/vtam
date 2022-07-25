@@ -31,7 +31,7 @@ Install VTAM via pip
 
     pip install vtam
     
-You can also verify the BLAST (>=  v2.2.26), CutAdapt (>= 2.10) and VSEARCH (>= 2.15.0) versions:
+You can also verify the BLAST (>=  v2.2.26), CutAdapt (>= 3.0) and VSEARCH (>= 2.15.0) versions:
 
 .. code-block:: bash
 
