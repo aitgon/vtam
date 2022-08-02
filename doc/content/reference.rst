@@ -434,7 +434,7 @@ The *Baetidae sp. BOLD:ACL6167* is not included in the LTG, since the other sequ
 
 These parameters can be passed in a YML file via the **params** argument (See :ref:`Numerical parameter file <numerical_parameter_file_reference>` ).
 
-.. _optimize_reference:
+.. _make_known_occurrences_reference:
 
 The command make_known_occurrences (OPTIONNAL)
 --------------------------------
