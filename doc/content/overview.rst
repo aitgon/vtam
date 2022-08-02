@@ -78,7 +78,7 @@ Although the pipeline can vary in function of the input data format and the expe
     - :ref:`vtam taxassign <taxassign_reference>` (optional; useful, if the sequences of expected variants are NOT known in advance)
     - :ref:`vtam make_known_occurrences <make_known_occurrences_reference>` (optional; usefull if the sequences of expected variants are known in advance)
     - :ref:`vtam optimize <optimize_reference>`
-    - :ref:`vtam filter <filter_reference>`r (with optimized parameters)
+    - :ref:`vtam filter <filter_reference>` (with optimized parameters)
     - :ref:`vtam pool <pool_reference>` (if more than one markers or runs)
     - :ref:`vtam taxassign <taxassign_reference>`
 
