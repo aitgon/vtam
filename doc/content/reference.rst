@@ -172,7 +172,7 @@ The optionnal argument **tag_to_end** can be used if the tags are located at the
 
 The optionnal argument **primer_to_end** can be used if the primers are located at the edges of the sequences (right after the tags, there is no spacer between them). It makes the run faster.
 
-.. random_seq:
+.. _random_seq_reference:
 
 The command random_seq (OPTIONNAL)
 --------------------------------
