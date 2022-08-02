@@ -42,11 +42,12 @@ taxonomic coverage (:ref:`One-Locus-Several-Primers (OLSP) <OLSP_glossary>` stra
 Implementation
 -------------------------------------------------
 
-VTAM is a command-line application running on linux, MacOS and Windows Subsystem for Linux (WSL; https://docs.microsoft.com/en-us/windows/wsl/install-win10  ). It is implemented in Python3, using a conda environment to ensure repeatability and easy installation of VTAM and third party programmes: 
+VTAM is a command-line application running on linux, MacOS and Windows Subsystem for Linux (`WSL <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`_  ). It is implemented in Python3, using a conda environment to ensure repeatability and easy installation of VTAM and third party programmes: 
     - Wopmars (https://wopmars.readthedocs.io/en/latest/)
     - `ncbi-blast <https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download>`_
     - vsearch (Rognes et al., 2016)
     - cutadapt (Martin, 2011)
+    - BLAST (Altschul et al., 1997)
     - sqlite
     
 The Wopmars workflow management system guarantees repeatability and avoids re-running steps when not necessary. Data is stored in a sqlite database that ensures traceability.
@@ -62,7 +63,7 @@ The pipeline composed of six scripts run as subcommands of vtam:
     
 There are a few additional subcommands to help users:
 
-    - :ref:`vtam random_seq <random_seq_reference>` Creates a random subset of sequences from fastafiles 
+    - :ref:`vtam random_seq <random_seq_reference>` Creates a random subset of sequences from fastafiles (recommended after the merge command)
     - :ref:`vtam make_known_occurrences <make_known_occurrences_reference>` to create known occurrence file automatically for the optimize step 
     - :ref:`vtam taxonomy <taxonomy_reference>`: Creates a taxonomic TSV file for the taxassign
     - :ref:`vtam vtam coi_blast_db <BLAST_database_reference>`: Downloads a precomputed custom BLAST database for the cytochrome C oxidase subunit I (COI) marker gene
@@ -70,20 +71,23 @@ There are a few additional subcommands to help users:
 
 Although the pipeline can vary in function of the input data format and the experimental design, a typical pipeline is composed of the following steps in this order :
     
-    - merge
-    - sortreads
-    - filter (with default, low stringency filtering parameters)
-    - taxassign
-    - optimize
-    - filter (with optimized parameters)
-    - pool
-    - taxassign
+    - :ref:`vtam merge <merge_reference>` (optional)
+    - :ref:`vtam random_seq <random_seq_reference>` (optional; useful if strong variation of the number of reads among replicates, or too many reads)
+    - :ref:`vtam sortreads reads <sortreads_reference>` (optional)
+    - :ref:`vtam filter <filter_reference>` (with default, low stringency filtering parameters)
+    - :ref:`vtam taxassign <taxassign_reference>` (optional; useful, if the sequences of expected variants are NOT known in advance)
+    - :ref:`vtam make_known_occurrences <make_known_occurrences_reference>` (optional; usefull if the sequences of expected variants are known in advance)
+    - :ref:`vtam optimize <optimize_reference>`
+    - :ref:`vtam filter <filter_reference>`r (with optimized parameters)
+    - :ref:`vtam pool <pool_reference>` (if more than one markers or runs)
+    - :ref:`vtam taxassign <taxassign_reference>`
 
-The command vtam filter should be run twice. First, with default, low stringency filtering parameters. This produces an :ref:`ASVtable_glossary` that is still likely to contain some :ref:`occurrences <occurrence_glossary>` which should be filtered out. Users should identify from this table clearly unexpected occurrences (variants present in negative controls, unexpected variants in mock samples, variants appearing in a sample of incompatible habitat) and expected occurrences in mock samples. Based on these occurrences, **vtam optimize** will suggest the most suitable parameters that keep all expected occurrences but eliminate most unexpected ones. Then, the command **vtam filter** should be run again, with the optimized parameters.
+The command **vtam filter** should be run twice. First, with default, low stringency filtering parameters. This produces an :ref:`ASVtable_glossary` that is still likely to contain some :ref:`occurrences <occurrence_glossary>` which should be filtered out. Users should identify from this table clearly unexpected occurrences (variants present in negative controls, unexpected variants in mock samples, variants appearing in a sample of incompatible habitat) and expected occurrences in mock samples. This can be done either manually (for example if the sequences of expected varinats are not known in advance) or using the **vtam make_know_occurrences** command.  
+Based on these occurrences, **vtam optimize** will suggest the most suitable parameters that keep all expected occurrences but eliminate most unexpected ones. Then, the command **vtam filter** should be run again, with the optimized parameters.
 
-**vtam taxassign** has a double role: It will assign ASVs in an input TSV file to taxa, and complete the input TSV file with taxonomic information. The lineages of ASV are stored in a sqlite database to avoid re-running the assignment several times for the same sequence. Therefore running vtam taxassign the second or third time (*e.g.* after the **vtam filter** with optimized parameters or after **vtam pool**) will be very quick and its main role will be to complete the input ASV table with taxonomic information.
+**vtam taxassign** has a double role: It will assign ASVs in an input TSV file to taxa, and complete the input TSV file with taxonomic information. The lineages of ASV are stored in a sqlite database to avoid re-running the assignment several times for the same sequence. Therefore running vtam taxassign the second or third time will be very quick and its main role will be to complete the input ASV table with taxonomic information.
 
-If using several overlapping markers vtam pool can be run to pool the ASV tables of the different markers. In this step variants identical in their overlapping regions are pooled together. **vtam pool** can also be used to simply produce one single ASV table from several different runs.
+If using several overlapping markers **vtam pool** can be run to pool the ASV tables of the different markers. In this step variants identical in their overlapping regions are pooled together. **vtam pool** can also be used to simply produce one single ASV table from several different runs.
 
 Input data structure
 -------------------------------------------------
