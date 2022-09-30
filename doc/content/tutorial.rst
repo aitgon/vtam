@@ -161,12 +161,13 @@ The FASTA files with the randomized reads are written to the *asper1/randomized*
     asper1
     |-- run1_mfzr
     |  |-- fastainfo.tsv
-    |  |-- ...
+    |  |-- random_seq_info.tsv
+    |  |--...
     |  `-- randomized
-    |    |-- mfzr_1_fw_000_sampled.fasta
-    |    |-- mfzr_1_fw_001_sampled.fasta
-    |    |-- ...
-    |    `-- random_seq_info.tsv
+    |    |-- mfzr_1_fw_sampled.fasta
+    |    |-- mfzr_2_fw_sampled.fasta
+    |    |-- mfzr_3_fw_sampled.fasta
+    |    `-- 
     |-- ...
     ...
 
@@ -190,10 +191,11 @@ and to :ref:`trim <trimming_glossary>` off tags and primers.
 The sortreads command is designed to deal with a dual indexing, where forward and reverse tag combinations are used to determine the origin of the reads. This is one of the most complex case of demultiplexing, therefore we implemented **sortreads** to help users.
 
 For simpler cases, we suggest using `cutadapt <https://cutadapt.readthedocs.io/en/stable/>`_ directly, since it is quite straightforward.
+In this example, we run the sortreads command on the output files of the random_seq, but if you have skipped the ranodom_seq, it is possible to run it directly on the oputut of merge.  
 
 .. code-block:: bash
 
-    vtam sortreads --fastainfo asper1/run1_mfzr/fastainfo.tsv --fastadir asper1/run1_mfzr/merged --sorteddir asper1/run1_mfzr/sorted -v --log asper1/vtam.log
+    vtam sortreads --fastainfo asper1/run1_mfzr/random_seq_info.tsv --fastadir asper1/run1_mfzr/randomized --sorteddir asper1/run1_mfzr/sorted -v --log asper1/vtam.log
 
 .. note::
         For info on I/O files see the :ref:`Reference section <sortreads_reference>`
@@ -208,8 +210,8 @@ The FASTA files with the sorted reads are written to the *asper1/sorted* directo
     |  |-- fastainfo.tsv
     |  |-- ...
     |  `-- sorted
-    |    |-- run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
-    │    |-- run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
+    |    |-- run1_MFZR_14ben01_1_mfzr_1_fw_sampled_trimmed.fasta
+    │    |-- run1_MFZR_14ben01_2_mfzr_2_fw_sampled_trimmed.fasta
     |    |-- ...
     |    `-- sortedinfo.tsv
     |-- ...
@@ -221,8 +223,8 @@ The *sortedinfo.tsv* file looks like this:
 .. code-block:: bash
 
     run    marker    sample    replicate    sortedfasta
-    run1    MFZR    tpos1_run1    1    run1_MFZR_14ben01_1_mfzr_1_fw_trimmed.fasta
-    run1    MFZR    tnegtag_run1    1    run1_MFZR_14ben01_2_mfzr_2_fw_trimmed.fasta
+    run1    MFZR    tpos1_run1    1    run1_MFZR_14ben01_1_mfzr_1_fw_sampled_trimmed.fasta
+    run1    MFZR    tnegtag_run1    1    run1_MFZR_14ben01_2_mfzr_2_fw_sampled_trimmed.fasta
 
 
 
@@ -354,29 +356,18 @@ This results in an additional file:
 make_known_occurrences: Create file containing the known_occurences.tsv to be used as an inut for optimize
 --------------------------------------------------------
 
-The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences.
+The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences and it can be run if the expected occurrences in the mock samples are known in advance. Otherwise it should be created by hand, based on the asvtable_default_taxa.tsv file.
 
+The make_known_occurrences command requires the *sample_types* and *mock_composition* files as in input. For info on the format of these files see the :ref:`Input/Output Files section <io_formats_io>`. The exemple files can be downloaded here: :download:`sample_types.tsv <../../vtam/data/example/sample_types.tsv>`, :download:`mock_composition_mfzr.tsv <../../vtam/data/example/mock_composition_mfzr.tsv>`
 
 .. code-block:: bash
 
-    vtam make_known_occurrences --asvtable asper1/run1_mfzr/asvtable_default.tsv --sample_types asper1/sample_types.tsv --mock_composition asper1/mock_composition.tsv -v
+    vtam make_known_occurrences --asvtable asper1/run1_mfzr/asvtable_default_taxa.tsv --sample_types asper1/user_input/sample_types.tsv --mock_composition asper1/user_input/mock_composition_mfzr.tsv --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --missing_occurrences asper1/run1_mfzr/missing_occurrences_mfzr.tsv -v
 
 .. note::
         For info on I/O files see the :ref:`Reference section <make_known_occurrences_reference>`
 
-The TSV files with the known occurrences and the missing occurrences will be written in the asper1 folder
-
-.. code-block:: bash
-
-    asper1
-    |-- sample_types.tsv
-    |-- mock_composition.tsv
-    |-- known_occurrences.tsv
-    |-- missing_occurrences.tsv
-    |-- run1_mfzr
-    |  |-- asvtable_default.tsv
-    |-- ...
-    ...
+The output is the known_occurrences_mfzr.tsv TSV file wich can be used in the optimize step. If there are missing expected varinats, they are written to the missing_occurrences_mfzr.tsv file
 
 .. _optimize_tutorial:
 
@@ -414,7 +405,7 @@ The **optimize** command is run like this:
 
 .. code-block:: bash
 
-    vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log
+    vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log
 
 .. note::
 
@@ -453,9 +444,9 @@ This command creates four new files:
 
     .. code-block:: bash
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizePCRerror
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizePCRerror
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNsampleReplicate
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNsampleReplicate
 
     Based on the output, create a *params_optimize_mfzr.yml* file that will contain the optimal values suggested for **lfn_sample_replicate_cutoff** and **pcr_error_var_prop**
     
@@ -468,7 +459,7 @@ This command creates four new files:
 
     .. code-block:: bash
 
-        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/user_input/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNreadCountAndLFNvariant --params asper1/user_input/params_optimize_mfzr.yml
+        vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_mfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_mfzr/sorted --known_occurrences asper1/run1_mfzr/known_occurrences_mfzr.tsv --outdir asper1/run1_mfzr -v --log asper1/vtam.log --until OptimizeLFNreadCountAndLFNvariant --params asper1/user_input/params_optimize_mfzr.yml
 
     This step will suggest the following parameter values
 
