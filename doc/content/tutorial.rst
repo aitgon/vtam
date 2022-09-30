@@ -980,7 +980,7 @@ Then, we can run the filter and taxassign commands with optimized parameters:
 
     vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_mfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_mfzr.yml --asvtable asper2/run1/asvtable_params_mfzr.tsv -v --log asper2/vtam.log
 
-    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_mfzr.tsv --output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_mfzr.tsv --output asper2/run1/asvtable_params_taxa_mfzr.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper2/vtam.log
 
     vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_zfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml --asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log
 
