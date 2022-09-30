@@ -292,12 +292,14 @@ The **taxassign** command assigns ASV sequences in the last column of a TSV file
 
 The **taxassign** command needs a :ref:`BLAST database <BLAST_database_reference>` (containing reference sequences of known taxonomic origin) and the :ref:`taxonomy information file <taxonomy_reference>`.
 
-You can download the latest version of a COI database from OSF (https://osf.io/vrfwz/). This database is formatted to VTAM from the COInr database .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6555985.svg
-   :target: https://doi.org/10.5281/zenodo.6555984
- If you want to customize it, please, use `mkCOInr <https://github.com/meglecz/mkCOInr>`_
 
-Download and unpack the database and the associated taxonomy file :
-**Remark**: You might need to update the URL for the latest version available in OSF https://osf.io/vrfwz/ 
+You can download the latest version of the `COInr database <https://doi.org/10.5281/zenodo.6555984>`_ formatted to VTAM from OSF (https://osf.io/vrfwz/). This database contains sequneces from `Genbank <https://www.ncbi.nlm.nih.gov/nucleotide/>`_ and `BOLD <https://www.boldsystems.org/>`_.
+If you want to customize it, you can use `mkCOInr <https://github.com/meglecz/mkCOInr>`_.
+
+Download and unpack the database and the associated taxonomy file:
+
+.. note::
+    You might need to update the URL for the latest version available in `OSF <https://osf.io/vrfwz/>`_ 
 
 .. code-block:: bash
 
@@ -315,15 +317,15 @@ These commands result in these new files:
 
 .. code-block:: bash
 
-vtam_db
-├── COInr_blast_2022_05_06
-│   ├── COInr_blast_2022_05_06.nhr
-│   ├── COInr_blast_2022_05_06.nin
-│   ├── COInr_blast_2022_05_06.nog
-│   ├── COInr_blast_2022_05_06.nsd
-│   ├── COInr_blast_2022_05_06.nsi
-│   └── COInr_blast_2022_05_06.nsq
-└── COInr_vtam_taxonomy_2022_05_06.tsv
+    vtam_db
+    ├── COInr_blast_2022_05_06
+    │   ├── COInr_blast_2022_05_06.nhr
+    │   ├── COInr_blast_2022_05_06.nin
+    │   ├── COInr_blast_2022_05_06.nog
+    │   ├── COInr_blast_2022_05_06.nsd
+    │   ├── COInr_blast_2022_05_06.nsi
+    │   └── COInr_blast_2022_05_06.nsq
+    └── COInr_vtam_taxonomy_2022_05_06.tsv
 
 
 .. note::
