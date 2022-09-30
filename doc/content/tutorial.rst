@@ -154,7 +154,7 @@ The input fasta files are listed in the fastainfo.tsv file.
 .. note::
         For info on I/O files see the :ref:`Reference section <random_seq_reference>`
 
-The FASTA files with the randomized reads are written to the *asper1/randomized* directory:
+The FASTA files with the randomized reads are written to the *asper1/run1_mfzr/randomized* directory:
 
 .. code-block:: bash
 
@@ -191,7 +191,8 @@ and to :ref:`trim <trimming_glossary>` off tags and primers.
 The sortreads command is designed to deal with a dual indexing, where forward and reverse tag combinations are used to determine the origin of the reads. This is one of the most complex case of demultiplexing, therefore we implemented **sortreads** to help users.
 
 For simpler cases, we suggest using `cutadapt <https://cutadapt.readthedocs.io/en/stable/>`_ directly, since it is quite straightforward.
-In this example, we run the sortreads command on the output files of the random_seq, but if you have skipped the ranodom_seq, it is possible to run it directly on the oputut of merge.  
+
+In this example, we run the sortreads command on the output files of the random_seq, but if you have skipped the random_seq, it is possible to run it directly on the output of merge.  
 
 .. code-block:: bash
 
@@ -356,9 +357,11 @@ This results in an additional file:
 make_known_occurrences: Create file containing the known_occurences.tsv to be used as an inut for optimize
 --------------------------------------------------------
 
-The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences and it can be run if the expected occurrences in the mock samples are known in advance. Otherwise it should be created by hand, based on the asvtable_default_taxa.tsv file.
+The make_known_occurrences command is designed to automatically create files containing the known and the missing occurences and it can be run if the expected occurrences in the mock samples are known in advance. Otherwise, it should be created by hand, based on the *asvtable_default_taxa.tsv* file.
 
-The make_known_occurrences command requires the *sample_types* and *mock_composition* files as in input. For info on the format of these files see the :ref:`Input/Output Files section <io_formats_io>`. The exemple files can be downloaded here: :download:`sample_types.tsv <../../vtam/data/example/sample_types.tsv>`, :download:`mock_composition_mfzr.tsv <../../vtam/data/example/mock_composition_mfzr.tsv>`
+The make_known_occurrences command requires the :ref:`sample_types_io` and :ref:`mock_composition_io` files as in input. 
+
+The exemple files can be downloaded from here: :download:`sample_types.tsv <../../vtam/data/example/sample_types.tsv>`, :download:`mock_composition_mfzr.tsv <../../vtam/data/example/mock_composition_mfzr.tsv>`
 
 .. code-block:: bash
 
@@ -367,7 +370,7 @@ The make_known_occurrences command requires the *sample_types* and *mock_composi
 .. note::
         For info on I/O files see the :ref:`Reference section <make_known_occurrences_reference>`
 
-The output is the known_occurrences_mfzr.tsv TSV file wich can be used in the optimize step. If there are missing expected varinats, they are written to the missing_occurrences_mfzr.tsv file
+The output is the *known_occurrences_mfzr.tsv* file wich can be used in the optimize step. If there are missing expected variants, they are written to the *missing_occurrences_mfzr.tsv* file.
 
 .. _optimize_tutorial:
 
@@ -546,7 +549,7 @@ Let's see an example on how to complete the previous analyses with the dataset o
 another marker (ZFZR). The principle is the same if you want to complete the analyses with data from a different 
 sequencing run.
 First, we need to prepare these user inputs:
-The directory with the FASTQ files: *fastqinfo_zfzr.tsv*
+The directory with the FASTQ files: :download:`fastqinfo_zfzr.tsv <../../vtam/data/example/fastqinfo_zfzr.tsv>`.
 
 This is the **merge** command for the new run-marker:
 
@@ -572,14 +575,15 @@ Next we run the **taxassign** command for the new ASV table *asper1/asvtable_zfz
 
     vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_zfzr_default.tsv --output asper1/asvtable_zfzr_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
-Here, we prepare a new file of known occurrences for the ZFZR marker: *asper1/user_input/known_occurences_zfzr.tsv*.
+Here, we prepare a new file of known occurrences for the ZFZR marker: :download:`known_occurences_zfzr.tsv <../../vtam/data/example/known_occurences_zfzr.tsv>`.
 Then we run the **optimize** command with the known occurrences:
 
 .. code-block:: bash
 
     vtam optimize --db asper1/db.sqlite --sortedinfo asper1/run1_zfzr/sorted/sortedinfo.tsv --sorteddir asper1/run1_zfzr/sorted --known_occurrences asper1/user_input/known_occurrences_zfzr.tsv --outdir asper1/run1_zfzr -v --log asper1/vtam.log
 
-At this point, we prepare a new params file for the ZFZR marker: *asper1/user_input/params_zfzr.yml*. 
+At this point, we prepare a new params file for the ZFZR marker: :download:`params_zfzr.yml <../../vtam/data/example/params_zfzr.yml>`.
+
 Then we run the **filter** command with the optimized parameters:
 
 .. code-block:: bash
@@ -593,7 +597,7 @@ Then we run the **taxassign** command of the optimized ASV table:
     vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_optimized.tsv --output asper1/run1_zfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 At this point, we have run the equivalent of the previous section (MFZR marker) for the ZFZR marker.
-Now we can pool the two markers MFZR and ZFZR. This input TSV file *asper1/user_input/pool_run_marker.tsv* defines the run and marker combinations that must be pooled. The *pool_run_marker.tsv* that looks like this:
+Now we can pool the two markers MFZR and ZFZR. This input TSV file *asper1/user_input/pool_run_marker.tsv* defines the run and marker combinations that must be pooled. The :download:`pool_run_marker.tsv <../../vtam/data/example/pool_run_marker.tsv>` that looks like this:
 
 .. code-block:: bash
 
@@ -665,7 +669,7 @@ Let's use the same dataset as before, but run the two markers together. These an
 
 We will define a new output folder *asper2* to clearly separate the results from the previous ones.
 
-For the **merge** command, the format of **fastqinfo** file is as before, but it includes info on both markers.
+For the **merge** command, the format of **fastqinfo** file is as before, but it includes info on both markers
 
 .. code-block:: bash
 
