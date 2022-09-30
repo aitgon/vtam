@@ -374,9 +374,9 @@ Inputs:
     - **sorteddir**: Directory containing the demultiplexed fasta files.
 Database:
     - :ref:`db <db_io>`: Name of an sqlite db. It is used to store and access information on runs, markers, samples, variants, filtering steps and taxonomic assignations. It is created by the **filter** command if it does not exist and it is completed if it exists already. 
-    - :ref:`taxonomy <taxonomy_io>`: TSV file containing taxonomic information <LINK to the taxonomy.tsv>
-    - :ref:`blastdbdir <BLAST_database_reference>`: directory containing the BLAST database <LINK to BLAST batabase>
-    - :ref:`blastdbname <BLAST_database_reference>`: name of the BLAST database <LINK to BLAST batabase>
+    - :ref:`taxonomy <taxonomy_io>`: TSV file containing taxonomic information
+    - :ref:`blastdbdir <BLAST_database_reference>`: directory containing the BLAST database
+    - :ref:`blastdbname <BLAST_database_reference>`: name of the BLAST database
 Outputs:
     - :ref:`output <output_io>`: The input TSV file completed by taxonomic assignations
 
@@ -628,13 +628,9 @@ These are the columns of the file:
     - name_txt: String with the scientific name.
     - old_tax_id: Optional. Integer with a previous taxonomic ID that will be tried if an entry was not found in the tax_id column.
 
-A precomputed file can be downloaded using this command. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it works with our custom database:
+A precomputed file can be downloaded from `OSF <https://osf.io/vrfwz/>`_ together with a COInr COI datacase. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it works with with the associated COI database.
 
-.. code-block:: bash
-
-    vtam taxonomy --output taxonomy.tsv --precomputed
-
-Alternatively, the command will download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI.
+Alternatively, the *taxonomy* command of VTAM can download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI.
 This is strongly recommended if you are using a recently downloaded version of the ncbi_nt:
 
 .. code-block:: bash
@@ -643,7 +639,7 @@ This is strongly recommended if you are using a recently downloaded version of t
 
 This step can take several minutes. Make sure you have a steady internet connection. 
 
-The *taxonomy.tsv* file created by the script is ready to use as is if you intend to use the full NCBI nucleotide :ref:`BLAST database <BLAST_database_reference>` or our :ref:`precomputed non-redundant database specific to COI <non-redundant_COI_reference>`.  However, if you create a custom database, containing sequences from taxa not yet included in NCBI taxonomic database, you have to complete this file with arbitrary Taxonomic IDs used in your custom database and link them to existing NCBI taxids. We suggest using negative TaxIDs for taxa not present in NCBI Taxonomy database.
+The *taxonomy.tsv* file created by the script is ready to use as is if you intend to use the full NCBI nucleotide :ref:`BLAST database <BLAST_database_reference>` or a database created from NCBI sequneces.  However, if you create a custom database, containing sequences from taxa not yet included in NCBI taxonomic database, you have to complete this file with arbitrary Taxonomic IDs used in your custom database and link them to existing NCBI taxids. We suggest using negative TaxIDs for taxa not present in NCBI Taxonomy database.
 
 An example is found here:
 
@@ -667,7 +663,7 @@ The BLAST database
 VTAM uses a BLAST database for taxonomic assignment. There are three possibilities:
 
     - Download the full NCBI nucleotide (NCBI_nt) BLAST (ca. 100 Gb).
-    - Download a precomputed non-redundant database specific to the first half (600-700bp) of the COI gene (less than 1 Gb).
+    - Download a precomputed non-redundant COInr database specific the COI gene from `OSF <https://osf.io/vrfwz/>`_. This database is ready to be used for VTAM.
     - Build a custom BLAST database with local sequences.
 
 .. _NCBI_nt_reference:
@@ -691,19 +687,7 @@ It contains all NCBI nucleotide sequences and thus, it is not limited to COI.
 Precomputed non-redundant COI database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We have created a non-redundant database specific to the first half (600-700bp) of the COI gene. It contains COI sequences from NCBI nt and BOLD, they cover at least 80% of the barcoding region of the COI. Identical sequences of the same taxon are present only once in the database. The latest version of this database can be downloaded with the following command:
-
-.. code-block:: bash
-
-    vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db
-
-Earlier versions can be downloaded by specifying the name of database:
-
-.. code-block:: bash
-
-    vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420
-
-The available versions are found here: `<https://github.com/aitgon/vtam/releases/latest>`_
+We have formated the `COInr database <https://zenodo.org/record/6555984>`_ to VTAM. This is a non-redundant COI database containing sequences from Genbank and BOLD and can be downloaded from `OSF <https://osf.io/vrfwz/>`_. When using this database, please, cite `Meglécz, 2022 <https://doi.org/10.1101/2022.05.18.492423>`_.
 
 
 Custom database
