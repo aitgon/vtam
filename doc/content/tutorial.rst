@@ -573,7 +573,7 @@ Next we run the **taxassign** command for the new ASV table *asper1/asvtable_zfz
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_zfzr_default.tsv --output asper1/asvtable_zfzr_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_default.tsv --output asper1/run1_zfzr/asvtable_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 Here, we prepare a new file of known occurrences for the ZFZR marker: :download:`known_occurrences_zfzr.tsv <../../vtam/data/example/known_occurrences_zfzr.tsv>`.
 Then we run the **optimize** command with the known occurrences:
