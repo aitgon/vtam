@@ -292,27 +292,39 @@ The **taxassign** command assigns ASV sequences in the last column of a TSV file
 
 The **taxassign** command needs a :ref:`BLAST database <BLAST_database_reference>` (containing reference sequences of known taxonomic origin) and the :ref:`taxonomy information file <taxonomy_reference>`.
 
-A precomputed taxonomy file in TSV format and the BLAST database with COI sequences can be downloaded with these commands:
+You can download the latest version of a COI database from OSF (https://osf.io/vrfwz/). This database is formatted to VTAM from the COInr database .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6555985.svg
+   :target: https://doi.org/10.5281/zenodo.6555984
+ If you want to customize it, please, use `mkCOInr <https://github.com/meglecz/mkCOInr>`_
+
+Download and unpack the database and the associated taxonomy file :
+**Remark**: You might need to update the URL for the latest version available in OSF https://osf.io/vrfwz/ 
 
 .. code-block:: bash
 
-    vtam taxonomy -output vtam_db/taxonomy.tsv --precomputed
-    vtam coi_blast_db --blastdbdir vtam_db/coi_blast_db
+    mkdir vtam_db
+    cd vtam_db
+    wget https://osf.io/9qyzf/download -O COInr_vtam_taxonomy_2022_05_06.tsv.gz
+    gunzip COInr_vtam_taxonomy_2022_05_06.tsv.gz
+
+    wget https://osf.io/qyr3b/download -O COInr_blast_2022_05_06.tar.gz
+    tar -zxvf COInr_blast_2022_05_06.tar.gz
+    rm COInr_blast_2022_05_06.tar.gz
+    
 
 These commands result in these new files:
 
 .. code-block:: bash
 
-    ...
-    vtam_db
-    |-- coi_blast_db
-    |  |-- coi_blast_db_20200420.nhr
-    |  |-- coi_blast_db_20200420.nin
-    |  |-- coi_blast_db_20200420.nog
-    |  |-- coi_blast_db_20200420.nsd
-    |  |-- coi_blast_db_20200420.nsi
-    |  └-- coi_blast_db_20200420.nsq
-    `-- taxonomy.tsv
+vtam_db
+├── COInr_blast_2022_05_06
+│   ├── COInr_blast_2022_05_06.nhr
+│   ├── COInr_blast_2022_05_06.nin
+│   ├── COInr_blast_2022_05_06.nog
+│   ├── COInr_blast_2022_05_06.nsd
+│   ├── COInr_blast_2022_05_06.nsi
+│   └── COInr_blast_2022_05_06.nsq
+└── COInr_vtam_taxonomy_2022_05_06.tsv
+
 
 .. note::
     Alternatively, you can use your own custom database or the NCBI nucleotide database :ref:`Reference section <BLAST_database_reference>`
