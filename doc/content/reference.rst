@@ -628,7 +628,7 @@ These are the columns of the file:
     - name_txt: String with the scientific name.
     - old_tax_id: Optional. Integer with a previous taxonomic ID that will be tried if an entry was not found in the tax_id column.
 
-A precomputed file can be downloaded from `OSF <https://osf.io/vrfwz/>`_ together with a COInr COI datacase. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it works with with the associated COI database.
+A precomputed file can be downloaded from `OSF <https://osf.io/vrfwz/>`_ together with a COInr COI database. This version in not necessarily the most up to date compared to the ncbi taxonomy database, but it works with the associated COI database.
 
 Alternatively, the *taxonomy* command of VTAM can download the up-to-date ncbi taxonomy database (`<https://www.ncbi.nlm.nih.gov/taxonomy>`_) and create a fresh TSV file with the latest data in NCBI.
 This is strongly recommended if you are using a recently downloaded version of the ncbi_nt:
@@ -663,7 +663,7 @@ The BLAST database
 VTAM uses a BLAST database for taxonomic assignment. There are three possibilities:
 
     - Download the full NCBI nucleotide (NCBI_nt) BLAST (ca. 100 Gb).
-    - Download a precomputed non-redundant COInr database specific the COI gene from `OSF <https://osf.io/vrfwz/>`_. This database is ready to be used for VTAM.
+    - Download a precomputed non-redundant COInr database specific the COI gene from `OSF <https://osf.io/vrfwz/>`_.
     - Build a custom BLAST database with local sequences.
 
 .. _NCBI_nt_reference:
