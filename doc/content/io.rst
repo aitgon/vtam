@@ -267,6 +267,7 @@ Output of :ref:`taxonomy <taxonomy_reference>`, input of :ref:`taxassign <taxass
     - rank: Taxonomic rank of the taxon (e.g. class, species, no rank)
     - name_txt: Name of the taxon
     - old_tax_id: TaxID of taxa merged to taxon (not valid any more)
+    - taxlevel index (optional; 0 = root, 1 = superkingdom, 2 = kingdom, 3 = phylum, 4 = class, 5 = order, 6 = family, 7 = genus, 8 = species, x.5 for intermediate levels)
 
 .. _runmarker_io:
 
