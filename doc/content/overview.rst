@@ -66,7 +66,6 @@ There are a few additional subcommands to help users:
     - :ref:`vtam random_seq <random_seq_reference>` Creates a random subset of sequences from fastafiles (recommended after the merge command)
     - :ref:`vtam make_known_occurrences <make_known_occurrences_reference>` to create known occurrence file automatically for the optimize step 
     - :ref:`vtam taxonomy <taxonomy_reference>`: Creates a taxonomic TSV file for the taxassign
-    - :ref:`vtam vtam coi_blast_db <BLAST_database_reference>`: Downloads a precomputed custom BLAST database for the cytochrome C oxidase subunit I (COI) marker gene
     - :ref:`vtam example <example_installation>`: Generates an example dataset for immediate use with VTAM
 
 Although the pipeline can vary in function of the input data format and the experimental design, a typical pipeline is composed of the following steps in this order :
