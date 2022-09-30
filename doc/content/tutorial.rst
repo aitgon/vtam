@@ -299,7 +299,7 @@ If you want to customize it, you can use `mkCOInr <https://github.com/meglecz/mk
 Download and unpack the database and the associated taxonomy file:
 
 .. note::
-    You might need to update the URL for the latest version available in `OSF <https://osf.io/vrfwz/>`_ 
+    You might need to update the URL and the file names for the latest version available in `OSF <https://osf.io/vrfwz/>`_ 
 
 .. code-block:: bash
 
@@ -335,7 +335,7 @@ Then, we can carry out the taxonomic assignation of variants in the *asvtable_de
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_mfzr/asvtable_default.tsv --output asper1/run1_mfzr/asvtable_default_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper1/vtam.log
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_mfzr/asvtable_default.tsv --output asper1/run1_mfzr/asvtable_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 .. note::
     For info on I/O files see the :ref:`Reference section <taxassign_reference>`
@@ -511,7 +511,7 @@ Running again **taxassign** will complete the *asvtable_optimized.tsv* with the 
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_mfzr/asvtable_optimized.tsv --output asper1/run1_mfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper1/vtam.log
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_mfzr/asvtable_optimized.tsv --output asper1/run1_mfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 We finished our first analysis with VTAM! The resulting directory structure looks like this:
 
@@ -579,7 +579,7 @@ Next we run the **taxassign** command for the new ASV table *asper1/asvtable_zfz
 
 .. code-block:: bash
 
-    vtam taxassign --db
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_zfzr_default.tsv --output asper1/asvtable_zfzr_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 Here, we prepare a new file of known occurrences for the ZFZR marker: *asper1/user_input/known_occurences_zfzr.tsv*.
 Then we run the **optimize** command with the known occurrences:
@@ -599,7 +599,7 @@ Then we run the **taxassign** command of the optimized ASV table:
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_optimized.tsv --output asper1/run1_zfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper1/vtam.log
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/run1_zfzr/asvtable_optimized.tsv --output asper1/run1_zfzr/asvtable_optimized_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper1/vtam.log
 
 At this point, we have run the equivalent of the previous section (MFZR marker) for the ZFZR marker.
 Now we can pool the two markers MFZR and ZFZR. This input TSV file *asper1/user_input/pool_run_marker.tsv* defines the run and marker combinations that must be pooled. The *pool_run_marker.tsv* that looks like this:
@@ -642,7 +642,7 @@ Complete the *asvtable_pooled_mfzr_zfzr.tsv* with taxonomic assignments using th
 
 .. code-block:: bash
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_pooled_mfzr_zfzr.tsv --output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper1/vtam.log -v
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/asvtable_pooled_mfzr_zfzr.tsv --output asper1/asvtable_pooled_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 --log asper1/vtam.log -v
 
 We finished running VTAM for a second marker ZFZR.
 
@@ -694,7 +694,7 @@ This is the **taxassign** command:
 
 .. code-block:: bash
 
-    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_default.tsv --output asper2/run1/asvtable_default_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_default.tsv --output asper2/run1/asvtable_default_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper2/vtam.log
 
 For the **optimize** command, make one single *known_occurrences.tsv* file with known occurrences for both markers:
 
@@ -734,7 +734,7 @@ To end this case, we run the **pool** and **taxassign** commands:
 
     vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --log asper2/vtam.log -v
 
-    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 --log asper2/vtam.log -v
 
 .. _snakemake_tutorial:
 
@@ -765,9 +765,9 @@ To setup the pipeline we need the *fastqinfo_mfzr.tsv* file as before and a conf
     fastqdir: 'fastq'
     known_occurrences: 'asper1/user_input/known_occurrences_mfzr.tsv'
     params: 'asper1/user_input/params_mfzr.yml'
-    blastdbdir: 'vtam_db/coi_blast_db'
-    blastdbname: 'coi_blast_db_20200420'
-    taxonomy: 'vtam_db/taxonomy.tsv'
+    blastdbdir: 'vtam_db/COInr_blast_2022_05_06'
+    blastdbname: 'COInr_blast_2022_05_06'
+    taxonomy: 'vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv'
 
 Make sure the :download:`snakemake.yml <../../vtam/data/snakefile.yml>` is in the current working directory. The resulting file tree looks like this:
 
@@ -783,10 +783,10 @@ Make sure the :download:`snakemake.yml <../../vtam/data/snakefile.yml>` is in th
     |  |-- ...
     |-- snakefile.yml
     `-- vtam_db
-      |-- coi_blast_db
-      |  |-- coi_blast_db.nhr
+      |-- COInr_blast_2022_05_06
+      |  |-- COInr_blast_2022_05_06.nhr
       |  |-- ...
-      `-- taxonomy.tsv
+      `-- COInr_vtam_taxonomy_2022_05_06.tsv
 
 Steps **merge**, **sortreads**, **filter** with default parameters, **taxassign**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -887,9 +887,9 @@ The *snakeconfig_zfzr.yml* will look like this:
     fastqdir: 'fastq'
     known_occurrences: 'asper1/user_input/known_occurrences_zfzr.tsv'
     params: 'asper1/user_input/params_zfzr.yml'
-    blastdbdir: 'vtam_db/coi_blast_db'
-    blastdbname: 'coi_blast_db_20200420'
-    taxonomy: 'vtam_db/taxonomy.tsv'
+    blastdbdir: 'vtam_db/COInr_blast_2022_05_06'
+    blastdbname: 'COInr_blast_2022_05_06'
+    taxonomy: 'vtam_db/COInr_vtam_taxonomy_2022_05_06'
 
 Then you can run the same commands as above for the new marker ZFZR:
 
@@ -926,7 +926,7 @@ The results of the two markers can be pooled as before:
 
     vtam pool --db asper1/db.sqlite --runmarker asper1/user_input/pool_run_marker.tsv --asvtable asper1/pooled_asvtable_mfzr_zfzr.tsv --log asper1/vtam.log -v
 
-    vtam taxassign --db asper1/db.sqlite --asvtable asper1/pooled_asvtable_mfzr_zfzr.tsv --output asper1/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper1/vtam.log -v
+    vtam taxassign --db asper1/db.sqlite --asvtable asper1/pooled_asvtable_mfzr_zfzr.tsv --output asper1/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 --log asper1/vtam.log -v
 
 
 Running snakemake for data with several run-marker combinations
@@ -950,9 +950,9 @@ The *snakeconfig.yml* looks like this:
     fastqdir: 'fastq'
     known_occurrences: 'asper2/user_input/known_occurrences.tsv'
     params: 'asper2/user_input/params.yml'
-    blastdbdir: 'vtam_db/coi_blast_db'
-    blastdbname: 'coi_blast_db_20200420'
-    taxonomy: 'vtam_db/taxonomy.tsv'
+    blastdbdir: 'vtam_db/COInr_blast_2022_05_06'
+    blastdbname: 'COInr_blast_2022_05_06'
+    taxonomy: 'vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv'
 
 Then you compute the ASV tables and the optimization files with default parameters:
 
@@ -984,7 +984,7 @@ Then, we can run the filter and taxassign commands with optimized parameters:
 
     vtam filter --db asper2/db.sqlite --sortedinfo asper2/user_input/sortedinfo_zfzr.tsv --sorteddir asper2/run1/sorted --params asper2/user_input/params_zfzr.yml --asvtable asper2/run1/asvtable_params_zfzr.tsv -v --log asper2/vtam.log
 
-    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_zfzr.tsv --output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 -v --log asper2/vtam.log
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/run1/asvtable_params_zfzr.tsv --output asper2/run1/asvtable_params_taxa_zfzr.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 -v --log asper2/vtam.log
 
 The resulting directory tree looks like this:
 
@@ -1024,7 +1024,7 @@ The results of the two markers can be pooled as before:
 
     vtam pool --db asper2/db.sqlite --runmarker asper2/user_input/pool_run_marker.tsv --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --log asper2/vtam.log -v
 
-    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/taxonomy.tsv --blastdbdir vtam_db/coi_blast_db --blastdbname coi_blast_db_20200420 --log asper2/vtam.log -v
+    vtam taxassign --db asper2/db.sqlite --asvtable asper2/pooled_asvtable_mfzr_zfzr.tsv --output asper2/pooled_asvtable_mfzr_zfzr_taxa.tsv --taxonomy vtam_db/COInr_vtam_taxonomy_2022_05_06.tsv --blastdbdir vtam_db/COInr_blast_2022_05_06 --blastdbname COInr_blast_2022_05_06 --log asper2/vtam.log -v
 
 
 
