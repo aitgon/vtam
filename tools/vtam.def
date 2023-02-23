@@ -1,4 +1,4 @@
-Bootstrap: docker
+Bootstrap: library
 From: ubuntu:20.04
 
 %help
@@ -93,7 +93,7 @@ exec /opt/miniconda/envs/myenv/bin/"$@"
 ################################################################################
 
 %post
-/opt/miniconda/envs/myenv/bin/pip install vtam==0.1.23
+/opt/miniconda/envs/myenv/bin/pip install vtam==0.2.0
 
 # Executables in this folder will be called with:
 # singularity run out/mycontainer.sif myexecutable
@@ -108,4 +108,3 @@ exec /opt/miniconda/envs/myenv/bin/vtam "$@"
 
 apt-get clean
 rm -rf /var/lib/apt/lists/*
-
