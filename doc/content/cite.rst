@@ -1,7 +1,5 @@
 Citation
 =========================
 
-**González, A., Dubut, V., Corse, E., Mekdad, R., Dechatre, T. and  Meglécz, E.**.
-`VTAM: A robust pipeline for processing metabarcoding data using internal controls`.
-bioRxiv: `10.1101/2020.11.06.371187v1 <https://www.biorxiv.org/content/10.1101/2020.11.06.371187v1>`_.
-
+**Aitor González, Vincent Dubut, Emmanuel Corse, Reda Mekdad, Thomas Dechatre, Ulysse Castet, Raphaël Hebert, Emese Meglécz**.
+VTAM: A robust pipeline for validating metabarcoding data using controls. Computational and Structural Biotechnology Journal, 2023, 21, pp.1151 - 1156. `10.1016/j.csbj.2023.01.034 <https://dx.doi.org/10.1016/j.csbj.2023.01.034>`_.
