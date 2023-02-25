@@ -31,7 +31,7 @@ VTAM: A robust pipeline for validating metabarcoding data using controls. Comput
 
 For a quick use, the simplest method is to use the `Singularity <https://sylabs.io/singularity>`_ image
 that can be downloaded here:
-`https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif <https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif>`_. Singularity can be install as described `Singularity <https://sylabs.io/singularity>`_.
+`https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif <https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif>`_. Singularity can be install as described here: `https://sylabs.io/singularity <https://sylabs.io/singularity>`_.
 
 The VTAM container (Tested with Singularity v3.11) gives access to all commands, e.g.
 
