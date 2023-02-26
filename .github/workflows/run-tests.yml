@@ -28,7 +28,7 @@ jobs:
           $CONDA/bin/conda create -y -q --name vtam python=${{ matrix.python-version }}
           # source activate vtam
           $CONDA/bin/conda env update -f environment.yml --name vtam
-          $CONDA/bin/pip install -e .
+          $CONDA/bin/python setup.py install
     - name: Run tests
       env:
         CI: true
