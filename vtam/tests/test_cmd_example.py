@@ -24,8 +24,7 @@ class TestCommandExample(unittest.TestCase):
 
     def test_command_example(self):
 
-        # cmd = "vtam example"
-        cmd = os.path.join(os.path.dirname(sys.executable), 'vtam') + " example"
+        cmd = "vtam example"
 
         if sys.platform.startswith("win"):
             args = cmd
