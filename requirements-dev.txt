@@ -8,7 +8,7 @@ pyyaml
 snakemake
 sphinx
 sphinx_rtd_theme
-sqlalchemy
+sqlalchemy=1.4.39
 termcolor
 tqdm
 twine

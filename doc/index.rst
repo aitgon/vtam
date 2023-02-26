@@ -32,7 +32,19 @@ If you use VTAM in scientific works, **please cite the following article**:
 `VTAM: A robust pipeline for processing metabarcoding data using internal controls`.
 bioRxiv: `10.1101/2020.11.06.371187v1 <https://www.biorxiv.org/content/10.1101/2020.11.06.371187v1>`_.
 
-Commands for a quick installation:
+For a quick use, the simplest method is to use the `Singularity <https://sylabs.io/singularity>`_ image
+that can be downloaded here:
+`https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif <https://github.com/aitgon/vtam/releases/download/0.2.0/vtam.sif>`_. Singularity can be install as described here: `https://sylabs.io/singularity <https://sylabs.io/singularity>`_.
+
+The VTAM container (Tested with Singularity v3.11) gives access to all commands, e.g.
+
+.. code-block:: bash
+
+    singularity run --app miniconda vtam.sif python --version
+    singularity run --app vtam vtam.sif --help
+    singularity run --app vtam vtam.sif merge --help
+
+You can also install VTAM in a Conda environmentCommands for a quick installation:
 
 .. code-block:: bash
 
