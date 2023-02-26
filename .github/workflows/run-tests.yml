@@ -29,7 +29,7 @@ jobs:
           # source activate vtam
           $CONDA/bin/conda env update -f environment.yml --name vtam
           $CONDA/bin/pip install --upgrade cython
-          $CONDA/bin/python setup.py install
+          $CONDA/bin/pip install -e .
     - name: Run tests
       env:
         CI: true
