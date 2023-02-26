@@ -93,7 +93,7 @@ setup(
     packages=find_packages(),
     package_dir={'vtam': 'vtam'},
     package_data={'vtam': data_file_list},
-    install_requires=['biopython', 'cutadapt', 'jinja2', 'pandas', 'progressbar', 'pyyaml', 'sqlalchemy', 'snakemake', 'termcolor', 'tqdm', 'wopmars'],
+    install_requires=['biopython==1.78', 'cutadapt==3.4', 'jinja2', 'pandas', 'progressbar', 'pyyaml', 'sqlalchemy==1.4.39', 'snakemake', 'termcolor', 'tqdm', 'wopmars>=0.1.4'],
     entry_points={
         'console_scripts': ['vtam=vtam:main']
     },
